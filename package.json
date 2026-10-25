@@ -1,0 +1,10 @@
+{
+  "name": "paybrake",
+  "private": true,
+  "type": "module",
+  "workspaces": ["extension", "backend"],
+  "scripts": {
+    "test": "echo \"not built yet: see SPEC.md\" && exit 1"
+  },
+  "license": "MIT"
+}
