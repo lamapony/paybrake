@@ -21,6 +21,10 @@ const SCAM = [
   "Price is 1800 kr but send 500 kr deposit via PayPal Friends & Family today and I hold it for you. Only shipping, I'm in Aarhus",
 ];
 
+// Text of the first card including its (open) shadow root; host.innerText does not see shadow content.
+async function cardText(page) {
+  return page.evaluate((sel) => { const h = document.querySelector(sel); return h ? ((h.shadowRoot ? h.shadowRoot.textContent : "") + " " + h.textContent) : ""; }, CARD);
+}
 async function cardCount(page) { return page.locator(CARD).count(); }
 async function waitCard(page, ms = 5000) {
   try { await page.locator(CARD).first().waitFor({ state: "attached", timeout: ms }); return true; } catch { return false; }
@@ -75,10 +79,10 @@ async function waitCard(page, ms = 5000) {
     }, CARD);
     check(placed, "card is inside the row of the flagged message");
     const card = page.locator(CARD).first();
-    const cardText = await card.innerText();
-    check(/High risk payment request/.test(cardText), "badge says High risk payment request");
-    check(/Friends & Family|deposit/i.test(cardText), "reason quotes the evidence");
-    check(!/guarantee|you are protected|100% safe/i.test(cardText), "no guarantee language in card");
+    const text1 = await cardText(page);
+    check(/High risk payment request/.test(text1), "badge says High risk payment request");
+    check(/“[^”]*(Friends & Family|deposit)[^”]*”/i.test(text1), "reason quotes the evidence");
+    check(!/guarantee|you are protected|100% safe/i.test(text1), "no guarantee language in card");
     check(await card.locator('[data-pb-action="protect"]').isVisible(), "protect button visible");
     check(await card.locator('[data-pb-action="anyway"]').isVisible(), "pay anyway button visible");
     check((await page.evaluate(() => window.fixture.composerText())) === "", "composer untouched");
@@ -116,7 +120,7 @@ async function waitCard(page, ms = 5000) {
     // 4) Pay anyway -> collapse + log
     await page.locator(CARD).first().locator('[data-pb-action="anyway"]').click();
     await page.waitForTimeout(500);
-    check(/pay anyway/i.test(await page.locator(CARD).first().innerText()), "card collapses after Pay anyway");
+    check(/You chose to pay anyway/i.test(await cardText(page)), "card collapses after Pay anyway");
     const log = await sw.evaluate(() => chrome.storage.local.get("pb_log").then((r) => r.pb_log || []));
     check(Array.isArray(log) && log.some((e) => e.action === "pay_anyway"), `override logged in chrome.storage (${log.length})`);
     await page.screenshot({ path: path.join(shots, "pilot-anyway-1280.png") });

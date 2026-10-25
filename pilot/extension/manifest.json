@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "PayBrake (pilot)",
+  "version": "0.1.0",
+  "description": "Flags risky payment requests in marketplace chats.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://www.facebook.com/messages/*", "https://www.facebook.com/marketplace/*", "https://www.messenger.com/*"],
+  "content_scripts": [
+    {"matches": ["https://www.facebook.com/messages/*", "https://www.facebook.com/marketplace/*", "https://www.messenger.com/*"], "js": ["lib/detector.js", "content.js"], "run_at": "document_idle", "all_frames": false},
+    {"matches": ["https://www.facebook.com/*"], "js": ["lib/detector.js", "content.js"], "run_at": "document_idle", "all_frames": false}
+  ],
+  "background": {"service_worker": "background.js"},
+  "options_page": "options.html"
+}
