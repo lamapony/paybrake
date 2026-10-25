@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<!--
+  PayBrake pilot test fixture. Mimics the DOM SHAPE of a web chat client
+  (role="main" > role="grid" > role="row" > div[dir="auto"] message text,
+  visually hidden h5 sender headings, outgoing bubbles right-aligned, a
+  contenteditable role="textbox" composer). No logos, no real people.
+  Served by tests/e2e-pilot.cjs at https://www.facebook.com/messages/t/... via
+  Playwright route interception, so the real manifest match patterns are used.
+
+  Query params:
+    ?thread=scam   (default) safe opening, the scam messages are added by the test
+    ?thread=safe   a normal pickup chat with MobilePay on pickup; must stay silent
+  Test hooks (window.fixture):
+    addIncoming(text)   append a message from the other person (React-ish: new row node)
+    addOutgoing(text)   append a message from "me"
+    rerender()          replace every row node with a fresh copy (simulates a framework re-render)
+    composerText()      current composer text (must stay "")
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chats | Test fixture</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; font-size: 15px; color: #050505; background: #fff; }
+  .app { display: flex; height: 100vh; }
+  [role="navigation"] { width: 340px; border-right: 1px solid #e4e6eb; padding: 12px; flex: none; overflow: auto; }
+  [role="navigation"] h1 { font-size: 22px; margin: 4px 4px 12px; }
+  .conv { display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: 8px; }
+  .conv.active { background: #f0f2f5; }
+  .av { width: 40px; height: 40px; border-radius: 50%; background: #c9ccd1; flex: none; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #333; }
+  .conv .n { font-weight: 600; font-size: 14px; } .conv .p { font-size: 12px; color: #65676b; }
+  [role="main"] { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .head { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #e4e6eb; flex: none; }
+  .head h2 { font-size: 16px; margin: 0; } .head .sub { font-size: 12px; color: #65676b; }
+  [role="grid"] { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; }
+  [role="row"] { display: block; }
+  .rowin { display: flex; padding: 1px 0; }
+  .rowin.me { justify-content: flex-end; }
+  .bub { max-width: 64%; padding: 8px 12px; border-radius: 18px; line-height: 1.34; overflow-wrap: anywhere; }
+  .them .bub { background: #f0f0f0; }
+  .me .bub { background: #0a7cff; color: #fff; }
+  .them .av { width: 28px; height: 28px; font-size: 10px; margin-right: 8px; align-self: flex-end; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ts { text-align: center; font-size: 12px; color: #65676b; margin: 10px 0 6px; }
+  .composer { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid #e4e6eb; flex: none; }
+  .composer [role="textbox"] { flex: 1; min-height: 36px; background: #f0f2f5; border-radius: 18px; padding: 8px 14px; outline: none; }
+  @media (max-width: 700px) { [role="navigation"] { display: none; } .bub { max-width: 80%; } }
+</style>
+</head>
+<body>
+<div class="app" id="mount">
+  <div role="navigation" aria-label="Chats">
+    <h1>Chats</h1>
+    <div class="conv active"><span class="av">CW</span><div><div class="n">Christopher Wang · Used road bike</div><div class="p">Marketplace</div></div></div>
+    <div class="conv"><span class="av">ML</span><div><div class="n">Mette Lund</div><div class="p">See you at 6</div></div></div>
+  </div>
+  <div role="main" aria-label="Conversation">
+    <div class="head"><span class="av">CW</span><div><h2 id="thread-title">Christopher Wang · Used road bike</h2><div class="sub">Marketplace listing · 1.800 kr</div></div></div>
+    <div role="grid" aria-label="Messages in conversation with Christopher Wang" id="grid">
+      <div class="ts">Today 20:58</div>
+    </div>
+    <div class="composer"><div role="textbox" contenteditable="true" aria-label="Message" id="composer"></div></div>
+  </div>
+</div>
+<script>
+(function () {
+  var grid = document.getElementById("grid");
+  var lastFrom = null;
+  var other = "Christopher Wang";
+  function row(text, me) {
+    var r = document.createElement("div");
+    r.setAttribute("role", "row");
+    var cell = document.createElement("div");
+    cell.setAttribute("role", "gridcell");
+    // Hidden sender heading: "You sent" for me; other person's name on the first bubble of a run.
+    if (me || lastFrom !== "them") {
+      var h = document.createElement("h5"); h.className = "sr";
+      var s = document.createElement("span"); s.textContent = me ? "You sent" : other;
+      h.appendChild(s); cell.appendChild(h);
+    }
+    var inner = document.createElement("div");
+    inner.className = "rowin " + (me ? "me" : "them");
+    if (!me) { var av = document.createElement("span"); av.className = "av"; av.textContent = "CW"; inner.appendChild(av); }
+    var bub = document.createElement("div"); bub.className = "bub";
+    var t = document.createElement("div"); t.setAttribute("dir", "auto"); t.textContent = text;
+    bub.appendChild(t); inner.appendChild(bub); cell.appendChild(inner); r.appendChild(cell);
+    lastFrom = me ? "me" : "them";
+    return r;
+  }
+  function add(text, me) { var r = row(text, me); grid.appendChild(r); grid.scrollTop = grid.scrollHeight; return r; }
+  var thread = new URLSearchParams(location.search).get("thread") || "scam";
+  if (thread === "safe") {
+    other = "Mette Lund";
+    document.getElementById("thread-title").textContent = "Mette Lund · Desk lamp";
+    add("Hi! Is the desk lamp still for sale?", true);
+    add("Yes it is :) 250 kr", false);
+    add("Great, can I pick it up tomorrow? How do I pay?", true);
+    add("Du kan betale med MobilePay når du henter den. Jeg er hjemme efter kl 17", false);
+    add("My friends and family all loved this lamp, but I'm moving. Several people asked, but you were first.", false);
+  } else {
+    add("Hi! Is the road bike still available?", true);
+    add("Hi, yes it is. Very good condition, new tyres.", false);
+  }
+  window.fixture = {
+    addIncoming: function (t) { return add(t, false); },
+    addOutgoing: function (t) { return add(t, true); },
+    rerender: function () {
+      Array.prototype.slice.call(grid.querySelectorAll('[role="row"]')).forEach(function (r) {
+        var copy = r.cloneNode(true);
+        copy.querySelectorAll("[data-paybrake]").forEach(function (n) { n.remove(); });
+        [copy].concat(Array.prototype.slice.call(copy.querySelectorAll("*"))).forEach(function (el) {
+          Array.prototype.slice.call(el.attributes).forEach(function (a) {
+            if (/^data-(pb|paybrake)/.test(a.name)) el.removeAttribute(a.name);
+          });
+        });
+        r.replaceWith(copy);
+      });
+    },
+    composerText: function () { return document.getElementById("composer").textContent; }
+  };
+})();
+</script>
+</body>
+</html>

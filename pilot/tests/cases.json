@@ -1,0 +1,27 @@
+{
+  "_doc": "Detector cases. Each case: text = the newest incoming message; context = earlier incoming messages in the same thread (oldest first, may be empty). expect risk|silent; level and mustHaveSignals are checked when given. Fictional names only.",
+  "cases": [
+    { "id": "en-ff-deposit", "text": "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow", "context": [], "expect": "risk", "level": "high", "mustHaveSignals": ["friends_family", "deposit"], "amount": 500, "currency": "DKK" },
+    { "id": "en-ff-short", "text": "Please pay with F&F, it's 1800 kr. Others are interested so today only", "context": [], "expect": "risk", "level": "high", "mustHaveSignals": ["friends_family", "urgency"], "amount": 1800, "currency": "DKK" },
+    { "id": "en-mobilepay-deposit", "text": "Can you MobilePay a 300 kr deposit to 20 12 34 56? Then I reserve it for you", "context": [], "expect": "risk", "level": "high", "mustHaveSignals": ["mobilepay", "deposit"], "amount": 300, "currency": "DKK" },
+    { "id": "en-bank-transfer-shipping", "text": "I'm abroad so only shipping. Bank transfer of 1.800 kr first and I send it with courier", "context": [], "expect": "risk", "mustHaveSignals": ["bank_transfer", "ship_only"], "amount": 1800, "currency": "DKK" },
+    { "id": "en-iban", "text": "Pay the €150 to my IBAN DE89370400440532013000 and I post it today", "context": [], "expect": "risk", "mustHaveSignals": ["bank_transfer"], "amount": 150, "currency": "EUR" },
+    { "id": "en-context-split", "text": "Use MobilePay to 22 33 44 55 please, quickly", "context": ["Price is 1800 kr but I need a 500 kr deposit first, a lot of people want it"], "expect": "risk", "level": "high", "mustHaveSignals": ["mobilepay", "deposit"], "amount": 500, "currency": "DKK" },
+    { "id": "da-venner-depositum", "text": "Send 500 kr i depositum over PayPal venner og familie, så holder jeg cyklen til dig", "context": [], "expect": "risk", "level": "high", "mustHaveSignals": ["friends_family", "deposit"], "amount": 500, "currency": "DKK" },
+    { "id": "da-forudbetaling-mobilepay", "text": "Jeg tager kun imod forudbetaling på MobilePay, 1.800 kr. Kun forsendelse", "context": [], "expect": "risk", "mustHaveSignals": ["mobilepay", "deposit", "ship_only"], "amount": 1800, "currency": "DKK" },
+    { "id": "da-bankoverforsel", "text": "Du kan lave en bankoverførsel på 1800 kr til reg.nr 1234 kontonummer 0012345678, så sender jeg i morgen", "context": [], "expect": "risk", "mustHaveSignals": ["bank_transfer"], "amount": 1800, "currency": "DKK" },
+    { "id": "da-hurtigt-depositum", "text": "Mange er interesserede, så du skal være hurtig. 400 kr depositum på MobilePay i dag", "context": [], "expect": "risk", "level": "high", "mustHaveSignals": ["mobilepay", "deposit", "urgency"], "amount": 400, "currency": "DKK" },
+
+    { "id": "safe-pickup-mobilepay-da", "text": "Du kan betale med MobilePay når du henter den. Jeg er hjemme efter kl 17", "context": ["Ja den er der stadig, 250 kr"], "expect": "silent" },
+    { "id": "safe-friends-family-nonpay", "text": "My friends and family all loved this lamp, but I'm moving. Several people asked, but you were first.", "context": [], "expect": "silent" },
+    { "id": "safe-no-deposit", "text": "No deposit needed, just come by and pay 250 kr cash on pickup", "context": [], "expect": "silent" },
+    { "id": "safe-urgency-only", "text": "Others are interested so please let me know today if you want to come see it", "context": [], "expect": "silent" },
+    { "id": "safe-normal-chat", "text": "Hi, yes it is still available. Very good condition, new tyres.", "context": [], "expect": "silent" },
+    { "id": "safe-bottle-deposit", "text": "The crate comes with the bottles, you can return them for the deposit at the supermarket", "context": [], "expect": "silent" },
+    { "id": "safe-gs-checkout", "text": "Sure, 1800 kr through the Marketplace checkout or PayPal Goods and Services, whatever you prefer", "context": [], "expect": "silent" },
+    { "id": "safe-serial-number", "text": "The frame serial is WTU123456789ABCDE, you can check it when you come and look at it", "context": [], "expect": "silent" },
+    { "id": "safe-da-afhentning", "text": "Betaling ved afhentning, kontant eller MobilePay. 1.800 kr", "context": [], "expect": "silent" },
+    { "id": "safe-short", "text": "ok 500 kr", "context": [], "expect": "silent" },
+    { "id": "safe-pay-method-no-money", "text": "Do you have MobilePay?", "context": [], "expect": "silent" }
+  ]
+}
