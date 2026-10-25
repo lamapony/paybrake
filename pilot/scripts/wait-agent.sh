@@ -1,4 +1,4 @@
-#!/usr/bin/env bash --norc
+#!/usr/bin/env bash
 # Poll codexbar every 5 min. Exit 0 with "CODEX_READY" when Codex session > 0%,
 # or "GROK_READY" after 18:20 if Grok weekly > 0%, or keep waiting.
 while true; do

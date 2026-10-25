@@ -1,6 +1,6 @@
 # PILOT-TASK: PayBrake live-chat pilot (Chrome MV3, unpacked)
 
-You are a coding agent working in `/workspace/payguard`. Build ONLY the pilot described here, inside `pilot/extension/`. Do not touch `extension/`, `backend/`, `demo/` or `SPEC.md` (that is the separate hackathon build). Commit locally when done (`git add pilot PILOT-TASK.md && git commit -m "pilot: live chat extension"`); never add a remote, never push, never create a GitHub repo. Shell: `bash --norc`. Only kill PIDs you started.
+You are a coding agent working in `/workspace/payguard`. Build ONLY the pilot described here, inside `pilot/extension/`. Do not touch `extension/`, `backend/`, `demo/` or `SPEC.md` (that is the separate hackathon build). Commit locally when done (`git add pilot && git -c user.name="PayBrake agent" -c user.email="agent@localhost" commit -m "pilot: live chat extension"`); never add a remote, never push, never create a GitHub repo. Shell: `bash --norc`. Only kill PIDs you started.
 
 ## Why
 Dima's teammate plays a scammer in a real web chat (www.facebook.com/messages, www.facebook.com/marketplace, www.messenger.com) asking for a deposit via PayPal Friends & Family / MobilePay / bank transfer with urgency and "shipping only". The extension must notice the incoming request and show the PayBrake risk card under that message, so we can take screenshots for a hackathon demo. Precision first: silent on normal chats. Nothing is ever typed, clicked or sent in the chat.
