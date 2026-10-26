@@ -161,3 +161,16 @@ test("server addConfidence hint lowers the add bar, never below 0.5", async () =
   const v = await run(ctxOf(them(PHISH)), async () => ({ risky: true, level: "medium", confidence: 0.6, addConfidence: 0.5, signal: "other", reason: "", evidence: ["problem with your delivery"] }), { addConfidence: 0.8 });
   assert.equal(v.llm, "agreed_silent");
 });
+
+test("AI bait signals get their own card explanation and chip", async () => {
+  const prizeText = "You've won a £1,000 prize! Text WIN to 87121 to claim it now.";
+  const prize = await run(ctxOf(them(prizeText)), async () => ({ risky: true, level: "high", confidence: 0.95, addConfidence: 0.5, signal: "prize_bait", reason: "", evidence: [prizeText] }));
+  assert.equal(prize.kind, "risk");
+  assert.deepEqual(prize.signals, ["prize_bait"]);
+  assert.equal(prize.reason, "Prize or fee bait: real prizes never ask you to pay or text a premium number.");
+  const lureText = "Epic Games is giving away 3 months of free Nitro, claim it here: https://dlscord-gift.example/nitro";
+  const lure = await run(ctxOf(them(lureText)), async () => ({ risky: true, level: "high", confidence: 0.95, addConfidence: 0.5, signal: "free_bait", reason: "", evidence: [lureText] }));
+  assert.equal(lure.kind, "risk");
+  assert.ok(lure.signals.includes("free_bait") || lure.source !== "ai", JSON.stringify(lure.signals));
+  assert.equal(payRisk.templateFor(["free_bait"]), "Free-gift bait: free Nitro, giveaways and downloads behind a link are a common scam.");
+});

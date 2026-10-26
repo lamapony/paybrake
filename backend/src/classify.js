@@ -11,7 +11,7 @@ const TYPESAFE_BASE = "https://api.typesafe.ai";
 // Pinned, not the jev-latest alias: the add / clear thresholds were tuned on this version.
 const TYPESAFE_MODEL = "jev-1.14.0";
 const MAX_CHOICES = 255;
-export const SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access", "phishing_link", "fee_via_link", "impersonation", "account_threat", "urgency_pressure", "other"];
+export const SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access", "phishing_link", "fee_via_link", "impersonation", "account_threat", "urgency_pressure", "prize_bait", "free_bait", "other"];
 export const SYSTEM = [
   "You are PayBrake's scam check for one chat or message.",
   "Lines may start with \"Them:\" (the other person: seller, caller or sender) or \"Me:\" (the PayBrake user). Judge only what Them asks for or pushes. A Me line never makes a chat risky.",
@@ -193,23 +193,24 @@ export const SIGNAL_CRITERIA = {
 // Extra yes/no questions for spam the "risky" question scores as plain marketing: premium-rate prize SMS
 // and Discord free-bait lures. Each one can only raise p(risky), and only at or above its own bar.
 // Wording and bars picked on the dev split only (eval/real/exp-typesafe-questions.mjs, RESULTS.md).
+const MONEY_ASKS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access"];
 const TS_ONE = "This is one chat or message. ";
 export const TYPESAFE_EXTRA = {
   premium: {
     at: 0.5,
-    signal: "fee_via_link",
+    signal: "prize_bait",
     question: { type: "noul", instructions: TS_ONE + "Does Them push the user to call or text a premium-rate number or short code (for example 09..., 087..., 0871..., or a 5-digit short code), or to sign up for a paid text service (ringtones, chat lines, adult content, quizzes) charged to the phone bill?",
       criteria: { true: "Them asks the user to call or text a premium-rate number or short code, or to subscribe to a paid text service.", false: "No premium-rate number, short code or paid text service is pushed; normal phone numbers between people." } }
   },
   prize: {
     at: 0.7,
-    signal: "fee_via_link",
+    signal: "prize_bait",
     question: { type: "noul", instructions: TS_ONE + "Does Them tell the user they have won, been chosen for, or can claim a prize, cash, voucher, holiday, free phone or other reward, or invite them into a paid quiz or draw, and tell them to call, text or reply to a number or short code, or open a link, to get it?",
       criteria: { true: "Them announces a win, award, selection, free gift or prize draw and tells the user to call, text, reply or click to claim it.", false: "No prize or reward is claimed, or it is a friend talking about a real win, or a normal shop offer with no claim step." } }
   },
   lure: {
     at: 0.7,
-    signal: "phishing_link",
+    signal: "free_bait",
     question: { type: "noul", instructions: TS_ONE + "Does Them use free bait (free Nitro, a giveaway, an airdrop, free crypto or game items, a game, cheat or file to test, hidden or private channels) to get the user to click an unknown, shortened or lookalike link, join an invite, scan a QR code or download and run a file? Links to the official site of a well-known company (for example its blog or help pages) do not count.",
       criteria: { true: "Free or exclusive bait pushed through an unknown or lookalike link, invite, QR code or file.", false: "Normal chat, an official company page, a link shared for a clear reason, server rules or moderation, no free bait." } }
   }
@@ -268,13 +269,12 @@ async function classifyTypesafe(source, llm, fetchImpl) {
   if (!Number.isFinite(p)) throw llmError("llm shape", 502);
   const base = Math.max(0, Math.min(1, p));
   let prob = base;
-  let lift = null;
+  let bait = null; // the strongest extra question at or above its bar
   for (const [id, x] of Object.entries(TYPESAFE_EXTRA)) {
     const q = Number(answers?.[id]?.noul);
-    if (Number.isFinite(q) && q >= x.at && q > prob) {
-      prob = Math.min(1, q);
-      lift = x;
-    }
+    if (!Number.isFinite(q) || q < x.at) continue;
+    prob = Math.max(prob, Math.min(1, q));
+    if (!bait || q > bait.q) bait = { q, signal: x.signal };
   }
   const risky = prob >= 0.5;
   const picked = answers?.evidence?.choice;
@@ -282,8 +282,9 @@ async function classifyTypesafe(source, llm, fetchImpl) {
   const evidence = risky && quote ? [quote] : [];
   const ok = risky && evidencePasses(evidence, source);
   let signal = SIGNALS.includes(answers?.signal?.choice) ? answers.signal.choice : (ok ? "other" : null);
-  // The main question said "not risky" and an extra question lifted it: name the extra's signal.
-  if (ok && lift && base < 0.5 && (!signal || signal === "other")) signal = lift.signal;
+  // An extra question fired: name its bait signal so the card explains a prize or free-bait scam,
+  // unless the main signal is a concrete money or account ask, which says more.
+  if (ok && bait && !MONEY_ASKS.includes(signal)) signal = bait.signal;
   return {
     risky: ok,
     level: ok ? (prob >= 0.9 ? "high" : "medium") : "none",

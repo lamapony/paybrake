@@ -84,10 +84,27 @@ test("typesafe extra questions: lift p(risky) only at their own bar, and name th
   assert.equal(lifted.risky, true);
   assert.equal(lifted.level, "high");
   assert.equal(lifted.confidence, 0.92);
-  assert.equal(lifted.signal, "fee_via_link");
+  assert.equal(lifted.signal, "prize_bait");
   assert.deepEqual(lifted.evidence, ["You have won a 1000 pound prize! Call 09061701461 now to claim."]);
   // Below its bar (prize 0.7) an extra does nothing: still "not risky" at 1 - 0.2.
   const under = await ask({ premium: { noul: 0.4 }, prize: { noul: 0.69 }, lure: { noul: 0.6 } });
   assert.equal(under.risky, false);
   assert.equal(under.confidence, 0.8);
+});
+
+test("typesafe bait signal: a fired extra names its signal unless the main signal is a concrete money ask", async () => {
+  const SMS = "Them: Claim your free Nitro here before it expires: https://dlscord-gift.example/nitro";
+  const ask = (signal, extra) => classifyText(SMS, { TYPESAFE_API_KEY: KEY }, async () =>
+    answer({ risky: { noul: 0.93 }, signal: { type: "choice", choice: signal }, premium: { noul: 0.01 }, prize: { noul: 0.2 }, ...extra }));
+  // Main question already says risky (0.93) with a vague signal: the fired lure question still names the card.
+  assert.equal((await ask("urgency_pressure", { lure: { noul: 0.88 } })).signal, "free_bait");
+  assert.equal((await ask("phishing_link", { lure: { noul: 0.88 } })).signal, "free_bait");
+  // A concrete money ask wins.
+  assert.equal((await ask("off_platform", { lure: { noul: 0.88 } })).signal, "off_platform");
+  // Under its bar (0.7) the lure question changes nothing.
+  assert.equal((await ask("urgency_pressure", { lure: { noul: 0.6 } })).signal, "urgency_pressure");
+  // Two fired extras: the stronger one names the signal.
+  const both = await ask("other", { premium: { noul: 0.97 }, lure: { noul: 0.75 } });
+  assert.equal(both.signal, "prize_bait");
+  assert.equal(both.confidence, 0.97);
 });
