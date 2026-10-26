@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "PayBrake",
+  "version": "0.1.0",
+  "description": "Brakes before you pay. Flags risky payment asks in a chat and can open a sandbox order.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "http://localhost:8787/*",
+    "http://127.0.0.1:8787/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "PayBrake"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://localhost/*", "http://127.0.0.1/*", "file:///*"],
+      "js": [
+        "lib/brand.js",
+        "lib/tidy.js",
+        "lib/atoms.js",
+        "lib/extract.js",
+        "lib/pay-risk.js",
+        "lib/ask-llm.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["card.css"],
+      "matches": ["http://localhost/*", "http://127.0.0.1/*", "file:///*"]
+    }
+  ]
+}

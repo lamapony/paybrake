@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayBrake settings</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <p class="mark">PayBrake</p>
+    <h1>Settings</h1>
+    <p class="lede">These stay on this device. The override log is not uploaded.</p>
+  </header>
+
+  <form id="opts" class="panel">
+    <label class="field">
+      <span>Backend URL</span>
+      <input id="backend" name="backend" type="url" required spellcheck="false" autocomplete="off" value="http://localhost:8787">
+    </label>
+    <label class="check">
+      <input id="llm" name="llm" type="checkbox">
+      <span>Ask the backend for an AI check (off uses rules only)</span>
+    </label>
+    <label class="check">
+      <input id="debug" name="debug" type="checkbox">
+      <span>Debug HUD on chat pages</span>
+    </label>
+    <div class="row">
+      <button type="submit" class="btn primary" id="save">Save</button>
+      <span id="saved" class="saved" role="status"></span>
+    </div>
+  </form>
+
+  <section class="panel" aria-labelledby="log-title">
+    <div class="log-head">
+      <h2 id="log-title">Override log</h2>
+      <div class="row">
+        <button type="button" class="btn" id="download">Download JSON</button>
+        <button type="button" class="btn ghost" id="clear">Clear</button>
+      </div>
+    </div>
+    <p id="empty" class="empty">No overrides yet.</p>
+    <ol id="log" class="log"></ol>
+  </section>
+</main>
+<script src="options.js"></script>
+</body>
+</html>
