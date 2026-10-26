@@ -113,6 +113,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     var params = new URLSearchParams(location.search);
     var token = params.get("token") || "";
     var cancelled = params.get("cancel") === "1";
+    var isMock = params.get("mock") === "1";
     var tokenNode = document.getElementById("token");
     var button = document.getElementById("approve");
     var status = document.getElementById("status");
@@ -120,9 +121,24 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     var backend = "http://localhost:8787";
     if (location.hostname) backend = location.protocol + "//" + location.hostname + ":8787";
 
+    if (!isMock) {
+      document.title = "Sandbox approval";
+      var banner = document.querySelector(".banner");
+      if (banner) banner.textContent = "SANDBOX · approval return · no payment is taken here";
+      var tag = document.querySelector(".tag");
+      if (tag) tag.textContent = "Sandbox";
+      var intro = document.querySelector(".panel p");
+      if (intro) intro.textContent = "This page is where the sandbox checkout sends you after approval.";
+      button.hidden = true;
+    }
+
     if (cancelled) {
       button.disabled = true;
       status.textContent = "Approval cancelled. Return to the chat.";
+      return;
+    }
+    if (!isMock) {
+      status.textContent = "PayPal sandbox approval done. Go back to the chat and press \"I approved it, capture\".";
       return;
     }
     if (!token) {

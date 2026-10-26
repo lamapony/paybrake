@@ -109,12 +109,23 @@ function logStatus(id, status) {
   console.log(`order ${id} ${status}`);
 }
 
+function publicMessage(error) {
+  const message = String((error && error.message) || "");
+  if (!message) return "bad_request";
+  if (/authorization|bearer |access_token|client_secret/i.test(message)) return "bad_request";
+  return message;
+}
+
 function fail(res, error) {
   if (error && error.status === 413) return send(res, 413, { error: "payload_too_large" });
-  if (error && error.status === 400) return send(res, 400, { error: "bad_request", message: error.message });
+  if (error && error.status === 404) return send(res, 404, { error: "not_found" });
+  if (error && error.status === 400) return send(res, 400, { error: "bad_request", message: publicMessage(error) });
   if (error && error.status === 409) return send(res, 409, { error: error.code || "conflict" });
   if (error && (error.code === "llm_off" || error.status === 503)) return send(res, 503, { error: "llm_off" });
-  if (error && error.status === 502) return send(res, 502, { error: "llm_error" });
+  if (error && error.status === 502) {
+    const code = error.code === "paypal_error" || error.code === "paypal_auth" ? error.code : "llm_error";
+    return send(res, 502, { error: code });
+  }
   return send(res, 500, { error: "internal" });
 }
 
@@ -124,7 +135,7 @@ function createHandler(env = {}, deps = {}) {
       ALLOWED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"
     });
   }
-  const orders = deps.orders || createOrdersPort(env);
+  const orders = deps.orders || createOrdersPort(env, { fetchImpl: deps.fetchImpl, now: deps.now });
   const fetchImpl = deps.fetchImpl || globalThis.fetch;
 
   return async (req, res) => {
@@ -211,13 +222,13 @@ function createHandler(env = {}, deps = {}) {
 
       if (req.method === "GET" && (pathname === "/return" || pathname === "/cancel")) {
         const token = url.searchParams.get("token") || "";
-        if (pathname === "/return" && token && typeof orders.approve === "function") {
+        if (pathname === "/return" && token && orders.mode === "mock" && typeof orders.approve === "function") {
           const approved = await orders.approve(token);
           if (approved) logStatus(approved.orderId, approved.status);
         }
         const dest = new URL(DEMO_RETURN);
         if (token) dest.searchParams.set("token", token);
-        dest.searchParams.set("mock", "1");
+        if (orders.mode === "mock") dest.searchParams.set("mock", "1");
         if (pathname === "/cancel") dest.searchParams.set("cancel", "1");
         res.writeHead(302, { location: dest.toString() });
         res.end();
