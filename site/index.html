@@ -399,7 +399,7 @@ footer a:hover{color:#9ccfff}
       <h2 id="try-h">Try it: the rules engine, live</h2>
       <p class="lede">Pick a seller line, or type one. The box under the message is what these rules return.</p>
       <div class="callout">
-        <p>Simplified demo: the same on-device rules as the extension, running in your browser. Nothing is sent anywhere. Not connected to PayPal.</p>
+        <p>Simplified demo: the extension's on-device rules (v3, in review on branch <code>eval-real-scams</code>; the <code>v0.2.0-test.2</code> download still has the older rules), running in your browser. Rules only, no AI check. Nothing is sent anywhere. Not connected to PayPal.</p>
       </div>
 
       <div class="sim-grid">
@@ -426,7 +426,7 @@ footer a:hover{color:#9ccfff}
 
       <div class="quiz" id="quiz" aria-labelledby="quiz-h">
         <h3 id="quiz-h">Spot the red flag</h3>
-        <p class="lede">Four seller lines. Is it a red flag? Answer, then see what PayBrake's rules do with it, including one case they miss.</p>
+        <p class="lede">Four seller lines. Is it a red flag? Answer, then see what PayBrake's rules do with it, including one red flag they miss.</p>
         <p id="quiz-progress">Message 1 of 4</p>
         <div class="quiz-thread" id="quiz-thread">
           <p class="who-line">Seller</p>
@@ -448,21 +448,27 @@ footer a:hover{color:#9ccfff}
   <section id="problem" aria-labelledby="problem-h">
     <div class="wrap">
       <p class="kicker">Problem</p>
-      <h2 id="problem-h">The payment requests PayBrake looks for.</h2>
+      <h2 id="problem-h">The requests PayBrake looks for.</h2>
       <div class="problem-grid">
         <ul class="quotes" aria-label="Examples of risky requests a seller might send">
           <li><span class="qlab">Friends &amp; Family</span>Just send it as <mark>Friends &amp; Family</mark>, it's easier.</li>
           <li><span class="qlab">Deposit</span>Send a <mark>deposit to hold it</mark> for you.</li>
           <li><span class="qlab">Off-platform</span>Pay by <mark>MobilePay</mark>, <mark>bank transfer</mark> to my <mark>IBAN</mark>, <mark>crypto</mark> or a <mark>gift card</mark>.</li>
           <li><span class="qlab">Pay first</span>You need to <mark>pay before viewing</mark> it.</li>
+          <li><span class="qlab">Codes and card details</span>Send me the <mark>6-digit code</mark> you got by SMS, or <mark>log in with MitID</mark> here.</li>
+          <li><span class="qlab">Suspicious link</span>Receive the money via this link: <mark>paypa1-secure-checkout.example</mark></li>
+          <li><span class="qlab">Fee via link</span>Pay the <mark>49 kr delivery fee</mark> via this link first.</li>
+          <li><span class="qlab">Remote access</span><mark>Install AnyDesk</mark> and I'll help you with the payment.</li>
+          <li><span class="qlab">Posing as a bank</span><mark>This is your bank's fraud team</mark>, your account will be blocked.</li>
           <li><span class="qlab">Pressure</span>Be quick, <mark>several people are asking</mark>.</li>
           <li><span class="qlab">Ship before meet</span>I'm away, <mark>I'll ship it</mark> once you've paid.</li>
         </ul>
         <div class="problem-text">
           <p>People buy bikes and cameras from strangers through <strong>marketplace chats</strong>. Some sellers ask to be paid in a way that skips checkout.</p>
-          <p>The lines on the left are what PayBrake's rules match, in <strong>English and Danish</strong>. The last two, <strong>hurry</strong> and <strong>ship before meeting</strong>, only add to a warning. They never show a card on their own.</p>
+          <p>The lines on the left are what PayBrake's rules match, in <strong>English and Danish</strong>. Codes, card details, suspicious links, fees via a link and remote-access apps are new in rules v3. <strong>Posing as a bank</strong>, <strong>hurry</strong> and <strong>ship before meeting</strong> only add to a warning. They never show a card on their own.</p>
+          <p>The rules only read the other person's messages, so your own reply never sets off a card. With the AI check on, an AI model also reads each chat and can add a card for scams the rules miss.</p>
           <div class="callout">
-            <p>Money sent that way is hard to get back if the item never shows up. PayBrake adds one card under the message that asked for it.</p>
+            <p>Money sent that way, or a code handed over, is hard to get back. PayBrake adds one card under the message that asked for it.</p>
           </div>
         </div>
       </div>
@@ -474,7 +480,7 @@ footer a:hover{color:#9ccfff}
     <div class="wrap">
       <p class="kicker">How it works</p>
       <h2 id="how-h">Rules find the request. You decide what happens next.</h2>
-      <p class="lede">Steps 1 and 2 run in your browser. Step 3 calls the backend, and only after you click. PayBrake does not type in the chat or click anything on the page.</p>
+      <p class="lede">The rules in steps 1 and 2 run in your browser. With the AI check on and a server that has AI, a masked copy of the chat also goes to that server for a second opinion. Step 3 calls the backend, and only after you click. PayBrake does not type in the chat or click anything on the page.</p>
       <ol class="steps">
         <li class="step">
           <span class="step-n" aria-hidden="true">01</span>
@@ -482,6 +488,7 @@ footer a:hover{color:#9ccfff}
           <p>The extension checks the open chat against regex "atoms" in English and Danish. No match, no card.</p>
           <ul>
             <li><strong>Weak signals</strong> like hurry or ships-before-meet never show a card on their own.</li>
+            <li><strong>AI check:</strong> about a second after the chat stops changing, the AI's answer can add, keep or (only when very sure) remove the card. If it doesn't answer within 6 seconds, the card says <span class="q">"AI check unavailable"</span> and the rules result stands.</li>
             <li><strong>A veto keeps it silent:</strong> <span class="q">"pay when you pick it up"</span>, <span class="q">"use the platform checkout"</span>, or Goods &amp; Services the seller agreed to.</li>
           </ul>
         </li>
@@ -571,9 +578,9 @@ footer a:hover{color:#9ccfff}
         <ul class="board board-end">
           <li class="frame">
             <figure style="margin:0">
-              <div class="shot"><img src="img/options.webp" width="1200" height="750" loading="lazy" decoding="async"
-                alt="PayBrake settings page: Backend URL field set to the hosted test server https://paybrake-demo.spbabinov.workers.dev with a note that it is test orders only, buttons 'Use test server' and 'Use localhost:8787', unchecked boxes 'Ask the backend for an AI check (off uses rules only)' and 'Debug HUD on chat pages', a Save button, and an empty Override log with Download JSON and Clear buttons."></div>
-              <figcaption><b><span class="fn">C1</span>Settings</b>Backend URL (hosted test server by default, one click for localhost), AI check toggle (off means rules only), debug HUD, and the override log with Download JSON and Clear.</figcaption>
+              <div class="shot"><img src="img/options.webp" width="768" height="1095" loading="lazy" decoding="async"
+                alt="PayBrake settings page: Backend URL field set to the hosted test server https://paybrake-demo.spbabinov.workers.dev with a note that it is test orders only, buttons 'Use test server' and 'Use localhost:8787', a checked box 'AI check on all chats (on by default in this demo build)' with a plain explanation of what is masked and sent, a status line saying the hosted test server has no AI provider so the AI check is off there and nothing is sent, an unchecked 'Debug HUD on chat pages' box, a Save button, and an Override log with Download JSON and Clear buttons showing one example entry: override, high, friends_family and upfront_deposit, 'Send 500 kr deposit via PayPal Friends &amp; Family to hold it'."></div>
+              <figcaption><b><span class="fn">C1</span>Settings</b>Backend URL (hosted test server by default), the "AI check on all chats" toggle (on by default) with what gets masked and sent, a line that shows whether this server has AI (the hosted test server doesn't), debug HUD, and the override log. Build: branch <code>eval-real-scams</code>.</figcaption>
             </figure>
           </li>
           <li class="frame">
@@ -596,6 +603,19 @@ footer a:hover{color:#9ccfff}
 
       <p class="cap-all">All screenshots: the real extension on our demo page, fictional names, backend in mock mode. No real money moves.</p>
 
+      <div class="evals" aria-labelledby="eval-real-h">
+        <div>
+          <h3 id="eval-real-h">On public scam and normal messages</h3>
+          <p>Held-out test split of 1,573 messages from four public datasets: real SMS, real Discord chat, and two synthetic sets (phone-scam dialogues and ScamGuardBench). <strong>None of them are marketplace chats.</strong> Rules v3 and the AI check (gpt-4o-mini) were tuned on a separate dev split. The AI account ran out of credit during the run, so 305 of the 1,573 test messages were scored with rules only, as the extension does when the AI doesn't answer.</p>
+        </div>
+        <ul class="nums">
+          <li><span class="v">~85%</span><span class="k">of scam messages got a card, rules + AI check (606 / 713)</span></li>
+          <li><span class="v">~4.5%</span><span class="k">of normal messages got a card, rules + AI check (39 / 860)</span></li>
+          <li><span class="v">46%</span><span class="k">of scam messages got a card from the rules alone, with 0.8% of normal messages flagged</span></li>
+          <li><span class="v">16%</span><span class="k">normal messages flagged on ScamGuardBench's tricky "looks scary but legit" set</span></li>
+        </ul>
+      </div>
+
       <div class="evals" aria-labelledby="eval-h">
         <div>
           <h3 id="eval-h">On our own 30 synthetic chats</h3>
@@ -605,7 +625,7 @@ footer a:hover{color:#9ccfff}
           <li><span class="v">30</span><span class="k">synthetic chats we wrote</span></li>
           <li><span class="v">16 / 16</span><span class="k">risky chats got a card (recall 1.0)</span></li>
           <li><span class="v">0 / 14</span><span class="k">safe chats got a card (precision 1.0)</span></li>
-          <li><span class="v">102</span><span class="k">offline tests (npm test)</span></li>
+          <li><span class="v">143</span><span class="k">offline tests (npm test, branch eval-real-scams)</span></li>
         </ul>
       </div>
     </div>
@@ -648,20 +668,23 @@ footer a:hover{color:#9ccfff}
           <p class="finding"><strong>Finding:</strong> the published <code>@paypal/agent-toolkit</code> 1.11.0 <code>create_order</code> has no payee field and is USD only, so calls run through the REST adapter.</p>
         </article>
         <article class="panel ai">
-          <h3>Optional AI check</h3>
+          <h3>AI check on all chats</h3>
           <ul>
             <li>Backend <code>/api/classify</code> calls an LLM through OpenRouter (default <code>openai/gpt-4o-mini</code>, configurable) or any OpenAI-compatible endpoint, temperature 0, JSON output.</li>
-            <li><strong>Runs only after the rules fire.</strong> It can confirm or lower a risk, never raise one.</li>
-            <li>Every evidence quote must be a verbatim substring of the chat, or it is ignored.</li>
-            <li>An error or a timeout caps the result at medium.</li>
-            <li><strong>Off by default</strong> (rules only). Not active on the hosted demo, which has no AI key.</li>
+            <li><strong>Runs on every chat</strong>, not only after the rules fire, so it <strong>can add a card</strong> the rules missed. It can remove a rules card only when it is very sure (confidence 0.85 or more).</li>
+            <li>Every evidence quote must be a verbatim substring of the other person's messages, or it is ignored.</li>
+            <li>No answer within 6 seconds, or an error: the rules result stands and the card says <strong>"AI check unavailable"</strong>.</li>
+            <li><strong>On by default</strong> in this demo build, and you can turn it off in Settings. <strong>Not active on the hosted demo</strong>, which has no AI key: there the card says "AI check off (mock server)".</li>
+            <li>In review on branch <code>eval-real-scams</code>; not in the <code>v0.2.0-test.2</code> download yet. It costs about $0.10 per 1,000 checks, and an answer takes about 2 seconds (3.5 s at p95).</li>
           </ul>
         </article>
         <article class="panel priv">
           <h3>Privacy</h3>
           <ul>
-            <li>Detection runs in the extension, on your device.</li>
-            <li>Chat text leaves the browser only if you turn on the AI check. Then your configured backend sends it to the model provider.</li>
+            <li>The rules run in the extension, on your device.</li>
+            <li>With the AI check on (the default in this demo build), each chat goes to your configured server, which passes it to its AI provider. Before it leaves the browser, emails, phone numbers, card numbers, IBANs (all but the last 4), CPR and ID numbers, and one-time codes are masked. The other person's messages are sent, plus your newest message for context.</li>
+            <li><strong>Names, street addresses and other free text are not masked.</strong> The masking is pattern-based and can miss things.</li>
+            <li>On a server without AI, such as the hosted test server, no chat text is sent. With the AI check off, no chat text leaves the browser.</li>
             <li>"Switch to a PayPal order" sends item, amount, currency, seller email and the verdict to the backend.</li>
             <li>Secrets live only in <code>backend/.env</code>, never in the extension.</li>
             <li>The override log stays in <code>chrome.storage</code> on your device (max 200 entries). You can download or clear it.</li>
@@ -682,6 +705,7 @@ footer a:hover{color:#9ccfff}
           <h3>Limits</h3>
           <ul>
             <li>English and Danish phrases only.</li>
+            <li>The AI check flags some normal messages: about 4.5% on our public test data, more on bank and delivery notices.</li>
             <li>Works on our demo page (<code>data-pb-*</code> attributes). No adapters for real marketplaces yet.</li>
             <li>Sandbox only. No real money.</li>
             <li>Local mock orders live in memory. The hosted demo keeps test orders for 24 hours.</li>
@@ -808,6 +832,7 @@ npm run eval</code></pre>
 <script src="js/engine/tidy.js" defer></script>
 <script src="js/engine/atoms.js" defer></script>
 <script src="js/engine/extract.js" defer></script>
+<script src="js/engine/redact.js" defer></script>
 <script src="js/engine/pay-risk.js" defer></script>
 <script src="js/sim.js" defer></script>
 <script src="js/quiz.js" defer></script>

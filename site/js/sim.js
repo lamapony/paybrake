@@ -1,14 +1,10 @@
 (function () {
   const DEMO_URL = "https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1";
-  const QUIET = "PayBrake stays quiet: no risky payment ask found.";
+  const QUIET = "The rules stay quiet: no risky ask found.";
   const PRESETS = [
     {
       label: "Friends & Family deposit",
       text: "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow"
-    },
-    {
-      label: "PayPal.me link",
-      text: "Pay me at paypal.me/jonas-bike for the 1,800 kr. Today only."
     },
     {
       label: "MobilePay or bank transfer",
@@ -17,6 +13,22 @@
     {
       label: "Gift card",
       text: "Buy a 100 EUR gift card and send me the code. That is the only way I can take payment."
+    },
+    {
+      label: "Asks for an SMS code",
+      text: "Hi, this is the MobilePay security team. To receive the 1,800 kr, send me the 6-digit code you just got by SMS."
+    },
+    {
+      label: "Lookalike payment link",
+      text: "I have paid. Receive the money via this link: paypa1-secure-checkout.example/claim"
+    },
+    {
+      label: "Delivery fee via link",
+      text: "Before I can ship, pay the 49 kr delivery fee via this link: postnord-parcel.top/pay"
+    },
+    {
+      label: "Remote-access app",
+      text: "Install AnyDesk and I will help you set up the payment."
     },
     {
       label: "Pay on pickup",
@@ -87,7 +99,15 @@
     const signals = (result && result.signals) || [];
     if (isRisk(result)) {
       const parts = [];
-      if (signals.includes("friends_family") && signals.includes("upfront_deposit")) {
+      if (signals.includes("remote_access")) {
+        parts.push("A remote-access app lets a stranger control your device, so it shows a card on its own.");
+      } else if (signals.includes("credential_request")) {
+        parts.push("Asking for a code, card details or a login is enough for a card on its own.");
+      } else if (signals.includes("fee_via_link")) {
+        parts.push("A fee you must pay before you get something is enough for a card on its own.");
+      } else if (signals.includes("phishing_link")) {
+        parts.push("The link goes to a lookalike or odd address and asks you to pay or claim, so the card shows.");
+      } else if (signals.includes("friends_family") && signals.includes("upfront_deposit")) {
         parts.push("Friends & Family plus an upfront deposit is a concrete payment ask, so the card shows.");
       } else if (signals.includes("friends_family")) {
         parts.push("Friends & Family as the way to pay is a concrete payment ask, so the card shows.");
@@ -104,21 +124,19 @@
       }
       if (signals.includes("urgency_pressure")) parts.push("Pressure to hurry is only an extra chip.");
       if (signals.includes("ship_before_meet")) parts.push("Shipping before you meet is only an extra chip.");
+      if (signals.includes("impersonation")) parts.push("Posing as a bank or support team is only an extra chip.");
       return parts.join(" ");
     }
     if (result && result.silentReason === "veto") {
       return "A pickup or checkout phrase is a veto, so the rules stay quiet.";
     }
     if (result && result.silentReason === "weak_only") {
-      return "Only a weak signal matched, such as hurry or shipping. Those never open a card on their own.";
+      return "Only a weak signal matched, such as hurry, shipping or 'this is your bank'. Those never open a card on their own.";
     }
     if (result && result.silentReason === "short") {
       return "Under 20 characters after tidy-up, so the rules stay quiet.";
     }
-    if (/paypa1|\.example\b|https?:\/\//i.test(text || "")) {
-      return "No payment-ask phrase matched. A lookalike web address is not one of these rules.";
-    }
-    return "No risky payment phrase matched, so PayBrake stays quiet.";
+    return "No rule matched, so the rules stay quiet. In the extension, the AI check can still add a card when it is set up.";
   }
 
   function warningIcon() {

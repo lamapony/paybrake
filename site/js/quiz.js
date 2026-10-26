@@ -3,8 +3,9 @@
     { text: "Send 500 kr as Friends & Family. Several people are asking.", risky: true },
     { text: "I can post it with tracked platform postage. You pay through the marketplace checkout.", risky: false },
     { text: "Pay with this link: paypa1-secure-checkout.example/pay", risky: true,
-      note: "This one is a red flag even though PayBrake stays quiet: \"paypa1\" is a lookalike address. PayBrake's rules read how you are asked to pay; they do not check links, so don't rely on it here." },
-    { text: "Send 2,400 kr on MobilePay. Bank transfer works too.", risky: true }
+      note: "\"paypa1\" is a lookalike of \"paypal\", and the message asks you to pay through it. Since rules v3, a lookalike or odd link next to \"pay\", \"claim\" or \"log in\" shows a card." },
+    { text: "Congratulations, you won a 2,000 kr prize! Call 9090 1234 today to claim it.", risky: true,
+      note: "A red flag the rules miss: there is no link, code or payment ask in it, just a number to call. The AI check in the extension catches most messages like this. This page runs the rules only." }
   ];
 
   const progress = document.getElementById("quiz-progress");
