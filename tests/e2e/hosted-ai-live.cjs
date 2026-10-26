@@ -1,7 +1,7 @@
 // Live check of the AI check on the hosted demo Worker (Typesafe).
 // Loads extension/ unpacked in headless Chromium (its default server is the hosted Worker) and checks:
 // /health says typesafe; the bike scam chat gets a card tagged "AI checked"; the safe lamp chat and
-// the safe-chats page get no card; a prize-spam chat that the rules miss gets an AI-added card.
+// the safe-chats page get no card; a "You've won, text WIN to 87121" SMS gets a card; a fee chat that the rules miss gets an AI-added card.
 // Screenshots go to shots/ai-live/. Run: node tests/e2e/hosted-ai-live.cjs
 const path = require("path");
 const fs = require("fs");
@@ -85,6 +85,20 @@ async function run() {
     console.log(added ? "AI-only chat card: " + aiText.slice(0, 160) : "AI-only chat: no card");
     await safe.locator("#thread-ai-only").scrollIntoViewIfNeeded();
     await safe.screenshot({ path: path.join(shots, "04-ai-only-scam.png") });
+    // Prize SMS spam with a premium short code (caught by the extra Typesafe questions).
+    await safe.evaluate(() => {
+      const s = document.createElement("section");
+      s.className = "card";
+      s.id = "thread-prize";
+      s.setAttribute("data-pb-thread", "");
+      s.innerHTML = '<div class="msg in"><div class="bubble" data-pb-msg data-from="seller">You\'ve won a £1,000 prize! Text WIN to 87121 to claim it now.</div></div>';
+      document.querySelector("main, body").prepend(s);
+    });
+    const prize = safe.locator("#thread-prize #pb-card");
+    await prize.waitFor({ state: "visible", timeout: 15000 });
+    console.log("prize SMS card: " + (await prize.innerText()).replace(/\s+/g, " ").slice(0, 160));
+    await safe.locator("#thread-prize").scrollIntoViewIfNeeded();
+    await safe.screenshot({ path: path.join(shots, "05-prize-sms.png") });
     console.log("classify statuses:", JSON.stringify(classify));
     console.log("hosted AI live check passed" + (added ? "" : " (AI-only card not shown)"));
   } finally {

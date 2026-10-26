@@ -72,3 +72,22 @@ test("typesafe error is 502 without the key or body; fallback to OpenRouter when
   assert.ok(calls[1].startsWith("https://openrouter.ai/api/v1"));
   assert.equal(out.risky, true);
 });
+
+test("typesafe extra questions: lift p(risky) only at their own bar, and name the signal", async () => {
+  const SMS = "Them: You have won a 1000 pound prize! Call 09061701461 now to claim.";
+  const ask = (extra) => classifyText(SMS, { TYPESAFE_API_KEY: KEY }, async (url, init) => {
+    const q = JSON.parse(init.body).questions;
+    assert.deepEqual(["premium", "prize", "lure"].filter((k) => q[k] && q[k].type === "noul"), ["premium", "prize", "lure"]);
+    return answer({ risky: { type: "noul", noul: 0.2 }, signal: { type: "choice", choice: "other" }, ...extra });
+  });
+  const lifted = await ask({ premium: { noul: 0.3 }, prize: { noul: 0.92 }, lure: { noul: 0.1 } });
+  assert.equal(lifted.risky, true);
+  assert.equal(lifted.level, "high");
+  assert.equal(lifted.confidence, 0.92);
+  assert.equal(lifted.signal, "fee_via_link");
+  assert.deepEqual(lifted.evidence, ["You have won a 1000 pound prize! Call 09061701461 now to claim."]);
+  // Below its bar (prize 0.7) an extra does nothing: still "not risky" at 1 - 0.2.
+  const under = await ask({ premium: { noul: 0.4 }, prize: { noul: 0.69 }, lure: { noul: 0.6 } });
+  assert.equal(under.risky, false);
+  assert.equal(under.confidence, 0.8);
+});

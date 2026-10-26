@@ -2,7 +2,11 @@
 
 Date: 26 Oct 2026. Branch `eval-real-scams` (from `tester-friendly`). Harness: `eval/real/`.
 
-**Latest: rules v3 + the AI check on Typesafe (jev-1.14.0), see [the Typesafe section](#v3--typesafe-ai-replaces-openrouter-as-the-ai-provider). Before that: rules v3 + OpenRouter, see [the v3 section](#v3-new-rules-and-the-ai-check-on-all-chats).** The sections before it describe v1/v2 and are kept as the baseline.
+**Latest (headline): rules v3 + Typesafe AI (jev-1.14.0) with the extra prize/premium/lure questions: test precision 0.977, recall 0.846,
+F1 0.907, false alarms 14 of 860 (1.6%) as labelled, of which 2 are spam that the dataset mislabeled as legit (see
+[the headline section](#headline-rules-v3--typesafe-with-extra-questions-adopted-26-oct)).** Before that: Typesafe with the risky question only
+(P 0.975, R 0.698, FA 1.5%, [Typesafe section](#v3--typesafe-ai-replaces-openrouter-as-the-ai-provider)), and rules v3 + OpenRouter
+([v3 section](#v3-new-rules-and-the-ai-check-on-all-chats)). The v1/v2 sections are kept as the baseline.
 
 ## What we tested
 
@@ -237,6 +241,37 @@ product example, not by data: the promo-page quiz message "Pay with this link: p
 5. **Labels.** Some dataset labels are debatable (family money requests), and none of this data is marketplace chat.
 6. **SMS prize spam** (premium-rate numbers, no link or payment ask) is still out of scope for the rules. Only the AI catches it.
 
+## Headline: rules v3 + Typesafe with extra questions (adopted 26 Oct)
+
+Test split (1,573 messages, run once with this setup; dev-tuned, see the section below). Shipped in `backend/src/classify.js`
+(`TYPESAFE_EXTRA`) and on the hosted demo Worker.
+
+| test split, rules v3 + Typesafe jev-1.14.0 | Precision | Recall | F1 | False alarms |
+|---|---|---|---|---|
+| risky question only (previous) | 0.975 | 0.698 | 0.814 | 13 / 860 (1.5%) |
+| **+ premium, prize and lure questions (now)** | **0.977** | **0.846** | **0.907** | **14 / 860 (1.6%) as labelled** |
+| same, with the 2 mislabeled items counted as spam | 0.981 | 0.846 | 0.909 | 12 / 858 (1.4%) |
+
+TP 603, FP 14, FN 110, TN 846 as labelled. **The 2 mislabeled items** (ScamGuardBench rows labelled `legit_other`, which are spam):
+1. `scamguardbench:uci_sms:uci_sms-03443`: "Get a FREE mobile video player FREE movie. To collect text GO to 89105. Its free! Extra films
+   can be ordered t's and c's apply. 18 yrs only" (premium short-code SMS spam; it comes from the UCI SMS spam corpus).
+2. `scamguardbench:phishing_email:phishing_email-07218`: "dvd x copy platinum 4.0.38 - $19.95 symantec norton ghost 9.0 - $14.95
+   http://loafed.wxget.com/ …" (pirated-software spam email with a link).
+
+So real false alarms do not rise (13 → 12 once those two are counted as spam). The other 12: 7 `family_money_request` legit chats
+(2 of them rules hits), 4 other ScamGuardBench legit rows, 1 Discord clean chat; plus 2 rules hits in scam dialogues (delivery,
+telemarketing). All 31 test scams that ask for money are still caught.
+
+| dataset (test) | P before → now | R before → now | false alarms before → now |
+|---|---|---|---|
+| SMS spam | 1.00 → 1.00 | 0.45 → 0.83 | 0 → 0 |
+| Discord | 0.97 → 0.99 | 0.47 → 0.55 | 2 → 1 |
+| Scam dialogues | 0.99 → 0.99 | 0.98 → 0.98 | 2 → 2 |
+| ScamGuardBench | 0.89 → 0.87 | 1.00 → 0.99 | 9 → 11 (2 mislabeled) |
+
+Latency p50 71 ms, p95 120 ms, max 323 ms; 0 failed calls. Cost: 2.51 M input tokens per test run (~1,600 per chat with the extra
+questions) ≈ $0.105, about $0.07 per 1,000 chats.
+
 ## v3 + Typesafe AI (replaces OpenRouter as the AI provider)
 
 Date: 26 Oct 2026. Same rules v3, same test split, same redaction and speaker labels. Only the AI provider changed.
@@ -304,12 +339,12 @@ On the 1,268 rows where OpenRouter did answer: Typesafe P 0.98 / R 0.65 / FPR 0.
 - **Cost:** 1.78 M input tokens for the full test run (~1,150 tokens per chat including the questions) = **about $0.075**, i.e. about
   $0.05 per 1,000 chats. All Typesafe runs today (3 dev, 1 test, probes) were about 7.2 M tokens ≈ $0.30. Typesafe's API does not
   report spend, so this is tokens × list price.
-- Not done: a prompt revision to bring back the prize-spam recall. It would need dev-only tuning and a new test measurement.
+- Prize-spam recall: fixed by the extra questions (see the headline section).
 
 Reproduce: `LLM_PROVIDER=typesafe TYPESAFE_API_KEY=… node eval/real/run-llm-all.mjs --split=dev --n=all --sweep`, then
-`--split=test --n=all`. Add `TYPESAFE_MODEL=jev-1.13.0` to compare versions. Results: `results/llm-all-v3-test-all-typesafe-jev-1.14.0.json`.
+`--split=test --n=all`. Add `TYPESAFE_MODEL=jev-1.13.0` to compare versions. Results (risky question only): `results/llm-all-v3-test-all-typesafe-jev-1.14.0-risky-only.json`.
 
-## Try: extra Typesafe questions for SMS prize spam and Discord lures (26 Oct). Rejected; setup unchanged
+## Extra Typesafe questions for SMS prize spam and Discord lures (26 Oct): how they were picked
 
 Goal: catch more SMS prize/premium-rate spam and Discord free-bait lures without more false alarms. The rule set beforehand was:
 iterate on dev only, measure test once, and keep the change only if test false alarms stay ≤ 13 (1.5%) and precision ≥ 0.97.
@@ -333,7 +368,7 @@ The one extra dev false alarm in `risky2`/`lure` was a real discord.com blog lin
 | test split, rules v3 + Typesafe jev-1.14.0 | P | R | F1 | false alarms |
 |---|---|---|---|---|
 | current setup | 0.975 | 0.698 | 0.814 | 13 (1.5%) |
-| + extra questions | 0.977 | 0.846 | 0.907 | **14 (1.6%)**: fails the ≤ 13 bar |
+| + extra questions | 0.977 | 0.846 | 0.907 | **14 (1.6%)** as labelled; 12 with the 2 mislabeled items fixed |
 
 Per dataset with the extras: SMS spam recall 0.45 → 0.83 (96 more caught, 0 false alarms), Discord 0.47 → 0.55 (13 more,
 false alarms 2 → 1), scam dialogues and ScamGuardBench unchanged in recall. The net +1 false alarm is two new ScamGuardBench
@@ -341,9 +376,10 @@ false alarms 2 → 1), scam dialogues and ScamGuardBench unchanged in recall. Th
 `uci_sms-03443` "Get a FREE mobile video player FREE movie. To collect text GO to 89105…" and `phishing_email-07218`,
 a cheap pirated-software email with a link.
 
-Decision: rejected under the agreed bar, so the production questions stay as before. The variant is saved as
-`eval/real/experiments/typesafe-extra-questions.patch` (classify.js + harness + one unit test; `git apply` to re-enable).
-Results: `results/llm-all-v3-dev-all-typesafe-jev-1.14.0-extra.json`, `results/llm-all-v3-test-all-typesafe-jev-1.14.0-extra-REJECTED.json`.
+Decision: first rejected under the strict ≤ 13 bar, then **adopted by Dima (26 Oct)** because the 14th false alarm is a
+mislabeled spam row, so real false alarms do not rise. The change is in `backend/src/classify.js`; the patch that was applied is kept as
+`eval/real/experiments/typesafe-extra-questions.patch`. Results: `results/llm-all-v3-dev-all-typesafe-jev-1.14.0.json`,
+`results/llm-all-v3-test-all-typesafe-jev-1.14.0.json` (the risky-only runs are the `-risky-only.json` files).
 The test split has now been seen by this variant, so any further tuning needs a fresh holdout.
 
 ## Error analysis (v1 rules; examples from the dev split unless marked)
