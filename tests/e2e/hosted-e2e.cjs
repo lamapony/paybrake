@@ -1,7 +1,7 @@
 // Hosted end-to-end: the tester path, nothing local.
 // Unzips dist/paybrake-extension.zip, loads that folder in Chromium, and checks:
 // install -> welcome tab -> "Try the demo store" -> hosted demo -> PayBrake card ->
-// protected order -> mock approval -> capture. Screenshots at 1280 wide go to shots/tester/.
+// PayPal order -> mock approval -> capture. Screenshots at 1280 wide go to shots/tester-v2/ (PB_SHOTS overrides).
 // Run: npm run pack:extension && npm run e2e:hosted
 const path = require("path");
 const fs = require("fs");
@@ -17,7 +17,7 @@ try {
 
 const root = path.resolve(__dirname, "..", "..");
 const zip = path.join(root, "dist", "paybrake-extension.zip");
-const shots = path.join(root, "shots", "tester");
+const shots = path.join(root, "shots", process.env.PB_SHOTS || "tester-v2");
 const fallbackChrome = "/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome";
 const origin = "https://paybrake-demo.spbabinov.workers.dev"; // must match extension/lib/config.js
 const W = 1280;
@@ -99,13 +99,16 @@ async function run() {
     const text = await card.innerText();
     if (!/High risk/.test(text)) throw new Error("card did not say High risk: " + text.slice(0, 200));
     if (await store.locator("#pb-missing").count()) throw new Error("'not installed' hint shown while extension runs");
+    const label = (await store.locator("#thread-bike #pb-protect").innerText()).trim();
+    if (label !== "Switch to a PayPal order") throw new Error("protect button label is " + label);
+    if (/protected/i.test(text)) throw new Error("card overclaims protection: " + text.slice(0, 200));
     await card.scrollIntoViewIfNeeded();
     await shot(store, "02-demo-intervention-1280.png");
 
-    // 4. Move to protected order -> MOCK order from the hosted backend.
+    // 4. Switch to a PayPal order -> MOCK order from the hosted backend.
     await store.locator("#thread-bike #pb-protect").click();
     await store.locator("#thread-bike #pb-foot").getByText(/MOCK-/).waitFor({ timeout: 10000 });
-    await shot(store, "03-protected-order-1280.png");
+    await shot(store, "03-paypal-order-1280.png");
 
     // 5. Open approval -> Approve (mock) on the hosted return page.
     const open = store.locator("#thread-bike").getByRole("link", { name: "Open approval" });

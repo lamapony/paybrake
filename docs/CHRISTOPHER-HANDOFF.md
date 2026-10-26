@@ -50,7 +50,7 @@ Run `npm run dev:backend`. Check `http://127.0.0.1:8787/health` shows `"paypal":
 
 The demo payee has to be the sandbox Business email. The bike thread has no email in the messages, so the extension sends the attribute. In `demo/marketplace.html`, on `#thread-bike`, change `data-pb-seller-email` from `jonas.holm@example.com` to that Business email. The card input is hidden while the attribute is set. The camera thread is `#thread-camera` if you use that one instead.
 
-Then `npm run serve:demo`, open `http://localhost:8080/demo/marketplace.html?live=1`, and press **Move to protected PayPal order**. **Open approval** is the PayPal sandbox page. Log in as the Personal buyer, approve, go back to the chat, and press **I approved it, capture**.
+Then `npm run serve:demo`, open `http://localhost:8080/demo/marketplace.html?live=1`, and press **Switch to a PayPal order**. **Open approval** is the PayPal sandbox page. Log in as the Personal buyer, approve, go back to the chat, and press **I approved it, capture**.
 
 Or, with the backend already running, one create (use the Business email):
 

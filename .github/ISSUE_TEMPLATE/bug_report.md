@@ -6,7 +6,7 @@ labels: bug
 ---
 
 **What happened?**
-<!-- One or two sentences. Example: "Clicked Move to protected PayPal order and nothing happened." -->
+<!-- One or two sentences. Example: "Clicked Switch to a PayPal order and nothing happened." -->
 
 **What did you expect?**
 
