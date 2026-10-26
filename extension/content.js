@@ -499,7 +499,7 @@
       capture.addEventListener("click", () => captureOrder(session, foot));
       actions.append(open, capture);
     } else {
-      const protect = el("button", "btn btn-primary", "Move to protected PayPal order");
+      const protect = el("button", "btn btn-primary", "Switch to a PayPal order");
       protect.type = "button";
       protect.id = "pb-protect";
       const anyway = el("button", "btn btn-ghost", "Pay anyway");
