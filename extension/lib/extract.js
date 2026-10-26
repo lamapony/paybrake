@@ -15,11 +15,12 @@ function parseLocalizedNumber(raw) {
 function currencyOf(raw) {
   if (/€|eur|euro/i.test(raw)) return "EUR";
   if (/\$|usd/i.test(raw)) return "USD";
+  if (/£|gbp|pound/i.test(raw)) return "GBP";
   return "DKK";
 }
 
 const NUM = String.raw`\d{1,3}(?:[ .,]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?`;
-const CUR = String.raw`kr\.?|kroner|dkk|eur|euro|usd|€|\$`;
+const CUR = String.raw`kr\.?|kroner|dkk|eur|euro|usd|€|\$|£|gbp|pounds?`;
 const AMOUNT_RE = new RegExp(
   String.raw`(?<![\p{L}\p{N}])(?:(?:${CUR})\s*(${NUM})|(${NUM})\s*(?:${CUR}))(?![\p{L}\p{N}])`,
   "giu"
