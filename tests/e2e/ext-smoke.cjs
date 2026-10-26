@@ -117,6 +117,10 @@ async function run() {
     let worker = context.serviceWorkers()[0];
     if (!worker) worker = await context.waitForEvent("serviceworker", { timeout: 10000 });
     const extensionId = new URL(worker.url()).host;
+    // The extension defaults to the hosted test server; this smoke runs local servers.
+    await worker.evaluate(async () => {
+      await chrome.storage.local.set({ pb_opts: { backendUrl: "http://localhost:8787", llm: false, debug: false } });
+    });
 
     const page = context.pages()[0] || await context.newPage();
     await page.setViewportSize({ width: 1280, height: 800 });

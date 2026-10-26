@@ -12,13 +12,19 @@
     <p class="mark">PayBrake</p>
     <h1>Settings</h1>
     <p class="lede">These stay on this device. The override log is not uploaded.</p>
+    <p class="lede"><a href="welcome.html">Welcome page and demo store</a></p>
   </header>
 
   <form id="opts" class="panel">
     <label class="field">
       <span>Backend URL</span>
-      <input id="backend" name="backend" type="url" required spellcheck="false" autocomplete="off" value="http://localhost:8787">
+      <input id="backend" name="backend" type="url" required spellcheck="false" autocomplete="off" value="https://paybrake-demo.spbabinov.workers.dev">
     </label>
+    <p class="hint">Default is the free PayBrake test server (test orders only, no real money). Developers running <code>npm run dev:backend</code> can switch to localhost.</p>
+    <div class="row">
+      <button type="button" class="btn" id="use-hosted">Use test server</button>
+      <button type="button" class="btn ghost" id="use-local">Use localhost:8787</button>
+    </div>
     <label class="check">
       <input id="llm" name="llm" type="checkbox">
       <span>Ask the backend for an AI check (off uses rules only)</span>
@@ -45,6 +51,7 @@
     <ol id="log" class="log"></ol>
   </section>
 </main>
+<script src="lib/config.js"></script>
 <script src="options.js"></script>
 </body>
 </html>

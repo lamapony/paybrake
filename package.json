@@ -17,7 +17,12 @@
     "dev:backend": "node backend/src/server.js",
     "serve:demo": "node scripts/serve.mjs",
     "shots": "node scripts/shot-demo.cjs",
-    "e2e": "node tests/e2e/ext-smoke.cjs"
+    "e2e": "node tests/e2e/ext-smoke.cjs",
+    "pack:extension": "node scripts/pack-extension.mjs",
+    "hosted:build": "node scripts/build-hosted.mjs",
+    "hosted:deploy": "node scripts/build-hosted.mjs && cd hosted && npx wrangler deploy",
+    "hosted:dev": "node scripts/build-hosted.mjs && cd hosted && npx wrangler dev",
+    "e2e:hosted": "node tests/e2e/hosted-e2e.cjs"
   },
   "optionalDependencies": {
     "playwright-core": "1.63.0"

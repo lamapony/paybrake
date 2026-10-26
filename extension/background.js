@@ -1,6 +1,7 @@
 /* PayBrake service worker. Classic script: importScripts, not type:module.
    Load order matches extension/lib/index.js. Do not import that ESM file. */
 importScripts(
+  "lib/config.js",
   "lib/brand.js",
   "lib/tidy.js",
   "lib/atoms.js",
@@ -11,8 +12,8 @@ importScripts(
 
 const LOG_MAX = 200;
 const TTL_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_BACKEND = "http://localhost:8787";
-const FRIENDLY = "Could not reach PayBrake. Start the backend and try again.";
+const DEFAULT_BACKEND = globalThis.pbConfig.DEFAULT_BACKEND;
+const FRIENDLY = "Could not reach the PayBrake server. Check your internet connection and try again.";
 
 const memory = new Map();
 let logQueue = Promise.resolve();
@@ -262,4 +263,17 @@ chrome.runtime.onMessage.addListener((message, _sender, respond) => {
     respond({ ok: false, error: friendly(error) });
   });
   return true;
+});
+
+// First run: open a short welcome tab. The toolbar icon opens it again.
+function openWelcome() {
+  return chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
+}
+
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details && details.reason === "install") openWelcome();
+});
+
+chrome.action.onClicked.addListener(() => {
+  openWelcome();
 });

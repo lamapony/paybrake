@@ -4,6 +4,8 @@
 
 Fictional names only. Not affiliated with PayPal or any marketplace. No real money moves in this build.
 
+**Just want to try it?** See [TESTING.md](TESTING.md): download a zip, load it in Chrome, open the hosted demo store. No servers, about 2 minutes.
+
 ## Run in 5 minutes
 
 From a clean clone, Node 20:
@@ -24,14 +26,15 @@ Then:
 
 1. Open `chrome://extensions`.
 2. Turn on Developer mode.
-3. Load unpacked and choose the `extension/` folder.
+3. Load unpacked and choose the `extension/` folder (the one with `manifest.json`, not the repo root).
+   The extension talks to the hosted mock server by default. For this local setup open its options, click **Use localhost:8787**, and save.
 4. Open `http://localhost:8080/demo/marketplace.html?live=1`.
 
 The static card is hidden. The extension draws its own card in the bike thread. **Move to protected PayPal order** creates a `MOCK-` sandbox order with no PayPal credentials. **Open approval** goes to a mock page. **Approve (mock)**, return to the chat, then **I approved it, capture**.
 
 `Signe Kruse · camera` is a second risky thread for **Pay anyway**. `demo/safe-chats.html` should stay silent.
 
-Options (right-click the toolbar icon, or open the extension's options page): backend URL (default `http://localhost:8787`), rules-only vs an AI check, a debug HUD, and the on-device override log (download JSON or clear).
+Options (right-click the toolbar icon, or open the extension's options page): backend URL (default: the hosted mock server `https://paybrake-demo.spbabinov.workers.dev`; one click switches to `http://localhost:8787`), rules-only vs an AI check, a debug HUD, and the on-device override log (download JSON or clear).
 
 ## What the pieces do
 

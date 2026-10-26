@@ -1,0 +1,19 @@
+{
+  // PayBrake hosted demo (mock mode only). Deploy: npm run hosted:deploy
+  "name": "paybrake-demo",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "account_id": "a117430e3fa84f63531fee9d5974a077",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "none"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "ORDERS", "class_name": "MockOrders" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["MockOrders"] }],
+  "observability": { "enabled": false }
+}

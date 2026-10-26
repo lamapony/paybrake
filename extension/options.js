@@ -1,4 +1,4 @@
-const DEFAULT_BACKEND = "http://localhost:8787";
+const DEFAULT_BACKEND = globalThis.pbConfig.DEFAULT_BACKEND;
 
 function $(id) {
   return document.getElementById(id);
@@ -54,6 +54,13 @@ $("opts").addEventListener("submit", async (event) => {
   });
   $("saved").textContent = "Saved";
 });
+
+function pick(url) {
+  $("backend").value = url;
+  $("saved").textContent = "Press Save to keep this";
+}
+$("use-hosted").addEventListener("click", () => pick(globalThis.pbConfig.HOSTED_BACKEND));
+$("use-local").addEventListener("click", () => pick(globalThis.pbConfig.LOCAL_BACKEND));
 
 $("download").addEventListener("click", async () => {
   const entries = await readLog();
