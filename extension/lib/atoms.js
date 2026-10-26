@@ -31,6 +31,8 @@ const ATOMS = [
   { id: "pay_on_collection", role: "veto", strength: "veto", receipt: "Pay on collection or checkout" },
   { id: "goods_and_services_agreed", role: "veto", strength: "veto", receipt: "Goods & Services agreed" },
   // Not a rule: the chip shown when only the AI check flagged the chat.
+  { id: "prize_bait", role: "ai", strength: "none", receipt: "Prize claim or premium-rate number" },
+  { id: "free_bait", role: "ai", strength: "none", receipt: "Free gift behind a link" },
   { id: "ai_other", role: "ai", strength: "none", receipt: "Flagged by the AI check" }
 ];
 

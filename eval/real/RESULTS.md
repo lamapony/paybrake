@@ -269,6 +269,12 @@ telemarketing). All 31 test scams that ask for money are still caught.
 | Scam dialogues | 0.99 → 0.99 | 0.98 → 0.98 | 2 → 2 |
 | ScamGuardBench | 0.89 → 0.87 | 1.00 → 0.99 | 9 → 11 (2 mislabeled) |
 
+Card wording: when one of the extra questions fires, the AI answer carries its own signal (`prize_bait` for prize and premium-rate,
+`free_bait` for Discord lures) unless the main signal is a concrete money or account ask. The card then says "Prize or fee bait: real
+prizes never ask you to pay or text a premium number." or "Free-gift bait: free Nitro, giveaways and downloads behind a link are a common
+scam." This changes only the explanation, not which chats get a card. (The eval cache key includes the questions, so a rerun makes
+fresh calls.)
+
 Latency p50 71 ms, p95 120 ms, max 323 ms; 0 failed calls. Cost: 2.51 M input tokens per test run (~1,600 per chat with the extra
 questions) ≈ $0.105, about $0.07 per 1,000 chats.
 

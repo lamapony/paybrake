@@ -23,6 +23,8 @@ const TEMPLATES = {
   remote: "Remote-access app: it lets a stranger control your device and your bank app. Do not install it.",
   cred: "Asks for card details, a code or a password: no real buyer, seller or bank needs these.",
   fee: "A fee to pay before you get something: fake delivery, customs and prize messages use this.",
+  prize: "Prize or fee bait: real prizes never ask you to pay or text a premium number.",
+  bait: "Free-gift bait: free Nitro, giveaways and downloads behind a link are a common scam.",
   link: "Suspicious link that asks you to log in or pay: open the real site yourself instead.",
   impersonation: "Claims to be a bank, authority or platform: contact them through their official app instead.",
   ai: "The AI check thinks this chat may be a scam. Do not pay or share codes until you have checked.",
@@ -60,6 +62,8 @@ function templateFor(signals) {
   let reason = TEMPLATES.generic;
   if (has("remote_access")) reason = TEMPLATES.remote;
   else if (has("credential_request")) reason = TEMPLATES.cred;
+  else if (has("prize_bait")) reason = TEMPLATES.prize;
+  else if (has("free_bait")) reason = TEMPLATES.bait;
   else if (has("fee_via_link")) reason = TEMPLATES.fee;
   else if (has("phishing_link")) reason = TEMPLATES.link;
   else if (has("friends_family") && has("upfront_deposit")) reason = TEMPLATES.ff_deposit;
@@ -353,7 +357,7 @@ async function confirmOnly(rules, raw, ask, options) {
 
 // ---- llmMode "all" ------------------------------------------------------------
 
-const AI_SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access", "phishing_link", "fee_via_link", "impersonation", "account_threat", "urgency_pressure"];
+const AI_SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access", "phishing_link", "fee_via_link", "impersonation", "account_threat", "urgency_pressure", "prize_bait", "free_bait"];
 const TRANSCRIPT_LIMIT = 3900;
 const CODE_NOTICE = /(?:never|do\s+not|don['’]t|not)\s+(?:share|give|tell|send|disclose|forward)|(?:aldrig|ikke)\s+(?:del|dele|giv|oplys)/iu;
 const CODE_ASK = /(?:send|give|tell|read|share|forward|provide|reply\s+with|type|enter)\s+(?:it\s+|them\s+)?(?:to\s+)?(?:me|us|our\s+(?:agent|team|staff|representative))\b/iu;
