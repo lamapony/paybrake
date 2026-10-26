@@ -7,6 +7,10 @@ const FALLBACK = "Risky payment request: a direct transfer may be hard to get ba
 const TEXT_LIMIT = 4000;
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 const OPENROUTER_REFERER = "https://github.com/lamapony/paybrake";
+const TYPESAFE_BASE = "https://api.typesafe.ai";
+// Pinned, not the jev-latest alias: the add / clear thresholds were tuned on this version.
+const TYPESAFE_MODEL = "jev-1.14.0";
+const MAX_CHOICES = 255;
 export const SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access", "phishing_link", "fee_via_link", "impersonation", "account_threat", "urgency_pressure", "other"];
 export const SYSTEM = [
   "You are PayBrake's scam check for one chat or message.",
@@ -50,6 +54,12 @@ function timeoutMsOf(env) {
   return n;
 }
 
+// The env var that holds the Typesafe key. Configurable so a deployment can name its secret.
+function typesafeKeyName(env) {
+  const name = trim(env.TYPESAFE_API_KEY_NAME);
+  return /^[A-Z_][A-Z0-9_]*$/i.test(name) ? name : "TYPESAFE_API_KEY";
+}
+
 function offResult(timeoutMs) {
   return {
     configured: false,
@@ -69,8 +79,25 @@ export function resolveLlm(env = {}) {
   let provider = asked;
   if (!provider) {
     if (trim(env.LLM_BASE_URL)) provider = "openai-compatible";
+    else if (trim(env[typesafeKeyName(env)])) provider = "typesafe";
     else if (trim(env.OPENROUTER_API_KEY)) provider = "openrouter";
     else return offResult(timeoutMs);
+  }
+
+  if (provider === "typesafe") {
+    const apiKey = trim(env[typesafeKeyName(env)]);
+    if (!apiKey) return offResult(timeoutMs);
+    const baseUrl = (trim(env.TYPESAFE_BASE_URL) || TYPESAFE_BASE).replace(/\/+$/, "");
+    const model = trim(env.TYPESAFE_MODEL) || TYPESAFE_MODEL;
+    // Optional: LLM_FALLBACK=openrouter retries a failed Typesafe call on OpenRouter.
+    let fallback = null;
+    if (trim(env.LLM_FALLBACK).toLowerCase() === "openrouter") {
+      const alt = resolveLlm({ ...env, LLM_PROVIDER: "openrouter", LLM_FALLBACK: "", LLM_BASE_URL: "", LLM_MODEL: trim(env.OPENROUTER_MODEL) });
+      if (alt.configured) fallback = alt;
+    }
+    const add = Number(trim(env.TYPESAFE_ADD_CONFIDENCE) || "0.5");
+    const addConfidence = Number.isFinite(add) ? Math.max(0.5, Math.min(1, add)) : 0.5;
+    return { configured: true, provider: "typesafe", baseUrl, apiKey, model, timeoutMs, addConfidence, fallback };
   }
 
   if (provider === "openrouter") {
@@ -124,6 +151,120 @@ export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch)
   if (!llm.configured) throw llmError("llm_off", 503);
   const source = String(text ?? "");
   if (source.length > TEXT_LIMIT) throw badRequest("text is too long");
+  if (llm.provider === "typesafe") {
+    try {
+      return await classifyTypesafe(source, llm, fetchImpl);
+    } catch (error) {
+      if (!llm.fallback) throw error;
+      return classifyChat(source, llm.fallback, fetchImpl);
+    }
+  }
+  return classifyChat(source, llm, fetchImpl);
+}
+
+// Typesafe (https://docs.typesafe.ai/api) is a decision model, not a chat model: POST
+// /v1/systemone takes the chat as `state` plus typed questions and returns probabilities.
+// It writes no text, so it cannot invent a quote: the evidence is the Them line it picks
+// from a closed list, and the card text comes from PayBrake's own templates.
+export const TYPESAFE_RISKY = {
+  type: "noul",
+  instructions: "This is one chat or message. Lines start with \"Them:\" (the other person: seller, caller or sender) or \"Me:\" (the PayBrake user). Judge only what Them asks for or pushes; a Me line never makes the chat risky. Is Them pushing the user toward losing money or account access?",
+  criteria: {
+    true: "Them asks the user to pay outside a protected checkout (bank transfer, IBAN, Friends and Family, gift cards, crypto, Zelle, Venmo, Western Union, MobilePay to a stranger), to pay a deposit or fee before getting something (delivery, customs, prize, refund, job, loan), to share card numbers, CVV, one-time or SMS codes, MitID, NemID or BankID codes or logins, passwords or ID numbers, to install a remote-access app (AnyDesk, TeamViewer), or to open a login or payment link from an unknown or lookalike site; or Them poses as a bank, authority, platform or support team to get one of these.",
+    false: "Normal buying and selling, pay on pickup, platform checkout, delivery, bank or service notices without a link or fee ask, messages that tell the user never to share a code, friends chatting, plain marketing."
+  }
+};
+
+export const SIGNAL_CRITERIA = {
+  friends_family: "Asks to pay with PayPal Friends and Family for goods",
+  upfront_deposit: "Asks for a deposit or advance payment before the deal",
+  off_platform: "Asks to pay by bank transfer, IBAN, gift card, crypto, Zelle, Venmo, Western Union, MobilePay or another channel outside a protected checkout",
+  pay_before_see: "Asks to pay before the user can see or get the item",
+  credential_request: "Asks for card details, CVV, one-time or SMS codes, MitID, NemID or BankID, passwords, PINs or ID numbers",
+  remote_access: "Asks to install or allow a remote-access or screen-sharing app",
+  phishing_link: "Pushes a link to log in, verify, claim or pay on an unknown or lookalike site",
+  fee_via_link: "Asks for a customs, delivery, release or processing fee, often through a link",
+  impersonation: "Poses as a bank, authority, platform or support team",
+  account_threat: "Threatens that an account will be locked, suspended or hacked",
+  urgency_pressure: "Pushes the user to act right now",
+  other: "Another kind of scam, or none of these"
+};
+
+function themLines(source) {
+  const lines = source.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  const them = lines.filter((line) => /^Them:/.test(line)).map((line) => normalizeWs(line.slice(5)));
+  // Raw text without speaker labels (a single message): every non-Me line is the sender's.
+  const out = (them.length ? them : lines.filter((line) => !/^Me:/.test(line)).map(normalizeWs)).filter(Boolean);
+  return out.slice(-MAX_CHOICES);
+}
+
+export function typesafeQuestions(source) {
+  const lines = themLines(source);
+  const questions = {
+    risky: TYPESAFE_RISKY,
+    signal: { type: "choice", instructions: "Which kind of ask from Them is the main risk in this chat?", criteria: SIGNAL_CRITERIA }
+  };
+  if (lines.length > 1) {
+    questions.evidence = {
+      type: "choice",
+      instructions: "Which line from Them carries the riskiest ask?",
+      criteria: Object.fromEntries(lines.map((line, i) => ["l" + i, line]))
+    };
+  }
+  return { questions, lines };
+}
+
+async function classifyTypesafe(source, llm, fetchImpl) {
+  const { questions, lines } = typesafeQuestions(source);
+  let res;
+  try {
+    res = await fetchImpl(llm.baseUrl + "/v1/systemone", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${llm.apiKey}` },
+      body: JSON.stringify({ model: llm.model, state: source, questions }),
+      signal: AbortSignal.timeout(llm.timeoutMs)
+    });
+  } catch {
+    throw llmError("llm error", 502);
+  }
+  if (!res.ok) {
+    try { await res.text(); } catch { /* discard provider body */ }
+    throw llmError(`llm ${res.status}`, 502);
+  }
+  let body;
+  try {
+    body = JSON.parse(await res.text());
+  } catch {
+    throw llmError("llm error", 502);
+  }
+  const answers = body && body.answers;
+  const p = Number(answers?.risky?.noul);
+  if (!Number.isFinite(p)) throw llmError("llm shape", 502);
+  const prob = Math.max(0, Math.min(1, p));
+  const risky = prob >= 0.5;
+  const picked = answers?.evidence?.choice;
+  const quote = lines.length === 1 ? lines[0] : (typeof picked === "string" && /^l\d+$/.test(picked) ? lines[Number(picked.slice(1))] : null);
+  const evidence = risky && quote ? [quote] : [];
+  const ok = risky && evidencePasses(evidence, source);
+  const signal = SIGNALS.includes(answers?.signal?.choice) ? answers.signal.choice : (ok ? "other" : null);
+  return {
+    risky: ok,
+    level: ok ? (prob >= 0.9 ? "high" : "medium") : "none",
+    // Confidence in the verdict given: p(risky) for "risky", 1 - p(risky) for "not risky".
+    confidence: risky && !ok ? null : (risky ? prob : 1 - prob),
+    signal,
+    reason: "",
+    evidence,
+    item: null,
+    amount: null,
+    currency: null,
+    // Picked on the dev split (eval/real/results/llm-all-v3-dev-all-typesafe-*.json sweep).
+    addConfidence: llm.addConfidence,
+    usage: body.usage && Number.isFinite(body.usage.input_tokens) ? { inputTokens: body.usage.input_tokens } : null
+  };
+}
+
+async function classifyChat(source, llm, fetchImpl) {
 
   const headers = { "content-type": "application/json" };
   if (llm.apiKey) headers.authorization = `Bearer ${llm.apiKey}`;

@@ -356,7 +356,13 @@ async function combineAll(rules, raw, messages, ask, options) {
   }
 
   // Rules are silent. The model can add a card.
-  if (!aiRisky || (confidence != null && confidence < cfg.addConfidence)) {
+  // The server may say where its model's confidence scale should add a card (Typesafe's
+  // probabilities run lower than a chat model's self-reported confidence). An explicit
+  // option wins; the hint is never allowed below 0.5.
+  const hint = Number(llm.addConfidence);
+  const addAt = options && options.addConfidence != null ? cfg.addConfidence
+    : (llm.addConfidence != null && Number.isFinite(hint) ? Math.max(0.5, Math.min(1, hint)) : cfg.addConfidence);
+  if (!aiRisky || (confidence != null && confidence < addAt)) {
     return { ...rules, llm: "agreed_silent", ai, llmMs };
   }
   // A bank or service sending the user a code and warning them never to share it is the normal,
