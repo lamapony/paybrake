@@ -4,837 +4,169 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>PayBrake · Brakes before you pay.</title>
-<meta name="description" content="PayBrake is a Chrome extension prototype. On a demo marketplace page it flags Friends &amp; Family, deposit and off-platform payment requests in the browser and offers a PayPal Orders v2 sandbox order instead. Built for the PayPal AI Hackathon.">
-<meta name="theme-color" content="#0b1f3a">
+<title>PayBrake: spots payment scams in marketplace chats</title>
+<meta name="description" content="PayBrake is a browser extension that spots payment-scam messages in marketplace chats and offers to switch to a PayPal Goods &amp; Services order instead. A PayPal AI Hackathon project.">
+<meta name="theme-color" content="#fbfbfa">
+<meta name="color-scheme" content="light">
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
 <meta property="og:type" content="website">
-<meta property="og:title" content="PayBrake · Brakes before you pay.">
-<meta property="og:description" content="A Chrome extension prototype that shows a card when a demo marketplace chat asks for Friends &amp; Family, a deposit, an off-platform transfer, a code or card details, or sends a suspicious payment link, and offers a PayPal sandbox order instead.">
+<meta property="og:title" content="PayBrake: spots payment scams in marketplace chats">
+<meta property="og:description" content="A browser extension that spots payment-scam messages in marketplace chats and offers a PayPal Goods &amp; Services order instead.">
 <meta property="og:image" content="img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PayBrake card under a seller message asking for a 500 kr deposit via PayPal Friends &amp; Family.">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 :root{
-  --navy:#0b1f3a;
-  --navy-2:#122b4d;
-  --navy-3:#1a3a63;
-  --amber:#f5a524;
-  --amber-ink:#7a4a00;
-  --amber-wash:#fff4dc;
-  --sky:#5ab0ff;
-  --pp:#0b5cad;
-  --pp-dark:#084a8c;
-  --paper:#faf7f1;
-  --paper-2:#f2ede3;
-  --line:#e2dacb;
-  --ink:#15233a;
-  --ink-2:#44526a;
-  --on-navy:#e9eef6;
-  --on-navy-2:#b9c6d9;
-  --radius:18px;
-  --wrap:1180px;
+  --bg:#fbfbfa;
+  --ink:#1c1c1a;
+  --ink-2:#5f5e5a;
+  --line:#e6e5e1;
+  --tint:#f1f0ec;
+  --accent:#fd9a1c;
   --font:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Ubuntu,Cantarell,"Helvetica Neue",Arial,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
 }
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font:400 1.0625rem/1.6 var(--font);overflow-x:hidden}
-img{max-width:100%;height:auto;display:block}
-a{color:var(--pp)}
-a:hover{color:var(--pp-dark)}
-h1,h2,h3{line-height:1.15;letter-spacing:-.015em;margin:0;text-wrap:balance}
-p{margin:0 0 1em;text-wrap:pretty}
-code,pre{font-family:var(--mono);font-size:.92em}
-:focus-visible{outline:3px solid var(--amber);outline-offset:3px;border-radius:6px}
-.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
-.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--amber);color:var(--navy);padding:12px 16px;border-radius:10px;font-weight:700;text-decoration:none}
-.skip:focus{top:12px}
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.6 var(--font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.wrap{max-width:41rem;margin:0 auto;padding:0 1.25rem}
+::selection{background:#fde3bd}
 
-/* ---------- header ---------- */
-.top{background:var(--navy);color:var(--on-navy);position:relative}
-.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:72px}
-.brand{display:inline-flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-weight:800;font-size:1.15rem;letter-spacing:-.01em;min-height:44px}
-.brand .logo{display:block;width:32px;height:32px}
-.brand:hover{color:#fff}
-.mark{width:30px;height:30px;border-radius:50%;border:3px solid var(--sky);position:relative;flex:none}
-.mark::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--navy-3)}
-.mark::after{content:"";position:absolute;right:-6px;top:4px;width:9px;height:16px;border-radius:3px;background:var(--amber)}
-.nav ul{list-style:none;margin:0;padding:0;display:flex;gap:4px;flex-wrap:wrap}
-.nav a.l{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;color:var(--on-navy-2);text-decoration:none;font-size:.95rem;border-radius:8px}
-.nav a.l:hover{color:#fff;background:var(--navy-2)}
-@media (max-width:860px){.nav ul{display:none}}
+a{color:inherit;text-decoration-line:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:.2em;transition:text-decoration-color .15s ease-out}
+@media (hover:hover) and (pointer:fine){a:hover{text-decoration-color:var(--ink)}}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
 
-/* ---------- hero ---------- */
-.hero{padding:40px 0 0;overflow:hidden}
-.hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center}
-.eyebrow{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);margin-bottom:18px}
-.eyebrow::before{content:"";width:28px;height:4px;border-radius:2px;background:var(--amber)}
-.hero h1{font-size:clamp(2.1rem,4.6vw,3.5rem);font-weight:800;color:#fff;margin-bottom:20px}
-.hero h1 em{font-style:normal;color:var(--amber)}
-.hero .sub{font-size:1.15rem;color:var(--on-navy-2);max-width:36em;margin-bottom:28px}
-.ctas{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:10px 22px;border-radius:999px;font-weight:700;font-size:1rem;text-decoration:none;border:2px solid transparent;line-height:1.2;text-align:center}
-.btn-amber{background:var(--amber);color:var(--navy)}
-.btn-amber:hover{background:#ffb94a;color:var(--navy)}
-.btn-ghost{border-color:#3d5d88;color:#fff}
-.btn-ghost:hover{border-color:var(--sky);color:#fff;background:var(--navy-2)}
-.btn-pp{background:var(--pp);color:#fff}
-.btn-pp:hover{background:var(--pp-dark);color:#fff}
-.btn-outline{border-color:#b9ad97;color:var(--ink)}
-.btn-outline:hover{border-color:var(--ink);color:var(--ink)}
-.btn[aria-disabled="true"]{cursor:not-allowed}
-.btn-ph{border:2px dashed #7b8fae;color:var(--on-navy-2);background:transparent}
-.btn-ph:hover{color:var(--on-navy-2)}
-.ph{display:inline-block;font:700 .68rem/1 var(--mono);letter-spacing:.08em;padding:4px 6px;border:1.5px dashed currentColor;border-radius:4px;vertical-align:middle}
-.note{font-size:.88rem;color:var(--on-navy-2);margin-top:14px}
-.note code{color:#fff}
-.hero-art{position:relative}
-.hero-art img{width:100%;border-radius:24px;-webkit-mask-image:radial-gradient(120% 100% at 50% 50%,#000 62%,transparent 100%);mask-image:radial-gradient(120% 100% at 50% 50%,#000 62%,transparent 100%)}
+header{display:flex;align-items:center;justify-content:space-between;padding-top:1.25rem;padding-bottom:1.25rem}
+.brand{display:flex;align-items:center;gap:.625rem;min-height:44px;font-weight:600;font-size:1.0625rem;text-decoration:none}
+.brand img{display:block}
+header nav a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink-2);text-decoration-color:transparent}
+@media (hover:hover) and (pointer:fine){header nav a:hover{color:var(--ink);text-decoration-color:var(--accent)}}
 
-/* brake rail motif: a disc line with a pad that clamps once */
-.rail{position:relative;height:56px;margin-top:36px}
-.rail::before{content:"";position:absolute;left:0;right:0;top:27px;height:2px;background:linear-gradient(90deg,transparent,#3d5d88 12%,#3d5d88 88%,transparent)}
-.pad{position:absolute;top:14px;left:58%;width:56px;height:28px;border-radius:7px;background:var(--amber);box-shadow:0 0 0 6px rgba(245,165,36,.15);animation:clamp 1.4s cubic-bezier(.2,.8,.2,1) .4s both}
-.pad::before,.pad::after{content:"";position:absolute;left:50%;width:2px;height:10px;background:var(--amber);transform:translateX(-50%)}
-.pad::before{top:-12px}.pad::after{bottom:-12px}
-.rail-label{position:absolute;top:16px;left:calc(58% + 72px);font:600 .8rem/1.4 var(--mono);color:var(--on-navy-2);white-space:nowrap}
-@keyframes clamp{from{left:0;opacity:0}60%{opacity:1}to{left:58%;opacity:1}}
-@media (max-width:860px){
-  .hero-grid{grid-template-columns:1fr;gap:28px}
-  .hero-art{order:-1;max-width:520px}
-  .pad{left:8%}.rail-label{left:calc(8% + 72px)}
-  @keyframes clamp{from{left:0;opacity:0}to{left:8%;opacity:1}}
-}
+h1,h2{margin:0;font-weight:600;text-wrap:balance}
+h1{font-size:clamp(1.5rem,1.05rem + 2vw,2.125rem);line-height:1.2;letter-spacing:-.018em;max-width:20em}
+h2{font-size:1.25rem;line-height:1.3;letter-spacing:-.01em;margin-bottom:.75rem}
+p{margin:0 0 1rem;text-wrap:pretty}
+.muted{color:var(--ink-2)}
+code{font-family:inherit;font-size:.9375em;background:var(--tint);border-radius:4px;padding:.05em .3em;white-space:nowrap}
 
-/* ---------- sections ---------- */
-section{padding:88px 0}
-.kicker{font:700 .8rem/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--amber-ink);display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.kicker::after{content:"";height:2px;width:40px;background:var(--amber)}
-h2{font-size:clamp(1.75rem,3.2vw,2.5rem);font-weight:800;margin-bottom:16px}
-.lede{font-size:1.15rem;color:var(--ink-2);max-width:40em}
-.alt{background:var(--paper-2);border-block:1px solid var(--line)}
+.intro{padding-top:2.5rem}
+.shot{margin:2.5rem 0 0}
+.shot img{display:block;width:100%;max-width:439px;height:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+.shot figcaption{margin-top:.625rem;font-size:.875rem;color:var(--ink-2)}
 
-/* problem */
-.problem-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:48px;align-items:start;margin-top:32px}
-.quotes{display:flex;flex-direction:column;gap:10px;padding:0;margin:0;list-style:none}
-.quotes li{align-self:flex-start;max-width:100%;background:#fff;border:1px solid var(--line);border-radius:18px 18px 18px 4px;padding:10px 16px;font-size:1rem}
-.quotes li:nth-child(even){align-self:flex-end;border-radius:18px 18px 4px 18px}
-.quotes mark{background:var(--amber-wash);color:var(--ink);padding:0 4px;border-radius:4px;box-shadow:inset 0 -2px 0 #f0c66e}
-.qlab{display:block;font:600 .72rem/1.4 var(--mono);color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
-.problem-text p{color:var(--ink-2)}
-.problem-text strong{color:var(--ink)}
-.callout{border-left:4px solid var(--amber);background:#fff;padding:18px 20px;border-radius:0 12px 12px 0;margin-top:8px}
-.callout p{margin:0;color:var(--ink)}
-@media (max-width:860px){.problem-grid{grid-template-columns:1fr;gap:32px}}
+section{margin-top:4.5rem}
 
-/* steps */
-.steps{list-style:none;margin:40px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;counter-reset:s}
-.step{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px 24px 24px;position:relative}
-.step-n{display:inline-grid;place-items:center;width:44px;height:28px;border-radius:7px;background:var(--navy);color:var(--amber);font:800 .95rem/1 var(--mono);margin-bottom:16px}
-.step h3{font-size:1.25rem;margin-bottom:10px}
-.step p{color:var(--ink-2);font-size:1rem}
-.step ul{margin:0;padding-left:1.1em;color:var(--ink-2);font-size:.98rem}
-.step li{margin-bottom:6px}
-.step strong{color:var(--ink)}
-.q{font-weight:600;color:var(--ink)}
-.chip{display:inline-block;font-size:.85rem;font-weight:600;padding:2px 10px;border-radius:999px;background:var(--amber-wash);border:1px solid #efcf8e;color:var(--amber-ink);margin:2px 2px 2px 0}
-.chip-hi{background:#fde8e6;border-color:#f3b6ae;color:#9a1f12}
-@media (max-width:960px){.steps{grid-template-columns:1fr}}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 1.5rem;margin:1.25rem 0 2rem}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:.625rem 1.125rem;border-radius:6px;background:var(--accent);color:var(--ink);font-weight:600;text-decoration:none;transition:transform .16s ease-out,background-color .15s ease-out}
+.btn:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){.btn:hover{background:#f08d0e}}
+.actions a:not(.btn){display:inline-flex;align-items:center;min-height:44px}
 
-/* storyboard */
-.track{margin-top:48px}
-.track + .track{margin-top:72px}
-.track-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:22px}
-.track-head h3{font-size:1.35rem}
-.track-head p{margin:0;color:var(--ink-2)}
-.tag{font:700 .72rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:6px 8px;border-radius:6px;background:var(--navy);color:var(--amber)}
-.board{list-style:none;margin:0;padding:0;display:grid;gap:22px}
-.board-protect{grid-template-columns:1.25fr 1fr}
-.board-protect .f1{grid-row:span 3}
-.board-pair{grid-template-columns:1fr 1fr}
-.board-end{grid-template-columns:1fr 1fr 260px;align-items:start}
-.frame{margin:0;background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
-.frame .shot{background:#eef1f5;border-bottom:1px solid var(--line);padding:14px}
-.frame .shot img{border-radius:10px;box-shadow:0 1px 2px rgba(11,31,58,.08),0 8px 24px -12px rgba(11,31,58,.25);width:100%}
-.frame figcaption{padding:16px 18px 18px;font-size:.96rem;color:var(--ink-2)}
-.frame figcaption b{display:flex;gap:10px;align-items:baseline;color:var(--ink);font-size:1rem;margin-bottom:4px}
-.fn{font:800 .78rem/1 var(--mono);color:var(--amber-ink);background:var(--amber-wash);border:1px solid #efcf8e;border-radius:5px;padding:4px 6px;flex:none}
-.phone .shot{display:flex;justify-content:center;background:var(--navy)}
-.phone .shot img{max-width:220px;border-radius:22px;border:6px solid #23395c}
-.cap-all{margin-top:28px;font-size:.92rem;color:var(--ink-2);display:flex;gap:10px;align-items:flex-start}
-.cap-all::before{content:"";flex:none;width:10px;height:10px;margin-top:7px;border-radius:2px;background:var(--amber)}
-@media (max-width:960px){
-  .board-protect,.board-pair{grid-template-columns:1fr}
-  .board-protect .f1{grid-row:auto}
-  .board-end{grid-template-columns:1fr 1fr}
-  .board-end .phone{grid-column:1 / -1}
-}
-@media (max-width:640px){.board-end{grid-template-columns:1fr}}
+ol.steps{margin:0 0 1rem;padding:0;list-style:none;counter-reset:s}
+ol.steps li{counter-increment:s;position:relative;padding-left:2.25rem;margin-bottom:.875rem}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:.05em;width:1.5rem;height:1.5rem;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:.8125rem;font-weight:600;color:var(--ink-2);background:#fff}
+.note{font-size:.875rem;color:var(--ink-2)}
 
-/* eval strip */
-.evals{margin-top:72px;background:var(--navy);color:var(--on-navy);border-radius:24px;padding:32px;display:grid;grid-template-columns:1.2fr 2fr;gap:32px;align-items:center}
-.evals h3{color:#fff;font-size:1.3rem;margin-bottom:8px}
-.evals p{color:var(--on-navy-2);margin:0;font-size:.98rem}
-.nums{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.nums li{border:1px solid #2c4a74;border-radius:14px;padding:16px 14px}
-.nums .v{display:block;font:800 1.75rem/1.1 var(--font);color:var(--amber)}
-.nums .k{display:block;font-size:.85rem;color:var(--on-navy-2);margin-top:6px}
-@media (max-width:960px){.evals{grid-template-columns:1fr}.nums{grid-template-columns:repeat(2,1fr)}}
+ul.nums{list-style:none;margin:0 0 1.25rem;padding:0;border-top:1px solid var(--line)}
+ul.nums li{display:grid;grid-template-columns:5.25rem 1fr;gap:1rem;align-items:baseline;padding:.875rem 0;border-bottom:1px solid var(--line)}
+ul.nums .v{font-size:1.5rem;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.tab{font-variant-numeric:tabular-nums;white-space:nowrap}
 
-/* audience */
-.aud{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:36px}
-.aud article{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px}
-.aud h3{font-size:1.2rem;margin-bottom:10px}
-.aud p{color:var(--ink-2);margin:0}
-@media (max-width:760px){.aud{grid-template-columns:1fr}}
+details{margin-top:4.5rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+summary{display:flex;align-items:center;justify-content:space-between;min-height:3.25rem;font-weight:600;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-weight:400;font-size:1.375rem;line-height:1;color:var(--ink-2)}
+details[open] summary::after{content:"\2212"}
+details .body{padding:.25rem 0 1.25rem}
+details h3{font-size:1rem;margin:1rem 0 .25rem}
+details ul{margin:0 0 .5rem;padding-left:1.125rem}
+details li{margin-bottom:.25rem}
 
-/* tech */
-.tech{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:36px}
-.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px}
-.panel h3{font-size:1.2rem;margin-bottom:14px;display:flex;align-items:center;gap:10px}
-.panel h3::before{content:"";width:10px;height:22px;border-radius:3px;background:var(--pp)}
-.panel.ai h3::before{background:var(--sky)}
-.panel.priv h3::before{background:var(--amber)}
-.panel.stack h3::before{background:var(--navy)}
-.panel ul{margin:0;padding-left:1.1em;color:var(--ink-2);font-size:.98rem}
-.panel li{margin-bottom:8px}
-.panel li strong{color:var(--ink)}
-.panel code{background:var(--paper-2);border:1px solid var(--line);padding:1px 5px;border-radius:5px;color:var(--ink);font-size:.86em;overflow-wrap:anywhere}
-.finding{margin-top:14px;padding:14px 16px;background:var(--amber-wash);border:1px solid #efcf8e;border-radius:12px;font-size:.95rem;color:var(--ink)}
-.limits{grid-column:1 / -1;background:transparent;border:2px dashed #c9bda6}
-.limits ul{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 32px}
-@media (max-width:860px){.tech{grid-template-columns:1fr}.limits ul{grid-template-columns:1fr}}
+footer{margin-top:3rem;padding:1.5rem 0 3rem;font-size:.875rem;color:var(--ink-2)}
+footer p{margin:0}
 
-/* install */
-.install{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:36px;align-items:start}
-.install>*{min-width:0}
-.term{background:var(--navy);border-radius:16px;overflow:hidden;margin-bottom:20px}
-.term-h{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;font:600 .8rem/1.4 var(--mono);color:var(--on-navy-2);border-bottom:1px solid #22406a}
-.term pre{margin:0;padding:18px 16px;overflow-x:auto;color:#eaf2ff;line-height:1.7;font-size:.9rem;tab-size:2}
-.how{counter-reset:h;list-style:none;margin:0;padding:0}
-.how li{counter-increment:h;position:relative;padding:0 0 18px 48px;color:var(--ink-2)}
-.how li::before{content:counter(h);position:absolute;left:0;top:0;width:32px;height:24px;border-radius:6px;background:var(--amber);color:var(--navy);font:800 .85rem/24px var(--mono);text-align:center}
-.how strong,.how code{color:var(--ink)}
-.how code{background:#fff;border:1px solid var(--line);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
-.small{font-size:.92rem;color:var(--ink-2)}
-@media (max-width:900px){.install{grid-template-columns:1fr}}
-
-/* team */
-.team{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:32px;max-width:860px}
-.person{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;display:flex;gap:16px;align-items:flex-start}
-.avatar{flex:none;width:52px;height:52px;border-radius:50%;background:var(--navy);color:var(--amber);display:grid;place-items:center;font-weight:800}
-.person h3{font-size:1.1rem;margin-bottom:4px}
-.person p{margin:0;color:var(--ink-2);font-size:.96rem}
-.ph-dark{color:#6b5a3a}
-.meta{margin-top:24px;color:var(--ink-2)}
-@media (max-width:700px){.team{grid-template-columns:1fr}}
-
-/* final cta */
-.band{background:var(--navy);color:var(--on-navy);padding:72px 0;position:relative;overflow:hidden}
-.band::before{content:"";position:absolute;right:-120px;top:50%;width:360px;height:360px;margin-top:-180px;border-radius:50%;border:28px solid #13304f;box-shadow:inset 0 0 0 60px var(--navy),inset 0 0 0 64px #13304f}
-.band::after{content:"";position:absolute;right:190px;top:50%;width:26px;height:70px;margin-top:-35px;border-radius:7px;background:var(--amber);opacity:.9}
-.band .wrap{position:relative;z-index:1}
-.band h2{color:#fff;max-width:18em}
-.band p{color:var(--on-navy-2);max-width:36em}
-@media (max-width:760px){.band::before,.band::after{display:none}}
-
-footer{background:#081629;color:var(--on-navy-2);padding:36px 0;font-size:.92rem}
-footer .wrap{display:flex;flex-wrap:wrap;gap:12px 32px;justify-content:space-between;align-items:center}
-footer strong{color:#fff}
-footer a{color:var(--sky)}
-footer a:hover{color:#9ccfff}
-
-@media (max-width:480px){
-  .wrap{padding:0 18px}
-  section{padding:64px 0}
-  .ctas .btn{width:100%}
-  .frame .shot{padding:10px}
-  .evals{padding:24px 20px}
-  .term pre{font-size:.82rem}
+@media (min-width:48rem){
+  body{font-size:1.0625rem}
+  header{padding-top:2rem}
+  .intro{padding-top:4rem}
+  section,details{margin-top:5.5rem}
 }
 @media (prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  *,*::before,*::after{animation:none!important;transition:none!important}
-}
-
-/* ---------- live rules ---------- */
-.sim-grid{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:28px;margin-top:28px;align-items:start}
-.sim-grid>*{min-width:0}
-#try h3{font-size:1.2rem;margin:0 0 12px}
-.presets{display:flex;flex-direction:column;gap:8px}
-.preset{display:block;width:100%;min-height:44px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink);font:700 .98rem/1.35 var(--font);cursor:pointer;touch-action:manipulation}
-.preset-sample{display:block;margin-top:2px;font-weight:500;color:var(--ink-2);overflow-wrap:anywhere}
-.preset[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
-.preset[aria-pressed="true"] .preset-sample{color:var(--on-navy-2)}
-.sim-field{margin-top:18px}
-.sim-field label{display:block;font-weight:700;margin-bottom:6px}
-.sim-field textarea{display:block;width:100%;max-width:100%;min-height:112px;padding:12px;border-radius:12px;border:1px solid #c9bda6;background:#fff;color:var(--ink);font:inherit;resize:vertical;overflow-wrap:anywhere}
-.hint{margin:6px 0 0;font-size:.88rem;color:var(--ink-2)}
-.sim-thread{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px 16px}
-.thread-kicker{margin:0 0 6px;font:700 .72rem/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--amber-ink)}
-.thread-title{margin:0;font-size:1.2rem;font-weight:800}
-.thread-hint{margin-top:4px}
-.who-line{margin:14px 0 4px;font:600 .72rem/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
-.bubble{margin:0;padding:10px 14px;overflow-wrap:anywhere;border:1px solid var(--line)}
-.bubble-buyer{background:var(--paper);border-radius:16px 16px 16px 4px}
-.bubble-seller{background:#fff;border-color:#e7d3a1;border-radius:16px 16px 16px 4px;min-height:48px;white-space:pre-wrap}
-.bubble mark{background:var(--amber-wash);color:var(--ink);padding:0 3px;border-radius:4px;box-shadow:inset 0 -2px 0 #f0c66e}
-#sim-result{margin-top:12px}
-.quiet{margin:0;padding:12px 14px;border-radius:12px;border:1px dashed #c9bda6;background:var(--paper);color:var(--ink-2)}
-.quiet.is-error{border-style:solid;border-color:#f3b6ae;background:#fde8e6;color:#9a1f12}
-
-#try .pb{position:relative;margin:0;border-radius:16px;background:#fff;border:1px solid #f1c27d;box-shadow:0 2px 4px rgba(180,35,24,.06),0 10px 28px rgba(180,35,24,.10);color:#1c2530;font-size:15px;line-height:1.45}
-#try .pb-bar{position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:16px 0 0 16px;background:linear-gradient(180deg,#f5a524,#b42318)}
-#try .pb-body{padding:16px 18px 14px 22px}
-#try .pb-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-#try .pb-badge{display:inline-flex;align-items:center;gap:7px;background:#fef3f2;color:#b42318;border:1px solid #fecdca;font-weight:700;font-size:13px;padding:5px 11px 5px 8px;border-radius:999px}
-#try .pb-badge svg{flex:none}
-#try .pb-tag{margin-left:auto;font-size:12px;color:#5d6a7c}
-#try .pb-explain{margin:0 0 12px;font-size:15px;font-weight:550;overflow-wrap:anywhere}
-#try .pb-signals-label{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5d6a7c}
-#try .pb-chips{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
-#try .pb-chip{display:inline-flex;align-items:center;gap:6px;background:#fff8eb;border:1px solid #f3c46b;color:#6b4200;font-size:13px;font-weight:600;padding:4px 10px;border-radius:8px;overflow-wrap:anywhere}
-#try .pb-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:#d9480f;flex:none}
-#try .pb-actions{display:flex;flex-wrap:wrap;gap:10px}
-#try .pb-btn{flex:1 1 200px;min-width:0;min-height:44px;padding:10px 16px;border-radius:999px;font:700 15px/1.2 var(--font);text-align:center;cursor:pointer;touch-action:manipulation}
-#try .pb-btn-primary{background:#0062a8;color:#fff;border:1px solid #0062a8}
-#try .pb-btn-ghost{background:transparent;color:#4a5666;border:1px solid #c3ccd7}
-#try .pb-note{margin:12px 0 0;font-size:14px;color:#1c2530;overflow-wrap:anywhere}
-#try .pb-note a{text-decoration:underline;text-underline-offset:2px}
-#try .pb-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 18px 9px 22px;background:#f6f8fb;border-top:1px solid #dde3ea;border-radius:0 0 15px 15px;font-size:12px;color:#5d6a7c;overflow-wrap:anywhere}
-#try .pb-brand{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:#4a5666}
-#try .pb-dot{width:14px;height:14px;border-radius:50%;border:3px solid #4a5666;flex:none}
-@media (hover:hover) and (pointer:fine){
-  .preset:hover{border-color:var(--navy)}
-  #try .pb-btn-primary:hover{background:#004f88;border-color:#004f88}
-  #try .pb-btn-ghost:hover{background:#f6f8fb;border-color:#9aa7b6}
-}
-@media (prefers-reduced-motion:no-preference){
-  #try .pb-btn:active{transform:scale(.98)}
-}
-@media (max-width:640px){
-  #try .pb-body{padding:14px 14px 12px 18px}
-  #try .pb-tag{margin-left:0}
-  #try .pb-actions{flex-direction:column}
-  #try .pb-btn{width:100%;flex-basis:auto}
-  #try .pb-foot{padding:9px 14px 9px 18px}
-}
-
-.quiz{margin-top:64px;padding-top:36px;border-top:1px solid var(--line)}
-#quiz-progress{margin:0 0 8px;font-weight:700}
-#quiz-actions:not([hidden]){display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
-#quiz-thread[hidden],#quiz-actions[hidden],#quiz-progress[hidden],#quiz-next[hidden]{display:none!important}
-#try .quiz-actions button{flex:1 1 180px;min-height:48px;padding:10px 16px;border-radius:999px;border:2px solid var(--navy);background:#fff;color:var(--navy);font:700 1rem/1.2 var(--font);cursor:pointer;touch-action:manipulation}
-#try .quiz-actions button[aria-pressed="true"]{background:var(--navy);color:#fff}
-#try .quiz-actions button[aria-disabled="true"]:not([aria-pressed="true"]){border-color:#c9bda6;color:var(--ink-2);cursor:default}
-#quiz-next{margin-top:14px;min-height:48px;padding:10px 18px;border-radius:999px;border:2px solid #b9ad97;background:#fff;color:var(--ink);font:700 1rem/1.2 var(--font);cursor:pointer;touch-action:manipulation}
-#quiz-reveal{margin-top:14px}
-.reveal-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}
-.reveal-verdict,.score{margin:0 0 8px;font-weight:800;color:var(--ink)}
-.score{font-size:1.35rem}
-.reveal-reason{margin:0 0 10px;color:var(--ink);overflow-wrap:anywhere}
-.reveal-why,.reveal-match{margin:8px 0 0}
-.reveal-match{font-weight:700;color:var(--ink)}
-.reveal-why{color:var(--ink-2)}
-.recap{margin:12px 0 0;padding-left:1.2em;color:var(--ink-2)}
-.recap li{margin:0 0 6px;overflow-wrap:anywhere}
-@media (max-width:860px){.sim-grid{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:640px){#quiz-next:not([hidden]){width:100%}}
-@media (prefers-reduced-motion:no-preference){
-  .frame.is-reveal{opacity:0;transform:translateY(12px)}
-  .frame.is-reveal.is-in{opacity:1;transform:none;transition:opacity .45s ease,transform .45s ease}
+  *{transition:none!important}
 }
 </style>
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
-
-<header class="top">
-  <div class="wrap">
-    <nav class="nav" aria-label="Primary">
-      <a class="brand" href="#top" aria-label="PayBrake, back to top"><img class="logo" src="img/logo.svg" width="32" height="32" alt="">PayBrake</a>
-      <ul>
-        <li><a class="l" href="#try">Live rules</a></li>
-        <li><a class="l" href="#problem">Problem</a></li>
-        <li><a class="l" href="#how">How it works</a></li>
-        <li><a class="l" href="#demo">Demo</a></li>
-        <li><a class="l" href="#tech">Tech</a></li>
-        <li><a class="l" href="#install">Try it</a></li>
-        <li><a class="l" href="#team">Team</a></li>
-      </ul>
-    </nav>
-  </div>
-
-  <div class="hero" id="top">
-    <div class="wrap">
-      <div class="hero-grid">
-        <div>
-          <p class="eyebrow">Chrome extension · PayPal sandbox</p>
-          <h1>The seller asks for Friends &amp; Family. <em>PayBrake</em> offers a PayPal order instead.</h1>
-          <p class="sub">PayBrake is a Chrome extension prototype. On our demo marketplace page it reads the open chat in your browser and shows a card when a message asks for Friends &amp; Family, a deposit to hold the item, a transfer such as MobilePay, or a code or card details, or sends a suspicious payment link. The card offers a PayPal Orders v2 sandbox checkout instead.</p>
-          <div class="ctas">
-            <a class="btn btn-amber" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the hosted demo</a>
-            <a class="btn btn-ghost" href="#install">Install the test build</a>
-            <a class="btn btn-ghost" href="https://github.com/lamapony/paybrake">View on GitHub</a>
-            <a class="btn btn-ph" href="#" aria-disabled="true">Demo video (link coming) <span class="ph">PLACEHOLDER</span></a>
-          </div>
-          <p class="note">The hosted demo needs the extension loaded in Chrome. Without it, the page shows a yellow "PayBrake is not running in this browser" box. The GitHub repo is private until judging.</p>
-        </div>
-        <div class="hero-art">
-          <img src="img/hero-v2.webp" width="1024" height="768" fetchpriority="high" decoding="async"
-               alt="Illustration on a navy background: a chat window with one message bubble highlighted in amber, a raised coral hand signalling wait beside it, and a dotted path that forks. One branch leads to a plain checkout card; the other fades out.">
-        </div>
-      </div>
-      <div class="rail" aria-hidden="true"><span class="pad"></span><span class="rail-label">risky phrase found, card shown</span></div>
-    </div>
-  </div>
+<div class="wrap">
+<header>
+  <a class="brand" href="./" aria-label="PayBrake home"><img src="img/logo.svg" width="32" height="32" alt=""><span>PayBrake</span></a>
+  <nav aria-label="Project"><a href="https://github.com/lamapony/paybrake">GitHub</a></nav>
 </header>
 
-<main id="main">
+<main>
+  <div class="intro">
+    <h1>A browser extension that spots payment scams in marketplace chats and offers a PayPal order instead.</h1>
+    <figure class="shot">
+      <img src="img/chat-card.webp" width="439" height="642" fetchpriority="high" decoding="async"
+        alt="Demo marketplace chat. The seller writes: Send 500 kr deposit via PayPal Friends &amp; Family to hold it, I ship tomorrow. Below it PayBrake shows a High risk payment request card: Friends &amp; Family plus an upfront deposit means you may have no way to get your money back if the item never arrives. Signals: Friends &amp; Family, Upfront deposit, Pressure to hurry, Ships before you meet. Buttons: Switch to a PayPal order, and Pay anyway.">
+      <figcaption>The test build on our demo marketplace page. Names are fictional.</figcaption>
+    </figure>
+  </div>
 
-  <section id="try" class="alt" aria-labelledby="try-h">
-    <div class="wrap">
-      <p class="kicker">Live rules</p>
-      <h2 id="try-h">Try it: the rules engine, live</h2>
-      <p class="lede">Pick a seller line, or type one. The box under the message is what these rules return.</p>
-      <div class="callout">
-        <p>Simplified demo: the extension's on-device rules (v3, the same rules as the <code>v0.2.0-test.3</code> download), running in your browser. Rules only, no AI check. Nothing is sent anywhere. Not connected to PayPal.</p>
-      </div>
-
-      <div class="sim-grid">
-        <div class="sim-controls">
-          <h3>Example messages</h3>
-          <div class="presets" id="sim-presets" role="group" aria-label="Example seller messages"></div>
-          <div class="sim-field">
-            <label for="sim-text">Or type a seller message</label>
-            <textarea id="sim-text" maxlength="300" rows="4" spellcheck="true" autocomplete="off" placeholder="Seller message"></textarea>
-            <p id="sim-limit" class="hint">300 characters max. The check runs as you type.</p>
-          </div>
-        </div>
-        <div class="sim-thread">
-          <p class="thread-kicker">Fictional chat</p>
-          <p class="thread-title">Jonas · used road bike, 1,800 kr</p>
-          <p class="hint thread-hint">Only the seller line is checked.</p>
-          <p class="who-line">Buyer</p>
-          <div class="bubble bubble-buyer">Is the road bike still available?</div>
-          <p class="who-line">Jonas</p>
-          <div class="bubble bubble-seller" id="sim-bubble"></div>
-          <div id="sim-result" aria-live="polite"></div>
-        </div>
-      </div>
-
-      <div class="quiz" id="quiz" aria-labelledby="quiz-h">
-        <h3 id="quiz-h">Spot the red flag</h3>
-        <p class="lede">Four seller lines. Is it a red flag? Answer, then see what PayBrake's rules do with it, including one red flag they miss.</p>
-        <p id="quiz-progress">Message 1 of 4</p>
-        <div class="quiz-thread" id="quiz-thread">
-          <p class="who-line">Seller</p>
-          <div class="bubble bubble-seller" id="quiz-bubble"></div>
-        </div>
-        <div class="quiz-actions" id="quiz-actions">
-          <button type="button" id="quiz-risky" aria-describedby="quiz-bubble">Looks risky</button>
-          <button type="button" id="quiz-fine" aria-describedby="quiz-bubble">Looks fine</button>
-        </div>
-        <div id="quiz-reveal" aria-live="polite"></div>
-        <div class="quiz-nav">
-          <button type="button" id="quiz-next" hidden>Next message</button>
-        </div>
-      </div>
+  <section aria-labelledby="try-h">
+    <h2 id="try-h">Try PayBrake in 2 minutes</h2>
+    <p>No install needed to look: the demo page shows a built-in preview of the card.</p>
+    <div class="actions">
+      <a class="btn" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html">Open the demo</a>
+      <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">Download the test build</a>
     </div>
+    <p>To run the real extension in Chrome:</p>
+    <ol class="steps">
+      <li>Download <code>paybrake-extension.zip</code> from the <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">v0.2.0-test.3 release</a> and unzip it.</li>
+      <li>Open <code>chrome://extensions</code>, turn on Developer mode, click Load unpacked and pick the unzipped <code>paybrake-extension</code> folder.</li>
+      <li>Open the <a href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">live demo</a>. PayBrake shows a card under the risky message in the bike chat.</li>
+    </ol>
+    <p class="note">The test build works on our demo page only. The GitHub repo is private until judging, so the download needs repo access.</p>
   </section>
 
-  <!-- 2. Problem -->
-  <section id="problem" aria-labelledby="problem-h">
-    <div class="wrap">
-      <p class="kicker">Problem</p>
-      <h2 id="problem-h">The requests PayBrake looks for.</h2>
-      <div class="problem-grid">
-        <ul class="quotes" aria-label="Examples of risky requests a seller might send">
-          <li><span class="qlab">Friends &amp; Family</span>Just send it as <mark>Friends &amp; Family</mark>, it's easier.</li>
-          <li><span class="qlab">Deposit</span>Send a <mark>deposit to hold it</mark> for you.</li>
-          <li><span class="qlab">Off-platform</span>Pay by <mark>MobilePay</mark>, <mark>bank transfer</mark> to my <mark>IBAN</mark>, <mark>crypto</mark> or a <mark>gift card</mark>.</li>
-          <li><span class="qlab">Pay first</span>You need to <mark>pay before viewing</mark> it.</li>
-          <li><span class="qlab">Codes and card details</span>Send me the <mark>6-digit code</mark> you got by SMS, or <mark>log in with MitID</mark> here.</li>
-          <li><span class="qlab">Suspicious link</span>Receive the money via this link: <mark>paypa1-secure-checkout.example</mark></li>
-          <li><span class="qlab">Fee via link</span>Pay the <mark>49 kr delivery fee</mark> via this link first.</li>
-          <li><span class="qlab">Remote access</span><mark>Install AnyDesk</mark> and I'll help you with the payment.</li>
-          <li><span class="qlab">Posing as a bank</span><mark>This is your bank's fraud team</mark>, your account will be blocked.</li>
-          <li><span class="qlab">Pressure</span>Be quick, <mark>several people are asking</mark>.</li>
-          <li><span class="qlab">Ship before meet</span>I'm away, <mark>I'll ship it</mark> once you've paid.</li>
-        </ul>
-        <div class="problem-text">
-          <p>People buy bikes and cameras from strangers through <strong>marketplace chats</strong>. Some sellers ask to be paid in a way that skips checkout.</p>
-          <p>The lines on the left are what PayBrake's rules match, in <strong>English and Danish</strong>. Codes, card details, suspicious links, fees via a link and remote-access apps are new in rules v3. <strong>Posing as a bank</strong>, <strong>hurry</strong> and <strong>ship before meeting</strong> only add to a warning. They never show a card on their own.</p>
-          <p>The rules only read the other person's messages, so your own reply never sets off a card. With the AI check on, an AI model also reads each chat and can add a card for scams the rules miss.</p>
-          <div class="callout">
-            <p>Money sent that way, or a code handed over, is hard to get back. PayBrake adds one card under the message that asked for it.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+  <section aria-labelledby="acc-h">
+    <h2 id="acc-h">How accurate it is</h2>
+    <ul class="nums">
+      <li><span class="v">~85%</span><span>of scam messages got a card <span class="tab">(603 / 713)</span></span></li>
+      <li><span class="v">~1.6%</span><span>of normal messages got a card by mistake <span class="tab">(14 / 860)</span></span></li>
+    </ul>
+    <p class="muted">Measured on a held-out test split of 1,573 messages from public datasets, not on marketplace chats. The AI check uses Typesafe <code>jev-1.14.0</code> on masked text and answers in about 0.07&nbsp;s.</p>
   </section>
 
-  <!-- 3. How it works -->
-  <section id="how" class="alt" aria-labelledby="how-h">
-    <div class="wrap">
-      <p class="kicker">How it works</p>
-      <h2 id="how-h">Rules find the request. You decide what happens next.</h2>
-      <p class="lede">The rules in steps 1 and 2 run in your browser. With the AI check on and a server that has AI, a masked copy of the chat also goes to that server for a second opinion. Step 3 calls the backend, and only after you click. PayBrake does not type in the chat or click anything on the page.</p>
-      <ol class="steps">
-        <li class="step">
-          <span class="step-n" aria-hidden="true">01</span>
-          <h3>Reads the chat on your device</h3>
-          <p>The extension checks the open chat against regex "atoms" in English and Danish. No match, no card.</p>
-          <ul>
-            <li><strong>Weak signals</strong> like hurry or ships-before-meet never show a card on their own.</li>
-            <li><strong>AI check:</strong> about a second after the chat stops changing, the AI's answer can add, keep or (only when very sure) remove the card. If it doesn't answer within 6 seconds, the card says <span class="q">"AI check unavailable"</span> and the rules result stands.</li>
-            <li><strong>A veto keeps it silent:</strong> <span class="q">"pay when you pick it up"</span>, <span class="q">"use the platform checkout"</span>, or Goods &amp; Services the seller agreed to.</li>
-          </ul>
-        </li>
-        <li class="step">
-          <span class="step-n" aria-hidden="true">02</span>
-          <h3>Shows a card under the message</h3>
-          <p><span class="chip chip-hi">High risk payment request</span> or <span class="chip">Possible payment risk</span>, with a one-line reason, signal chips, and the matched words highlighted in the message.</p>
-          <p>The card is drawn in your browser. The seller's side of the chat is unchanged.</p>
-        </li>
-        <li class="step">
-          <span class="step-n" aria-hidden="true">03</span>
-          <h3>Offers a PayPal order instead</h3>
-          <p><strong>"Switch to a PayPal order"</strong> creates a PayPal sandbox Orders v2 order (intent CAPTURE) for the item, price and seller email. You approve it on PayPal sandbox checkout, then capture. The card then reads: <span class="q">"Paid with PayPal Goods &amp; Services (sandbox). Buyer Protection may be eligible; see PayPal terms."</span></p>
-          <p><strong>"Pay anyway"</strong> collapses the card and writes the choice to an override log on your device.</p>
-        </li>
-      </ol>
-    </div>
+  <section aria-labelledby="priv-h">
+    <h2 id="priv-h">Privacy</h2>
+    <p>The rules run in your browser. With the AI check on (the default in this build), a masked copy of the chat goes to the configured server: emails, phone numbers, card numbers, IBANs, ID numbers and one-time codes are masked, but names, addresses and other free text are not. PayBrake never types or clicks in the chat.</p>
   </section>
 
-  <!-- 4. Demo storyboard -->
-  <section id="demo" aria-labelledby="demo-h">
-    <div class="wrap">
-      <p class="kicker">Demo</p>
-      <h2 id="demo-h">The bike chat, from warning to capture.</h2>
-      <p class="lede">These are screenshots of the extension on our fictional marketplace demo page, with the backend in mock mode. The same page is hosted, so you can click through it yourself once the extension is loaded.</p>
-      <div class="ctas">
-        <a class="btn btn-pp" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the hosted demo</a>
-        <a class="btn btn-outline" href="#install">Load the extension first</a>
-      </div>
-
-      <div class="track">
-        <div class="track-head"><span class="tag">Path A</span><h3>Switch to a PayPal order</h3><p>Bike chat → order → approval → capture.</p></div>
-        <ol class="board board-protect">
-          <li class="frame f1">
-            <figure style="margin:0">
-              <div class="shot"><img src="img/thread-bike.webp" width="1200" height="1073" loading="lazy" decoding="async"
-                alt="Demo chat with Jonas Holm about a used road bike for 1,800 kr. His message 'Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow' is outlined in amber with deposit, Friends & Family and I ship tomorrow highlighted; 'several people are asking' is highlighted above. Below it a PayBrake card shows 'High risk payment request', a MOCK MODE tag, the reason 'Friends & Family + upfront deposit: if the item never arrives, you may have no way to get your money back', signal chips Friends & Family, Upfront deposit, Pressure to hurry, Ships before you meet, a blue 'Switch to a PayPal order' button, a 'Pay anyway' button, and the footer 'PayBrake · rules check · only you can see this'."></div>
-              <figcaption><b><span class="fn">A1</span>The card appears</b>Friends &amp; Family plus a deposit to hold it. The hurry line and "I ship tomorrow" add to the reason but would not trigger a card alone.</figcaption>
-            </figure>
-          </li>
-          <li class="frame">
-            <figure style="margin:0">
-              <div class="shot"><img src="img/card-order.webp" width="1122" height="658" loading="lazy" decoding="async"
-                alt="The same PayBrake card after choosing the PayPal order. Buttons now read 'Open approval' and 'I approved it, capture', and a status bar says 'Sandbox order created · ID MOCK-ffb70ae9-de5f-4e25-958c-90c1be951327 · awaiting approval'."></div>
-              <figcaption><b><span class="fn">A2</span>Order created</b>A sandbox Orders v2 order with a <code>MOCK-</code> id, waiting for approval.</figcaption>
-            </figure>
-          </li>
-          <li class="frame">
-            <figure style="margin:0">
-              <div class="shot"><img src="img/approve.webp" width="1200" height="750" loading="lazy" decoding="async"
-                alt="Mock sandbox approval page with a banner 'MOCK · sandbox approval stand-in · no real payment'. A card titled 'Sandbox approval' explains it only marks a mock order as approved, shows the order token MOCK-ffb70ae9…, an 'Approve (mock)' button and a 'Return to the chat' link."></div>
-              <figcaption><b><span class="fn">A3</span>Approve</b>Mock approval page. With sandbox keys set, this step is the real PayPal sandbox checkout.</figcaption>
-            </figure>
-          </li>
-          <li class="frame">
-            <figure style="margin:0">
-              <div class="shot"><img src="img/card-paid.webp" width="1122" height="568" loading="lazy" decoding="async"
-                alt="PayBrake card after capture, with the status bar 'Paid with PayPal Goods & Services (sandbox). Buyer Protection may be eligible; see PayPal terms.'"></div>
-              <figcaption><b><span class="fn">A4</span>Captured</b>"Paid with PayPal Goods &amp; Services (sandbox). Buyer Protection may be eligible; see PayPal terms."</figcaption>
-            </figure>
-          </li>
-        </ol>
-      </div>
-
-      <div class="track">
-        <div class="track-head"><span class="tag">Path B</span><h3>Pay anyway, and chats that stay quiet</h3><p>The buyer can dismiss the card. The safe chats in our demo get none.</p></div>
-        <ul class="board board-pair">
-          <li class="frame">
-            <figure style="margin:0">
-              <div class="shot"><img src="img/thread-camera.webp" width="1200" height="1019" loading="lazy" decoding="async"
-                alt="Demo chat with Signe Kruse about a mirrorless camera for 2,400 kr. Highlighted phrases: 'Today only', 'can only ship', 'I am abroad', 'MobilePay' and 'Bank transfer' in the message 'Send 2,400 kr on MobilePay to 20 34 56 78. Bank transfer works too.' A PayBrake card shows 'High risk payment request', the reason 'Off-platform payment: a transfer outside PayPal checkout is hard to reverse if the item never arrives', chips Off-platform payment, Pressure to hurry, Ships before you meet, and buttons 'Switch to a PayPal order' and 'Pay anyway'."></div>
-              <figcaption><b><span class="fn">B1</span>Off-platform request</b>MobilePay to a phone number, or a bank transfer, from a seller who is "abroad". The buyer clicks <strong>Pay anyway</strong>. The card collapses and the choice goes into the override log on the device.</figcaption>
-            </figure>
-          </li>
-          <li class="frame">
-            <figure style="margin:0">
-              <div class="shot"><img src="img/safe.webp" width="1200" height="750" loading="lazy" decoding="async"
-                alt="Demo page titled 'Safe chats' with a banner 'DEMO — fictional names. These chats should stay quiet.' Chats about an oak bookshelf (pay through checkout or cash on pickup) and a wool jacket in Danish (betal ved afhentning) each show a grey note 'PayBrake stayed silent' and no risk card."></div>
-              <figcaption><b><span class="fn">B2</span>No card on the safe demo chats</b>Pay through checkout, or cash on pickup ("betal ved afhentning" in Danish). Both are veto phrases, so no card appears.</figcaption>
-            </figure>
-          </li>
-        </ul>
-      </div>
-
-      <div class="track">
-        <div class="track-head"><span class="tag">Controls</span><h3>Settings and phone width</h3></div>
-        <ul class="board board-end">
-          <li class="frame">
-            <figure style="margin:0">
-              <div class="shot"><img src="img/options.webp" width="768" height="1117" loading="lazy" decoding="async"
-                alt="PayBrake settings page: Backend URL field set to the hosted test server https://paybrake-demo.spbabinov.workers.dev with a note that it is test orders only, buttons 'Use test server' and 'Use localhost:8787', a checked box 'AI check on all chats (on by default in this demo build)' with a plain explanation of what is masked and sent, a note that the free test server has an AI provider (Typesafe) and masks the text again before passing it on, a status line 'This server: AI check ready (typesafe).', an unchecked 'Debug HUD on chat pages' box, a Save button, and an Override log with Download JSON and Clear buttons showing one example entry: override, high, friends_family and upfront_deposit, 'Send 500 kr deposit via PayPal Friends &amp; Family to hold it'."></div>
-              <figcaption><b><span class="fn">C1</span>Settings</b>Backend URL (hosted test server by default), the "AI check on all chats" toggle (on by default) with what gets masked and sent, a line that shows whether this server has AI (the hosted test server: "AI check ready (typesafe)"), debug HUD, and the override log. Build: branch <code>eval-real-scams</code>.</figcaption>
-            </figure>
-          </li>
-          <li class="frame">
-            <figure style="margin:0;height:100%;display:flex;flex-direction:column">
-              <div class="shot" style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--paper-2)">
-                <p class="small" style="margin:0;max-width:22em;text-align:center">The card lives in a Shadow DOM, so the page's CSS can't restyle it, and it reflows down to phone width.</p>
-              </div>
-              <figcaption><b><span class="fn">C2</span>Narrow screens</b>Buttons stack and chips wrap on narrow screens.</figcaption>
-            </figure>
-          </li>
-          <li class="frame phone">
-            <figure style="margin:0">
-              <div class="shot"><img src="img/live-390.webp" width="780" height="1688" loading="lazy" decoding="async"
-                alt="Phone-width view (390 px) of the bike chat with Jonas Holm: highlighted risky phrases and the PayBrake High risk payment request card with wrapped signal chips and full-width 'Switch to a PayPal order' and 'Pay anyway' buttons stacked."></div>
-              <figcaption><b><span class="fn">C3</span>390 px</b>The bike chat card at phone width.</figcaption>
-            </figure>
-          </li>
-        </ul>
-      </div>
-
-      <p class="cap-all">All screenshots: the real extension on our demo page, fictional names, backend in mock mode. No real money moves.</p>
-
-      <div class="evals" aria-labelledby="eval-real-h">
-        <div>
-          <h3 id="eval-real-h">On public scam and normal messages</h3>
-          <p>Held-out test split of 1,573 messages from four public datasets: real SMS, real Discord chat, and two synthetic sets (phone-scam dialogues and ScamGuardBench). <strong>None of them are marketplace chats.</strong> Rules v3 and the AI check (Typesafe <code>jev-1.14.0</code>, a yes/no decision model) were tuned on a separate dev split, then measured once on test. Every test message got an AI answer.</p>
-        </div>
-        <ul class="nums">
-          <li><span class="v">~85%</span><span class="k">of scam messages got a card, rules + AI check (603 / 713)</span></li>
-          <li><span class="v">~1.6%</span><span class="k">of normal messages got a card, rules + AI check (14 / 860; 2 of the 14 are spam the dataset labels as normal)</span></li>
-          <li><span class="v">46%</span><span class="k">of scam messages got a card from the rules alone, with 0.8% of normal messages flagged</span></li>
-          <li><span class="v">10%</span><span class="k">normal messages flagged on ScamGuardBench's tricky "looks scary but legit" set (11 / 110)</span></li>
-        </ul>
-      </div>
-
-      <div class="evals" aria-labelledby="eval-h">
-        <div>
-          <h3 id="eval-h">On our own 30 synthetic chats</h3>
-          <p>The team wrote these chats, with fictional names, and also wrote the rules. Rules mode only. A small set written by the same people says <em>nothing</em> about real-world accuracy.</p>
-        </div>
-        <ul class="nums">
-          <li><span class="v">30</span><span class="k">synthetic chats we wrote</span></li>
-          <li><span class="v">16 / 16</span><span class="k">risky chats got a card (recall 1.0)</span></li>
-          <li><span class="v">0 / 14</span><span class="k">safe chats got a card (precision 1.0)</span></li>
-          <li><span class="v">152</span><span class="k">offline tests (npm test, branch eval-real-scams)</span></li>
-        </ul>
-      </div>
+  <details>
+    <summary>Details</summary>
+    <div class="body">
+      <h3>How it works</h3>
+      <ul>
+        <li>Rules in English and Danish check the open chat for risky payment requests. The AI check also reads every chat and can add a card the rules missed.</li>
+        <li>Switch to a PayPal order creates a PayPal sandbox order for the item. In the test build PayPal runs in mock mode.</li>
+        <li>Pay anyway hides the card and saves your choice on your device.</li>
+      </ul>
+      <h3>Limits</h3>
+      <ul>
+        <li>English and Danish only. No support for real marketplace sites yet.</li>
+        <li>The numbers above come from public datasets, so real marketplace accuracy is unknown.</li>
+      </ul>
+      <p style="margin:.75rem 0 0">More in the <a href="https://github.com/lamapony/paybrake#readme">README</a>. Found a bug? <a href="https://github.com/lamapony/paybrake/issues">Open an issue</a>.</p>
     </div>
-  </section>
-
-  <!-- 5. Who it is for -->
-  <section id="who" class="alt" aria-labelledby="who-h">
-    <div class="wrap">
-      <p class="kicker">Who it's for</p>
-      <h2 id="who-h">Meant for second-hand buyers. Usable today by PayPal developers.</h2>
-      <div class="aud">
-        <article>
-          <h3>People buying used items from strangers</h3>
-          <p>The goal: a card appears only when the other person asks for a payment or details that are hard to take back, such as Friends &amp; Family, a deposit, a transfer outside checkout, or a one-time code. Today it runs only on our demo page. There are no adapters for real marketplaces yet.</p>
-        </article>
-        <article>
-          <h3>PayPal developers and hackathon judges</h3>
-          <p>An Orders v2 integration started from a chat message instead of a checkout page. With no client id set, the backend runs in mock mode, so you can click through without a PayPal account.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- 6. Tech -->
-  <section id="tech" aria-labelledby="tech-h">
-    <div class="wrap">
-      <p class="kicker">Tech</p>
-      <h2 id="tech-h">Sandbox only, mock mode by default.</h2>
-      <div class="tech">
-        <article class="panel">
-          <h3>PayPal Orders v2 (sandbox)</h3>
-          <ul>
-            <li>OAuth client credentials with a cached token.</li>
-            <li><code>POST /v2/checkout/orders</code>, intent <code>CAPTURE</code>, with <code>payee.email_address</code>; payer-action approval link; <code>GET</code> order; <code>POST</code> capture.</li>
-            <li><code>PayPal-Request-Id</code> on every POST. Currencies: DKK, EUR, USD.</li>
-            <li>The backend <strong>refuses to start</strong> unless <code>PAYPAL_ENV=sandbox</code> and the base URL is a sandbox host.</li>
-            <li><strong>Mock adapter</strong> (<code>MOCK-</code> ids) when no client id is set.</li>
-            <li><strong>Toolkit adapter</strong> exposes PayPal Agent Toolkit tool names: <code>create_order</code>, <code>get_order</code>, <code>pay_order</code>.</li>
-          </ul>
-          <p class="finding"><strong>Finding:</strong> the published <code>@paypal/agent-toolkit</code> 1.11.0 <code>create_order</code> has no payee field and is USD only, so calls run through the REST adapter.</p>
-        </article>
-        <article class="panel ai">
-          <h3>AI check on all chats</h3>
-          <ul>
-            <li>Backend <code>/api/classify</code> asks Typesafe's decision model (<code>jev-1.14.0</code>, pinned) typed yes/no and pick-one questions: is the chat risky, plus extra checks for prize claims, premium-rate numbers and free-bait links. OpenRouter or any OpenAI-compatible endpoint can still be configured instead.</li>
-            <li><strong>Runs on every chat</strong>, not only after the rules fire, so it <strong>can add a card</strong> the rules missed. It can remove a rules card only when it is very sure (confidence 0.85 or more).</li>
-            <li>Every evidence quote must be a verbatim substring of the other person's messages, or it is ignored.</li>
-            <li>No answer within 6 seconds, or an error: the rules result stands and the card says <strong>"AI check unavailable"</strong>.</li>
-            <li><strong>On by default</strong> in this demo build, and you can turn it off in Settings. <strong>Active on the hosted demo</strong> too (Typesafe), with a size cap and a per-IP rate limit.</li>
-            <li>In the <code>v0.2.0-test.3</code> download (branch <code>eval-real-scams</code>, in review). It costs about $0.07 per 1,000 checks, and an AI answer comes back in about 0.07 s (0.12 s at p95), measured from our server.</li>
-          </ul>
-        </article>
-        <article class="panel priv">
-          <h3>Privacy</h3>
-          <ul>
-            <li>The rules run in the extension, on your device.</li>
-            <li>With the AI check on (the default in this demo build), each chat goes to your configured server, which passes it to its AI provider. Before it leaves the browser, emails, phone numbers, card numbers, IBANs (all but the last 4), CPR and ID numbers, and one-time codes are masked. The other person's messages are sent, plus your newest message for context.</li>
-            <li><strong>Names, street addresses and other free text are not masked.</strong> The masking is pattern-based and can miss things.</li>
-            <li>The hosted test server has AI (Typesafe) and masks the text again before passing it on. On a server without AI, no chat text is sent. With the AI check off, no chat text leaves the browser.</li>
-            <li>"Switch to a PayPal order" sends item, amount, currency, seller email and the verdict to the backend.</li>
-            <li>Secrets live only in <code>backend/.env</code>, never in the extension.</li>
-            <li>The override log stays in <code>chrome.storage</code> on your device (max 200 entries). You can download or clear it.</li>
-            <li>Permissions: <code>storage</code> only. Host access: the hosted demo server (<code>paybrake-demo.spbabinov.workers.dev</code>) and a local backend on <code>localhost:8787</code>. The content script runs only on the hosted demo, <code>localhost</code>, <code>127.0.0.1</code> and <code>file://</code> pages.</li>
-          </ul>
-        </article>
-        <article class="panel stack">
-          <h3>Stack</h3>
-          <ul>
-            <li>Chrome MV3 extension, plain JS, no build step.</li>
-            <li>The card is rendered in a Shadow DOM.</li>
-            <li>Node 20 backend on <code>node:http</code>.</li>
-            <li>Hosted demo: a Cloudflare Worker with PayPal in mock mode (no PayPal keys) and the Typesafe AI check. Test orders are kept 24 hours and pages are sent with noindex.</li>
-            <li>MIT license.</li>
-          </ul>
-        </article>
-        <article class="panel limits">
-          <h3>Limits</h3>
-          <ul>
-            <li>English and Danish phrases only.</li>
-            <li>The AI check flags some normal messages: about 1.6% on our public test data, more on family money requests and bank notices.</li>
-            <li>Works on our demo page (<code>data-pb-*</code> attributes). No adapters for real marketplaces yet.</li>
-            <li>Sandbox only. No real money.</li>
-            <li>Local mock orders live in memory. The hosted demo keeps test orders for 24 hours.</li>
-          </ul>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- 7. Install -->
-  <section id="install" class="alt" aria-labelledby="install-h">
-    <div class="wrap">
-      <p class="kicker">Install</p>
-      <h2 id="install-h">Try the test build in about 2 minutes.</h2>
-      <p class="lede">Recommended: the <code>v0.2.0-test.3</code> pre-release, with the AI check on all chats. PayPal is in mock mode, so you don't need Node, a server or PayPal credentials. The repo is private for now, so the release link only works if you have repo access.</p>
-      <div class="install">
-        <div>
-          <ol class="how">
-            <li>Download <code>paybrake-extension.zip</code> from the <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">v0.2.0-test.3 pre-release</a> and unzip it.</li>
-            <li>Open <code>chrome://extensions</code> and turn on <strong>Developer mode</strong>.</li>
-            <li>Click <strong>Load unpacked</strong> and pick the <code>paybrake-extension</code> folder (the one with <code>manifest.json</code>).</li>
-            <li>A welcome tab opens. Click <strong>Try the demo store</strong>, or open the <a href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">hosted demo</a>.</li>
-            <li>In the bike chat: <strong>Switch to a PayPal order</strong> → <strong>Open approval</strong> → <strong>Approve (mock)</strong>. Back in the chat, click <strong>I approved it, capture</strong>. Then open the camera chat and click <strong>Pay anyway</strong>. The desk lamp chat gets no card.</li>
-          </ol>
-        </div>
-        <div>
-          <div class="ctas">
-            <a class="btn btn-pp" href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">Get v0.2.0-test.3</a>
-            <a class="btn btn-outline" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the hosted demo</a>
-          </div>
-          <p class="small" style="margin-top:20px">The test build talks to the hosted test server by default (mock PayPal, Typesafe AI). To use your own backend, set the Backend URL in Settings to <code>http://localhost:8787</code>.</p>
-          <p class="small">If the hosted demo shows a yellow "PayBrake is not running in this browser" box, the extension isn't loaded in that Chrome profile.</p>
-          <p class="small">Found a bug? <a href="https://github.com/lamapony/paybrake/issues/new?template=bug_report.md">Open an issue</a> (needs repo access).</p>
-        </div>
-      </div>
-
-      <h3 id="source-h" style="font-size:1.35rem;margin-top:56px;margin-bottom:12px">Run it from source</h3>
-      <p class="lede">Needs Node 20. No PayPal credentials needed: without a client id the backend runs in mock mode.</p>
-      <div class="install">
-        <div>
-          <div class="term">
-            <div class="term-h"><span>Terminal 1 · backend</span></div>
-<pre><code>git clone https://github.com/lamapony/paybrake.git
-cd paybrake
-npm install
-cp backend/.env.example backend/.env
-npm run dev:backend</code></pre>
-          </div>
-          <div class="term">
-            <div class="term-h"><span>Terminal 2 · demo page</span></div>
-<pre><code>npm run serve:demo</code></pre>
-          </div>
-          <div class="term">
-            <div class="term-h"><span>Offline checks</span></div>
-<pre><code>npm test
-npm run eval</code></pre>
-          </div>
-        </div>
-        <div>
-          <ol class="how">
-            <li>Open <code>chrome://extensions</code> and turn on <strong>Developer mode</strong>.</li>
-            <li>Click <strong>Load unpacked</strong> and choose the <code>extension/</code> folder.</li>
-            <li>Open <code>http://localhost:8080/demo/marketplace.html?live=1</code>.</li>
-            <li>Click <strong>Switch to a PayPal order</strong> → <strong>Open approval</strong> → <strong>Approve (mock)</strong>.</li>
-            <li>Back in the chat, click <strong>I approved it, capture</strong>.</li>
-          </ol>
-          <p class="small"><strong>Optional:</strong> put a PayPal sandbox client id and secret in <code>backend/.env</code> to create real sandbox orders. The <a href="https://github.com/lamapony/paybrake#readme">README</a> has the sandbox setup steps.</p>
-          <p class="small"><code>npm test</code> and <code>npm run eval</code> run fully offline.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 8. Team -->
-  <section id="team" aria-labelledby="team-h">
-    <div class="wrap">
-      <p class="kicker">Team</p>
-      <h2 id="team-h">Who built it.</h2>
-      <p class="small"><span class="ph ph-dark">PLACEHOLDER</span> Team details and roles to be confirmed.</p>
-      <div class="team">
-        <article class="person">
-          <span class="avatar" aria-hidden="true">DB</span>
-          <div>
-            <h3>Dmitrii Babinov</h3>
-            <p>Extension, detector, eval set, card UI, demo page.</p>
-          </div>
-        </article>
-        <article class="person">
-          <span class="avatar" aria-hidden="true">CW</span>
-          <div>
-            <h3>Christopher Wang</h3>
-            <p>PayPal sandbox backend.</p>
-          </div>
-        </article>
-      </div>
-      <p class="meta">Built for the PayPal AI Hackathon (Devpost). Submission deadline: 12 Nov 2026. MIT © 2026.</p>
-    </div>
-  </section>
-
-  <!-- 9. Final CTA -->
-  <section class="band" aria-labelledby="cta-h">
-    <div class="wrap">
-      <h2 id="cta-h">Load the extension, open the bike chat.</h2>
-      <p>The test build runs in mock mode. You don't need a PayPal account or a server, and no money moves.</p>
-      <div class="ctas">
-        <a class="btn btn-amber" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the hosted demo</a>
-        <a class="btn btn-ghost" href="#install">Install steps</a>
-        <a class="btn btn-ghost" href="https://github.com/lamapony/paybrake">GitHub (repo goes public for judging)</a>
-        <a class="btn btn-ph" href="#" aria-disabled="true">Demo video (link coming) <span class="ph">PLACEHOLDER</span></a>
-        <a class="btn btn-ph" href="#" aria-disabled="true">Devpost entry <span class="ph">PLACEHOLDER</span></a>
-      </div>
-      <p class="note">The hosted demo only works with the extension loaded.</p>
-    </div>
-  </section>
+  </details>
 </main>
 
 <footer>
-  <div class="wrap">
-    <p style="margin:0"><strong>PayBrake</strong> · Brakes before you pay. · MIT © 2026</p>
-    <p style="margin:0">Not affiliated with PayPal or any marketplace. Demo chats use fictional names. No real money moves in this build.</p>
-  </div>
+  <p>PayBrake is a PayPal AI Hackathon project. This is a test build: test orders only, no real money moves. Not affiliated with PayPal.</p>
 </footer>
-<script src="js/engine/brand.js" defer></script>
-<script src="js/engine/tidy.js" defer></script>
-<script src="js/engine/atoms.js" defer></script>
-<script src="js/engine/extract.js" defer></script>
-<script src="js/engine/redact.js" defer></script>
-<script src="js/engine/pay-risk.js" defer></script>
-<script src="js/sim.js" defer></script>
-<script src="js/quiz.js" defer></script>
+</div>
 </body>
 </html>
