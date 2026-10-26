@@ -11,7 +11,7 @@
 <link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="PayBrake · Brakes before you pay.">
-<meta property="og:description" content="A Chrome extension prototype that shows a card only when a demo marketplace chat asks for Friends &amp; Family, a deposit or an off-platform transfer, and offers a PayPal sandbox order instead.">
+<meta property="og:description" content="A Chrome extension prototype that shows a card when a demo marketplace chat asks for Friends &amp; Family, a deposit, an off-platform transfer, a code or card details, or sends a suspicious payment link, and offers a PayPal sandbox order instead.">
 <meta property="og:image" content="img/og.jpg">
 <style>
 :root{
@@ -372,7 +372,7 @@ footer a:hover{color:#9ccfff}
         <div>
           <p class="eyebrow">Chrome extension · PayPal sandbox</p>
           <h1>The seller asks for Friends &amp; Family. <em>PayBrake</em> offers a PayPal order instead.</h1>
-          <p class="sub">PayBrake is a Chrome extension prototype. On our demo marketplace page it reads the open chat in your browser and shows a card only when a message asks for Friends &amp; Family, a deposit to hold the item, or a transfer such as MobilePay. The card offers a PayPal Orders v2 sandbox checkout instead.</p>
+          <p class="sub">PayBrake is a Chrome extension prototype. On our demo marketplace page it reads the open chat in your browser and shows a card when a message asks for Friends &amp; Family, a deposit to hold the item, a transfer such as MobilePay, or a code or card details, or sends a suspicious payment link. The card offers a PayPal Orders v2 sandbox checkout instead.</p>
           <div class="ctas">
             <a class="btn btn-amber" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the hosted demo</a>
             <a class="btn btn-ghost" href="#install">Install the test build</a>
@@ -639,7 +639,7 @@ footer a:hover{color:#9ccfff}
       <div class="aud">
         <article>
           <h3>People buying used items from strangers</h3>
-          <p>The goal: a card appears only when a seller asks for Friends &amp; Family, a deposit, or a transfer outside checkout. Today it runs only on our demo page. There are no adapters for real marketplaces yet.</p>
+          <p>The goal: a card appears only when the other person asks for a payment or details that are hard to take back, such as Friends &amp; Family, a deposit, a transfer outside checkout, or a one-time code. Today it runs only on our demo page. There are no adapters for real marketplaces yet.</p>
         </article>
         <article>
           <h3>PayPal developers and hackathon judges</h3>
