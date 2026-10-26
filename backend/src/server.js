@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createOrdersPort } from "./paypal.js";
 import { protectDeal } from "./agent.js";
-import { classifyText } from "./classify.js";
+import { classifyText, resolveLlm } from "./classify.js";
 import { NAME } from "./brand.js";
 
 export const BODY_LIMIT = 16 * 1024;
@@ -137,6 +137,7 @@ function createHandler(env = {}, deps = {}) {
   }
   const orders = deps.orders || createOrdersPort(env, { fetchImpl: deps.fetchImpl, now: deps.now });
   const fetchImpl = deps.fetchImpl || globalThis.fetch;
+  const llm = resolveLlm(env);
 
   return async (req, res) => {
     applyCors(req, res, env);
@@ -154,7 +155,8 @@ function createHandler(env = {}, deps = {}) {
           name: NAME,
           env: "sandbox",
           paypal: orders.mode,
-          llm: String(env.LLM_BASE_URL || "").trim() ? "configured" : "off"
+          llm: llm.configured ? "configured" : "off",
+          llmProvider: llm.configured ? llm.provider : "off"
         });
         return;
       }
@@ -162,7 +164,7 @@ function createHandler(env = {}, deps = {}) {
       if (req.method === "POST" && pathname === "/api/classify") {
         const body = await readJson(req);
         if (typeof body.text !== "string") bad("text is required");
-        if (!String(env.LLM_BASE_URL || "").trim()) {
+        if (!llm.configured) {
           send(res, 503, { error: "llm_off" });
           return;
         }
