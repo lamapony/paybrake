@@ -1,0 +1,7 @@
+{
+  "name": "paybrake-extension",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "PayBrake Chrome extension (MV3, no build step)."
+}

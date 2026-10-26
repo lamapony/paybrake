@@ -1,0 +1,7 @@
+{
+  "name": "paybrake-backend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "PayBrake backend. Mock OrdersPort in this build; rest and toolkit are contracted but not implemented."
+}
