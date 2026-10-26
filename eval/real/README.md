@@ -6,8 +6,15 @@ This harness runs the same detector (`extension/lib`) on third-party public data
 ```
 npm run eval:real:download     # pinned HF revisions -> eval/real/.data/ (gitignored)
 npm run eval:real              # rules only -> eval/real/results/rules-v<RULES_VERSION>.json
-OPENROUTER_API_KEY=... node eval/real/run-real.mjs --llm --llm-n=200   # + rules+LLM and LLM-alone
+OPENROUTER_API_KEY=... node eval/real/run-real.mjs --llm --llm-n=200   # v1/v2: rules+LLM (confirm only) and LLM-alone
+node eval/real/run-real.mjs --report                                    # print the test split too (dev only by default)
+OPENROUTER_API_KEY=... node eval/real/run-llm-all.mjs --split=dev --n=all --sweep   # v3: AI check on all chats, threshold sweep
+OPENROUTER_API_KEY=... node eval/real/run-llm-all.mjs --split=test --n=200          # same 200 as v1/v2
+OPENROUTER_API_KEY=... node eval/real/run-llm-all.mjs --split=test --n=all
 ```
+
+`run-llm-all.mjs` caches model answers in `.data/llm-cache.json` (gitignored), keyed by model + prompt + the
+redacted transcript, so reruns with changed thresholds or rules cost nothing. Failed calls are not cached.
 
 ## Datasets (pinned in `sources.json`)
 
@@ -29,7 +36,7 @@ PayBrake's detector takes `detect(text, { messages:[{from,text}], listingTitle?,
   Nothing is invented; this only affects the deal card, not the risk verdict.
 - **Single messages** (SMS, Discord, ScamGuardBench) become one message from the counterparty (`from: "seller"`).
 - **Phone dialogues** are split on `caller:` / `receiver:`; caller -> counterparty (`seller`), receiver -> user (`buyer`).
-  The detector does not look at who said what except for the Goods & Services veto, so victim lines can trigger signals too.
+  Since v3 the speaker matters: only counterparty lines raise signals, and the AI must quote a counterparty line.
 - **Not a marketplace.** None of these are marketplace buyer/seller chats; there is no public HF dataset of those
   that we could find. PayBrake only targets *how a payment is asked for* (F&F, deposits, off-platform rails, pay-first).
   Prize spam, Nitro phishing, credential phishing and tech-support scams are mostly out of its scope by design.
@@ -43,7 +50,8 @@ PayBrake's detector takes `detect(text, { messages:[{from,text}], listingTitle?,
 
 Per dataset: exact-duplicate texts removed, then up to 500 scam + 500 legit rows drawn with seed `20261026`
 (mulberry32 shuffle). Every picked row is assigned `dev` or `test` alternately after the shuffle (50/50 per class).
-Rule changes in RULES_VERSION 2 were designed by looking at **dev** rows only; report **test** numbers for v2.
+Rule changes in RULES_VERSION 2 and 3 and the v3 AI thresholds were designed by looking at **dev** rows only;
+report **test** numbers. `run-real.mjs` prints only dev unless `--report` is given.
 
 ## LLM run
 
