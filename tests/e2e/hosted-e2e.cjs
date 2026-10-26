@@ -2,7 +2,7 @@
 // Unzips dist/paybrake-extension.zip, loads that folder in Chromium, and checks:
 // install -> welcome tab -> "Try the demo store" -> hosted demo -> PayBrake card ->
 // protected order -> mock approval -> capture. Screenshots at 1280 wide go to shots/tester/.
-// Run: npm run pack:extension && npm run e2e:hosted   (PB_DEMO_ORIGIN overrides the host)
+// Run: npm run pack:extension && npm run e2e:hosted
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -19,7 +19,7 @@ const root = path.resolve(__dirname, "..", "..");
 const zip = path.join(root, "dist", "paybrake-extension.zip");
 const shots = path.join(root, "shots", "tester");
 const fallbackChrome = "/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome";
-const origin = (process.env.PB_DEMO_ORIGIN || "https://paybrake-demo.spbabinov.workers.dev").replace(/\/$/, "");
+const origin = "https://paybrake-demo.spbabinov.workers.dev"; // must match extension/lib/config.js
 const W = 1280;
 const H = 900;
 
@@ -72,9 +72,14 @@ async function run() {
 
   try {
     // 1. Install -> welcome tab opens by itself.
+    // Poll open pages: a new tab can report about:blank before it navigates.
     const isWelcome = (p) => /\/welcome\.html$/.test(p.url());
-    let welcome = context.pages().find(isWelcome);
-    if (!welcome) welcome = await context.waitForEvent("page", { predicate: isWelcome, timeout: 15000 });
+    let welcome = null;
+    for (let i = 0; i < 150 && !welcome; i++) {
+      welcome = context.pages().find(isWelcome) || null;
+      if (!welcome) await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    if (!welcome) throw new Error("welcome tab did not open on install");
     await welcome.waitForLoadState("domcontentloaded");
     await welcome.getByRole("heading", { name: "You're all set" }).waitFor({ timeout: 5000 });
     const button = welcome.getByRole("link", { name: "Try the demo store" });
