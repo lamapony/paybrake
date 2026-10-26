@@ -2,6 +2,8 @@
 
 Date: 26 Oct 2026. Branch `eval-real-scams` (from `tester-friendly`). Harness: `eval/real/`.
 
+**Latest: rules v3 + AI check on all chats, see [the v3 section](#v3-new-rules-and-the-ai-check-on-all-chats) below.** The sections before it describe v1/v2 and are kept as the baseline.
+
 ## What we tested
 
 PayBrake's own eval is 30 chats we wrote ourselves, where it scores precision 1.0 and recall 1.0. That only shows
@@ -100,6 +102,139 @@ reminder). The other changes come from dev false negatives only.
   call per message and sends every chat to a model provider, which is a privacy and cost trade-off.
 - Cost: about $0.03 for both LLM runs together (≈425 calls). 1 call errored out of 212 in the v2 run.
 
+## v3: new rules and the AI check on all chats
+
+### What changed
+
+**Rules (RULES_VERSION 3, `extension/lib/atoms.js`).** Six new signals, designed on dev only:
+- `credential_request` (strong, enough alone): asks for card number / CVV / expiry, one-time / SMS / verification codes,
+  MitID / NemID / BankID codes or logins, passwords, PINs, CPR / SSN, bank login or account details. Needs a request verb in the
+  same sentence. "Never share this code", "use the official app", "the number on the back of your card" do not fire.
+- `remote_access` (strong, alone): AnyDesk, TeamViewer, QuickSupport, Quick Assist, RustDesk and similar, or "remote access /
+  screen share" with an install/give/allow verb.
+- `phishing_link` (strong, alone): a link whose host is a shortener, raw IP, punycode, a lookalike of a brand (`paypa1`, `dlscord`,
+  edit distance 1–2), a brand name inside a stranger's domain, an odd TLD (`.xyz`, `.top`, `.gift` …) or a lure word in the site
+  name (`prize-verify.`, `secure-pay-check.`), with a lure word nearby (verify, log in, claim, pay …). Official domains are
+  exempt; plain service subdomains (`support.`, `help.`, `billing.`) are not lures. Also "click here to verify / pay" and
+  "receive the payment via this link".
+- `fee_via_link` (strong, alone): customs / delivery / release / processing fee, or "pay a small fee", together with a link,
+  prize, parcel-held or refund context.
+- `impersonation` and `account_threat` (weak): "this is your bank / fraud department / Skattestyrelsen / support team",
+  "your account will be suspended", "unusual login", "virus detected". They raise a card only together with another signal.
+- **Speaker gate:** only the other person's lines raise signals. The user's own line ("can I pay with my card number?") never does.
+
+**AI check on all chats** (`extension/lib/pay-risk.js` `combineAll`, `extension/background.js`, `extension/content.js`).
+- Before: the model was asked only after the rules fired and could only confirm or lower a card.
+- Now: rules run first and show a card at once. About 0.8 s after the chat stops changing, the chat is sent to the AI check.
+  Each chat text (hash) is checked once and the answer is cached.
+- Show a card if either one says risky:
+  - Rules risky + AI risky: the higher level, AI signal added.
+  - Rules risky + AI not risky: the card goes away only if the AI's confidence is at least 0.85. Otherwise it stays, marked "AI check unsure".
+  - Rules silent + AI risky with confidence at least 0.8: the AI adds a card (signal from the AI, receipt "Flagged by the AI check").
+    One exception: a code notice that tells the user never to share the code, and does not ask for it, stays silent.
+  - A Goods & Services veto is overridden only by a high-risk verdict with confidence at least 0.9.
+- The AI's evidence must be a verbatim quote from the other person's lines, or it is ignored.
+- **Redaction before sending:** emails, phone numbers (8+ digits), IBANs (all but the last 4 characters), Luhn-valid card numbers,
+  CPR / SSN, and codes after "code / kode / OTP / PIN / password" are masked. Lines are labelled `Them:` / `Me:`.
+- **Timeout:** 6 s. On timeout or error the rules verdict stands and the card says **AI check unavailable**. Those answers are not cached.
+- **Server without AI (the hosted test server):** the extension reads `/health`. If the server has no AI provider, no chat text is sent,
+  and the card says **AI check off (mock server)**. No key was added to the Worker.
+- **Setting:** "AI check on all chats" in Settings, ON by default in this demo build. Settings and the welcome tab explain what is
+  sent and where, and Settings shows whether the current server has AI. Off means rules only, and no chat text leaves the browser.
+
+Thresholds were picked on dev (sweep in `results/llm-all-v3-dev-all.json`): downgrade confidence made no difference at any value from
+0.7 to 1.01 (the model almost never says "not risky" with high confidence when rules fire). Add confidence 0.8 gave the same F1
+as 0.5 with slightly fewer false alarms; 0.9 cost 14 points of recall.
+
+### Before / after, test split (1,573 messages none of the changes were designed on)
+
+| pooled test | TP | FP | FN | TN | precision | recall | F1 | FPR |
+|---|---|---|---|---|---|---|---|---|
+| rules v1 | 78 | 4 | 635 | 856 | 0.95 | 0.11 | 0.20 | 0.005 |
+| rules v2 | 38 | 2 | 675 | 858 | 0.95 | 0.05 | 0.10 | 0.002 |
+| **rules v3** | **325** | **7** | **388** | **853** | **0.98** | **0.46** | **0.62** | **0.008** |
+| **rules v3 + AI check on all chats** ¹ | **606** | **39** | **107** | **821** | **0.94** | **0.85** | **0.89** | **0.045** |
+
+¹ The OpenRouter account ran out of credit (HTTP 402) during the test run. 305 of 1,573 rows (198 phone dialogues,
+106 ScamGuardBench, 1 Discord) got no AI answer and fell back to rules only, exactly as the product does on a timeout.
+On the 1,268 rows that did get an AI answer:
+
+| test rows with an AI answer (1,268) | TP | FP | FN | TN | precision | recall | F1 | FPR |
+|---|---|---|---|---|---|---|---|---|
+| rules v3 | 236 | 6 | 379 | 647 | 0.98 | 0.38 | 0.55 | 0.009 |
+| rules v3 + AI check on all chats | 517 | 38 | 98 | 615 | 0.93 | 0.84 | 0.88 | 0.058 |
+| AI alone (v3 prompt) | 445 | 41 | 170 | 612 | 0.92 | 0.72 | 0.81 | 0.063 |
+
+Per dataset, test split:
+
+| dataset | rules v3 P / R / FPR | rules v3 + AI P / R / FPR |
+|---|---|---|
+| SMS spam (real) | n/a / 0.00 / 0.000 | 0.97 / 0.78 / 0.024 |
+| Discord (real) | 0.97 / 0.23 / 0.004 | 0.94 / 0.72 / 0.024 |
+| Scam dialogues | 0.99 / 0.90 / 0.008 | 0.96 / 0.96 / 0.036 ¹ |
+| ScamGuardBench | 0.95 / 0.92 / 0.036 | 0.80 / 0.96 / 0.164 ¹ |
+
+**Same 200-message test subsample as the v1/v2 LLM runs** (no credit problem here, 1 of 200 calls failed):
+
+| on the same 200 test messages | TP | FP | FN | TN | precision | recall | F1 | FPR |
+|---|---|---|---|---|---|---|---|---|
+| v2 rules only | 11 | 1 | 89 | 99 | 0.92 | 0.11 | 0.20 | 0.01 |
+| v2 rules + LLM (confirm only, as shipped before) | 10 | 1 | 90 | 99 | 0.91 | 0.10 | 0.18 | 0.01 |
+| v2 prompt, LLM alone | 85 | 3 | 15 | 97 | 0.97 | 0.85 | 0.90 | 0.03 |
+| **v3 rules only** | **56** | **2** | **44** | **98** | **0.97** | **0.56** | **0.71** | **0.02** |
+| **v3 rules + AI check on all chats** | **91** | **13** | **9** | **87** | **0.88** | **0.91** | **0.89** | **0.13** |
+| v3 prompt, AI alone | 78 | 15 | 22 | 85 | 0.84 | 0.78 | 0.81 | 0.15 |
+
+The subsample has 25 legit messages per dataset, and ScamGuardBench's legit half is deliberately "looks scary but is fine", so
+its FPR is much higher than in real traffic. Read the full-test FPR (0.045) as the better estimate, and the SMS / Discord
+FPR (0.024 each, real messages) as the closest to real use.
+
+**The v3 prompt is worse alone than the v2 prompt on these 200** (FP 3 → 15, recall 0.85 → 0.78). The new prompt lists many
+more risky asks (links, codes, impersonation), and the model now flags bank notices, courier notifications and OTP messages that
+are legit. Rules + AI still beats both on recall, but most of the new false alarms come from the AI. Fixing the prompt is the first
+open item below.
+
+### Where the AI's false alarms come from (dev split, 49 FPs with rules + AI)
+
+- ScamGuardBench confusables (25): bank transaction alerts read as impersonation, government / courier / subscription notices with a
+  link read as phishing, the disputed "family money request" texts. The code-notice exception removed 9 OTP notices.
+- Phone dialogues (12): legit delivery and insurance calls asking to "confirm your details".
+- Real SMS / Discord (12): clickbait links, "send me your number", friends talking about payments.
+
+### Cost and latency
+
+- **Cost: $0.35** on the OpenRouter key (`/api/v1/key` usage 13.899 → 14.252), about 3,300 calls with gpt-4o-mini
+  (dev 1,574, test 200, test-all 1,268 answered). About $0.10 per 1,000 chats.
+- **Latency** of one AI check, measured from the box straight to OpenRouter (the product adds one hop through the PayBrake server):
+  p50 **2.0 s**, p95 **3.2–3.5 s**, max 7.4 s. The rules card appears at once. The AI result arrives about 3 s later (0.8 s debounce + p50).
+  Above the 6 s timeout, the card says "AI check unavailable".
+- Not done: a full test run with every row answered. That needs about $0.04 more credit on the OpenRouter account.
+
+### Rules v3 on dev (for reference, what the rules were designed on)
+
+pooled dev: TP 328, FP 3, FN 386, TN 857, precision 0.99, recall 0.46. The 3 dev FPs: a telemarketing call ("we'd need a credit card
+to put on file"), one disputed family-money text, and an OTP notice with "this is your bank … unusual login" (impersonation +
+account threat).
+
+Test-set honesty note: the first v3 draft's printout showed the test split once (pooled P 0.95, R 0.36) before later dev-only fixes.
+After that, `run-real.mjs` printed dev only, and every rule and threshold change was made on dev rows. One rule change was prompted by a
+product example, not by data: the promo-page quiz message "Pay with this link: paypa1-secure-checkout.example/pay" now fires
+(bare domains on common TLDs count when the host itself looks off).
+
+### Open risks
+
+1. **AI false alarms.** FPR 4.5% on test overall, 2.4% on real SMS and Discord, 16% on ScamGuardBench's hard legit set. Bank alerts,
+   courier notices and "confirm your details" calls are the main sources. Next: revise the prompt on dev, for example by requiring an
+   actual ask (pay / send / click / install) from Them before "risky", and re-measure.
+2. **Privacy.** With the setting on, every chat (redacted) goes to the PayBrake server and on to the AI provider. Redaction is regex-based:
+   names, street addresses and free-text details are not masked, and the phone rule also masks long order numbers.
+3. **The hosted test server has no AI.** Testers on the hosted build see rules v3 only, with "AI check off (mock server)". Turning it on
+   needs a key in the Worker, which was not done (needs your OK).
+4. **Credit.** The OpenRouter account behind the eval key returned 402 (out of credit) at the end of this run, so it cannot run more evals
+   until it is topped up.
+5. **Labels.** Some dataset labels are debatable (family money requests), and none of this data is marketplace chat.
+6. **SMS prize spam** (premium-rate numbers, no link or payment ask) is still out of scope for the rules. Only the AI catches it.
+
 ## Error analysis (v1 rules; examples from the dev split unless marked)
 
 **10 representative false negatives**
@@ -142,5 +277,10 @@ reminder). The other changes come from dev false negatives only.
 ```
 npm run eval:real:download && npm run eval:real
 OPENROUTER_API_KEY=… node eval/real/run-real.mjs --llm --llm-n=200
+node eval/real/run-real.mjs --report
+OPENROUTER_API_KEY=… node eval/real/run-llm-all.mjs --split=dev --n=all --sweep
+OPENROUTER_API_KEY=… node eval/real/run-llm-all.mjs --split=test --n=200
+OPENROUTER_API_KEY=… node eval/real/run-llm-all.mjs --split=test --n=all
 ```
-Results: `eval/real/results/rules-v1.json` (baseline, from the original rules), `rules-v2.json`, `llm-v1.json`, `llm-v2.json`.
+Results: `eval/real/results/rules-v1.json` (baseline, from the original rules), `rules-v2.json`, `rules-v3.json`, `llm-v1.json`, `llm-v2.json`,
+`llm-all-v3-dev-all.json` (with the threshold sweep), `llm-all-v3-test-200.json`, `llm-all-v3-test-all.json`.
