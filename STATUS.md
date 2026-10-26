@@ -40,4 +40,4 @@ _2026-10-26. Mock backend, extension, demo, eval, shots, and extension smoke. Re
 | 7.4 Playwright static card at 390 and 1280, protect shot, `safe-1280.png` with no card, plus injected live card shots | PASS |
 | 7.5 extension smoke: live card within 5s, protect shows `MOCK-`, second thread Pay anyway lands in the ring log, `shots/ext-live-1280.png` and `shots/ext-live-390.png` | PASS |
 | 7.6 secret grep on tracked files, `.env` gitignored, `.env.example` empty | PASS |
-| 7.7 README run-in-5-minutes from a clean clone | see the clone note in PROGRESS.md after the verify step |
+| 7.7 README run-in-5-minutes from a clean clone | PASS (`npm install`, `npm test` 62/62, `npm run eval` precision 1, `/health` mock, `POST /api/protect` returns `MOCK-`) |
