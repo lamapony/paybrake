@@ -257,6 +257,94 @@ footer a:hover{color:#9ccfff}
   html{scroll-behavior:auto}
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+
+/* ---------- live rules ---------- */
+.sim-grid{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:28px;margin-top:28px;align-items:start}
+.sim-grid>*{min-width:0}
+#try h3{font-size:1.2rem;margin:0 0 12px}
+.presets{display:flex;flex-direction:column;gap:8px}
+.preset{display:block;width:100%;min-height:44px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink);font:700 .98rem/1.35 var(--font);cursor:pointer;touch-action:manipulation}
+.preset-sample{display:block;margin-top:2px;font-weight:500;color:var(--ink-2);overflow-wrap:anywhere}
+.preset[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.preset[aria-pressed="true"] .preset-sample{color:var(--on-navy-2)}
+.sim-field{margin-top:18px}
+.sim-field label{display:block;font-weight:700;margin-bottom:6px}
+.sim-field textarea{display:block;width:100%;max-width:100%;min-height:112px;padding:12px;border-radius:12px;border:1px solid #c9bda6;background:#fff;color:var(--ink);font:inherit;resize:vertical;overflow-wrap:anywhere}
+.hint{margin:6px 0 0;font-size:.88rem;color:var(--ink-2)}
+.sim-thread{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px 16px}
+.thread-kicker{margin:0 0 6px;font:700 .72rem/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--amber-ink)}
+.thread-title{margin:0;font-size:1.2rem;font-weight:800}
+.thread-hint{margin-top:4px}
+.who-line{margin:14px 0 4px;font:600 .72rem/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.bubble{margin:0;padding:10px 14px;overflow-wrap:anywhere;border:1px solid var(--line)}
+.bubble-buyer{background:var(--paper);border-radius:16px 16px 16px 4px}
+.bubble-seller{background:#fff;border-color:#e7d3a1;border-radius:16px 16px 16px 4px;min-height:48px;white-space:pre-wrap}
+.bubble mark{background:var(--amber-wash);color:var(--ink);padding:0 3px;border-radius:4px;box-shadow:inset 0 -2px 0 #f0c66e}
+#sim-result{margin-top:12px}
+.quiet{margin:0;padding:12px 14px;border-radius:12px;border:1px dashed #c9bda6;background:var(--paper);color:var(--ink-2)}
+.quiet.is-error{border-style:solid;border-color:#f3b6ae;background:#fde8e6;color:#9a1f12}
+
+#try .pb{position:relative;margin:0;border-radius:16px;background:#fff;border:1px solid #f1c27d;box-shadow:0 2px 4px rgba(180,35,24,.06),0 10px 28px rgba(180,35,24,.10);color:#1c2530;font-size:15px;line-height:1.45}
+#try .pb-bar{position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:16px 0 0 16px;background:linear-gradient(180deg,#f5a524,#b42318)}
+#try .pb-body{padding:16px 18px 14px 22px}
+#try .pb-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+#try .pb-badge{display:inline-flex;align-items:center;gap:7px;background:#fef3f2;color:#b42318;border:1px solid #fecdca;font-weight:700;font-size:13px;padding:5px 11px 5px 8px;border-radius:999px}
+#try .pb-badge svg{flex:none}
+#try .pb-tag{margin-left:auto;font-size:12px;color:#5d6a7c}
+#try .pb-explain{margin:0 0 12px;font-size:15px;font-weight:550;overflow-wrap:anywhere}
+#try .pb-signals-label{margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5d6a7c}
+#try .pb-chips{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+#try .pb-chip{display:inline-flex;align-items:center;gap:6px;background:#fff8eb;border:1px solid #f3c46b;color:#6b4200;font-size:13px;font-weight:600;padding:4px 10px;border-radius:8px;overflow-wrap:anywhere}
+#try .pb-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:#d9480f;flex:none}
+#try .pb-actions{display:flex;flex-wrap:wrap;gap:10px}
+#try .pb-btn{flex:1 1 200px;min-width:0;min-height:44px;padding:10px 16px;border-radius:999px;font:700 15px/1.2 var(--font);text-align:center;cursor:pointer;touch-action:manipulation}
+#try .pb-btn-primary{background:#0062a8;color:#fff;border:1px solid #0062a8}
+#try .pb-btn-ghost{background:transparent;color:#4a5666;border:1px solid #c3ccd7}
+#try .pb-note{margin:12px 0 0;font-size:14px;color:#1c2530;overflow-wrap:anywhere}
+#try .pb-note a{text-decoration:underline;text-underline-offset:2px}
+#try .pb-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 18px 9px 22px;background:#f6f8fb;border-top:1px solid #dde3ea;border-radius:0 0 15px 15px;font-size:12px;color:#5d6a7c;overflow-wrap:anywhere}
+#try .pb-brand{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:#4a5666}
+#try .pb-dot{width:14px;height:14px;border-radius:50%;border:3px solid #4a5666;flex:none}
+@media (hover:hover) and (pointer:fine){
+  .preset:hover{border-color:var(--navy)}
+  #try .pb-btn-primary:hover{background:#004f88;border-color:#004f88}
+  #try .pb-btn-ghost:hover{background:#f6f8fb;border-color:#9aa7b6}
+}
+@media (prefers-reduced-motion:no-preference){
+  #try .pb-btn:active{transform:scale(.98)}
+}
+@media (max-width:640px){
+  #try .pb-body{padding:14px 14px 12px 18px}
+  #try .pb-tag{margin-left:0}
+  #try .pb-actions{flex-direction:column}
+  #try .pb-btn{width:100%;flex-basis:auto}
+  #try .pb-foot{padding:9px 14px 9px 18px}
+}
+
+.quiz{margin-top:64px;padding-top:36px;border-top:1px solid var(--line)}
+#quiz-progress{margin:0 0 8px;font-weight:700}
+#quiz-actions:not([hidden]){display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+#quiz-thread[hidden],#quiz-actions[hidden],#quiz-progress[hidden],#quiz-next[hidden]{display:none!important}
+#try .quiz-actions button{flex:1 1 180px;min-height:48px;padding:10px 16px;border-radius:999px;border:2px solid var(--navy);background:#fff;color:var(--navy);font:700 1rem/1.2 var(--font);cursor:pointer;touch-action:manipulation}
+#try .quiz-actions button[aria-pressed="true"]{background:var(--navy);color:#fff}
+#try .quiz-actions button[aria-disabled="true"]:not([aria-pressed="true"]){border-color:#c9bda6;color:var(--ink-2);cursor:default}
+#quiz-next{margin-top:14px;min-height:48px;padding:10px 18px;border-radius:999px;border:2px solid #b9ad97;background:#fff;color:var(--ink);font:700 1rem/1.2 var(--font);cursor:pointer;touch-action:manipulation}
+#quiz-reveal{margin-top:14px}
+.reveal-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.reveal-verdict,.score{margin:0 0 8px;font-weight:800;color:var(--ink)}
+.score{font-size:1.35rem}
+.reveal-reason{margin:0 0 10px;color:var(--ink);overflow-wrap:anywhere}
+.reveal-why,.reveal-match{margin:8px 0 0}
+.reveal-match{font-weight:700;color:var(--ink)}
+.reveal-why{color:var(--ink-2)}
+.recap{margin:12px 0 0;padding-left:1.2em;color:var(--ink-2)}
+.recap li{margin:0 0 6px;overflow-wrap:anywhere}
+@media (max-width:860px){.sim-grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){#quiz-next:not([hidden]){width:100%}}
+@media (prefers-reduced-motion:no-preference){
+  .frame.is-reveal{opacity:0;transform:translateY(12px)}
+  .frame.is-reveal.is-in{opacity:1;transform:none;transition:opacity .45s ease,transform .45s ease}
+}
 </style>
 </head>
 <body>
@@ -267,6 +355,7 @@ footer a:hover{color:#9ccfff}
     <nav class="nav" aria-label="Primary">
       <a class="brand" href="#top" aria-label="PayBrake, back to top"><img class="logo" src="img/logo.svg" width="32" height="32" alt="">PayBrake</a>
       <ul>
+        <li><a class="l" href="#try">Live rules</a></li>
         <li><a class="l" href="#problem">Problem</a></li>
         <li><a class="l" href="#how">How it works</a></li>
         <li><a class="l" href="#demo">Demo</a></li>
@@ -303,6 +392,57 @@ footer a:hover{color:#9ccfff}
 </header>
 
 <main id="main">
+
+  <section id="try" class="alt" aria-labelledby="try-h">
+    <div class="wrap">
+      <p class="kicker">Live rules</p>
+      <h2 id="try-h">Try it: the rules engine, live</h2>
+      <p class="lede">Pick a seller line, or type one. The box under the message is what these rules return.</p>
+      <div class="callout">
+        <p>Simplified demo: the same on-device rules as the extension, running in your browser. Nothing is sent anywhere. Not connected to PayPal.</p>
+      </div>
+
+      <div class="sim-grid">
+        <div class="sim-controls">
+          <h3>Example messages</h3>
+          <div class="presets" id="sim-presets" role="group" aria-label="Example seller messages"></div>
+          <div class="sim-field">
+            <label for="sim-text">Or type a seller message</label>
+            <textarea id="sim-text" maxlength="300" rows="4" spellcheck="true" autocomplete="off" placeholder="Seller message"></textarea>
+            <p id="sim-limit" class="hint">300 characters max. The check runs as you type.</p>
+          </div>
+        </div>
+        <div class="sim-thread">
+          <p class="thread-kicker">Fictional chat</p>
+          <p class="thread-title">Jonas · used road bike, 1,800 kr</p>
+          <p class="hint thread-hint">Only the seller line is checked.</p>
+          <p class="who-line">Buyer</p>
+          <div class="bubble bubble-buyer">Is the road bike still available?</div>
+          <p class="who-line">Jonas</p>
+          <div class="bubble bubble-seller" id="sim-bubble"></div>
+          <div id="sim-result" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="quiz" id="quiz" aria-labelledby="quiz-h">
+        <h3 id="quiz-h">Spot the red flag</h3>
+        <p class="lede">Four seller lines. Is it a red flag? Answer, then see what PayBrake's rules do with it, including one case they miss.</p>
+        <p id="quiz-progress">Message 1 of 4</p>
+        <div class="quiz-thread" id="quiz-thread">
+          <p class="who-line">Seller</p>
+          <div class="bubble bubble-seller" id="quiz-bubble"></div>
+        </div>
+        <div class="quiz-actions" id="quiz-actions">
+          <button type="button" id="quiz-risky" aria-describedby="quiz-bubble">Looks risky</button>
+          <button type="button" id="quiz-fine" aria-describedby="quiz-bubble">Looks fine</button>
+        </div>
+        <div id="quiz-reveal" aria-live="polite"></div>
+        <div class="quiz-nav">
+          <button type="button" id="quiz-next" hidden>Next message</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- 2. Problem -->
   <section id="problem" aria-labelledby="problem-h">
@@ -664,5 +804,12 @@ npm run eval</code></pre>
     <p style="margin:0">Not affiliated with PayPal or any marketplace. Demo chats use fictional names. No real money moves in this build.</p>
   </div>
 </footer>
+<script src="js/engine/brand.js" defer></script>
+<script src="js/engine/tidy.js" defer></script>
+<script src="js/engine/atoms.js" defer></script>
+<script src="js/engine/extract.js" defer></script>
+<script src="js/engine/pay-risk.js" defer></script>
+<script src="js/sim.js" defer></script>
+<script src="js/quiz.js" defer></script>
 </body>
 </html>

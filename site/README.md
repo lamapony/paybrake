@@ -7,3 +7,7 @@ Static page for the PayPal AI Hackathon submission. No build step: open `index.h
 - `noindex` via meta tag, `_headers` and `robots.txt`. Preview only, on Cloudflare Pages.
 
 Placeholders to fill: demo video URL, Devpost URL, team roles.
+
+## Interactive section (#try)
+
+`js/engine/*.js` are verbatim copies of `extension/lib/{brand,tidy,atoms,extract,pay-risk}.js` from branch tester-friendly (v0.2.0-test.2). Re-copy them when the rules change. `js/sim.js` (live rule card) and `js/quiz.js` (spot the red flag) run them in the browser; nothing is sent anywhere.
