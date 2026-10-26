@@ -1,5 +1,5 @@
 {
-  // PayBrake hosted demo (mock mode only). Deploy: npm run hosted:deploy
+  // PayBrake hosted demo (mock PayPal; AI check on Typesafe when the secret is set). Deploy: npm run hosted:deploy
   "name": "paybrake-demo",
   "main": "src/index.js",
   "compatibility_date": "2026-10-01",
@@ -15,5 +15,7 @@
     "bindings": [{ "name": "ORDERS", "class_name": "MockOrders" }]
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["MockOrders"] }],
+  // Per-IP limit on /api/classify (the AI check). The Typesafe key is a secret: wrangler secret put TYPESAFE_API_KEY
+  "ratelimits": [{ "name": "AI_LIMIT", "namespace_id": "4711", "simple": { "limit": 30, "period": 60 } }],
   "observability": { "enabled": false }
 }

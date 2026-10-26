@@ -228,8 +228,11 @@ product example, not by data: the promo-page quiz message "Pay with this link: p
    actual ask (pay / send / click / install) from Them before "risky", and re-measure.
 2. **Privacy.** With the setting on, every chat (redacted) goes to the PayBrake server and on to the AI provider. Redaction is regex-based:
    names, street addresses and free-text details are not masked, and the phone rule also masks long order numbers.
-3. **The hosted test server has no AI.** Testers on the hosted build see rules v3 only, with "AI check off (mock server)". Turning it on
-   needs a key in the Worker, which was not done (needs your OK).
+3. **The hosted test server now has AI (Typesafe, 26 Oct).** `hosted/src/index.js` calls the same `classifyText` as the backend with a fixed
+   config (jev-1.14.0, add bar 0.5, 6 s timeout), masks the text again server-side (the mask is idempotent on all 9,542 eval transcripts), caps
+   text at 4,000 characters and bodies at 16 KB, and limits `/api/classify` to 30 calls per minute per IP (Durable Object, strict; plus the
+   approximate Workers rate-limit binding) and 20,000 per day overall. Any provider error is a 502 and the extension keeps the rules result.
+   Live check: `node tests/e2e/hosted-ai-live.cjs` (screenshots in `shots/ai-live/`).
 4. **Credit.** The OpenRouter account behind the eval key returned 402 (out of credit) at the end of this run. The AI check now runs on Typesafe (see below).
 5. **Labels.** Some dataset labels are debatable (family money requests), and none of this data is marketplace chat.
 6. **SMS prize spam** (premium-rate numbers, no link or payment ask) is still out of scope for the rules. Only the AI catches it.

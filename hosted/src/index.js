@@ -1,13 +1,26 @@
 // PayBrake hosted demo: static demo store + mock backend on one Cloudflare Worker.
-// Mock mode only. No PayPal credentials, no AI provider, no real money.
+// Mock PayPal only: no PayPal credentials, no real money. The AI check uses Typesafe when the
+// TYPESAFE_API_KEY secret is set (same classify code as the backend), otherwise it is off.
 // Orders live in one Durable Object so approve and capture see the same state.
 import { DurableObject } from "cloudflare:workers";
 import { protectDeal } from "../../backend/src/agent.js";
+import { classifyText } from "../../backend/src/classify.js";
+import "../../extension/lib/redact.js";
 
 const BODY_LIMIT = 16 * 1024;
 const NOINDEX = "noindex, nofollow, noarchive";
 const ORDER_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_ORDERS = 5000; // per day; keeps a public mock server from filling storage
+const MAX_AI_PER_DAY = 20000; // all users together; ~$1/day at Typesafe list price
+const AI_TEXT_LIMIT = 4000;
+const AI_PER_IP_PER_MINUTE = 30;
+
+// The AI config is fixed here, not taken from vars: pinned model, dev-tuned add bar, 6 s timeout.
+export function aiEnv(env) {
+  const key = env && typeof env.TYPESAFE_API_KEY === "string" ? env.TYPESAFE_API_KEY.trim() : "";
+  if (!key) return null;
+  return { LLM_PROVIDER: "typesafe", TYPESAFE_API_KEY: key, TYPESAFE_MODEL: "jev-1.14.0", TYPESAFE_ADD_CONFIDENCE: "0.5", LLM_TIMEOUT_MS: "6000" };
+}
 
 function json(status, body, extra = {}) {
   return new Response(JSON.stringify(body), {
@@ -78,6 +91,20 @@ export class MockOrders extends DurableObject {
   async fetch(request) {
     const { op, id, deal, origin } = await request.json();
     const store = this.ctx.storage;
+    if (op === "ai_quota") {
+      // Strict per-IP limit: one Durable Object sees every call. Kept in memory, per minute.
+      const minute = Math.floor(Date.now() / 60000);
+      if (!this.hits || this.hitsMinute !== minute) { this.hits = new Map(); this.hitsMinute = minute; }
+      const ipKey = String(id || "unknown").slice(0, 64);
+      const n = (this.hits.get(ipKey) || 0) + 1;
+      this.hits.set(ipKey, n);
+      if (n > AI_PER_IP_PER_MINUTE) return Response.json({ ok: false, reason: "rate" }, { status: 429 });
+      const day = "ai:" + new Date().toISOString().slice(0, 10);
+      const used = (await store.get(day)) || 0;
+      if (used >= MAX_AI_PER_DAY) return Response.json({ ok: false }, { status: 429 });
+      await store.put(day, used + 1);
+      return Response.json({ ok: true });
+    }
     if (op === "create") {
       const count = (await store.get("meta:count")) || 0;
       if (count >= MAX_ORDERS) return Response.json({ error: "busy" }, { status: 429 });
@@ -143,17 +170,50 @@ function ordersPort(env, origin) {
   };
 }
 
+async function classify(request, env) {
+  const body = await readJson(request);
+  const ai = aiEnv(env);
+  if (!ai) return json(503, { error: "llm_off" });
+  if (typeof body.text !== "string" || !body.text.trim()) return json(400, { error: "bad_request", message: "text is required" });
+  if (body.text.length > AI_TEXT_LIMIT) return json(400, { error: "bad_request", message: "text is too long" });
+  // Abuse protection: per-IP limit (approximate, per location), then a strict daily cap.
+  const ip = request.headers.get("cf-connecting-ip") || "unknown";
+  if (env.AI_LIMIT) {
+    const { success } = await env.AI_LIMIT.limit({ key: "classify:" + ip });
+    if (!success) return json(429, { error: "rate_limited" }, { "retry-after": "60" });
+  }
+  if (env.ORDERS) {
+    const stub = env.ORDERS.get(env.ORDERS.idFromName("demo"));
+    const quota = await stub.fetch("https://orders/", { method: "POST", body: JSON.stringify({ op: "ai_quota", id: ip }) });
+    if (quota.status === 429) {
+      const why = await quota.json().catch(() => ({}));
+      if (why && why.reason === "rate") return json(429, { error: "rate_limited" }, { "retry-after": "60" });
+      return json(429, { error: "busy", message: "The demo AI check is busy. Try again tomorrow." });
+    }
+  }
+  // The extension masks before sending; mask again here for direct callers (the mask is idempotent).
+  const text = globalThis.pbRedact.redact(body.text);
+  try {
+    const verdict = await classifyText(text, ai);
+    return json(200, { ...verdict, provider: "typesafe" });
+  } catch (error) {
+    if (error && error.status === 400) return json(400, { error: "bad_request", message: "text is too long" });
+    // Rules-only fallback happens in the extension on any non-200.
+    return json(502, { error: "llm_error" });
+  }
+}
+
 async function api(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
   const orders = ordersPort(env, url.origin);
 
   if (request.method === "GET" && path === "/health") {
-    return json(200, { ok: true, name: "PayBrake", env: "sandbox", paypal: "mock", llm: "off", llmProvider: "off", hosted: true });
+    const ai = aiEnv(env);
+    return json(200, { ok: true, name: "PayBrake", env: "sandbox", paypal: "mock", llm: ai ? "configured" : "off", llmProvider: ai ? "typesafe" : "off", hosted: true });
   }
   if (request.method === "POST" && path === "/api/classify") {
-    await readJson(request);
-    return json(503, { error: "llm_off" });
+    return classify(request, env);
   }
   if (request.method === "POST" && path === "/api/protect") {
     const body = await readJson(request);
