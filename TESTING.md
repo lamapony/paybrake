@@ -6,8 +6,8 @@ The demo store and its test server are online. Everything there is pretend: fict
 
 ## 1. Download and unzip
 
-1. Open the latest pre-release: **https://github.com/lamapony/paybrake/releases** (you need to be signed in to GitHub with access to the repo).
-2. Download **`paybrake-extension.zip`** and unzip it (double-click it).
+1. Open the test build: **https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.2** (you need to be signed in to GitHub with access to the repo).
+2. Download **`paybrake-extension.zip`** ([direct link](https://github.com/lamapony/paybrake/releases/download/v0.2.0-test.2/paybrake-extension.zip)) and unzip it (double-click it).
 3. You now have a folder called **`paybrake-extension`**. Inside it you should see `manifest.json`.
 
 > On Windows, "Extract All" sometimes makes a folder inside a folder: `paybrake-extension\paybrake-extension\`. Use the inner one, the one where you can see `manifest.json`.
@@ -31,7 +31,7 @@ Click the big **Try the demo store** button, or open:
 What you should see:
 
 1. The **bike** chat with seller Jonas. Under his message *"Send 500 kr deposit via PayPal Friends & Family..."* a PayBrake card appears saying **High risk payment request**, with the reasons it noticed (Friends & Family, upfront deposit, pressure to hurry, ships before you meet).
-2. Click **Move to protected PayPal order**. The card shows **Sandbox order created · ID MOCK-...**.
+2. Click **Switch to a PayPal order**. The card shows **Sandbox order created · ID MOCK-...**.
 3. Click **Open approval**. A new tab opens. Click **Approve (mock)**. It says **Marked approved**.
 4. Go back to the chat tab and click **I approved it, capture**. The card says **Paid with PayPal Goods & Services (sandbox)**.
 5. Bonus: click the **Signe Kruse · camera** chat and press **Pay anyway**. PayBrake lets you and notes it on this device. The desk lamp chat further down the page is a normal chat and should stay quiet.

@@ -13,7 +13,8 @@ for (const name of fs.readdirSync(path.join(root, "demo"))) {
   // Workers assets send text/html without a charset, so declare it up front.
   // Also tell crawlers to stay away (the _headers file sends X-Robots-Tag too).
   let html = fs.readFileSync(path.join(root, "demo", name), "utf8");
-  const head = '<meta charset="utf-8">\n<meta name="robots" content="noindex, nofollow">';
+  const head = '<meta charset="utf-8">\n<meta name="robots" content="noindex, nofollow">\n' +
+    '<link rel="icon" type="image/svg+xml" href="/favicon.svg">\n<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">';
   html = html.replace(/<head>/i, (m) => m + "\n" + head);
   fs.writeFileSync(path.join(out, "demo", name), html);
 }
