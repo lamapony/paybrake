@@ -20,7 +20,7 @@ test("empty client id selects the mock adapter", () => {
   assert.equal(port.mode, "mock");
 });
 
-test("rest builds a port, toolkit still throws, live base URL is refused", () => {
+test("rest and toolkit build a port, live base URL is refused", () => {
   const rest = createOrdersPort({
     ...sandbox,
     PAYPAL_CLIENT_ID: "test-client-id",
@@ -48,9 +48,17 @@ test("rest builds a port, toolkit still throws, live base URL is refused", () =>
     }),
     (error) => error.message === "Refusing non-sandbox PayPal base URL"
   );
+  const toolkit = createOrdersPort({
+    ...sandbox,
+    PAYPAL_CLIENT_ID: "test-client-id",
+    PAYPAL_CLIENT_SECRET: "test-secret-not-real",
+    PAYPAL_ADAPTER: "toolkit"
+  });
+  assert.equal(toolkit.mode, "toolkit");
+  assert.equal(typeof toolkit.runTool, "function");
   assert.throws(
     () => createOrdersPort({ ...sandbox, PAYPAL_CLIENT_ID: "test-client-id", PAYPAL_ADAPTER: "toolkit" }),
-    /not implemented yet: see docs\/BACKEND-CONTRACT\.md/
+    /PAYPAL_CLIENT_SECRET is required/
   );
   assert.throws(
     () => createOrdersPort({ ...sandbox, PAYPAL_CLIENT_ID: "test-client-id", PAYPAL_CLIENT_SECRET: "test-secret-not-real", PAYPAL_ADAPTER: "other" }),
