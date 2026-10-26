@@ -1,0 +1,312 @@
+{
+  "version": 1,
+  "note": "Synthetic chats. Fictional names only. expect risk|silent.",
+  "cases": [
+    {
+      "id": "en-ff-deposit",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["friends_family", "upfront_deposit"],
+      "context": { "listingTitle": "Used road bike", "listingPrice": "1,800 kr" },
+      "messages": [
+        { "from": "buyer", "text": "Hi, is the road bike still available?" },
+        { "from": "seller", "text": "Yes, but several people are asking." },
+        { "from": "seller", "text": "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow." }
+      ]
+    },
+    {
+      "id": "en-ff-urgency",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["friends_family", "urgency_pressure"],
+      "context": { "listingTitle": "City bike", "listingPrice": "1,800 kr" },
+      "messages": [
+        { "from": "seller", "text": "Please pay with F&F, it is 1,800 kr. Several people are asking so today only." }
+      ]
+    },
+    {
+      "id": "en-mobilepay-deposit",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["off_platform", "upfront_deposit"],
+      "context": { "listingTitle": "Desk lamp", "listingPrice": "300 kr" },
+      "messages": [
+        { "from": "seller", "text": "Can you MobilePay a 300 kr deposit to 20 12 34 56? Then I hold it for you." }
+      ]
+    },
+    {
+      "id": "en-iban",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["off_platform", "ship_before_meet"],
+      "context": { "listingTitle": "Wool coat", "listingPrice": "150 EUR" },
+      "messages": [
+        { "from": "seller", "text": "I am abroad. Pay the €150 to my IBAN DE89370400440532013000 and I can only ship." }
+      ]
+    },
+    {
+      "id": "en-bank-abroad",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["off_platform", "ship_before_meet"],
+      "context": { "listingTitle": "Tent", "listingPrice": "1,800 kr" },
+      "messages": [
+        { "from": "seller", "text": "I'm abroad so I can only ship. Bank transfer of 1,800 kr first and the tent is yours." }
+      ]
+    },
+    {
+      "id": "en-gift-card",
+      "lang": "en",
+      "expect": "risk",
+      "level": "medium",
+      "signals": ["off_platform"],
+      "context": { "listingTitle": "Headphones", "listingPrice": "100 EUR" },
+      "messages": [
+        { "from": "seller", "text": "Buy a €100 gift card and send me the code. That is the only way I can take payment." }
+      ]
+    },
+    {
+      "id": "en-crypto",
+      "lang": "en",
+      "expect": "risk",
+      "level": "medium",
+      "signals": ["off_platform"],
+      "context": { "listingTitle": "Mirrorless camera", "listingPrice": "2,400 kr" },
+      "messages": [
+        { "from": "seller", "text": "Send 0.02 BTC to my wallet and I will pack the camera the same day." }
+      ]
+    },
+    {
+      "id": "en-whatsapp",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["off_platform", "urgency_pressure"],
+      "context": { "listingTitle": "Speaker", "listingPrice": "450 kr" },
+      "messages": [
+        { "from": "seller", "text": "Pay me on WhatsApp, 450 kr, within the hour. I have a queue of people." }
+      ]
+    },
+    {
+      "id": "en-pay-first",
+      "lang": "en",
+      "expect": "risk",
+      "level": "medium",
+      "signals": ["pay_before_see"],
+      "context": { "listingTitle": "Bookshelf", "listingPrice": "700 kr" },
+      "messages": [
+        { "from": "seller", "text": "Pay first then I send the parcel. Payment before viewing is how I sell this shelf." }
+      ]
+    },
+    {
+      "id": "en-reservation-fee",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["upfront_deposit", "urgency_pressure"],
+      "context": { "listingTitle": "Dining table", "listingPrice": "900 kr" },
+      "messages": [
+        { "from": "seller", "text": "Reservation fee of 200 kr to hold it for you. Several people are asking about this table." }
+      ]
+    },
+    {
+      "id": "en-revolut",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["off_platform", "upfront_deposit", "ship_before_meet"],
+      "context": { "listingTitle": "Keyboard", "listingPrice": "900 kr" },
+      "messages": [
+        { "from": "seller", "text": "Send the 900 kr deposit via Revolut. I am abroad this week so I cannot meet." }
+      ]
+    },
+    {
+      "id": "en-courier",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["off_platform", "ship_before_meet"],
+      "context": { "listingTitle": "Mirrorless camera", "listingPrice": "2,400 kr" },
+      "messages": [
+        { "from": "seller", "text": "Courier delivers after payment. Bank transfer only, 2,400 kr, no viewing before that." }
+      ]
+    },
+    {
+      "id": "da-venner-depositum",
+      "lang": "da",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["friends_family", "upfront_deposit"],
+      "context": { "listingTitle": "Brugt racercykel", "listingPrice": "1.800 kr" },
+      "messages": [
+        { "from": "seller", "text": "Send 500 kr i depositum over PayPal venner og familie, så holder jeg cyklen til dig." }
+      ]
+    },
+    {
+      "id": "da-mobilepay-forskud",
+      "lang": "da",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["off_platform", "upfront_deposit", "ship_before_meet"],
+      "context": { "listingTitle": "Sofabord", "listingPrice": "1.800 kr" },
+      "messages": [
+        { "from": "seller", "text": "Jeg tager kun imod forskud på MobilePay 20 11 22 33, 1.800 kr. Kun forsendelse." }
+      ]
+    },
+    {
+      "id": "da-bankoverfoersel",
+      "lang": "da",
+      "expect": "risk",
+      "level": "medium",
+      "signals": ["off_platform"],
+      "context": { "listingTitle": "Cykel", "listingPrice": "1.800 kr" },
+      "messages": [
+        { "from": "seller", "text": "Du kan lave en bankoverførsel på 1800 kr til reg.nr 1234 kontonummer 0012345678." }
+      ]
+    },
+    {
+      "id": "da-betal-foerst",
+      "lang": "da",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["pay_before_see", "urgency_pressure"],
+      "context": { "listingTitle": "Jakke", "listingPrice": "400 kr" },
+      "messages": [
+        { "from": "seller", "text": "Betal først, så sender jeg jakken. Mange interesserede, så skriv hurtigt tilbage." }
+      ]
+    },
+    {
+      "id": "hn-friends-family",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Desk lamp", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "seller", "text": "My friends and family loved this lamp, but I am moving. Several people asked about it, and you were first." }
+      ]
+    },
+    {
+      "id": "hn-bottle-deposit",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Crate of bottles", "listingPrice": "40 kr" },
+      "messages": [
+        { "from": "seller", "text": "The crate comes with the bottles. You can return them for the bottle deposit at the supermarket." }
+      ]
+    },
+    {
+      "id": "hn-iban-serial",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Used road bike", "listingPrice": "1,800 kr" },
+      "messages": [
+        { "from": "seller", "text": "The frame serial is DE89370400440532013000. Check it when you come and look at the bike." }
+      ]
+    },
+    {
+      "id": "hn-ship-or-pickup",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Chair", "listingPrice": "1,800 kr" },
+      "messages": [
+        { "from": "seller", "text": "I can ship or you can pick it up this weekend. The price stays 1,800 kr either way." }
+      ]
+    },
+    {
+      "id": "hn-urgency-only",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Used road bike", "listingPrice": "1,800 kr" },
+      "messages": [
+        { "from": "seller", "text": "Several people are asking and it is today only, so tell me if you want to come see the bike." }
+      ]
+    },
+    {
+      "id": "hn-no-deposit-pickup",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Lamp", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "seller", "text": "No deposit needed. Just come by and pay 250 kr cash on pickup after you have seen it." }
+      ]
+    },
+    {
+      "id": "hn-gs-agreed",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Used road bike", "listingPrice": "1,800 kr" },
+      "messages": [
+        { "from": "buyer", "text": "Can we use PayPal Goods & Services for the full 1,800 kr?" },
+        { "from": "seller", "text": "Yes, sure, Goods & Services works for me." }
+      ]
+    },
+    {
+      "id": "safe-checkout",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Used road bike", "listingPrice": "1,800 kr" },
+      "messages": [
+        { "from": "buyer", "text": "How should I pay the 1,800 kr?" },
+        { "from": "seller", "text": "Sure, pay 1,800 kr through the marketplace checkout and I will pack it with tracking." }
+      ]
+    },
+    {
+      "id": "safe-normal",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Used road bike", "listingPrice": "1,800 kr" },
+      "messages": [
+        { "from": "seller", "text": "Yes, the bike is still available. The tyres are new and the frame has no cracks." }
+      ]
+    },
+    {
+      "id": "safe-tracked",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Coat", "listingPrice": "400 kr" },
+      "messages": [
+        { "from": "seller", "text": "I can post it with tracked platform postage. You pay through the marketplace checkout." }
+      ]
+    },
+    {
+      "id": "da-afhentning",
+      "lang": "da",
+      "expect": "silent",
+      "context": { "listingTitle": "Lampe", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "seller", "text": "Du kan betale 1.800 kr ved afhentning. Jeg er hjemme efter klokken 17 i aften." }
+      ]
+    },
+    {
+      "id": "da-venner-nonpay",
+      "lang": "da",
+      "expect": "silent",
+      "context": { "listingTitle": "Cykel", "listingPrice": "1.800 kr" },
+      "messages": [
+        { "from": "seller", "text": "Mine venner og familie elsker cyklen. Du kan se den i aften hos mig." }
+      ]
+    },
+    {
+      "id": "da-ingen-depositum",
+      "lang": "da",
+      "expect": "silent",
+      "context": { "listingTitle": "Lampe", "listingPrice": "400 kr" },
+      "messages": [
+        { "from": "seller", "text": "Ingen depositum. Du betaler når du henter lampen, kontant er helt fint." }
+      ]
+    },
+    {
+      "id": "da-normal",
+      "lang": "da",
+      "expect": "silent",
+      "context": { "listingTitle": "Cykel", "listingPrice": "1.800 kr" },
+      "messages": [
+        { "from": "seller", "text": "Ja, den er der stadig. Stellet er aluminium og dækkene er næsten nye." }
+      ]
+    }
+  ]
+}
