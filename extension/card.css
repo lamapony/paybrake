@@ -270,3 +270,13 @@
   }
   .btn:active { transform: none; }
 }
+
+.pb-tag.ai-off,
+.pb-tag.ai {
+  margin-left: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 650;
+}
+.pb-tag.ai-off { color: #7a4b00; background: #fff8eb; border: 1px solid #f3c46b; }
+.pb-tag.ai { color: #1e3a8a; background: #eef4ff; border: 1px solid #c7d7fe; }

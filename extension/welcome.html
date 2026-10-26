@@ -38,7 +38,8 @@
   <section class="panel quiet" aria-labelledby="more">
     <h2 id="more">Good to know</h2>
     <ul>
-      <li>Chats are checked inside your browser. Chat messages are not uploaded. When you make an order, only the order details (item, price, seller email) go to the test server.</li>
+      <li><b>AI check on all chats is on</b> in this demo build. PayBrake's rules run inside your browser. It also asks an AI model about each chat, so it can catch scams the rules miss (fake bank or support messages, phishing links, requests for card details or MitID codes). Before a chat leaves your browser, emails, phone numbers, card numbers, IBANs (all but the last 4), ID numbers and codes are masked. The free test server has no AI provider, so there nothing is sent and cards say <b>AI check off (mock server)</b>. You can turn it off in <a href="options.html">Settings</a>; then no chat text leaves your browser.</li>
+      <li>When you make an order, only the order details (item, price, seller email) go to the test server.</li>
       <li>This test version only works on the demo store.</li>
       <li>Found a bug or something confusing? <a id="bug" href="https://github.com/lamapony/paybrake/issues/new?template=bug_report.md" target="_blank" rel="noopener">Report it on GitHub</a>.</li>
       <li>Click the PayBrake icon in the toolbar to open this page again. <a href="options.html">Settings</a></li>

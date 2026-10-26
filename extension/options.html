@@ -26,9 +26,16 @@
       <button type="button" class="btn ghost" id="use-local">Use localhost:8787</button>
     </div>
     <label class="check">
-      <input id="llm" name="llm" type="checkbox">
-      <span>Ask the backend for an AI check (off uses rules only)</span>
+      <input id="aiAll" name="aiAll" type="checkbox" aria-describedby="ai-help ai-status">
+      <span><b>AI check on all chats</b> (on by default in this demo build)</span>
     </label>
+    <div class="hint" id="ai-help">
+      <p>On: besides its built-in rules, PayBrake asks an AI model about every chat it checks, so it can also warn about scams the rules miss, such as fake bank or support messages, phishing links and requests for codes. The AI can also clear an obvious rules false alarm, but only when it is very sure.</p>
+      <p>Before any chat text leaves your browser, PayBrake masks emails, phone numbers, card numbers, IBANs (all but the last 4 characters), ID numbers and one-time codes. Only the other person's messages can trigger a warning, and your newest message is included for context. The masked chat goes to the server above, which passes it to its AI provider and keeps nothing.</p>
+      <p>The free test server has no AI provider (mock mode). With it, nothing is sent and warning cards say <b>AI check off (mock server)</b>. If the AI does not answer within 6 seconds, the card shows <b>AI check unavailable</b> and the rules result stands.</p>
+      <p>Off: rules only. No chat text leaves your browser.</p>
+    </div>
+    <p class="hint" id="ai-status" role="status">Checking the server…</p>
     <label class="check">
       <input id="debug" name="debug" type="checkbox">
       <span>Debug HUD on chat pages</span>

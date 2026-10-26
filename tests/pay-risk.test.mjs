@@ -81,7 +81,7 @@ test("one strong atom plus a weak atom is high", async () => {
 });
 
 test("one strong atom with an amount is medium", async () => {
-  const text = "Buy a €100 gift card and send me the code on email please.";
+  const text = "Buy a €100 gift card and email it to me please.";
   const verdict = await detect(text);
   assert.equal(verdict.kind, "risk");
   assert.equal(verdict.level, "medium");
@@ -136,7 +136,7 @@ test("whitespace-normalized evidence can confirm", async () => {
 });
 
 test("the model cannot raise medium to high", async () => {
-  const text = "Buy a €100 gift card and send me the code on email please.";
+  const text = "Buy a €100 gift card and email it to me please.";
   const verdict = await detect(text, {}, {
     askLlm: async () => ({
       risky: true,

@@ -29,6 +29,11 @@
   ];
 
   const sessions = new Map();
+  // AI check on all chats: one request per chat text (hash), after the chat has been
+  // still for AI_DEBOUNCE_MS. The background caches answers per hash.
+  const AI_DEBOUNCE_MS = 800;
+  const aiState = new Map();
+  const aiTimers = new WeakMap();
   let cssText = "";
   let depth = 0;
   let pending = false;
@@ -201,9 +206,23 @@
     return (atom && atom.receipt) || id;
   }
 
-  function footerText(verdict) {
-    const check = verdict && verdict.llm === "confirmed" ? "AI check" : "rules check";
-    return "PayBrake · " + check + " · only you can see this";
+  const AI_NOTES = {
+    confirmed: "rules + AI check",
+    added: "AI check",
+    unavailable: "rules check · AI check unavailable",
+    off_server: "rules check · AI check not set up on this server (mock mode)",
+    disagreed_low_confidence: "rules check · AI check unsure",
+    pending: "rules check · AI check running…"
+  };
+
+  function aiNote(verdict, session) {
+    const state = verdict && verdict.llm;
+    if (session && session.aiPending && (!state || state === "off")) return AI_NOTES.pending;
+    return AI_NOTES[state] || "rules check";
+  }
+
+  function footerText(verdict, session) {
+    return "PayBrake · " + aiNote(verdict, session) + " · only you can see this";
   }
 
   function safeHttp(url) {
@@ -449,6 +468,10 @@
     top.append(badge);
     if (session.mode === "mock") top.append(el("span", "pb-tag mock", "mock mode"));
     else top.append(el("span", "pb-tag", "Checked just now"));
+    // Visible AI state, so a rules-only card is never mistaken for an AI-checked one.
+    if (verdict.llm === "unavailable") top.append(el("span", "pb-tag ai-off", "AI check unavailable"));
+    else if (verdict.llm === "off_server") top.append(el("span", "pb-tag ai-off", "AI check off (mock server)"));
+    else if (verdict.llm === "added" || verdict.llm === "confirmed") top.append(el("span", "pb-tag ai", "AI checked"));
 
     const explain = el("p", "pb-explain", verdict.reason || "");
     const label = el("p", "signals-label", "Detected signals");
@@ -509,7 +532,7 @@
       anyway.addEventListener("click", () => payAnyway(session));
       actions.append(protect, anyway);
       const brandSpan = brand();
-      brandSpan.append(document.createTextNode(footerText(verdict)));
+      brandSpan.append(document.createTextNode(footerText(verdict, session)));
       foot.append(brandSpan);
       if (session.error) {
         foot.classList.add("is-error");
@@ -611,40 +634,20 @@
     hud.textContent = line || "PayBrake debug";
   }
 
-  async function scanThread(thread) {
-    if (!visible(thread)) return;
-    if (thread.querySelector("#pb-card")) return;
-    const messages = readMessages(thread);
-    if (!messages.length) return;
-    const text = messages.map((message) => message.text).join("\n");
-    const hash = await hashText(text);
-    thread.dataset.pbHash = hash;
-    const context = {
-      listingTitle: field(thread, "data-pb-listing-title"),
-      listingPrice: field(thread, "data-pb-listing-price"),
-      sellerName: field(thread, "data-pb-seller-name"),
-      sellerEmail: field(thread, "data-pb-seller-email"),
-      messages: messages
-    };
+  function unhighlight(thread) {
+    for (const mark of [...thread.querySelectorAll("mark.pb-ev")]) {
+      mark.replaceWith(...mark.childNodes);
+    }
+  }
+
+  function showVerdict(thread, hash, text, verdict, res) {
     let session = sessions.get(hash);
-    if (session && session.host && session.host.isConnected && (session.state === "created" || session.state === "paid" || session.state === "override")) {
-      return;
-    }
-    if (session && session.state === "risk" && session.host && session.host.isConnected && session.text === text) {
-      return;
-    }
-    const res = await send("pb:detect", { text: text, hash: hash, site: "demo", context: context });
-    if (res && res.debug) debugOn = true;
-    if (!res || !res.ok || !res.verdict) {
-      updateHud(res && res.error ? res.error : "detect failed");
-      return;
-    }
-    const verdict = res.verdict;
     if (verdict.kind !== "risk") {
       if (session && session.host && session.state !== "created" && session.state !== "paid" && session.state !== "override") {
         session.host.remove();
+        unhighlight(thread);
       }
-      updateHud("silent " + (verdict.silentReason || ""));
+      updateHud("silent " + (verdict.silentReason || "") + (verdict.llm ? " · ai " + verdict.llm : ""));
       return;
     }
     highlight(thread, verdict.evidence);
@@ -655,10 +658,76 @@
     session.thread = thread;
     session.verdict = verdict;
     session.text = text;
-    session.mode = res.mode || session.mode || null;
+    session.mode = (res && res.mode) || session.mode || null;
+    session.aiPending = aiState.get(hash) === "pending";
     if (!session.state) session.state = "risk";
     render(session);
-    updateHud("risk " + verdict.level + " · " + (verdict.signals || []).join(", "));
+    updateHud("risk " + verdict.level + " · " + (verdict.signals || []).join(", ") + (verdict.llm ? " · ai " + verdict.llm : ""));
+  }
+
+  function queueAi(thread, hash, text, context) {
+    if (aiState.has(hash)) return;
+    clearTimeout(aiTimers.get(thread));
+    aiTimers.set(thread, setTimeout(async () => {
+      if (thread.dataset.pbHash !== hash || aiState.has(hash)) return;
+      aiState.set(hash, "pending");
+      const current = sessions.get(hash);
+      if (current && current.host && current.host.isConnected && current.state === "risk") {
+        current.aiPending = true;
+        render(current);
+      }
+      const res = await send("pb:detect", { text: text, hash: hash, site: "demo", context: context, phase: "ai" });
+      aiState.set(hash, "done");
+      const session = sessions.get(hash);
+      if (session) session.aiPending = false;
+      if (thread.dataset.pbHash !== hash) return;
+      if (!res || !res.ok || !res.verdict) {
+        updateHud(res && res.error ? res.error : "ai check failed");
+        if (session && session.host && session.host.isConnected) render(session);
+        return;
+      }
+      if (session && session.host && session.host.isConnected && (session.state === "created" || session.state === "paid" || session.state === "override")) return;
+      enter();
+      try {
+        showVerdict(thread, hash, text, res.verdict, res);
+      } finally {
+        leave();
+      }
+    }, AI_DEBOUNCE_MS));
+  }
+
+  async function scanThread(thread) {
+    if (!visible(thread)) return;
+    const messages = readMessages(thread);
+    if (!messages.length) return;
+    const text = messages.map((message) => message.text).join("\n");
+    const hash = await hashText(text);
+    if (thread.querySelector("#pb-card") && thread.dataset.pbHash === hash) return;
+    thread.dataset.pbHash = hash;
+    const context = {
+      listingTitle: field(thread, "data-pb-listing-title"),
+      listingPrice: field(thread, "data-pb-listing-price"),
+      sellerName: field(thread, "data-pb-seller-name"),
+      sellerEmail: field(thread, "data-pb-seller-email"),
+      messages: messages
+    };
+    const session = sessions.get(hash);
+    if (session && session.host && session.host.isConnected && (session.state === "created" || session.state === "paid" || session.state === "override")) {
+      return;
+    }
+    if (session && session.state === "risk" && session.host && session.host.isConnected && session.text === text) {
+      return;
+    }
+    if (aiState.get(hash) === "done") return;
+    // Phase 1: rules only, instant. Phase 2 (if "AI check on all chats" is on): queued AI check.
+    const res = await send("pb:detect", { text: text, hash: hash, site: "demo", context: context, phase: "rules" });
+    if (res && res.debug) debugOn = true;
+    if (!res || !res.ok || !res.verdict) {
+      updateHud(res && res.error ? res.error : "detect failed");
+      return;
+    }
+    showVerdict(thread, hash, text, res.verdict, res);
+    if (res.aiOn) queueAi(thread, hash, text, context);
   }
 
   async function scan() {

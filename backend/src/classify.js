@@ -7,7 +7,15 @@ const FALLBACK = "Risky payment request: a direct transfer may be hard to get ba
 const TEXT_LIMIT = 4000;
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 const OPENROUTER_REFERER = "https://github.com/lamapony/paybrake";
-const SYSTEM = "You judge whether a marketplace chat asks for a risky payment. Reply with JSON only: {risky:boolean, level:\"high\"|\"medium\"|\"none\", reason:string<=120, evidence:string[], item:string|null, amount:number|null, currency:string|null}. Every evidence string must be a verbatim substring of the user text. Do not promise a refund.";
+export const SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access", "phishing_link", "fee_via_link", "impersonation", "account_threat", "urgency_pressure", "other"];
+export const SYSTEM = [
+  "You are PayBrake's scam check for one chat or message.",
+  "Lines may start with \"Them:\" (the other person: seller, caller or sender) or \"Me:\" (the PayBrake user). Judge only what Them asks for or pushes. A Me line never makes a chat risky.",
+  "Risky means Them pushes the user toward losing money or account access: paying outside a protected checkout (bank transfer, IBAN, Friends and Family, gift cards, crypto, Zelle, Venmo, Western Union, MobilePay to a stranger), a deposit or fee before the user gets something (delivery, customs, prize, refund, job, loan), sharing card numbers, CVV, one-time or SMS codes, MitID, NemID or BankID codes or logins, passwords or ID numbers, installing remote-access apps (AnyDesk, TeamViewer), opening a login or payment link from an unknown or lookalike site, or posing as a bank, authority, platform or support team.",
+  "Not risky: normal buying and selling, pay on pickup, platform checkout, delivery or bank notices without a link or fee ask, messages that tell the user never to share a code, plain marketing.",
+  "Reply with JSON only: {risky:boolean, level:\"high\"|\"medium\"|\"none\", confidence:number from 0 to 1 (how sure you are of your verdict), signal: one of " + SIGNALS.join("|") + ", reason:string of at most 120 characters in plain words for the user, evidence:string[], item:string|null, amount:number|null, currency:string|null}.",
+  "Every evidence string must be a short verbatim substring of a Them line. Do not promise a refund or that the user is safe."
+].join(" ");
 
 export function normalizeWs(value) {
   return String(value ?? "").replace(/\s+/g, " ").trim();
@@ -168,9 +176,15 @@ export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch)
 
   const evidence = Array.isArray(parsed.evidence) ? parsed.evidence.filter((quote) => typeof quote === "string") : [];
   const ok = parsed.risky === true && evidencePasses(evidence, source);
+  const conf = Number(parsed.confidence);
+  // A "risky" answer with bad evidence is dropped; its confidence must not count as a confident "safe".
+  const confidence = Number.isFinite(conf) && !(parsed.risky === true && !ok) ? Math.max(0, Math.min(1, conf)) : null;
+  const signal = SIGNALS.includes(parsed.signal) ? parsed.signal : (ok ? "other" : null);
   return {
     risky: ok,
     level: ok ? (parsed.level === "high" ? "high" : "medium") : "none",
+    confidence,
+    signal,
     reason: ok ? sanitizeReason(parsed.reason) : "",
     evidence: ok ? evidence : [],
     item: typeof parsed.item === "string" ? parsed.item : null,

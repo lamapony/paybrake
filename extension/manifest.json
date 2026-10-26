@@ -47,6 +47,7 @@
         "lib/tidy.js",
         "lib/atoms.js",
         "lib/extract.js",
+        "lib/redact.js",
         "lib/pay-risk.js",
         "lib/ask-llm.js",
         "content.js"
