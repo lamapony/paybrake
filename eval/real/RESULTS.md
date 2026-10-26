@@ -2,7 +2,7 @@
 
 Date: 26 Oct 2026. Branch `eval-real-scams` (from `tester-friendly`). Harness: `eval/real/`.
 
-**Latest: rules v3 + AI check on all chats, see [the v3 section](#v3-new-rules-and-the-ai-check-on-all-chats) below.** The sections before it describe v1/v2 and are kept as the baseline.
+**Latest: rules v3 + the AI check on Typesafe (jev-1.14.0), see [the Typesafe section](#v3--typesafe-ai-replaces-openrouter-as-the-ai-provider). Before that: rules v3 + OpenRouter, see [the v3 section](#v3-new-rules-and-the-ai-check-on-all-chats).** The sections before it describe v1/v2 and are kept as the baseline.
 
 ## What we tested
 
@@ -230,10 +230,81 @@ product example, not by data: the promo-page quiz message "Pay with this link: p
    names, street addresses and free-text details are not masked, and the phone rule also masks long order numbers.
 3. **The hosted test server has no AI.** Testers on the hosted build see rules v3 only, with "AI check off (mock server)". Turning it on
    needs a key in the Worker, which was not done (needs your OK).
-4. **Credit.** The OpenRouter account behind the eval key returned 402 (out of credit) at the end of this run, so it cannot run more evals
-   until it is topped up.
+4. **Credit.** The OpenRouter account behind the eval key returned 402 (out of credit) at the end of this run. The AI check now runs on Typesafe (see below).
 5. **Labels.** Some dataset labels are debatable (family money requests), and none of this data is marketplace chat.
 6. **SMS prize spam** (premium-rate numbers, no link or payment ask) is still out of scope for the rules. Only the AI catches it.
+
+## v3 + Typesafe AI (replaces OpenRouter as the AI provider)
+
+Date: 26 Oct 2026. Same rules v3, same test split, same redaction and speaker labels. Only the AI provider changed.
+
+**What Typesafe is.** [TypeSafe](https://docs.typesafe.ai) serves *decision models* (Jev), not chat models. The API is
+`POST https://api.typesafe.ai/v1/systemone` with `Authorization: Bearer <key>` ([API reference](https://docs.typesafe.ai/api),
+[models](https://docs.typesafe.ai/models)). It is **not** OpenAI-compatible: you send the content as `state` plus typed questions
+(`noul` = yes/no probability, `choice`, `score`) and get back probabilities. It writes no free text. `GET /v1/models` lists
+`jev-latest` and `jev-preview` (both → `jev-1.14.0` today); `jev-1.13.0` is also accepted. Price: $0.042 per million input
+tokens, output free.
+
+**How PayBrake uses it** (`backend/src/classify.js`, `LLM_PROVIDER=typesafe` or just `TYPESAFE_API_KEY` set):
+- One call per chat with three questions: `risky` (yes/no, with the same "what counts as risky / not risky" text as the chat prompt),
+  `signal` (choice of PayBrake's signal ids) and `evidence` (choice of one of Them's lines, by index).
+- The evidence is that line verbatim, so it always passes the quote guard and the model cannot invent a quote. The card text comes from
+  PayBrake's own templates (the model writes no reason).
+- `confidence` = p(risky) for a risky verdict, 1 − p for a safe one. Typesafe's probabilities run lower than gpt-4o-mini's self-reported
+  confidence, so the server sends `addConfidence: 0.5` with each answer and the extension uses it as the add bar (an explicit option still
+  wins; the hint can never go below 0.5). The clear bar stays 0.85.
+- Configurable by env: `TYPESAFE_API_KEY_NAME`, `TYPESAFE_BASE_URL`, `TYPESAFE_MODEL` (default pinned `jev-1.14.0`),
+  `TYPESAFE_ADD_CONFIDENCE`. `LLM_PROVIDER=openrouter` still selects OpenRouter, and `LLM_FALLBACK=openrouter` retries a failed
+  Typesafe call on OpenRouter.
+
+**Model and threshold choice (dev split only, 1,574 messages, sweep in `results/llm-all-v3-dev-all-typesafe-*.json`):**
+
+| dev, rules v3 + AI | add bar | TP | FP | precision | recall | FPR | p50 / p95 latency |
+|---|---|---|---|---|---|---|---|
+| jev-1.14.0 | 0.8 | 382 | 5 | 0.99 | 0.54 | 0.006 | 66 / 114 ms |
+| jev-1.14.0 | 0.7 | 410 | 8 | 0.98 | 0.57 | 0.009 | |
+| **jev-1.14.0** | **0.5** | **493** | **14** | **0.97** | **0.69** | **0.016** | |
+| jev-1.13.0 | 0.5 | 482 | 14 | 0.97 | 0.68 | 0.016 | 61 / 122 ms |
+
+Picked **jev-1.14.0 at add bar 0.5**: higher recall than 1.13.0 at the same false alarms, same speed. The clear bar (0.7 to 1.01)
+changed at most one row. The prompt was not tuned (false alarms were well below 4.5%).
+
+### Test split, 1,573 messages, measured once
+
+| pooled test | TP | FP | FN | TN | precision | recall | F1 | FPR | no AI answer |
+|---|---|---|---|---|---|---|---|---|---|
+| rules v3 | 325 | 7 | 388 | 853 | 0.98 | 0.46 | 0.62 | 0.008 | n/a |
+| rules v3 + OpenRouter gpt-4o-mini (previous) | 606 | 39 | 107 | 821 | 0.94 | 0.85 | 0.89 | 0.045 | 305 (402 out of credit) |
+| **rules v3 + Typesafe jev-1.14.0** | **498** | **13** | **215** | **847** | **0.97** | **0.70** | **0.81** | **0.015** | **0** |
+| Typesafe alone | 488 | 11 | 225 | 849 | 0.98 | 0.68 | 0.80 | 0.013 | 0 |
+
+On the 1,268 rows where OpenRouter did answer: Typesafe P 0.98 / R 0.65 / FPR 0.012 against OpenRouter's 0.93 / 0.84 / 0.058.
+
+| dataset (test) | rules v3 P / R / FPR | + OpenRouter P / R / FPR | + Typesafe P / R / FPR |
+|---|---|---|---|
+| SMS spam (real) | n/a / 0.00 / 0.000 | 0.97 / 0.78 / 0.024 | 1.00 / 0.45 / 0.000 |
+| Discord (real) | 0.97 / 0.23 / 0.004 | 0.94 / 0.72 / 0.024 | 0.97 / 0.47 / 0.008 |
+| Scam dialogues | 0.99 / 0.90 / 0.008 | 0.96 / 0.96 / 0.036 ¹ | 0.99 / 0.98 / 0.008 |
+| ScamGuardBench | 0.95 / 0.92 / 0.036 | 0.80 / 0.96 / 0.164 ¹ | 0.89 / 1.00 / 0.082 |
+
+¹ partly rules only after the 402.
+
+- **Trade-off:** a third of the false alarms (13 vs 39), lower recall (0.70 vs 0.85). Every missed scam is SMS spam (138) or a Discord
+  scam (73), plus 4 "reward" phone calls: prize spam and Nitro / free-stuff lures that do not ask for a payment, the part PayBrake calls
+  out of scope. **All 31 money-asking ScamGuardBench scams in test are caught** (OpenRouter: 30).
+- **The 13 false alarms:** 7 are the disputed ScamGuardBench "family money request" texts (lost phone, send to my IBAN), 2 are hard
+  "legit" phishing-style emails with links, 2 are real Discord messages, and 2 are rules hits (delivery, telemarketing calls) that the AI
+  did not clear with enough confidence.
+- **Latency** (box → Typesafe, 6 parallel calls): p50 **62 ms**, p95 **107 ms**, max **276 ms**, against p50 2.0 s / p95 3.2–3.5 s for
+  OpenRouter. No call came close to the 6 s timeout, and no call failed (0 of 1,546). With the 0.8 s debounce the AI result lands under
+  1 s after the chat stops changing.
+- **Cost:** 1.78 M input tokens for the full test run (~1,150 tokens per chat including the questions) = **about $0.075**, i.e. about
+  $0.05 per 1,000 chats. All Typesafe runs today (3 dev, 1 test, probes) were about 7.2 M tokens ≈ $0.30. Typesafe's API does not
+  report spend, so this is tokens × list price.
+- Not done: a prompt revision to bring back the prize-spam recall. It would need dev-only tuning and a new test measurement.
+
+Reproduce: `LLM_PROVIDER=typesafe TYPESAFE_API_KEY=… node eval/real/run-llm-all.mjs --split=dev --n=all --sweep`, then
+`--split=test --n=all`. Add `TYPESAFE_MODEL=jev-1.13.0` to compare versions. Results: `results/llm-all-v3-test-all-typesafe-jev-1.14.0.json`.
 
 ## Error analysis (v1 rules; examples from the dev split unless marked)
 

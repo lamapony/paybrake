@@ -128,7 +128,7 @@ If `ALLOWED_ORIGINS` is unset, the server allows `http://localhost:8080` and `ht
 }
 ```
 
-`paypal` is the adapter mode (`mock`, `rest`, or `toolkit`). `llm` is `"configured"` when `resolveLlm` has a provider, otherwise `"off"`. `llmProvider` is `"openrouter"`, `"openai-compatible"`, or `"off"`. The body never includes the API key or the model name.
+`paypal` is the adapter mode (`mock`, `rest`, or `toolkit`). `llm` is `"configured"` when `resolveLlm` has a provider, otherwise `"off"`. `llmProvider` is `"typesafe"`, `"openrouter"`, `"openai-compatible"`, or `"off"`. The body never includes the API key or the model name.
 
 With OpenRouter configured and rest selected, the same route looks like:
 
@@ -157,6 +157,9 @@ When it is configured, `classifyText` POSTs to `{baseUrl}/chat/completions` with
 |---|---|---|---|---|
 | `openrouter` | `LLM_PROVIDER=openrouter`, or provider empty and `OPENROUTER_API_KEY` is set (and `LLM_BASE_URL` is empty) | `LLM_BASE_URL` or `https://openrouter.ai/api/v1` | `openai/gpt-4o-mini` | Bearer of `OPENROUTER_API_KEY`, or `LLM_API_KEY` if the OpenRouter key is empty. Also sends `HTTP-Referer: https://github.com/lamapony/paybrake` and `X-Title: PayBrake` |
 | `openai-compatible` | `LLM_PROVIDER=openai-compatible`, or provider empty and `LLM_BASE_URL` is set | `LLM_BASE_URL` (required) | `gpt-4o-mini` | Bearer of `LLM_API_KEY` only when that value is non-empty |
+| `typesafe` | `LLM_PROVIDER=typesafe`, or provider empty, `LLM_BASE_URL` empty and `TYPESAFE_API_KEY` (or the var named by `TYPESAFE_API_KEY_NAME`) is set. Wins over OpenRouter | `TYPESAFE_BASE_URL` or `https://api.typesafe.ai`; requests go to `/v1/systemone` | `TYPESAFE_MODEL` or `jev-1.14.0` | Bearer of the Typesafe key |
+
+Typesafe is a decision model, not a chat model. `classifyText` sends the redacted chat as `state` with three questions: `risky` (yes/no probability), `signal` (choice of the signal ids) and, for chats with more than one Them line, `evidence` (choice of one Them line). The evidence is that line verbatim, `reason` is empty (the extension uses its own card text), `confidence` is p(risky) for a risky verdict and 1 − p for a safe one, and the response carries `addConfidence` (`TYPESAFE_ADD_CONFIDENCE`, default 0.5) which the extension uses as its add bar. `LLM_FALLBACK=openrouter` retries a failed Typesafe call on OpenRouter.
 
 Provider empty and both `LLM_BASE_URL` and `OPENROUTER_API_KEY` set: openai-compatible wins, and the bearer is `LLM_API_KEY`. Trailing slashes on the base URL are removed. `LLM_TIMEOUT_MS` defaults to 8000 when empty, not a number, or not above 0.
 
@@ -277,7 +280,8 @@ See `backend/.env.example`. `backend/src/server.js` loads `backend/.env` with a 
 | `PAYPAL_RETURN_URL` | PayPal `return_url`. Empty uses the local demo return page |
 | `PAYPAL_CANCEL_URL` | PayPal `cancel_url`. Empty uses the demo return page with `?cancel=1`. Set this too if you change the return URL |
 | `PAYPAL_TIMEOUT_MS` | milliseconds. Empty, zero, or not a number uses 10000 |
-| `LLM_PROVIDER` | `openrouter`, `openai-compatible`, or `off`. Empty auto-selects as in the classify section |
+| `LLM_PROVIDER` | `typesafe`, `openrouter`, `openai-compatible`, or `off`. Empty auto-selects as in the classify section |
+| `TYPESAFE_API_KEY` | Typesafe key. Never commit a value. `TYPESAFE_API_KEY_NAME`, `TYPESAFE_BASE_URL`, `TYPESAFE_MODEL`, `TYPESAFE_ADD_CONFIDENCE` and `LLM_FALLBACK` are described in `backend/.env.example` |
 | `OPENROUTER_API_KEY` | OpenRouter key. A key alone counts as configured. Never commit a value |
 | `LLM_BASE_URL` | base for openai-compatible, or an override of the OpenRouter base. Empty and no OpenRouter key means 503 |
 | `LLM_API_KEY` | bearer for openai-compatible. Fallback OpenRouter key when `OPENROUTER_API_KEY` is empty. Omitted from the request when empty |

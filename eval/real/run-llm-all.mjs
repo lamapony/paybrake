@@ -2,6 +2,7 @@
 //
 //   OPENROUTER_API_KEY=... node eval/real/run-llm-all.mjs --split=dev  [--n=all|200] [--concurrency=6]
 //   OPENROUTER_API_KEY=... node eval/real/run-llm-all.mjs --split=test --n=200 --report
+//   LLM_PROVIDER=typesafe TYPESAFE_API_KEY=... [TYPESAFE_MODEL=jev-1.13.0] node eval/real/run-llm-all.mjs --split=dev
 //
 // Model answers are cached in eval/real/.data/llm-cache.json (keyed by model + prompt + the
 // redacted transcript), so threshold sweeps and reruns cost nothing. Threshold tuning
@@ -11,7 +12,7 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { payRisk, atoms } from "../../extension/lib/index.js";
-import { classifyText, SYSTEM } from "../../backend/src/classify.js";
+import { classifyText, resolveLlm, SYSTEM, TYPESAFE_RISKY, SIGNAL_CRITERIA } from "../../backend/src/classify.js";
 import { loadAll } from "./load.mjs";
 import { sampleBalanced, mulberry32, shuffle } from "./sample.mjs";
 import { metrics, groupMetrics, printSummary } from "./metrics.mjs";
@@ -27,7 +28,10 @@ const opt = (name, dflt) => {
 const split = opt("split", "dev");
 const nOpt = opt("n", "all");
 const concurrency = Number(opt("concurrency", "6"));
-const model = process.env.LLM_MODEL || "openai/gpt-4o-mini";
+const llmCfg = resolveLlm(process.env);
+const typesafe = llmCfg.provider === "typesafe";
+const model = typesafe ? "typesafe/" + llmCfg.model : (process.env.LLM_MODEL || "openai/gpt-4o-mini");
+const prompt = typesafe ? JSON.stringify([TYPESAFE_RISKY, SIGNAL_CRITERIA, llmCfg.addConfidence]) : SYSTEM;
 const cachePath = path.join(here, ".data", "llm-cache.json");
 const cache = existsSync(cachePath) ? JSON.parse(readFileSync(cachePath, "utf8")) : {};
 let fresh = 0;
@@ -35,7 +39,7 @@ let failures = 0;
 const failureCodes = {};
 
 function keyOf(text) {
-  return createHash("sha256").update(model + "\n" + SYSTEM + "\n" + text).digest("hex");
+  return createHash("sha256").update(model + "\n" + prompt + "\n" + text).digest("hex");
 }
 
 async function cachedAsk(payload) {
@@ -129,10 +133,15 @@ async function main() {
 
   const view = (key) => rows.map((r) => ({ ...r, got: r[key] }));
   const summary = {
-    model, split, n: rows.length, rulesVersion: atoms.RULES_VERSION, seed: SEED,
+    model, provider: llmCfg.provider, split, n: rows.length, rulesVersion: atoms.RULES_VERSION, seed: SEED,
     thresholds: payRisk.DEFAULTS,
     llm: {
       freshCalls: fresh, failures, failureCodes, unavailableRows: errs, wallMs: wall, concurrency,
+      inputTokens: items.reduce((sum, it) => {
+        const t = payRisk.transcriptOf(it.messages.map((m) => ({ from: m.from, text: m.text }))).text;
+        const hit = cache[keyOf(t)];
+        return sum + (hit && hit.out && hit.out.usage ? hit.out.usage.inputTokens : 0);
+      }, 0),
       latencyMs: (() => {
         const ms = items.map((it) => {
           const t = payRisk.transcriptOf(it.messages.map((m) => ({ from: m.from, text: m.text }))).text;
@@ -173,7 +182,7 @@ async function main() {
   console.log("\nllm", JSON.stringify(summary.llm), JSON.stringify(summary.llmStates));
   const dir = path.join(here, "results");
   mkdirSync(dir, { recursive: true });
-  const tag = `llm-all-v${atoms.RULES_VERSION}-${split}-${nOpt}`;
+  const tag = `llm-all-v${atoms.RULES_VERSION}-${split}-${nOpt}` + (typesafe ? "-typesafe-" + llmCfg.model : "");
   writeFileSync(path.join(dir, tag + ".json"), JSON.stringify({ ...summary, at: new Date().toISOString(), rows }, null, 1) + "\n");
   console.log("wrote results/" + tag + ".json");
 }

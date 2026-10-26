@@ -151,3 +151,13 @@ test("a code notice that also asks to send the code to them still gets the AI ca
   const verdict = await run(ctxOf(them(text)), async () => ({ risky: true, level: "high", confidence: 0.9, signal: "credential_request", reason: "x", evidence: ["read it to our agent"] }));
   assert.equal(verdict.kind, "risk");
 });
+
+test("server addConfidence hint lowers the add bar, never below 0.5", async () => {
+  const at = (confidence, addConfidence) => run(ctxOf(them(PHISH)), async () => ({ risky: true, level: "medium", confidence, addConfidence, signal: "impersonation", reason: "", evidence: ["problem with your delivery"] }));
+  assert.equal((await at(0.6, 0.5)).llm, "added");
+  assert.equal((await at(0.6, undefined)).llm, "agreed_silent");
+  assert.equal((await at(0.4, 0.1)).llm, "agreed_silent");
+  // An explicit option wins over the hint.
+  const v = await run(ctxOf(them(PHISH)), async () => ({ risky: true, level: "medium", confidence: 0.6, addConfidence: 0.5, signal: "other", reason: "", evidence: ["problem with your delivery"] }), { addConfidence: 0.8 });
+  assert.equal(v.llm, "agreed_silent");
+});
