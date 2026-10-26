@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+document.write("<" + "me" + "ta charset=\"utf-8\">");
+document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+</script>
 <title>PayBrake demo · fictional Marketplace</title>
 <style>
   :root {
@@ -132,7 +134,7 @@
   .listing-img svg { width: 82%; height: auto; }
   .listing h1 { font-size: 20px; margin: 2px 0 4px; line-height: 1.25; }
   .price { font-size: 22px; font-weight: 750; margin: 0 0 8px; }
-  .meta { color: var(--ink-3); font-size: 13px; margin: 0 0 12px; }
+  .listed { color: var(--ink-3); font-size: 13px; margin: 0 0 12px; }
   .seller {
     display: flex; align-items: center; gap: 10px;
     padding-top: 12px; border-top: 1px solid var(--line);
@@ -148,7 +150,28 @@
   .seller-sub { color: var(--ink-3); font-size: 12px; }
 
   /* ---------- Chat ---------- */
-  .chat { margin-top: 20px; overflow: hidden; }
+  .switcher {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .switcher button {
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-2);
+    font-weight: 650;
+    cursor: pointer;
+  }
+  .switcher button[aria-pressed="true"] {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+  }
+  .chat { margin-top: 12px; overflow: hidden; }
   .chat-head {
     display: flex; align-items: center; gap: 10px;
     padding: 12px 16px;
@@ -368,7 +391,7 @@
     .listing { grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 12px; }
     .listing h1 { font-size: 16px; }
     .price { font-size: 18px; margin-bottom: 4px; }
-    .meta { margin-bottom: 8px; }
+    .listed { margin-bottom: 8px; }
     .seller { grid-column: 1 / -1; }
     .thread { padding: 14px 10px 6px; }
     .msg { max-width: 92%; }
@@ -379,6 +402,7 @@
     .actions .btn { width: 100%; }
     .pb-foot { padding: 9px 14px 9px 18px; }
     .pb-collapsed { padding: 11px 14px 11px 18px; }
+    .switcher button { flex: 1 1 100%; }
     .composer { padding: 10px; }
     .safe .thread { padding: 12px 10px 6px; }
     .quiet { margin: 6px 10px 12px; }
@@ -426,7 +450,7 @@
       <div>
         <h1>Used road bike</h1>
         <p class="price">1,800 kr</p>
-        <p class="meta">Listed 2 days ago · Aluminium frame, size 56 · Shipping available</p>
+        <p class="listed">Listed 2 days ago · Aluminium frame, size 56 · Shipping available</p>
         <div class="seller">
           <span class="avatar" aria-hidden="true">JH</span>
           <div>
@@ -437,7 +461,12 @@
       </div>
     </article>
 
-    <section class="card chat" aria-label="Conversation with Jonas Holm">
+    <div class="switcher" role="group" aria-label="Conversations">
+      <button type="button" id="pb-show-thread-1" aria-pressed="true">Jonas Holm · bike</button>
+      <button type="button" id="pb-show-thread-2" aria-pressed="false">Signe Kruse · camera</button>
+    </div>
+
+    <section class="card chat" id="thread-bike" data-pb-thread data-pb-listing-title="Used road bike" data-pb-listing-price="1,800 kr" data-pb-seller-email="jonas.holm@example.com" data-pb-seller-name="Jonas Holm" aria-label="Conversation with Jonas Holm">
       <div class="chat-head">
         <span class="avatar" aria-hidden="true">JH</span>
         <div>
@@ -450,19 +479,19 @@
         <div class="day">Today</div>
 
         <div class="msg out">
-          <div class="bubble"><span class="sr-only">You: </span>Hi! Is the road bike still available?</div>
+          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi! Is the road bike still available?</div>
           <span class="time">14:02</span>
         </div>
 
         <div class="msg in">
           <span class="avatar" aria-hidden="true">JH</span>
-          <div class="bubble"><span class="sr-only">Jonas Holm: </span>Yes, but several people are asking 🙂</div>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Yes, but several people are asking 🙂</div>
           <span class="time">14:04</span>
         </div>
 
         <div class="msg in">
           <span class="avatar" aria-hidden="true">JH</span>
-          <div class="bubble flagged"><span class="sr-only">Jonas Holm: </span>Send <mark>500 kr deposit</mark> via PayPal <mark>Friends &amp; Family</mark> to hold it, <mark>I ship tomorrow</mark></div>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Send <mark>500 kr deposit</mark> via PayPal <mark>Friends &amp; Family</mark> to hold it, <mark>I ship tomorrow</mark></div>
           <span class="time">14:05</span>
         </div>
 
@@ -509,8 +538,41 @@
       </div>
     </section>
 
+    <section class="card chat" id="thread-camera" data-pb-thread data-pb-listing-title="Mirrorless camera" data-pb-listing-price="2,400 kr" data-pb-seller-email="signe.kruse@example.com" data-pb-seller-name="Signe Kruse" aria-label="Conversation with Signe Kruse" hidden>
+      <div class="chat-head">
+        <span class="avatar" aria-hidden="true">SK</span>
+        <div>
+          <div class="title">Signe Kruse</div>
+          <div class="sub">About: Mirrorless camera · 2,400 kr</div>
+        </div>
+      </div>
+      <div class="thread">
+        <div class="day">Today</div>
+        <div class="msg out">
+          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi, is the mirrorless camera still available?</div>
+          <span class="time">16:18</span>
+        </div>
+        <div class="msg in">
+          <span class="avatar" aria-hidden="true">SK</span>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Yes. Today only, and I can only ship. I am abroad this week.</div>
+          <span class="time">16:19</span>
+        </div>
+        <div class="msg in">
+          <span class="avatar" aria-hidden="true">SK</span>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Send 2,400 kr on MobilePay to 20 34 56 78. Bank transfer works too.</div>
+          <span class="time">16:20</span>
+        </div>
+      </div>
+      <div class="composer" aria-hidden="true">
+        <div class="fake-input">Aa</div>
+        <span class="send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-7z"/></svg>
+        </span>
+      </div>
+    </section>
+
     <p class="safe-label" id="safe-label">Another chat · no false alarm</p>
-    <section class="card safe" aria-labelledby="safe-label">
+    <section class="card safe" id="thread-lamp" data-pb-thread data-pb-listing-title="Desk lamp" data-pb-listing-price="250 kr" data-pb-seller-email="mette.lund@example.com" data-pb-seller-name="Mette Lund" aria-labelledby="safe-label">
       <div class="chat-head">
         <span class="avatar ml" aria-hidden="true">ML</span>
         <div>
@@ -520,12 +582,12 @@
       </div>
       <div class="thread">
         <div class="msg out">
-          <div class="bubble"><span class="sr-only">You: </span>Hi, is the lamp still available? How do I pay?</div>
+          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi, is the lamp still available? How do I pay?</div>
           <span class="time">15:10</span>
         </div>
         <div class="msg in">
           <span class="avatar ml" aria-hidden="true">ML</span>
-          <div class="bubble"><span class="sr-only">Mette Lund: </span>Sure, pay through the Marketplace checkout or cash when you pick it up</div>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Mette Lund: </span>Sure, pay through the Marketplace checkout or cash when you pick it up</div>
           <span class="time">15:12</span>
         </div>
       </div>
@@ -586,10 +648,35 @@
 
 <script>
   (function () {
+    var live = new URLSearchParams(location.search).get("live") === "1";
+    if (live) {
+      document.querySelectorAll("mark").forEach(function (mark) {
+        mark.replaceWith(document.createTextNode(mark.textContent));
+      });
+      var staticCard = document.getElementById("pb-card");
+      if (staticCard) staticCard.remove();
+      document.documentElement.dataset.pbLive = "1";
+    }
+
+    var bike = document.getElementById("thread-bike");
+    var camera = document.getElementById("thread-camera");
+    var showBike = document.getElementById("pb-show-thread-1");
+    var showCamera = document.getElementById("pb-show-thread-2");
+    function showThread(which) {
+      var bikeOn = which === 1;
+      bike.hidden = !bikeOn;
+      camera.hidden = bikeOn;
+      showBike.setAttribute("aria-pressed", bikeOn ? "true" : "false");
+      showCamera.setAttribute("aria-pressed", bikeOn ? "false" : "true");
+    }
+    showBike.addEventListener("click", function () { showThread(1); });
+    showCamera.addEventListener("click", function () { showThread(2); });
+
     var card = document.getElementById("pb-card");
     var foot = document.getElementById("pb-foot");
     var protect = document.getElementById("pb-protect");
     var anyway = document.getElementById("pb-anyway");
+    if (!card || !protect || !anyway) return;
 
     protect.addEventListener("click", function () {
       foot.classList.add("is-status");

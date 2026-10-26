@@ -119,6 +119,11 @@ function fail(res, error) {
 }
 
 export function createServer(env = {}, deps = {}) {
+  if (!env.ALLOWED_ORIGINS) {
+    env = Object.assign({}, env, {
+      ALLOWED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"
+    });
+  }
   const orders = deps.orders || createOrdersPort(env);
   const fetchImpl = deps.fetchImpl || globalThis.fetch;
 
