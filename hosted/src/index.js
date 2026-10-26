@@ -7,6 +7,7 @@ import { protectDeal } from "../../backend/src/agent.js";
 const BODY_LIMIT = 16 * 1024;
 const NOINDEX = "noindex, nofollow, noarchive";
 const ORDER_TTL_MS = 24 * 60 * 60 * 1000;
+const MAX_ORDERS = 5000; // per day; keeps a public mock server from filling storage
 
 function json(status, body, extra = {}) {
   return new Response(JSON.stringify(body), {
@@ -38,8 +39,26 @@ function cors(request) {
 async function readJson(request) {
   const declared = Number(request.headers.get("content-length") || 0);
   if (declared > BODY_LIMIT) throw Object.assign(new Error("payload too large"), { status: 413 });
-  const raw = await request.text();
-  if (raw.length > BODY_LIMIT) throw Object.assign(new Error("payload too large"), { status: 413 });
+  // Count bytes as they stream so chunked bodies cannot grow past the limit.
+  const chunks = [];
+  let size = 0;
+  if (request.body) {
+    const reader = request.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > BODY_LIMIT) {
+        await reader.cancel();
+        throw Object.assign(new Error("payload too large"), { status: 413 });
+      }
+      chunks.push(value);
+    }
+  }
+  const bytes = new Uint8Array(size);
+  let at = 0;
+  for (const chunk of chunks) { bytes.set(chunk, at); at += chunk.byteLength; }
+  const raw = new TextDecoder().decode(bytes);
   if (!raw.trim()) return {};
   let body;
   try { body = JSON.parse(raw); } catch { throw Object.assign(new Error("invalid JSON"), { status: 400 }); }
@@ -60,6 +79,9 @@ export class MockOrders extends DurableObject {
     const { op, id, deal, origin } = await request.json();
     const store = this.ctx.storage;
     if (op === "create") {
+      const count = (await store.get("meta:count")) || 0;
+      if (count >= MAX_ORDERS) return Response.json({ error: "busy" }, { status: 429 });
+      await store.put("meta:count", count + 1);
       const orderId = `MOCK-${crypto.randomUUID()}`;
       const record = {
         orderId,
@@ -76,7 +98,8 @@ export class MockOrders extends DurableObject {
       if (!(await store.getAlarm())) await store.setAlarm(Date.now() + ORDER_TTL_MS);
       return Response.json({ orderId, status: record.status, approveUrl: record.approveUrl });
     }
-    const record = await store.get(String(id || ""));
+    const key = String(id || "");
+    const record = key.startsWith("MOCK-") ? await store.get(key) : null;
     if (!record) return Response.json(null);
     if (op === "approve" && record.status === "CREATED") record.status = "APPROVED";
     if (op === "capture") {
@@ -93,10 +116,12 @@ export class MockOrders extends DurableObject {
   async alarm() {
     // Drop mock orders older than a day; keep the demo store small.
     const cutoff = Date.now() - ORDER_TTL_MS;
-    const all = await this.ctx.storage.list();
+    const all = await this.ctx.storage.list({ prefix: "MOCK-" });
     const old = [...all].filter(([, v]) => !v || v.ts < cutoff).map(([k]) => k);
     for (let i = 0; i < old.length; i += 128) await this.ctx.storage.delete(old.slice(i, i + 128));
-    if (all.size > old.length) await this.ctx.storage.setAlarm(Date.now() + ORDER_TTL_MS);
+    const left = all.size - old.length;
+    await this.ctx.storage.put("meta:count", left);
+    if (left > 0) await this.ctx.storage.setAlarm(Date.now() + ORDER_TTL_MS);
   }
 }
 
@@ -105,6 +130,7 @@ function ordersPort(env, origin) {
   async function call(payload) {
     const res = await stub.fetch("https://orders/", { method: "POST", body: JSON.stringify(Object.assign({ origin }, payload)) });
     const data = await res.json();
+    if (res.status === 429) throw Object.assign(new Error("The demo server is busy. Try again tomorrow."), { status: 429 });
     if (res.status === 409) throw Object.assign(new Error("Order is not approved"), { status: 409, code: "not_approved" });
     return data;
   }
@@ -176,6 +202,7 @@ export default {
       if (status === 413) res = json(413, { error: "payload_too_large" });
       else if (status === 400) res = json(400, { error: "bad_request", message: String(error.message || "bad_request") });
       else if (status === 409) res = json(409, { error: error.code || "conflict" });
+      else if (status === 429) res = json(429, { error: "busy", message: error.message });
       else res = json(500, { error: "internal" });
     }
     const out = new Response(res.body, res);
