@@ -354,7 +354,7 @@ footer a:hover{color:#9ccfff}
         <li class="step">
           <span class="step-n" aria-hidden="true">03</span>
           <h3>Offers a PayPal order instead</h3>
-          <p><strong>"Move to protected PayPal order"</strong> creates a PayPal sandbox Orders v2 order (intent CAPTURE) for the item, price and seller email. You approve it on PayPal sandbox checkout, then capture. The card then reads: <span class="q">"Paid with PayPal Goods &amp; Services (sandbox). Buyer Protection may be eligible; see PayPal terms."</span></p>
+          <p><strong>"Switch to a PayPal order"</strong> creates a PayPal sandbox Orders v2 order (intent CAPTURE) for the item, price and seller email. You approve it on PayPal sandbox checkout, then capture. The card then reads: <span class="q">"Paid with PayPal Goods &amp; Services (sandbox). Buyer Protection may be eligible; see PayPal terms."</span></p>
           <p><strong>"Pay anyway"</strong> collapses the card and writes the choice to an override log on your device.</p>
         </li>
       </ol>
@@ -373,12 +373,12 @@ footer a:hover{color:#9ccfff}
       </div>
 
       <div class="track">
-        <div class="track-head"><span class="tag">Path A</span><h3>Move to a PayPal order</h3><p>Bike chat → order → approval → capture.</p></div>
+        <div class="track-head"><span class="tag">Path A</span><h3>Switch to a PayPal order</h3><p>Bike chat → order → approval → capture.</p></div>
         <ol class="board board-protect">
           <li class="frame f1">
             <figure style="margin:0">
-              <div class="shot"><img src="img/thread-bike.webp" width="1200" height="1072" loading="lazy" decoding="async"
-                alt="Demo chat with Jonas Holm about a used road bike for 1,800 kr. His message 'Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow' is outlined in amber with deposit, Friends & Family and I ship tomorrow highlighted; 'several people are asking' is highlighted above. Below it a PayBrake card shows 'High risk payment request', a MOCK MODE tag, the reason 'Friends & Family + upfront deposit: if the item never arrives, you may have no way to get your money back', signal chips Friends & Family, Upfront deposit, Pressure to hurry, Ships before you meet, a blue 'Move to protected PayPal order' button, a 'Pay anyway' button, and the footer 'PayBrake · rules check · only you can see this'."></div>
+              <div class="shot"><img src="img/thread-bike.webp" width="1200" height="1073" loading="lazy" decoding="async"
+                alt="Demo chat with Jonas Holm about a used road bike for 1,800 kr. His message 'Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow' is outlined in amber with deposit, Friends & Family and I ship tomorrow highlighted; 'several people are asking' is highlighted above. Below it a PayBrake card shows 'High risk payment request', a MOCK MODE tag, the reason 'Friends & Family + upfront deposit: if the item never arrives, you may have no way to get your money back', signal chips Friends & Family, Upfront deposit, Pressure to hurry, Ships before you meet, a blue 'Switch to a PayPal order' button, a 'Pay anyway' button, and the footer 'PayBrake · rules check · only you can see this'."></div>
               <figcaption><b><span class="fn">A1</span>The card appears</b>Friends &amp; Family plus a deposit to hold it. The hurry line and "I ship tomorrow" add to the reason but would not trigger a card alone.</figcaption>
             </figure>
           </li>
@@ -411,8 +411,8 @@ footer a:hover{color:#9ccfff}
         <ul class="board board-pair">
           <li class="frame">
             <figure style="margin:0">
-              <div class="shot"><img src="img/thread-camera.webp" width="1200" height="1017" loading="lazy" decoding="async"
-                alt="Demo chat with Signe Kruse about a mirrorless camera for 2,400 kr. Highlighted phrases: 'Today only', 'can only ship', 'I am abroad', 'MobilePay' and 'Bank transfer' in the message 'Send 2,400 kr on MobilePay to 20 34 56 78. Bank transfer works too.' A PayBrake card shows 'High risk payment request', the reason 'Off-platform payment: a transfer outside PayPal checkout is hard to reverse if the item never arrives', chips Off-platform payment, Pressure to hurry, Ships before you meet, and buttons 'Move to protected PayPal order' and 'Pay anyway'."></div>
+              <div class="shot"><img src="img/thread-camera.webp" width="1200" height="1019" loading="lazy" decoding="async"
+                alt="Demo chat with Signe Kruse about a mirrorless camera for 2,400 kr. Highlighted phrases: 'Today only', 'can only ship', 'I am abroad', 'MobilePay' and 'Bank transfer' in the message 'Send 2,400 kr on MobilePay to 20 34 56 78. Bank transfer works too.' A PayBrake card shows 'High risk payment request', the reason 'Off-platform payment: a transfer outside PayPal checkout is hard to reverse if the item never arrives', chips Off-platform payment, Pressure to hurry, Ships before you meet, and buttons 'Switch to a PayPal order' and 'Pay anyway'."></div>
               <figcaption><b><span class="fn">B1</span>Off-platform request</b>MobilePay to a phone number, or a bank transfer, from a seller who is "abroad". The buyer clicks <strong>Pay anyway</strong>. The card collapses and the choice goes into the override log on the device.</figcaption>
             </figure>
           </li>
@@ -432,8 +432,8 @@ footer a:hover{color:#9ccfff}
           <li class="frame">
             <figure style="margin:0">
               <div class="shot"><img src="img/options.webp" width="1200" height="750" loading="lazy" decoding="async"
-                alt="PayBrake settings page: Backend URL field set to http://localhost:8787, unchecked boxes 'Ask the backend for an AI check (off uses rules only)' and 'Debug HUD on chat pages', a Save button, and an Override log with Download JSON and Clear buttons listing two timestamped entries (one override, one protect)."></div>
-              <figcaption><b><span class="fn">C1</span>Settings</b>Backend URL, AI check toggle (off means rules only), debug HUD, and the override log with Download JSON and Clear.</figcaption>
+                alt="PayBrake settings page: Backend URL field set to the hosted test server https://paybrake-demo.spbabinov.workers.dev with a note that it is test orders only, buttons 'Use test server' and 'Use localhost:8787', unchecked boxes 'Ask the backend for an AI check (off uses rules only)' and 'Debug HUD on chat pages', a Save button, and an empty Override log with Download JSON and Clear buttons."></div>
+              <figcaption><b><span class="fn">C1</span>Settings</b>Backend URL (hosted test server by default, one click for localhost), AI check toggle (off means rules only), debug HUD, and the override log with Download JSON and Clear.</figcaption>
             </figure>
           </li>
           <li class="frame">
@@ -447,7 +447,7 @@ footer a:hover{color:#9ccfff}
           <li class="frame phone">
             <figure style="margin:0">
               <div class="shot"><img src="img/live-390.webp" width="780" height="1688" loading="lazy" decoding="async"
-                alt="Phone-width view (390 px) of the bike chat with Jonas Holm: highlighted risky phrases and the PayBrake High risk payment request card with wrapped signal chips and full-width 'Move to protected PayPal order' and 'Pay anyway' buttons stacked."></div>
+                alt="Phone-width view (390 px) of the bike chat with Jonas Holm: highlighted risky phrases and the PayBrake High risk payment request card with wrapped signal chips and full-width 'Switch to a PayPal order' and 'Pay anyway' buttons stacked."></div>
               <figcaption><b><span class="fn">C3</span>390 px</b>The bike chat card at phone width.</figcaption>
             </figure>
           </li>
@@ -522,7 +522,7 @@ footer a:hover{color:#9ccfff}
           <ul>
             <li>Detection runs in the extension, on your device.</li>
             <li>Chat text leaves the browser only if you turn on the AI check. Then your configured backend sends it to the model provider.</li>
-            <li>"Protect" sends item, amount, currency, seller email and the verdict to the backend.</li>
+            <li>"Switch to a PayPal order" sends item, amount, currency, seller email and the verdict to the backend.</li>
             <li>Secrets live only in <code>backend/.env</code>, never in the extension.</li>
             <li>The override log stays in <code>chrome.storage</code> on your device (max 200 entries). You can download or clear it.</li>
             <li>Permissions: <code>storage</code> only. Host access: the hosted demo server (<code>paybrake-demo.spbabinov.workers.dev</code>) and a local backend on <code>localhost:8787</code>. The content script runs only on the hosted demo, <code>localhost</code>, <code>127.0.0.1</code> and <code>file://</code> pages.</li>
@@ -556,20 +556,20 @@ footer a:hover{color:#9ccfff}
     <div class="wrap">
       <p class="kicker">Install</p>
       <h2 id="install-h">Try the test build in about 2 minutes.</h2>
-      <p class="lede">Recommended: the <code>v0.2.0-test.1</code> pre-release. It is a mock build, so you don't need Node, a server or PayPal credentials. The repo is private for now, so the release link only works if you have repo access.</p>
+      <p class="lede">Recommended: the <code>v0.2.0-test.2</code> pre-release. It is a mock build, so you don't need Node, a server or PayPal credentials. The repo is private for now, so the release link only works if you have repo access.</p>
       <div class="install">
         <div>
           <ol class="how">
-            <li>Download <code>paybrake-extension.zip</code> from the <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.1">v0.2.0-test.1 pre-release</a> and unzip it.</li>
+            <li>Download <code>paybrake-extension.zip</code> from the <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.2">v0.2.0-test.2 pre-release</a> and unzip it.</li>
             <li>Open <code>chrome://extensions</code> and turn on <strong>Developer mode</strong>.</li>
             <li>Click <strong>Load unpacked</strong> and pick the <code>paybrake-extension</code> folder (the one with <code>manifest.json</code>).</li>
             <li>A welcome tab opens. Click <strong>Try the demo store</strong>, or open the <a href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">hosted demo</a>.</li>
-            <li>In the bike chat: <strong>Move to protected PayPal order</strong> → <strong>Open approval</strong> → <strong>Approve (mock)</strong>. Back in the chat, click <strong>I approved it, capture</strong>. Then open the camera chat and click <strong>Pay anyway</strong>. The desk lamp chat gets no card.</li>
+            <li>In the bike chat: <strong>Switch to a PayPal order</strong> → <strong>Open approval</strong> → <strong>Approve (mock)</strong>. Back in the chat, click <strong>I approved it, capture</strong>. Then open the camera chat and click <strong>Pay anyway</strong>. The desk lamp chat gets no card.</li>
           </ol>
         </div>
         <div>
           <div class="ctas">
-            <a class="btn btn-pp" href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.1">Get v0.2.0-test.1</a>
+            <a class="btn btn-pp" href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.2">Get v0.2.0-test.2</a>
             <a class="btn btn-outline" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the hosted demo</a>
           </div>
           <p class="small" style="margin-top:20px">The test build talks to the hosted mock server by default. To use your own backend, set the Backend URL in Settings to <code>http://localhost:8787</code>.</p>
@@ -605,7 +605,7 @@ npm run eval</code></pre>
             <li>Open <code>chrome://extensions</code> and turn on <strong>Developer mode</strong>.</li>
             <li>Click <strong>Load unpacked</strong> and choose the <code>extension/</code> folder.</li>
             <li>Open <code>http://localhost:8080/demo/marketplace.html?live=1</code>.</li>
-            <li>Click <strong>Move to protected PayPal order</strong> → <strong>Open approval</strong> → <strong>Approve (mock)</strong>.</li>
+            <li>Click <strong>Switch to a PayPal order</strong> → <strong>Open approval</strong> → <strong>Approve (mock)</strong>.</li>
             <li>Back in the chat, click <strong>I approved it, capture</strong>.</li>
           </ol>
           <p class="small"><strong>Optional:</strong> put a PayPal sandbox client id and secret in <code>backend/.env</code> to create real sandbox orders. The <a href="https://github.com/lamapony/paybrake#readme">README</a> has the sandbox setup steps.</p>
