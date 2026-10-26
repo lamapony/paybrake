@@ -36,8 +36,24 @@ _2026-10-26. Mock backend, extension, demo, eval, shots, and extension smoke. Re
 | 7.2 `npm run eval` rules: precision 1, recall 1, F1 1, false alarms 0 (gate is 0.95 / 0.80 / zero false alarms) | PASS |
 | 7.2 live eval | skips with exit 0 while `/health` says llm is off. Not a failure |
 | 7.3 mock `/api/protect` returns `MOCK-` id and approve URL, capture flow, 400, 413, sandbox guard, CORS, classify 503 `llm_off`, evidence substring guard | PASS |
-| 7.3 rest: OAuth token cache, create-order body, `PayPal-Request-Id`, payer-action link | NOT DONE (no rest adapter in this build) |
+| 7.3 rest: OAuth token cache, create-order body, `PayPal-Request-Id`, payer-action link | PASS (offline, mocked fetch) |
 | 7.4 Playwright static card at 390 and 1280, protect shot, `safe-1280.png` with no card, plus injected live card shots | PASS |
 | 7.5 extension smoke: live card within 5s, protect shows `MOCK-`, second thread Pay anyway lands in the ring log, `shots/ext-live-1280.png` and `shots/ext-live-390.png` | PASS |
 | 7.6 secret grep on tracked files, `.env` gitignored, `.env.example` empty | PASS |
 | 7.7 README run-in-5-minutes from a clean clone | PASS (`npm install`, `npm test` 62/62, `npm run eval` precision 1, `/health` mock, `POST /api/protect` returns `MOCK-`) |
+
+## Backend-rest session (2026-10-26)
+
+The table above is the earlier mock-only session. This branch adds the sandbox adapter, still with no live credentials.
+
+| Piece | Result |
+|---|---|
+| Rest adapter (`backend/src/paypal-rest.js`, wired from `paypal.js` and `server.js`) | DONE |
+| Toolkit stub (`backend/src/paypal-toolkit.js`, executes through rest) | DONE |
+| OpenRouter classify (`resolveLlm` in `backend/src/classify.js`, `llmProvider` on `/health`) | DONE |
+| Offline tests | DONE (102 passing, mocked fetch, no network) |
+| Live sandbox `create_order` | NOT DONE (needs Christopher / credentials) |
+| Live LLM eval | NOT DONE (needs Christopher / credentials) |
+| Hosting | NOT DONE (needs Christopher / credentials). `server.js` still binds `127.0.0.1` and `::1` only |
+
+§7.3 rest is PASS offline with mocked fetch. See `docs/CHRISTOPHER-HANDOFF.md`.
