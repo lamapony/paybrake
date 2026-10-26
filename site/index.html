@@ -8,6 +8,7 @@
 <meta name="description" content="PayBrake is a Chrome extension prototype that spots risky payment requests in marketplace chats on your device and offers a PayPal Orders v2 sandbox checkout as a safer path. Built for the PayPal AI Hackathon.">
 <meta name="theme-color" content="#0b1f3a">
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="PayBrake — Brakes before you pay.">
 <meta property="og:description" content="A Chrome extension that stays silent unless a marketplace chat asks for a risky payment, then offers a PayPal sandbox order instead.">
@@ -54,6 +55,7 @@ code,pre{font-family:var(--mono);font-size:.92em}
 .top{background:var(--navy);color:var(--on-navy);position:relative}
 .nav{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:72px}
 .brand{display:inline-flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-weight:800;font-size:1.15rem;letter-spacing:-.01em;min-height:44px}
+.brand .logo{display:block;width:32px;height:32px}
 .brand:hover{color:#fff}
 .mark{width:30px;height:30px;border-radius:50%;border:3px solid var(--sky);position:relative;flex:none}
 .mark::before{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--navy-3)}
@@ -263,7 +265,7 @@ footer a:hover{color:#9ccfff}
 <header class="top">
   <div class="wrap">
     <nav class="nav" aria-label="Primary">
-      <a class="brand" href="#top" aria-label="PayBrake, back to top"><span class="mark" aria-hidden="true"></span>PayBrake</a>
+      <a class="brand" href="#top" aria-label="PayBrake, back to top"><img class="logo" src="img/logo.svg" width="32" height="32" alt="">PayBrake</a>
       <ul>
         <li><a class="l" href="#problem">Problem</a></li>
         <li><a class="l" href="#how">How it works</a></li>
@@ -290,7 +292,7 @@ footer a:hover{color:#9ccfff}
           <p class="note">GitHub repo is private right now and goes public for judging.</p>
         </div>
         <div class="hero-art">
-          <img src="img/hero.webp" width="1024" height="768" fetchpriority="high" decoding="async"
+          <img src="img/hero-v2.webp" width="1024" height="768" fetchpriority="high" decoding="async"
                alt="Illustration on a navy background: an amber chat bubble on the left, a blue brake lever in the middle clamping a falling stack of gold coins, and a blue shield with an amber check mark on the right.">
         </div>
       </div>
