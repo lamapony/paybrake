@@ -44,3 +44,9 @@ const server = http.createServer((req, res) => {
 server.listen(port, "127.0.0.1", () => {
   console.log(`demo http://127.0.0.1:${port}`);
 });
+const v6 = http.createServer(server.listeners("request")[0]);
+v6.on("error", () => {});
+v6.listen(port, "::1");
+server.on("close", () => {
+  try { v6.close(); } catch { /* already closed */ }
+});

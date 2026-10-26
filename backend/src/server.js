@@ -118,7 +118,7 @@ function fail(res, error) {
   return send(res, 500, { error: "internal" });
 }
 
-export function createServer(env = {}, deps = {}) {
+function createHandler(env = {}, deps = {}) {
   if (!env.ALLOWED_ORIGINS) {
     env = Object.assign({}, env, {
       ALLOWED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"
@@ -127,7 +127,7 @@ export function createServer(env = {}, deps = {}) {
   const orders = deps.orders || createOrdersPort(env);
   const fetchImpl = deps.fetchImpl || globalThis.fetch;
 
-  return http.createServer(async (req, res) => {
+  return async (req, res) => {
     applyCors(req, res, env);
     if (req.method === "OPTIONS") {
       res.writeHead(204);
@@ -228,13 +228,24 @@ export function createServer(env = {}, deps = {}) {
     } catch (error) {
       fail(res, error);
     }
-  });
+  };
+}
+
+export function createServer(env = {}, deps = {}) {
+  return http.createServer(createHandler(env, deps));
 }
 
 export function start(env = process.env) {
-  const server = createServer(env);
+  const handler = createHandler(env, {});
   const port = Number(env.PORT || 8787);
+  const server = http.createServer(handler);
   server.listen(port, "127.0.0.1");
+  const v6 = http.createServer(handler);
+  v6.on("error", () => {});
+  v6.listen(port, "::1");
+  server.on("close", () => {
+    try { v6.close(); } catch { /* already closed */ }
+  });
   return server;
 }
 

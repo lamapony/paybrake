@@ -268,11 +268,12 @@
   function anchorFor(thread, evidence) {
     const quotes = (evidence || []).map((item) => item && item.text).filter(Boolean);
     const msgs = [...thread.querySelectorAll(".msg")];
-    for (const quote of quotes) {
-      for (const msg of msgs) {
-        if ((msg.textContent || "").includes(quote)) return msg;
-      }
+    let found = null;
+    for (const msg of msgs) {
+      const text = msg.textContent || "";
+      if (quotes.some((quote) => text.includes(quote))) found = msg;
     }
+    if (found) return found;
     const sellers = [...thread.querySelectorAll('[data-pb-msg][data-from="seller"]')];
     const last = sellers[sellers.length - 1];
     return (last && last.closest(".msg")) || last || thread.lastElementChild || thread;
