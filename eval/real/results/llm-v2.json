@@ -1,0 +1,3306 @@
+{
+ "model": "openai/gpt-4o-mini",
+ "n": 200,
+ "llmStats": {
+  "calls": 212,
+  "errors": 1
+ },
+ "rules": {
+  "sms_spam": {
+   "all": {
+    "n": 50,
+    "tp": 0,
+    "fp": 0,
+    "fn": 25,
+    "tn": 25,
+    "precision": null,
+    "recall": 0,
+    "f1": 0,
+    "fpr": 0
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 0,
+    "fp": 0,
+    "fn": 25,
+    "tn": 25,
+    "precision": null,
+    "recall": 0,
+    "f1": 0,
+    "fpr": 0
+   },
+   "bySubtype": {
+    "spam": {
+     "label": "scam",
+     "n": 25,
+     "flagged": 0
+    },
+    "ham": {
+     "label": "legit",
+     "n": 25,
+     "flagged": 0
+    }
+   }
+  },
+  "discord": {
+   "all": {
+    "n": 50,
+    "tp": 4,
+    "fp": 0,
+    "fn": 21,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.16,
+    "f1": 0.276,
+    "fpr": 0
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 4,
+    "fp": 0,
+    "fn": 21,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.16,
+    "f1": 0.276,
+    "fpr": 0
+   },
+   "bySubtype": {
+    "scam": {
+     "label": "scam",
+     "n": 25,
+     "flagged": 4
+    },
+    "clean": {
+     "label": "legit",
+     "n": 25,
+     "flagged": 0
+    }
+   }
+  },
+  "scam_dialogue": {
+   "all": {
+    "n": 50,
+    "tp": 3,
+    "fp": 0,
+    "fn": 22,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.12,
+    "f1": 0.214,
+    "fpr": 0
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 3,
+    "fp": 0,
+    "fn": 22,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.12,
+    "f1": 0.214,
+    "fpr": 0
+   },
+   "bySubtype": {
+    "ssn": {
+     "label": "scam",
+     "n": 10,
+     "flagged": 0
+    },
+    "reward": {
+     "label": "scam",
+     "n": 6,
+     "flagged": 2
+    },
+    "refund": {
+     "label": "scam",
+     "n": 5,
+     "flagged": 1
+    },
+    "support": {
+     "label": "scam",
+     "n": 4,
+     "flagged": 0
+    },
+    "telemarketing": {
+     "label": "legit",
+     "n": 5,
+     "flagged": 0
+    },
+    "delivery": {
+     "label": "legit",
+     "n": 5,
+     "flagged": 0
+    },
+    "wrong": {
+     "label": "legit",
+     "n": 10,
+     "flagged": 0
+    },
+    "insurance": {
+     "label": "legit",
+     "n": 5,
+     "flagged": 0
+    }
+   }
+  },
+  "scamguardbench": {
+   "all": {
+    "n": 50,
+    "tp": 4,
+    "fp": 1,
+    "fn": 21,
+    "tn": 24,
+    "precision": 0.8,
+    "recall": 0.16,
+    "f1": 0.267,
+    "fpr": 0.04
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 4,
+    "fp": 1,
+    "fn": 21,
+    "tn": 24,
+    "precision": 0.8,
+    "recall": 0.16,
+    "f1": 0.267,
+    "fpr": 0.04
+   },
+   "bySubtype": {
+    "authority_impersonation+urgency_pressure": {
+     "label": "scam",
+     "n": 5,
+     "flagged": 0
+    },
+    "credential_phishing+authority_impersonation+urgency_pressure": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 0
+    },
+    "refund_overpayment+credential_phishing": {
+     "label": "scam",
+     "n": 3,
+     "flagged": 0
+    },
+    "link_obfuscation+credential_phishing": {
+     "label": "scam",
+     "n": 3,
+     "flagged": 0
+    },
+    "authority_impersonation+refund_overpayment+credential_phishing": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 0
+    },
+    "prize_lottery+urgency_pressure": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 0
+    },
+    "prize_lottery": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 0
+    },
+    "payment_redirect+authority_impersonation": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 2
+    },
+    "subscription_trap+urgency_pressure": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 0
+    },
+    "courier_customs_fee+urgency_pressure+link_obfuscation": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 0
+    },
+    "investment_too_good+urgency_pressure": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "family_emergency_impersonation+urgency_pressure+payment_redirect": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "tech_support+authority_impersonation": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 0
+    },
+    "marketing_promo": {
+     "label": "legit",
+     "n": 3,
+     "flagged": 0
+    },
+    "legit_other": {
+     "label": "legit",
+     "n": 4,
+     "flagged": 0
+    },
+    "subscription_receipt": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "bank_txn_alert": {
+     "label": "legit",
+     "n": 6,
+     "flagged": 0
+    },
+    "otp_never_share": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "courier_notification": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "family_money_request": {
+     "label": "legit",
+     "n": 2,
+     "flagged": 1
+    },
+    "govt_notification": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "refund_confirmation": {
+     "label": "legit",
+     "n": 3,
+     "flagged": 0
+    },
+    "utility_reminder": {
+     "label": "legit",
+     "n": 2,
+     "flagged": 0
+    },
+    "bank_otp": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    }
+   }
+  },
+  "pooled": {
+   "all": {
+    "n": 200,
+    "tp": 11,
+    "fp": 1,
+    "fn": 89,
+    "tn": 99,
+    "precision": 0.917,
+    "recall": 0.11,
+    "f1": 0.196,
+    "fpr": 0.01
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 200,
+    "tp": 11,
+    "fp": 1,
+    "fn": 89,
+    "tn": 99,
+    "precision": 0.917,
+    "recall": 0.11,
+    "f1": 0.196,
+    "fpr": 0.01
+   }
+  }
+ },
+ "rulesPlusLlm": {
+  "sms_spam": {
+   "all": {
+    "n": 50,
+    "tp": 0,
+    "fp": 0,
+    "fn": 25,
+    "tn": 25,
+    "precision": null,
+    "recall": 0,
+    "f1": 0,
+    "fpr": 0
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 0,
+    "fp": 0,
+    "fn": 25,
+    "tn": 25,
+    "precision": null,
+    "recall": 0,
+    "f1": 0,
+    "fpr": 0
+   },
+   "bySubtype": {
+    "spam": {
+     "label": "scam",
+     "n": 25,
+     "flagged": 0
+    },
+    "ham": {
+     "label": "legit",
+     "n": 25,
+     "flagged": 0
+    }
+   }
+  },
+  "discord": {
+   "all": {
+    "n": 50,
+    "tp": 4,
+    "fp": 0,
+    "fn": 21,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.16,
+    "f1": 0.276,
+    "fpr": 0
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 4,
+    "fp": 0,
+    "fn": 21,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.16,
+    "f1": 0.276,
+    "fpr": 0
+   },
+   "bySubtype": {
+    "scam": {
+     "label": "scam",
+     "n": 25,
+     "flagged": 4
+    },
+    "clean": {
+     "label": "legit",
+     "n": 25,
+     "flagged": 0
+    }
+   }
+  },
+  "scam_dialogue": {
+   "all": {
+    "n": 50,
+    "tp": 2,
+    "fp": 0,
+    "fn": 23,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.08,
+    "f1": 0.148,
+    "fpr": 0
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 2,
+    "fp": 0,
+    "fn": 23,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.08,
+    "f1": 0.148,
+    "fpr": 0
+   },
+   "bySubtype": {
+    "ssn": {
+     "label": "scam",
+     "n": 10,
+     "flagged": 0
+    },
+    "reward": {
+     "label": "scam",
+     "n": 6,
+     "flagged": 2
+    },
+    "refund": {
+     "label": "scam",
+     "n": 5,
+     "flagged": 0
+    },
+    "support": {
+     "label": "scam",
+     "n": 4,
+     "flagged": 0
+    },
+    "telemarketing": {
+     "label": "legit",
+     "n": 5,
+     "flagged": 0
+    },
+    "delivery": {
+     "label": "legit",
+     "n": 5,
+     "flagged": 0
+    },
+    "wrong": {
+     "label": "legit",
+     "n": 10,
+     "flagged": 0
+    },
+    "insurance": {
+     "label": "legit",
+     "n": 5,
+     "flagged": 0
+    }
+   }
+  },
+  "scamguardbench": {
+   "all": {
+    "n": 50,
+    "tp": 4,
+    "fp": 1,
+    "fn": 21,
+    "tn": 24,
+    "precision": 0.8,
+    "recall": 0.16,
+    "f1": 0.267,
+    "fpr": 0.04
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 4,
+    "fp": 1,
+    "fn": 21,
+    "tn": 24,
+    "precision": 0.8,
+    "recall": 0.16,
+    "f1": 0.267,
+    "fpr": 0.04
+   },
+   "bySubtype": {
+    "authority_impersonation+urgency_pressure": {
+     "label": "scam",
+     "n": 5,
+     "flagged": 0
+    },
+    "credential_phishing+authority_impersonation+urgency_pressure": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 0
+    },
+    "refund_overpayment+credential_phishing": {
+     "label": "scam",
+     "n": 3,
+     "flagged": 0
+    },
+    "link_obfuscation+credential_phishing": {
+     "label": "scam",
+     "n": 3,
+     "flagged": 0
+    },
+    "authority_impersonation+refund_overpayment+credential_phishing": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 0
+    },
+    "prize_lottery+urgency_pressure": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 0
+    },
+    "prize_lottery": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 0
+    },
+    "payment_redirect+authority_impersonation": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 2
+    },
+    "subscription_trap+urgency_pressure": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 0
+    },
+    "courier_customs_fee+urgency_pressure+link_obfuscation": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 0
+    },
+    "investment_too_good+urgency_pressure": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "family_emergency_impersonation+urgency_pressure+payment_redirect": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "tech_support+authority_impersonation": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 0
+    },
+    "marketing_promo": {
+     "label": "legit",
+     "n": 3,
+     "flagged": 0
+    },
+    "legit_other": {
+     "label": "legit",
+     "n": 4,
+     "flagged": 0
+    },
+    "subscription_receipt": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "bank_txn_alert": {
+     "label": "legit",
+     "n": 6,
+     "flagged": 0
+    },
+    "otp_never_share": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "courier_notification": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "family_money_request": {
+     "label": "legit",
+     "n": 2,
+     "flagged": 1
+    },
+    "govt_notification": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "refund_confirmation": {
+     "label": "legit",
+     "n": 3,
+     "flagged": 0
+    },
+    "utility_reminder": {
+     "label": "legit",
+     "n": 2,
+     "flagged": 0
+    },
+    "bank_otp": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    }
+   }
+  },
+  "pooled": {
+   "all": {
+    "n": 200,
+    "tp": 10,
+    "fp": 1,
+    "fn": 90,
+    "tn": 99,
+    "precision": 0.909,
+    "recall": 0.1,
+    "f1": 0.18,
+    "fpr": 0.01
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 200,
+    "tp": 10,
+    "fp": 1,
+    "fn": 90,
+    "tn": 99,
+    "precision": 0.909,
+    "recall": 0.1,
+    "f1": 0.18,
+    "fpr": 0.01
+   }
+  }
+ },
+ "llmAlone": {
+  "sms_spam": {
+   "all": {
+    "n": 50,
+    "tp": 21,
+    "fp": 1,
+    "fn": 4,
+    "tn": 24,
+    "precision": 0.955,
+    "recall": 0.84,
+    "f1": 0.894,
+    "fpr": 0.04
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 21,
+    "fp": 1,
+    "fn": 4,
+    "tn": 24,
+    "precision": 0.955,
+    "recall": 0.84,
+    "f1": 0.894,
+    "fpr": 0.04
+   },
+   "bySubtype": {
+    "spam": {
+     "label": "scam",
+     "n": 25,
+     "flagged": 21
+    },
+    "ham": {
+     "label": "legit",
+     "n": 25,
+     "flagged": 1
+    }
+   }
+  },
+  "discord": {
+   "all": {
+    "n": 50,
+    "tp": 21,
+    "fp": 0,
+    "fn": 4,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.84,
+    "f1": 0.913,
+    "fpr": 0
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 21,
+    "fp": 0,
+    "fn": 4,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.84,
+    "f1": 0.913,
+    "fpr": 0
+   },
+   "bySubtype": {
+    "scam": {
+     "label": "scam",
+     "n": 25,
+     "flagged": 21
+    },
+    "clean": {
+     "label": "legit",
+     "n": 25,
+     "flagged": 0
+    }
+   }
+  },
+  "scam_dialogue": {
+   "all": {
+    "n": 50,
+    "tp": 19,
+    "fp": 0,
+    "fn": 6,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.76,
+    "f1": 0.864,
+    "fpr": 0
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 19,
+    "fp": 0,
+    "fn": 6,
+    "tn": 25,
+    "precision": 1,
+    "recall": 0.76,
+    "f1": 0.864,
+    "fpr": 0
+   },
+   "bySubtype": {
+    "ssn": {
+     "label": "scam",
+     "n": 10,
+     "flagged": 10
+    },
+    "reward": {
+     "label": "scam",
+     "n": 6,
+     "flagged": 4
+    },
+    "refund": {
+     "label": "scam",
+     "n": 5,
+     "flagged": 2
+    },
+    "support": {
+     "label": "scam",
+     "n": 4,
+     "flagged": 3
+    },
+    "telemarketing": {
+     "label": "legit",
+     "n": 5,
+     "flagged": 0
+    },
+    "delivery": {
+     "label": "legit",
+     "n": 5,
+     "flagged": 0
+    },
+    "wrong": {
+     "label": "legit",
+     "n": 10,
+     "flagged": 0
+    },
+    "insurance": {
+     "label": "legit",
+     "n": 5,
+     "flagged": 0
+    }
+   }
+  },
+  "scamguardbench": {
+   "all": {
+    "n": 50,
+    "tp": 24,
+    "fp": 2,
+    "fn": 1,
+    "tn": 23,
+    "precision": 0.923,
+    "recall": 0.96,
+    "f1": 0.941,
+    "fpr": 0.08
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 50,
+    "tp": 24,
+    "fp": 2,
+    "fn": 1,
+    "tn": 23,
+    "precision": 0.923,
+    "recall": 0.96,
+    "f1": 0.941,
+    "fpr": 0.08
+   },
+   "bySubtype": {
+    "authority_impersonation+urgency_pressure": {
+     "label": "scam",
+     "n": 5,
+     "flagged": 4
+    },
+    "credential_phishing+authority_impersonation+urgency_pressure": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 2
+    },
+    "refund_overpayment+credential_phishing": {
+     "label": "scam",
+     "n": 3,
+     "flagged": 3
+    },
+    "link_obfuscation+credential_phishing": {
+     "label": "scam",
+     "n": 3,
+     "flagged": 3
+    },
+    "authority_impersonation+refund_overpayment+credential_phishing": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "prize_lottery+urgency_pressure": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 2
+    },
+    "prize_lottery": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "payment_redirect+authority_impersonation": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 2
+    },
+    "subscription_trap+urgency_pressure": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "courier_customs_fee+urgency_pressure+link_obfuscation": {
+     "label": "scam",
+     "n": 2,
+     "flagged": 2
+    },
+    "investment_too_good+urgency_pressure": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "family_emergency_impersonation+urgency_pressure+payment_redirect": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "tech_support+authority_impersonation": {
+     "label": "scam",
+     "n": 1,
+     "flagged": 1
+    },
+    "marketing_promo": {
+     "label": "legit",
+     "n": 3,
+     "flagged": 0
+    },
+    "legit_other": {
+     "label": "legit",
+     "n": 4,
+     "flagged": 0
+    },
+    "subscription_receipt": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "bank_txn_alert": {
+     "label": "legit",
+     "n": 6,
+     "flagged": 0
+    },
+    "otp_never_share": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "courier_notification": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "family_money_request": {
+     "label": "legit",
+     "n": 2,
+     "flagged": 2
+    },
+    "govt_notification": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    },
+    "refund_confirmation": {
+     "label": "legit",
+     "n": 3,
+     "flagged": 0
+    },
+    "utility_reminder": {
+     "label": "legit",
+     "n": 2,
+     "flagged": 0
+    },
+    "bank_otp": {
+     "label": "legit",
+     "n": 1,
+     "flagged": 0
+    }
+   }
+  },
+  "pooled": {
+   "all": {
+    "n": 200,
+    "tp": 85,
+    "fp": 3,
+    "fn": 15,
+    "tn": 97,
+    "precision": 0.966,
+    "recall": 0.85,
+    "f1": 0.904,
+    "fpr": 0.03
+   },
+   "dev": {
+    "n": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "precision": null,
+    "recall": null,
+    "f1": 0,
+    "fpr": null
+   },
+   "test": {
+    "n": 200,
+    "tp": 85,
+    "fp": 3,
+    "fn": 15,
+    "tn": 97,
+    "precision": 0.966,
+    "recall": 0.85,
+    "f1": 0.904,
+    "fpr": 0.03
+   }
+  }
+ },
+ "at": "2026-10-26T15:38:57.322Z",
+ "rows": [
+  {
+   "id": "sms_spam:1463",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:305",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:12",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2420",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4410",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3720",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:34",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3164",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2119",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:5027",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3819",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3059",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4088",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3679",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3483",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:385",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3972",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3568",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4896",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2670",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3742",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2248",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2871",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:1930",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3002",
+   "dataset": "sms_spam",
+   "label": "scam",
+   "subtype": "spam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2127",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2025",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4401",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4145",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3567",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2748",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:1357",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4986",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4546",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2760",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:852",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:950",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4530",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4151",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:60",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:55",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4761",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:1558",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2418",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:3170",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2105",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4770",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:1772",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:2426",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "sms_spam:4071",
+   "dataset": "sms_spam",
+   "label": "legit",
+   "subtype": "ham",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:154",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:395",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1256",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:703",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1130",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:999",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1610",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1889",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1981",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1241",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1634",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1426",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:567",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1459",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:121",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1250",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:526",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:333",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:706",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:497",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:440",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:353",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1695",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:413",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:57",
+   "dataset": "discord",
+   "label": "scam",
+   "subtype": "scam",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:717",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1959",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1453",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:309",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:134",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1224",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:689",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:559",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1370",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:334",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1131",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1213",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1313",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:133",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:553",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1389",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:105",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:885",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1540",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:225",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:484",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1473",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1463",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1228",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "discord:1654",
+   "dataset": "discord",
+   "label": "legit",
+   "subtype": "clean",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:45",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:764",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "reward",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:705",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "reward",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:218",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "refund",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:551",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "support",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:376",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "refund",
+   "rules": "risk",
+   "combined": "silent",
+   "combinedLlm": "confirmed",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:2",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:447",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "support",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:593",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "support",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:590",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "support",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:145",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:296",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "refund",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:120",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:119",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:83",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:149",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:696",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "reward",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:17",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:30",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:315",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "refund",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:704",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "reward",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:380",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "refund",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:726",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "reward",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:754",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "reward",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:130",
+   "dataset": "scam_dialogue",
+   "label": "scam",
+   "subtype": "ssn",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1331",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "telemarketing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:900",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "delivery",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1529",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1111",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "insurance",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1482",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1587",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1251",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "telemarketing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:800",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "delivery",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1408",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1207",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "telemarketing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1206",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "telemarketing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1490",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:929",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "delivery",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1552",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1498",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:829",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "delivery",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1138",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "insurance",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:870",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "delivery",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1037",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "insurance",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1056",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "insurance",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1127",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "insurance",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1579",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1454",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1312",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "telemarketing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scam_dialogue:1532",
+   "dataset": "scam_dialogue",
+   "label": "legit",
+   "subtype": "wrong",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:a957646be4fd874c",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "authority_impersonation+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:3dd6d4cbc24c140a",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "credential_phishing+authority_impersonation+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:04d3b22aca73b15e",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "refund_overpayment+credential_phishing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:101db8547becb7a1",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "link_obfuscation+credential_phishing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:3011db851c8b8c5b",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "authority_impersonation+refund_overpayment+credential_phishing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:03080845ee31cc68",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "authority_impersonation+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:356347de282a788f",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "prize_lottery+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:uci_sms:uci_sms-04578",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "prize_lottery",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:66ee89de3d73c5f8",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "payment_redirect+authority_impersonation",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:774cc672189fc343",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "subscription_trap+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:8f953cf2262768ee",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "courier_customs_fee+urgency_pressure+link_obfuscation",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:2b67aadbef4e452b",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "authority_impersonation+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:841b51b1f07d1ec9",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "refund_overpayment+credential_phishing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:5d24a57379733802",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "investment_too_good+urgency_pressure",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:744bf000a062babf",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "family_emergency_impersonation+urgency_pressure+payment_redirect",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:0be5278028973e18",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "authority_impersonation+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:d1bc0f58892f662c",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "prize_lottery+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:e5f63e16b13702d9",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "link_obfuscation+credential_phishing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:31ad23995417b2c1",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "credential_phishing+authority_impersonation+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:e47df7c1928f2954",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "link_obfuscation+credential_phishing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:b9c158faee57c413",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "refund_overpayment+credential_phishing",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:3a13604f42e29002",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "courier_customs_fee+urgency_pressure+link_obfuscation",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:cefd6056716bde0b",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "tech_support+authority_impersonation",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:da51c301100e0a86",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "payment_redirect+authority_impersonation",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:7ef1e062119aac67",
+   "dataset": "scamguardbench",
+   "label": "scam",
+   "subtype": "authority_impersonation+urgency_pressure",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:a6c66e02d4559c5d",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "marketing_promo",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:phishing_email:phishing_email-14552",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "legit_other",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": "llm_error"
+  },
+  {
+   "id": "scamguardbench:syn:ecf5471e9a58b5f2",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "subscription_receipt",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:69e5a2e703fd307e",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "bank_txn_alert",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:16dcca27e03b72c1",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "otp_never_share",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:6c620887e946c5a1",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "courier_notification",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:enron_ham:enron_ham-28221",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "legit_other",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:enron_ham:enron_ham-23356",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "legit_other",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:7610f02e9db1026a",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "bank_txn_alert",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:b2fb2e654bfca891",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "family_money_request",
+   "rules": "risk",
+   "combined": "risk",
+   "combinedLlm": "confirmed",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:1dcb7fff2ba05a94",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "bank_txn_alert",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:6dad485b8dc2a119",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "govt_notification",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:aa1ae05ce0f4f544",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "refund_confirmation",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:uci_sms:uci_sms-03270",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "legit_other",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:5f4415a33b0b9d00",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "utility_reminder",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:9b5221654bd3df97",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "bank_txn_alert",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:404062c5c3c97f7a",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "marketing_promo",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:f249604d57d0d2db",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "refund_confirmation",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:468c76cf77e87cef",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "refund_confirmation",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:362641eba6e75592",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "bank_txn_alert",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:c910ec39c454bb63",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "family_money_request",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "risk",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:09ef5882190be215",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "bank_otp",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:06a124430a339d82",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "marketing_promo",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:8932ffafe7e407f0",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "utility_reminder",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  },
+  {
+   "id": "scamguardbench:syn:ec1958a240e42c92",
+   "dataset": "scamguardbench",
+   "label": "legit",
+   "subtype": "bank_txn_alert",
+   "rules": "silent",
+   "combined": "silent",
+   "combinedLlm": "off",
+   "alone": "silent",
+   "aloneErr": null
+  }
+ ]
+}

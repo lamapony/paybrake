@@ -22,7 +22,9 @@
     "hosted:build": "node scripts/build-hosted.mjs",
     "hosted:deploy": "node scripts/build-hosted.mjs && cd hosted && npx wrangler deploy",
     "hosted:dev": "node scripts/build-hosted.mjs && cd hosted && npx wrangler dev",
-    "e2e:hosted": "node tests/e2e/hosted-e2e.cjs"
+    "e2e:hosted": "node tests/e2e/hosted-e2e.cjs",
+    "eval:real:download": "node eval/real/download.mjs",
+    "eval:real": "node eval/real/run-real.mjs"
   },
   "optionalDependencies": {
     "playwright-core": "1.63.0"

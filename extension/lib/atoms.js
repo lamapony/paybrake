@@ -2,7 +2,7 @@
 // Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, pay-risk.js.
 // Patterns are case-insensitive and Unicode-aware. A hit is a concrete span.
 
-const RULES_VERSION = 1;
+const RULES_VERSION = 2;
 
 function wordBound(pattern, flags = "giu") {
   const tidy = globalThis.pbTidy;
@@ -75,6 +75,9 @@ const RULES = [
   { id: "off_platform", re: "mobile\\s*pay", gate: "mobilepay" },
   { id: "off_platform", re: "IBAN", gate: "iban" },
   { id: "off_platform", re: "[A-Za-z]{2}\\d{2}[A-Za-z0-9]{11,30}", gate: "iban", flags: "g" },
+  // v2: IBANs are usually written in groups of four ("DE89 3704 0044 0532 0130 00").
+  { id: "off_platform", re: "[A-Z]{2}\\d{2}(?:[ ][A-Z0-9]{4}){3,7}(?:[ ][A-Z0-9]{1,3})?", gate: "iban", flags: "gu" },
+  { id: "off_platform", re: "(?:safe|secure|holding|new)\\s+(?:bank\\s+)?account", gate: "iban" },
   { id: "off_platform", re: "bank\\s+transfers?", gate: "negation" },
   { id: "off_platform", re: "wire\\s+transfers?", gate: "negation" },
   // "wire/transfer … to my bank" or "to my bank account". Still open:
@@ -87,12 +90,14 @@ const RULES = [
   { id: "off_platform", re: "konto\\s*nr\\.?", gate: "negation" },
   { id: "off_platform", re: "kontonummer", gate: "negation" },
   { id: "off_platform", re: "kontonr", gate: "negation" },
-  { id: "off_platform", re: "account\\s+numbers?", gate: "negation" },
-  { id: "off_platform", re: "sort\\s+codes?", gate: "negation" },
+  { id: "off_platform", re: "account\\s+numbers?", gate: "acct" },
+  { id: "off_platform", re: "sort\\s+codes?", gate: "acct" },
   { id: "off_platform", re: "revolut", gate: "negation" },
   { id: "off_platform", re: "(?:transferwise|wise\\.com|\\b(?:via|on|with|til|through|på)\\s+wise\\b|\\bwise\\s+transfer\\b)", gate: "negation" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
-  { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "negation" },
+  { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
+  // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
+  { id: "off_platform", re: "(?:steam|google\\s*play|itunes|apple|amazon|ebay)\\s+(?:gift\\s+)?cards?", gate: "giftcard" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "chat-pay" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
   { id: "off_platform", re: "\\bwestern\\s+union\\b", gate: "named-rail" },
@@ -637,6 +642,19 @@ function allow(rule, text, start, end) {
   if (rule.gate === "wire-bank") {
     if (negatedBefore(text, start)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
+  }
+  if (rule.gate === "acct") {
+    // "Your account number: XXXX" on a bill or receipt is the reader's own account, not a payee.
+    // Otherwise this stays as wide as the old negation gate, so a transfer plus an amount still fires.
+    if (/your\s+(?:\w+\s+)?$/iu.test(text.slice(Math.max(0, start - 20), start))) return false;
+    return !negatedBefore(text, start);
+  }
+  if (rule.gate === "giftcard") {
+    if (negatedBefore(text, start)) return false;
+    // A gift card offered as a prize or reward is not a request to pay with one.
+    const before = text.slice(Math.max(0, start - 48), start);
+    if (/(?:receive|win|won|winner|selected|reward(?:ed)?|free|claim|earn|get|give\s+you|send\s+you)\b[^.!?\n]{0,36}$/iu.test(before)) return false;
+    return true;
   }
   if (rule.gate === "mobilepay") {
     if (phoneNear(text, start, end)) return true;
