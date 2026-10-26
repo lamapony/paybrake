@@ -25,3 +25,19 @@ _Snapshot 2026-10-26 12:15 CET, before the main build session. Updated at the en
 - **Dima:** extension, detector, eval set, card UI, demo page, video, Devpost text.
 - **Christopher:** real PayPal sandbox backend (`rest` / `toolkit` adapters, OAuth, Orders v2 create/get/capture, LLM classify on the server, hosting). Contract: `docs/BACKEND-CONTRACT.md`.
 - This session builds the backend in **mock mode only** so the click flow works with zero credentials.
+
+## After build session
+
+_2026-10-26. Mock backend, extension, demo, eval, shots, and extension smoke. Real PayPal `rest` / `toolkit` and a live model call are Christopher's._
+
+| SPEC §7 check | Result |
+|---|---|
+| 7.1 `npm test` offline: atoms, decision, LLM gate, extraction, copy grep, demo brand grep | PASS |
+| 7.2 `npm run eval` rules: precision 1, recall 1, F1 1, false alarms 0 (gate is 0.95 / 0.80 / zero false alarms) | PASS |
+| 7.2 live eval | skips with exit 0 while `/health` says llm is off. Not a failure |
+| 7.3 mock `/api/protect` returns `MOCK-` id and approve URL, capture flow, 400, 413, sandbox guard, CORS, classify 503 `llm_off`, evidence substring guard | PASS |
+| 7.3 rest: OAuth token cache, create-order body, `PayPal-Request-Id`, payer-action link | NOT DONE (no rest adapter in this build) |
+| 7.4 Playwright static card at 390 and 1280, protect shot, `safe-1280.png` with no card, plus injected live card shots | PASS |
+| 7.5 extension smoke: live card within 5s, protect shows `MOCK-`, second thread Pay anyway lands in the ring log, `shots/ext-live-1280.png` and `shots/ext-live-390.png` | PASS |
+| 7.6 secret grep on tracked files, `.env` gitignored, `.env.example` empty | PASS |
+| 7.7 README run-in-5-minutes from a clean clone | see the clone note in PROGRESS.md after the verify step |
