@@ -399,7 +399,7 @@ footer a:hover{color:#9ccfff}
       <h2 id="try-h">Try it: the rules engine, live</h2>
       <p class="lede">Pick a seller line, or type one. The box under the message is what these rules return.</p>
       <div class="callout">
-        <p>Simplified demo: the extension's on-device rules (v3, in review on branch <code>eval-real-scams</code>; the <code>v0.2.0-test.2</code> download still has the older rules), running in your browser. Rules only, no AI check. Nothing is sent anywhere. Not connected to PayPal.</p>
+        <p>Simplified demo: the extension's on-device rules (v3, the same rules as the <code>v0.2.0-test.3</code> download), running in your browser. Rules only, no AI check. Nothing is sent anywhere. Not connected to PayPal.</p>
       </div>
 
       <div class="sim-grid">
@@ -625,7 +625,7 @@ footer a:hover{color:#9ccfff}
           <li><span class="v">30</span><span class="k">synthetic chats we wrote</span></li>
           <li><span class="v">16 / 16</span><span class="k">risky chats got a card (recall 1.0)</span></li>
           <li><span class="v">0 / 14</span><span class="k">safe chats got a card (precision 1.0)</span></li>
-          <li><span class="v">150</span><span class="k">offline tests (npm test, branch eval-real-scams)</span></li>
+          <li><span class="v">152</span><span class="k">offline tests (npm test, branch eval-real-scams)</span></li>
         </ul>
       </div>
     </div>
@@ -675,7 +675,7 @@ footer a:hover{color:#9ccfff}
             <li>Every evidence quote must be a verbatim substring of the other person's messages, or it is ignored.</li>
             <li>No answer within 6 seconds, or an error: the rules result stands and the card says <strong>"AI check unavailable"</strong>.</li>
             <li><strong>On by default</strong> in this demo build, and you can turn it off in Settings. <strong>Active on the hosted demo</strong> too (Typesafe), with a size cap and a per-IP rate limit.</li>
-            <li>In review on branch <code>eval-real-scams</code>; not in the <code>v0.2.0-test.2</code> download yet. It costs about $0.07 per 1,000 checks, and an AI answer comes back in about 0.07 s (0.12 s at p95), measured from our server.</li>
+            <li>In the <code>v0.2.0-test.3</code> download (branch <code>eval-real-scams</code>, in review). It costs about $0.07 per 1,000 checks, and an AI answer comes back in about 0.07 s (0.12 s at p95), measured from our server.</li>
           </ul>
         </article>
         <article class="panel priv">
@@ -720,11 +720,11 @@ footer a:hover{color:#9ccfff}
     <div class="wrap">
       <p class="kicker">Install</p>
       <h2 id="install-h">Try the test build in about 2 minutes.</h2>
-      <p class="lede">Recommended: the <code>v0.2.0-test.2</code> pre-release. It is a mock build, so you don't need Node, a server or PayPal credentials. The repo is private for now, so the release link only works if you have repo access.</p>
+      <p class="lede">Recommended: the <code>v0.2.0-test.3</code> pre-release, with the AI check on all chats. PayPal is in mock mode, so you don't need Node, a server or PayPal credentials. The repo is private for now, so the release link only works if you have repo access.</p>
       <div class="install">
         <div>
           <ol class="how">
-            <li>Download <code>paybrake-extension.zip</code> from the <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.2">v0.2.0-test.2 pre-release</a> and unzip it.</li>
+            <li>Download <code>paybrake-extension.zip</code> from the <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">v0.2.0-test.3 pre-release</a> and unzip it.</li>
             <li>Open <code>chrome://extensions</code> and turn on <strong>Developer mode</strong>.</li>
             <li>Click <strong>Load unpacked</strong> and pick the <code>paybrake-extension</code> folder (the one with <code>manifest.json</code>).</li>
             <li>A welcome tab opens. Click <strong>Try the demo store</strong>, or open the <a href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">hosted demo</a>.</li>
@@ -733,10 +733,10 @@ footer a:hover{color:#9ccfff}
         </div>
         <div>
           <div class="ctas">
-            <a class="btn btn-pp" href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.2">Get v0.2.0-test.2</a>
+            <a class="btn btn-pp" href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">Get v0.2.0-test.3</a>
             <a class="btn btn-outline" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the hosted demo</a>
           </div>
-          <p class="small" style="margin-top:20px">The test build talks to the hosted mock server by default. To use your own backend, set the Backend URL in Settings to <code>http://localhost:8787</code>.</p>
+          <p class="small" style="margin-top:20px">The test build talks to the hosted test server by default (mock PayPal, Typesafe AI). To use your own backend, set the Backend URL in Settings to <code>http://localhost:8787</code>.</p>
           <p class="small">If the hosted demo shows a yellow "PayBrake is not running in this browser" box, the extension isn't loaded in that Chrome profile.</p>
           <p class="small">Found a bug? <a href="https://github.com/lamapony/paybrake/issues/new?template=bug_report.md">Open an issue</a> (needs repo access).</p>
         </div>
