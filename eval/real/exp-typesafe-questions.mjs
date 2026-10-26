@@ -1,4 +1,4 @@
-// Dev-only experiment (rejected on test 26 Oct; see RESULTS.md and experiments/typesafe-extra-questions.patch): ask Typesafe extra yes/no questions next to the pinned "risky" one and save the
+// Dev-only experiment (adopted 26 Oct; see RESULTS.md): ask Typesafe extra yes/no questions next to the pinned "risky" one and save the
 // raw probabilities, so combinations can be scored offline. Never run on test.
 //   node eval/real/exp-typesafe-questions.mjs   (needs TYPESAFE_API_KEY)
 import { existsSync, readFileSync, writeFileSync } from "node:fs";

@@ -16,14 +16,14 @@
   "failures": 0,
   "failureCodes": {},
   "unavailableRows": 0,
-  "wallMs": 18071,
+  "wallMs": 20547,
   "concurrency": 6,
-  "inputTokens": 1784056,
+  "inputTokens": 2510392,
   "latencyMs": {
    "n": 1552,
-   "p50": 62,
-   "p95": 107,
-   "max": 276
+   "p50": 71,
+   "p95": 120,
+   "max": 323
   }
  },
  "rulesOnly": {
@@ -414,13 +414,13 @@
   "sms_spam": {
    "all": {
     "n": 500,
-    "tp": 112,
+    "tp": 208,
     "fp": 0,
-    "fn": 138,
+    "fn": 42,
     "tn": 250,
     "precision": 1,
-    "recall": 0.448,
-    "f1": 0.619,
+    "recall": 0.832,
+    "f1": 0.908,
     "fpr": 0
    },
    "dev": {
@@ -436,20 +436,20 @@
    },
    "test": {
     "n": 500,
-    "tp": 112,
+    "tp": 208,
     "fp": 0,
-    "fn": 138,
+    "fn": 42,
     "tn": 250,
     "precision": 1,
-    "recall": 0.448,
-    "f1": 0.619,
+    "recall": 0.832,
+    "f1": 0.908,
     "fpr": 0
    },
    "bySubtype": {
     "spam": {
      "label": "scam",
      "n": 250,
-     "flagged": 112
+     "flagged": 208
     },
     "ham": {
      "label": "legit",
@@ -461,14 +461,14 @@
   "discord": {
    "all": {
     "n": 388,
-    "tp": 65,
-    "fp": 2,
-    "fn": 73,
-    "tn": 248,
-    "precision": 0.97,
-    "recall": 0.471,
-    "f1": 0.634,
-    "fpr": 0.008
+    "tp": 76,
+    "fp": 1,
+    "fn": 62,
+    "tn": 249,
+    "precision": 0.987,
+    "recall": 0.551,
+    "f1": 0.707,
+    "fpr": 0.004
    },
    "dev": {
     "n": 0,
@@ -483,38 +483,38 @@
    },
    "test": {
     "n": 388,
-    "tp": 65,
-    "fp": 2,
-    "fn": 73,
-    "tn": 248,
-    "precision": 0.97,
-    "recall": 0.471,
-    "f1": 0.634,
-    "fpr": 0.008
+    "tp": 76,
+    "fp": 1,
+    "fn": 62,
+    "tn": 249,
+    "precision": 0.987,
+    "recall": 0.551,
+    "f1": 0.707,
+    "fpr": 0.004
    },
    "bySubtype": {
     "scam": {
      "label": "scam",
      "n": 138,
-     "flagged": 65
+     "flagged": 76
     },
     "clean": {
      "label": "legit",
      "n": 250,
-     "flagged": 2
+     "flagged": 1
     }
    }
   },
   "scam_dialogue": {
    "all": {
     "n": 500,
-    "tp": 246,
+    "tp": 245,
     "fp": 2,
-    "fn": 4,
+    "fn": 5,
     "tn": 248,
     "precision": 0.992,
-    "recall": 0.984,
-    "f1": 0.988,
+    "recall": 0.98,
+    "f1": 0.986,
     "fpr": 0.008
    },
    "dev": {
@@ -530,13 +530,13 @@
    },
    "test": {
     "n": 500,
-    "tp": 246,
+    "tp": 245,
     "fp": 2,
-    "fn": 4,
+    "fn": 5,
     "tn": 248,
     "precision": 0.992,
-    "recall": 0.984,
-    "f1": 0.988,
+    "recall": 0.98,
+    "f1": 0.986,
     "fpr": 0.008
    },
    "bySubtype": {
@@ -558,7 +558,7 @@
     "reward": {
      "label": "scam",
      "n": 61,
-     "flagged": 57
+     "flagged": 56
     },
     "delivery": {
      "label": "legit",
@@ -585,14 +585,14 @@
   "scamguardbench": {
    "all": {
     "n": 185,
-    "tp": 75,
-    "fp": 9,
-    "fn": 0,
-    "tn": 101,
-    "precision": 0.893,
-    "recall": 1,
-    "f1": 0.943,
-    "fpr": 0.082
+    "tp": 74,
+    "fp": 11,
+    "fn": 1,
+    "tn": 99,
+    "precision": 0.871,
+    "recall": 0.987,
+    "f1": 0.925,
+    "fpr": 0.1
    },
    "dev": {
     "n": 0,
@@ -607,14 +607,14 @@
    },
    "test": {
     "n": 185,
-    "tp": 75,
-    "fp": 9,
-    "fn": 0,
-    "tn": 101,
-    "precision": 0.893,
-    "recall": 1,
-    "f1": 0.943,
-    "fpr": 0.082
+    "tp": 74,
+    "fp": 11,
+    "fn": 1,
+    "tn": 99,
+    "precision": 0.871,
+    "recall": 0.987,
+    "f1": 0.925,
+    "fpr": 0.1
    },
    "bySubtype": {
     "authority_impersonation+urgency_pressure": {
@@ -665,7 +665,7 @@
     "subscription_trap+urgency_pressure": {
      "label": "scam",
      "n": 2,
-     "flagged": 2
+     "flagged": 1
     },
     "urgency_pressure+prize_lottery": {
      "label": "scam",
@@ -705,7 +705,7 @@
     "legit_other": {
      "label": "legit",
      "n": 22,
-     "flagged": 2
+     "flagged": 4
     },
     "marketing_promo": {
      "label": "legit",
@@ -761,14 +761,14 @@
   "pooled": {
    "all": {
     "n": 1573,
-    "tp": 498,
-    "fp": 13,
-    "fn": 215,
-    "tn": 847,
-    "precision": 0.975,
-    "recall": 0.698,
-    "f1": 0.814,
-    "fpr": 0.015
+    "tp": 603,
+    "fp": 14,
+    "fn": 110,
+    "tn": 846,
+    "precision": 0.977,
+    "recall": 0.846,
+    "f1": 0.907,
+    "fpr": 0.016
    },
    "dev": {
     "n": 0,
@@ -783,14 +783,14 @@
    },
    "test": {
     "n": 1573,
-    "tp": 498,
-    "fp": 13,
-    "fn": 215,
-    "tn": 847,
-    "precision": 0.975,
-    "recall": 0.698,
-    "f1": 0.814,
-    "fpr": 0.015
+    "tp": 603,
+    "fp": 14,
+    "fn": 110,
+    "tn": 846,
+    "precision": 0.977,
+    "recall": 0.846,
+    "f1": 0.907,
+    "fpr": 0.016
    }
   }
  },
@@ -798,13 +798,13 @@
   "sms_spam": {
    "all": {
     "n": 500,
-    "tp": 112,
+    "tp": 208,
     "fp": 0,
-    "fn": 138,
+    "fn": 42,
     "tn": 250,
     "precision": 1,
-    "recall": 0.448,
-    "f1": 0.619,
+    "recall": 0.832,
+    "f1": 0.908,
     "fpr": 0
    },
    "dev": {
@@ -820,20 +820,20 @@
    },
    "test": {
     "n": 500,
-    "tp": 112,
+    "tp": 208,
     "fp": 0,
-    "fn": 138,
+    "fn": 42,
     "tn": 250,
     "precision": 1,
-    "recall": 0.448,
-    "f1": 0.619,
+    "recall": 0.832,
+    "f1": 0.908,
     "fpr": 0
    },
    "bySubtype": {
     "spam": {
      "label": "scam",
      "n": 250,
-     "flagged": 112
+     "flagged": 208
     },
     "ham": {
      "label": "legit",
@@ -845,14 +845,14 @@
   "discord": {
    "all": {
     "n": 388,
-    "tp": 63,
-    "fp": 2,
-    "fn": 75,
-    "tn": 248,
-    "precision": 0.969,
-    "recall": 0.457,
-    "f1": 0.621,
-    "fpr": 0.008
+    "tp": 74,
+    "fp": 1,
+    "fn": 64,
+    "tn": 249,
+    "precision": 0.987,
+    "recall": 0.536,
+    "f1": 0.695,
+    "fpr": 0.004
    },
    "dev": {
     "n": 0,
@@ -867,25 +867,25 @@
    },
    "test": {
     "n": 388,
-    "tp": 63,
-    "fp": 2,
-    "fn": 75,
-    "tn": 248,
-    "precision": 0.969,
-    "recall": 0.457,
-    "f1": 0.621,
-    "fpr": 0.008
+    "tp": 74,
+    "fp": 1,
+    "fn": 64,
+    "tn": 249,
+    "precision": 0.987,
+    "recall": 0.536,
+    "f1": 0.695,
+    "fpr": 0.004
    },
    "bySubtype": {
     "scam": {
      "label": "scam",
      "n": 138,
-     "flagged": 63
+     "flagged": 74
     },
     "clean": {
      "label": "legit",
      "n": 250,
-     "flagged": 2
+     "flagged": 1
     }
    }
   },
@@ -969,14 +969,14 @@
   "scamguardbench": {
    "all": {
     "n": 185,
-    "tp": 75,
-    "fp": 9,
-    "fn": 0,
-    "tn": 101,
-    "precision": 0.893,
-    "recall": 1,
-    "f1": 0.943,
-    "fpr": 0.082
+    "tp": 74,
+    "fp": 11,
+    "fn": 1,
+    "tn": 99,
+    "precision": 0.871,
+    "recall": 0.987,
+    "f1": 0.925,
+    "fpr": 0.1
    },
    "dev": {
     "n": 0,
@@ -991,14 +991,14 @@
    },
    "test": {
     "n": 185,
-    "tp": 75,
-    "fp": 9,
-    "fn": 0,
-    "tn": 101,
-    "precision": 0.893,
-    "recall": 1,
-    "f1": 0.943,
-    "fpr": 0.082
+    "tp": 74,
+    "fp": 11,
+    "fn": 1,
+    "tn": 99,
+    "precision": 0.871,
+    "recall": 0.987,
+    "f1": 0.925,
+    "fpr": 0.1
    },
    "bySubtype": {
     "authority_impersonation+urgency_pressure": {
@@ -1049,7 +1049,7 @@
     "subscription_trap+urgency_pressure": {
      "label": "scam",
      "n": 2,
-     "flagged": 2
+     "flagged": 1
     },
     "urgency_pressure+prize_lottery": {
      "label": "scam",
@@ -1089,7 +1089,7 @@
     "legit_other": {
      "label": "legit",
      "n": 22,
-     "flagged": 2
+     "flagged": 4
     },
     "marketing_promo": {
      "label": "legit",
@@ -1145,14 +1145,14 @@
   "pooled": {
    "all": {
     "n": 1573,
-    "tp": 488,
-    "fp": 11,
-    "fn": 225,
-    "tn": 849,
-    "precision": 0.978,
-    "recall": 0.684,
-    "f1": 0.805,
-    "fpr": 0.013
+    "tp": 594,
+    "fp": 12,
+    "fn": 119,
+    "tn": 848,
+    "precision": 0.98,
+    "recall": 0.833,
+    "f1": 0.901,
+    "fpr": 0.014
    },
    "dev": {
     "n": 0,
@@ -1167,26 +1167,26 @@
    },
    "test": {
     "n": 1573,
-    "tp": 488,
-    "fp": 11,
-    "fn": 225,
-    "tn": 849,
-    "precision": 0.978,
-    "recall": 0.684,
-    "f1": 0.805,
-    "fpr": 0.013
+    "tp": 594,
+    "fp": 12,
+    "fn": 119,
+    "tn": 848,
+    "precision": 0.98,
+    "recall": 0.833,
+    "f1": 0.901,
+    "fpr": 0.014
    }
   }
  },
  "llmStates": {
-  "added": 182,
-  "agreed_silent": 1038,
+  "added": 288,
+  "agreed_silent": 932,
   "off": 21,
-  "confirmed": 317,
-  "disagreed_low_confidence": 12,
+  "confirmed": 318,
+  "disagreed_low_confidence": 11,
   "downgraded": 3
  },
- "at": "2026-10-26T16:49:06.109Z",
+ "at": "2026-10-26T17:03:57.280Z",
  "rows": [
   {
    "id": "sms_spam:650",
@@ -1199,7 +1199,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.68,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -1216,7 +1216,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.5900000000000001,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -1231,7 +1231,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.63,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -1245,12 +1245,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.56,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4407",
@@ -1260,12 +1262,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.88,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.94,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:1463",
@@ -1278,7 +1282,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.54,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -1310,7 +1314,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.83,
+   "aiConfidence": 0.86,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -1322,12 +1326,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.51,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.9,
    "aiSignal": "ai_other",
-   "signals": []
+   "signals": [
+    "ai_other"
+   ]
   },
   {
    "id": "sms_spam:5278",
@@ -1340,7 +1346,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.76,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -1357,10 +1363,10 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.66,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.99,
+   "aiSignal": "off_platform",
    "signals": [
-    "ai_other"
+    "off_platform"
    ]
   },
   {
@@ -1374,7 +1380,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.72,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -1391,7 +1397,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.64,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -1420,12 +1426,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.77,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.7,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:420",
@@ -1438,7 +1446,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.66,
+   "aiConfidence": 0.97,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -1455,7 +1463,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.54,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -1472,7 +1480,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.66,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -1489,7 +1497,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.58,
+   "aiConfidence": 0.68,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation"
@@ -1503,12 +1511,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.8200000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.91,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3483",
@@ -1518,12 +1528,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.88,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.54,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:123",
@@ -1536,10 +1548,10 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.51,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.97,
+   "aiSignal": "fee_via_link",
    "signals": [
-    "ai_other"
+    "fee_via_link"
    ]
   },
   {
@@ -1568,7 +1580,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.62,
+   "aiConfidence": 0.57,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -1585,7 +1597,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -1617,7 +1629,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.79,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -1631,12 +1643,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6699999999999999,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.64,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:1778",
@@ -1649,7 +1663,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.8,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -1666,7 +1680,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.61,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -1680,12 +1694,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.5700000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.79,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3556",
@@ -1698,7 +1714,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.58,
+   "aiConfidence": 0.78,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -1715,7 +1731,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.67,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -1732,7 +1748,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.59,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -1746,12 +1762,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.64,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.94,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2708",
@@ -1761,12 +1779,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.9,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.7,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:3860",
@@ -1776,12 +1796,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.92,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.87,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2556",
@@ -1791,12 +1813,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.72,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.99,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2207",
@@ -1809,7 +1833,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.75,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -1826,7 +1850,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.64,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -1843,7 +1867,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.8200000000000001,
+   "aiConfidence": 0.79,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -1858,7 +1882,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.66,
+   "aiConfidence": 0.92,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -1875,7 +1899,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.59,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -1892,7 +1916,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -1904,12 +1928,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.63,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.88,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:1444",
@@ -1919,12 +1945,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.69,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.87,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2420",
@@ -1937,7 +1965,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.85,
+   "aiConfidence": 0.86,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -1954,8 +1982,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
-   "aiSignal": "phishing_link",
+   "aiConfidence": 0.92,
+   "aiSignal": "ai_other",
    "signals": []
   },
   {
@@ -1966,12 +1994,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.78,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.51,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "sms_spam:4258",
@@ -1984,7 +2014,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.95,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -1998,12 +2028,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.92,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.53,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3164",
@@ -2016,7 +2048,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.51,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2033,7 +2065,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.58,
+   "aiConfidence": 0.98,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2050,7 +2082,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.58,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2064,12 +2096,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.5700000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.99,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:349",
@@ -2082,7 +2116,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.81,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2099,7 +2133,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.6,
+   "aiConfidence": 0.94,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation"
@@ -2116,7 +2150,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.91,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2133,7 +2167,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.5,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2150,7 +2184,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.5,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2167,7 +2201,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.7,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2184,7 +2218,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2198,12 +2232,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.71,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.88,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2209",
@@ -2216,7 +2252,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2233,7 +2269,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2247,12 +2283,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.91,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2374",
@@ -2265,7 +2303,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.5,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2282,7 +2320,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.63,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2296,12 +2334,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.64,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.93,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:5377",
@@ -2314,8 +2354,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.73,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.71,
+   "aiSignal": "impersonation",
    "signals": []
   },
   {
@@ -2329,7 +2369,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2343,12 +2383,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.9,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.7,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:1318",
@@ -2358,12 +2400,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.89,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.86,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3906",
@@ -2376,7 +2420,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.9299999999999999,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -2388,12 +2432,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.55,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.79,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:375",
@@ -2403,12 +2449,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.86,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.69,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:1598",
@@ -2421,7 +2469,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.76,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2435,12 +2483,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.89,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.97,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:4647",
@@ -2468,7 +2518,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.92,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -2483,7 +2533,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.82,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2500,7 +2550,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2517,7 +2567,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2531,12 +2581,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.92,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.79,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:2402",
@@ -2546,12 +2598,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.63,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.88,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3792",
@@ -2564,7 +2618,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.94,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -2581,7 +2635,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.98,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -2595,12 +2649,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.78,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:2830",
@@ -2613,7 +2669,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.64,
+   "aiConfidence": 0.97,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -2630,7 +2686,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.58,
+   "aiConfidence": 0.93,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -2644,12 +2700,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.97,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.56,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4069",
@@ -2677,7 +2735,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.86,
+   "aiConfidence": 0.87,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -2689,12 +2747,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.53,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.97,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:840",
@@ -2707,7 +2767,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.97,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2724,7 +2784,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.75,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2741,7 +2801,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.56,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2755,12 +2815,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.88,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.74,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3720",
@@ -2770,12 +2832,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.85,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.68,
    "aiSignal": "pay_before_see",
-   "signals": []
+   "signals": [
+    "pay_before_see"
+   ]
   },
   {
    "id": "sms_spam:2612",
@@ -2785,12 +2849,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.94,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:1895",
@@ -2803,7 +2869,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.6,
+   "aiConfidence": 0.85,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -2817,12 +2883,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.52,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.94,
    "aiSignal": "off_platform",
-   "signals": []
+   "signals": [
+    "off_platform"
+   ]
   },
   {
    "id": "sms_spam:881",
@@ -2835,7 +2903,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.8,
+   "aiConfidence": 0.81,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -2849,12 +2917,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.65,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.79,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:1221",
@@ -2867,7 +2937,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.56,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2884,10 +2954,10 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.9,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.99,
+   "aiSignal": "urgency_pressure",
    "signals": [
-    "ai_other"
+    "urgency_pressure"
    ]
   },
   {
@@ -2916,8 +2986,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.73,
-   "aiSignal": "pay_before_see",
+   "aiConfidence": 0.78,
+   "aiSignal": "ai_other",
    "signals": []
   },
   {
@@ -2928,12 +2998,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.5900000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.92,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:1407",
@@ -2946,7 +3018,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.85,
+   "aiConfidence": 0.96,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -2963,7 +3035,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.61,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -2977,12 +3049,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.64,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.97,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4048",
@@ -2992,12 +3066,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.9,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.61,
    "aiSignal": "pay_before_see",
-   "signals": []
+   "signals": [
+    "pay_before_see"
+   ]
   },
   {
    "id": "sms_spam:4047",
@@ -3010,7 +3086,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.89,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -3025,7 +3101,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.96,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -3054,12 +3130,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6699999999999999,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.88,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3463",
@@ -3072,12 +3150,63 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
   {
    "id": "sms_spam:4355",
+   "dataset": "sms_spam",
+   "split": "test",
+   "label": "scam",
+   "subtype": "spam",
+   "payAsk": null,
+   "rules": "silent",
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.93,
+   "aiSignal": "phishing_link",
+   "signals": [
+    "phishing_link"
+   ]
+  },
+  {
+   "id": "sms_spam:3891",
+   "dataset": "sms_spam",
+   "split": "test",
+   "label": "scam",
+   "subtype": "spam",
+   "payAsk": null,
+   "rules": "silent",
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.63,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
+  },
+  {
+   "id": "sms_spam:3568",
+   "dataset": "sms_spam",
+   "split": "test",
+   "label": "scam",
+   "subtype": "spam",
+   "payAsk": null,
+   "rules": "silent",
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.97,
+   "aiSignal": "phishing_link",
+   "signals": [
+    "phishing_link"
+   ]
+  },
+  {
+   "id": "sms_spam:907",
    "dataset": "sms_spam",
    "split": "test",
    "label": "scam",
@@ -3094,53 +3223,6 @@
    ]
   },
   {
-   "id": "sms_spam:3891",
-   "dataset": "sms_spam",
-   "split": "test",
-   "label": "scam",
-   "subtype": "spam",
-   "payAsk": null,
-   "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.91,
-   "aiSignal": "ai_other",
-   "signals": []
-  },
-  {
-   "id": "sms_spam:3568",
-   "dataset": "sms_spam",
-   "split": "test",
-   "label": "scam",
-   "subtype": "spam",
-   "payAsk": null,
-   "rules": "silent",
-   "got": "risk",
-   "llm": "added",
-   "alone": "risk",
-   "aiConfidence": 0.57,
-   "aiSignal": "phishing_link",
-   "signals": [
-    "phishing_link"
-   ]
-  },
-  {
-   "id": "sms_spam:907",
-   "dataset": "sms_spam",
-   "split": "test",
-   "label": "scam",
-   "subtype": "spam",
-   "payAsk": null,
-   "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.62,
-   "aiSignal": "ai_other",
-   "signals": []
-  },
-  {
    "id": "sms_spam:813",
    "dataset": "sms_spam",
    "split": "test",
@@ -3151,10 +3233,10 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
-   "aiSignal": "phishing_link",
+   "aiConfidence": 0.99,
+   "aiSignal": "fee_via_link",
    "signals": [
-    "phishing_link"
+    "fee_via_link"
    ]
   },
   {
@@ -3165,12 +3247,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.73,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.8,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:5041",
@@ -3180,12 +3264,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.83,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.84,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4985",
@@ -3195,12 +3281,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.84,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.81,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3998",
@@ -3210,12 +3298,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.67,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3620",
@@ -3225,12 +3315,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.56,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.9,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:5027",
@@ -3243,7 +3335,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.8,
+   "aiConfidence": 0.97,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -3260,7 +3352,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.73,
+   "aiConfidence": 0.78,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -3274,12 +3366,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.82,
    "aiSignal": "impersonation",
-   "signals": []
+   "signals": [
+    "impersonation"
+   ]
   },
   {
    "id": "sms_spam:1741",
@@ -3289,12 +3383,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.5900000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.99,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:5073",
@@ -3307,7 +3403,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3321,12 +3417,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6799999999999999,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.87,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:5178",
@@ -3336,12 +3434,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.55,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.85,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3548",
@@ -3354,7 +3454,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.59,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3371,7 +3471,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -3386,7 +3486,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.5,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3403,7 +3503,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.57,
+   "aiConfidence": 0.6,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation"
@@ -3420,7 +3520,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.91,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -3434,12 +3534,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.79,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2620",
@@ -3452,7 +3554,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.81,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3469,7 +3571,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.67,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3483,12 +3585,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.84,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.53,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4728",
@@ -3498,12 +3602,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
    "aiConfidence": 0.91,
-   "aiSignal": "ai_other",
-   "signals": []
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4200",
@@ -3513,12 +3619,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.55,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.88,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:54",
@@ -3528,12 +3636,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.95,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.55,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:1307",
@@ -3543,12 +3653,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.85,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.53,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:418",
@@ -3558,12 +3670,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.61,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.89,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2386",
@@ -3576,7 +3690,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.87,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3593,7 +3707,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.61,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation"
@@ -3610,7 +3724,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.54,
+   "aiConfidence": 0.91,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -3627,7 +3741,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.61,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -3641,12 +3755,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6699999999999999,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.94,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:5250",
@@ -3659,7 +3775,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.82,
+   "aiConfidence": 0.98,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -3676,10 +3792,10 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.51,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.99,
+   "aiSignal": "fee_via_link",
    "signals": [
-    "ai_other"
+    "fee_via_link"
    ]
   },
   {
@@ -3693,7 +3809,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.87,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -3705,12 +3821,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.52,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.6,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3780",
@@ -3720,12 +3838,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.51,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:4823",
@@ -3738,7 +3858,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.76,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3755,7 +3875,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.65,
+   "aiConfidence": 0.69,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -3770,7 +3890,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.56,
+   "aiConfidence": 0.99,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -3787,7 +3907,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.68,
+   "aiConfidence": 0.7,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3804,7 +3924,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.6,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -3816,12 +3936,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.73,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.86,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2910",
@@ -3834,7 +3956,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.61,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -3851,7 +3973,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.63,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3883,7 +4005,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.53,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3897,12 +4019,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.74,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.7,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:673",
@@ -3912,12 +4036,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.5700000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:433",
@@ -3927,12 +4053,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.79,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.97,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4616",
@@ -3945,7 +4073,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -3959,12 +4087,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.5700000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.85,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:5482",
@@ -3977,7 +4107,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -3994,7 +4124,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.71,
+   "aiConfidence": 0.99,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -4008,12 +4138,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.56,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4652",
@@ -4023,12 +4155,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.55,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.99,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:385",
@@ -4038,12 +4172,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.8,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.75,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3642",
@@ -4053,12 +4189,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.81,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.7,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:401",
@@ -4071,7 +4209,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4088,7 +4226,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.89,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -4100,12 +4238,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.89,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.93,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:935",
@@ -4118,7 +4258,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.57,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4132,12 +4272,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.5800000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.93,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:227",
@@ -4147,12 +4289,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.5800000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.78,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:684",
@@ -4165,7 +4309,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.74,
+   "aiConfidence": 0.99,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -4179,12 +4323,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.79,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.51,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:731",
@@ -4197,7 +4343,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.79,
+   "aiConfidence": 0.77,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -4212,7 +4358,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.51,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -4229,7 +4375,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.85,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -4244,7 +4390,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -4261,7 +4407,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.56,
+   "aiConfidence": 0.59,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation"
@@ -4275,12 +4421,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.9,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.57,
    "aiSignal": "pay_before_see",
-   "signals": []
+   "signals": [
+    "pay_before_see"
+   ]
   },
   {
    "id": "sms_spam:1875",
@@ -4293,7 +4441,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -4305,12 +4453,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.9,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.59,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2965",
@@ -4338,7 +4488,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.69,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4355,7 +4505,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.83,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -4402,7 +4552,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.89,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -4417,7 +4567,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.86,
+   "aiConfidence": 0.83,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -4429,12 +4579,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.5800000000000001,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2663",
@@ -4459,12 +4611,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.83,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.85,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:824",
@@ -4477,7 +4631,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.84,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4491,12 +4645,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.55,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4629",
@@ -4506,12 +4662,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.52,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
-   "signals": []
+   "signals": [
+    "ai_other"
+   ]
   },
   {
    "id": "sms_spam:5004",
@@ -4521,12 +4679,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.73,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:5200",
@@ -4554,7 +4714,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.58,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4568,12 +4728,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.65,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "sms_spam:4658",
@@ -4586,7 +4748,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.63,
+   "aiConfidence": 0.6,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation"
@@ -4600,12 +4762,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.72,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2626",
@@ -4618,7 +4782,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.59,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4632,12 +4796,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.81,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.84,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3679",
@@ -4650,7 +4816,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.58,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4667,7 +4833,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.98,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -4681,12 +4847,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.54,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
-   "signals": []
+   "signals": [
+    "ai_other"
+   ]
   },
   {
    "id": "sms_spam:2850",
@@ -4699,7 +4867,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.73,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4713,12 +4881,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.73,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.93,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:1060",
@@ -4731,7 +4901,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.51,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4748,7 +4918,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -4765,7 +4935,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.59,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -4779,12 +4949,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.56,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.9,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "sms_spam:2248",
@@ -4797,7 +4969,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.78,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -4811,12 +4983,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.89,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.97,
    "aiSignal": "impersonation",
-   "signals": []
+   "signals": [
+    "impersonation"
+   ]
   },
   {
    "id": "sms_spam:4102",
@@ -4829,7 +5003,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.78,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4843,12 +5017,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.72,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:592",
@@ -4861,7 +5037,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -4875,12 +5051,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.78,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.83,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:2699",
@@ -4893,7 +5071,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.56,
+   "aiConfidence": 0.54,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -4908,7 +5086,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.82,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4925,7 +5103,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.88,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -4940,7 +5118,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.89,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -4955,7 +5133,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.67,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -4969,12 +5147,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.69,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.99,
    "aiSignal": "urgency_pressure",
-   "signals": []
+   "signals": [
+    "urgency_pressure"
+   ]
   },
   {
    "id": "sms_spam:270",
@@ -5002,7 +5182,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.51,
+   "aiConfidence": 0.74,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -5016,12 +5196,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.91,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.61,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4061",
@@ -5031,12 +5213,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.62,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.61,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:4298",
@@ -5061,12 +5245,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6799999999999999,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.63,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3574",
@@ -5079,7 +5265,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.66,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -5093,12 +5279,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.9,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.5,
    "aiSignal": "pay_before_see",
-   "signals": []
+   "signals": [
+    "pay_before_see"
+   ]
   },
   {
    "id": "sms_spam:2574",
@@ -5108,12 +5296,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.52,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.95,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:3819",
@@ -5123,12 +5313,14 @@
    "subtype": "spam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.53,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "sms_spam:5030",
@@ -5141,7 +5333,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.8,
+   "aiConfidence": 0.94,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -5158,7 +5350,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.79,
+   "aiConfidence": 0.8,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5188,7 +5380,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.9,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5248,7 +5440,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5293,7 +5485,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5308,7 +5500,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5518,7 +5710,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.9299999999999999,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5533,7 +5725,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5683,7 +5875,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.62,
+   "aiConfidence": 0.55,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5698,7 +5890,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5713,7 +5905,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5728,7 +5920,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5758,7 +5950,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5788,7 +5980,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5803,7 +5995,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5818,7 +6010,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5833,7 +6025,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.92,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -5953,7 +6145,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5968,7 +6160,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -5983,7 +6175,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6013,7 +6205,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6088,7 +6280,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6298,7 +6490,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6358,7 +6550,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.79,
+   "aiConfidence": 0.81,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -6373,7 +6565,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -6403,7 +6595,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6553,7 +6745,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6583,7 +6775,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6643,7 +6835,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6688,7 +6880,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6703,7 +6895,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6733,7 +6925,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6838,7 +7030,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6913,7 +7105,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -6928,7 +7120,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7003,7 +7195,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7063,7 +7255,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7093,7 +7285,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7333,7 +7525,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7363,7 +7555,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7408,7 +7600,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7423,7 +7615,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7453,7 +7645,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7558,7 +7750,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7753,7 +7945,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.74,
+   "aiConfidence": 0.72,
    "aiSignal": "pay_before_see",
    "signals": []
   },
@@ -7783,7 +7975,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7948,7 +8140,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -7963,7 +8155,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.75,
+   "aiConfidence": 0.77,
    "aiSignal": "off_platform",
    "signals": []
   },
@@ -7993,7 +8185,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8038,7 +8230,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8143,7 +8335,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8278,7 +8470,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8368,7 +8560,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.8200000000000001,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8398,7 +8590,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8488,7 +8680,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8533,7 +8725,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8608,7 +8800,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8743,7 +8935,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8923,7 +9115,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.51,
+   "aiConfidence": 0.88,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -8940,7 +9132,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.9299999999999999,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -8952,14 +9144,12 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "risk",
-   "llm": "added",
-   "alone": "risk",
-   "aiConfidence": 0.52,
+   "got": "silent",
+   "llm": "agreed_silent",
+   "alone": "silent",
+   "aiConfidence": 0.51,
    "aiSignal": "upfront_deposit",
-   "signals": [
-    "upfront_deposit"
-   ]
+   "signals": []
   },
   {
    "id": "discord:1251",
@@ -8969,12 +9159,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.55,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.71,
+   "aiSignal": "phishing_link",
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:115",
@@ -8987,7 +9179,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9004,7 +9196,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9018,12 +9210,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.6699999999999999,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.8,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:703",
@@ -9036,7 +9230,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.86,
+   "aiConfidence": 0.85,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -9066,7 +9260,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.83,
+   "aiConfidence": 0.84,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -9078,12 +9272,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.88,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.7,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:976",
@@ -9096,7 +9292,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.7,
+   "aiConfidence": 0.68,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -9113,7 +9309,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.56,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -9130,7 +9326,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.69,
+   "aiConfidence": 0.7,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -9175,7 +9371,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.6699999999999999,
+   "aiConfidence": 0.7,
    "aiSignal": "off_platform",
    "signals": []
   },
@@ -9190,7 +9386,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -9219,12 +9415,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.83,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.9,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:902",
@@ -9237,7 +9435,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.91,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -9301,7 +9499,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9318,7 +9516,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.72,
+   "aiConfidence": 0.98,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9335,7 +9533,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.87,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -9350,8 +9548,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
-   "aiSignal": "phishing_link",
+   "aiConfidence": 0.91,
+   "aiSignal": "ai_other",
    "signals": []
   },
   {
@@ -9365,8 +9563,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.8200000000000001,
-   "aiSignal": "urgency_pressure",
+   "aiConfidence": 0.81,
+   "aiSignal": "phishing_link",
    "signals": []
   },
   {
@@ -9380,7 +9578,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.78,
+   "aiConfidence": 0.74,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -9429,7 +9627,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.54,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -9476,7 +9674,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "off_platform",
@@ -9494,7 +9692,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.85,
+   "aiConfidence": 0.87,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -9509,7 +9707,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.98,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9556,7 +9754,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9588,7 +9786,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.74,
+   "aiConfidence": 0.77,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -9618,7 +9816,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9635,7 +9833,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.59,
+   "aiConfidence": 0.61,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9652,7 +9850,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.81,
+   "aiConfidence": 0.89,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9669,7 +9867,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.93,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9701,7 +9899,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.78,
+   "aiConfidence": 0.76,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -9718,7 +9916,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.93,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9735,7 +9933,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.68,
+   "aiConfidence": 0.95,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9799,7 +9997,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.53,
+   "aiConfidence": 0.52,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -9814,7 +10012,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9828,12 +10026,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.85,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.9,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:1296",
@@ -9846,7 +10046,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.6,
+   "aiConfidence": 0.57,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -9863,7 +10063,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.76,
+   "aiConfidence": 0.93,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9880,7 +10080,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.61,
+   "aiConfidence": 0.62,
    "aiSignal": "ai_other",
    "signals": [
     "off_platform"
@@ -9912,7 +10112,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9929,7 +10129,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.81,
+   "aiConfidence": 0.88,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9946,7 +10146,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9963,7 +10163,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.96,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9980,7 +10180,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.96,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -9997,7 +10197,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.55,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -10014,7 +10214,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.56,
+   "aiConfidence": 0.6599999999999999,
    "aiSignal": "off_platform",
    "signals": []
   },
@@ -10044,7 +10244,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.88,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -10059,7 +10259,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10073,12 +10273,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.88,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.93,
+   "aiSignal": "phishing_link",
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:329",
@@ -10091,7 +10293,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "off_platform",
@@ -10109,7 +10311,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.8200000000000001,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -10124,7 +10326,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.72,
+   "aiConfidence": 0.74,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -10136,14 +10338,12 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "risk",
-   "llm": "added",
-   "alone": "risk",
-   "aiConfidence": 0.5,
+   "got": "silent",
+   "llm": "agreed_silent",
+   "alone": "silent",
+   "aiConfidence": 0.51,
    "aiSignal": "urgency_pressure",
-   "signals": [
-    "urgency_pressure"
-   ]
+   "signals": []
   },
   {
    "id": "discord:526",
@@ -10156,7 +10356,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.63,
+   "aiConfidence": 0.5900000000000001,
    "aiSignal": "ai_other",
    "signals": [
     "off_platform"
@@ -10170,12 +10370,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.8200000000000001,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.94,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:1620",
@@ -10188,7 +10390,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.88,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10205,7 +10407,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.54,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -10222,8 +10424,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.76,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.78,
+   "aiSignal": "off_platform",
    "signals": []
   },
   {
@@ -10252,7 +10454,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.71,
+   "aiConfidence": 0.66,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10269,7 +10471,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.79,
+   "aiConfidence": 0.8,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -10299,7 +10501,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.79,
+   "aiConfidence": 0.8,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -10314,7 +10516,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.83,
+   "aiConfidence": 0.98,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10361,7 +10563,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.85,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10378,7 +10580,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.73,
+   "aiConfidence": 0.86,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10392,12 +10594,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.87,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.82,
+   "aiSignal": "phishing_link",
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:890",
@@ -10454,12 +10658,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.86,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.98,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:557",
@@ -10484,12 +10690,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.8,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.73,
+   "aiSignal": "off_platform",
+   "signals": [
+    "off_platform"
+   ]
   },
   {
    "id": "discord:1371",
@@ -10502,7 +10710,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.9299999999999999,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -10517,7 +10725,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10534,7 +10742,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.8,
+   "aiConfidence": 0.98,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10551,7 +10759,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.64,
+   "aiConfidence": 0.65,
    "aiSignal": "account_threat",
    "signals": [
     "account_threat"
@@ -10569,7 +10777,7 @@
    "llm": "agreed_silent",
    "alone": "silent",
    "aiConfidence": 0.83,
-   "aiSignal": "phishing_link",
+   "aiSignal": "ai_other",
    "signals": []
   },
   {
@@ -10583,7 +10791,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.98,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10617,7 +10825,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.88,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -10646,12 +10854,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
    "aiConfidence": 0.78,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:1695",
@@ -10664,7 +10874,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10698,7 +10908,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.9299999999999999,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -10713,7 +10923,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10730,7 +10940,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.55,
+   "aiConfidence": 0.98,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10744,12 +10954,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.9,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.94,
+   "aiSignal": "phishing_link",
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:1724",
@@ -10777,7 +10989,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.7,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10794,7 +11006,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10811,7 +11023,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10828,7 +11040,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.97,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10845,7 +11057,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10876,12 +11088,14 @@
    "subtype": "scam",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.73,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.93,
+   "aiSignal": "phishing_link",
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "discord:1109",
@@ -10926,7 +11140,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.93,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10958,7 +11172,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.82,
+   "aiConfidence": 0.83,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -10975,7 +11189,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.83,
+   "aiConfidence": 0.84,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -11007,8 +11221,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.85,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.83,
+   "aiSignal": "phishing_link",
    "signals": []
   },
   {
@@ -11037,7 +11251,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11052,7 +11266,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.75,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -11069,7 +11283,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.52,
+   "aiConfidence": 0.54,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -11086,8 +11300,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.88,
-   "aiSignal": "phishing_link",
+   "aiConfidence": 0.89,
+   "aiSignal": "ai_other",
    "signals": []
   },
   {
@@ -11116,7 +11330,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.93,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -11178,7 +11392,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11268,7 +11482,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11283,7 +11497,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11358,7 +11572,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11370,14 +11584,12 @@
    "subtype": "clean",
    "payAsk": null,
    "rules": "silent",
-   "got": "risk",
-   "llm": "added",
-   "alone": "risk",
-   "aiConfidence": 0.5,
+   "got": "silent",
+   "llm": "agreed_silent",
+   "alone": "silent",
+   "aiConfidence": 0.53,
    "aiSignal": "ai_other",
-   "signals": [
-    "ai_other"
-   ]
+   "signals": []
   },
   {
    "id": "discord:711",
@@ -11405,7 +11617,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11435,7 +11647,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.71,
+   "aiConfidence": 0.73,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -11450,7 +11662,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11480,7 +11692,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11570,7 +11782,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11585,7 +11797,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.78,
+   "aiConfidence": 0.77,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11705,7 +11917,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11735,7 +11947,7 @@
    "got": "silent",
    "llm": "downgraded",
    "alone": "silent",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.89,
    "aiSignal": "ai_other",
    "signals": [
     "credential_request"
@@ -11887,7 +12099,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11902,7 +12114,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.85,
+   "aiConfidence": 0.84,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11962,7 +12174,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -11992,7 +12204,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12007,7 +12219,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12022,7 +12234,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12052,7 +12264,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12142,7 +12354,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12187,7 +12399,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.65,
+   "aiConfidence": 0.6,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12292,7 +12504,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.88,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12382,7 +12594,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.88,
+   "aiConfidence": 0.87,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12472,7 +12684,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12607,7 +12819,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12622,7 +12834,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12637,7 +12849,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12727,7 +12939,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12832,7 +13044,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12862,7 +13074,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.69,
+   "aiConfidence": 0.68,
    "aiSignal": "ai_other",
    "signals": [
     "ai_other"
@@ -12924,7 +13136,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -12954,7 +13166,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13044,7 +13256,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13059,7 +13271,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.83,
+   "aiConfidence": 0.86,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13209,7 +13421,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.9299999999999999,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13224,7 +13436,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13239,7 +13451,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13269,7 +13481,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13299,7 +13511,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13314,7 +13526,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13329,7 +13541,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13464,7 +13676,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13494,8 +13706,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.65,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.61,
+   "aiSignal": "off_platform",
    "signals": []
   },
   {
@@ -13644,7 +13856,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.75,
+   "aiConfidence": 0.8200000000000001,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13704,7 +13916,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.6599999999999999,
+   "aiConfidence": 0.63,
    "aiSignal": "credential_request",
    "signals": []
   },
@@ -13734,7 +13946,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13764,7 +13976,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13809,7 +14021,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13884,7 +14096,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13929,7 +14141,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13959,7 +14171,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -13974,7 +14186,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14019,7 +14231,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14034,7 +14246,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.78,
+   "aiConfidence": 0.86,
    "aiSignal": "credential_request",
    "signals": []
   },
@@ -14049,7 +14261,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14064,7 +14276,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.89,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14094,7 +14306,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14109,7 +14321,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.86,
    "aiSignal": "upfront_deposit",
    "signals": []
   },
@@ -14139,7 +14351,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.9,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14259,7 +14471,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14349,7 +14561,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14394,7 +14606,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14484,7 +14696,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.9299999999999999,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14499,7 +14711,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14514,7 +14726,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.88,
+   "aiConfidence": 0.89,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14589,7 +14801,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14604,7 +14816,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "account_threat",
    "signals": []
   },
@@ -14649,7 +14861,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14694,7 +14906,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14799,7 +15011,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14859,7 +15071,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.89,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14874,7 +15086,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -14889,12 +15101,11 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.91,
-   "aiSignal": "phishing_link",
+   "aiConfidence": 0.89,
+   "aiSignal": "impersonation",
    "signals": [
     "impersonation",
-    "account_threat",
-    "phishing_link"
+    "account_threat"
    ]
   },
   {
@@ -15093,7 +15304,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -15126,13 +15337,13 @@
    "subtype": "reward",
    "payAsk": null,
    "rules": "silent",
-   "got": "risk",
-   "llm": "added",
-   "alone": "risk",
-   "aiConfidence": 0.5,
+   "got": "silent",
+   "llm": "agreed_silent",
+   "alone": "silent",
+   "aiConfidence": 0.51,
    "aiSignal": "ai_other",
    "signals": [
-    "ai_other"
+    "off_platform"
    ]
   },
   {
@@ -15146,7 +15357,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.93,
+   "aiConfidence": 0.94,
    "aiSignal": "remote_access",
    "signals": [
     "impersonation",
@@ -15202,7 +15413,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -15219,7 +15430,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "remote_access",
    "signals": [
     "impersonation",
@@ -15256,7 +15467,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.99,
+   "aiConfidence": 1,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform",
@@ -15296,7 +15507,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -15313,7 +15524,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.6799999999999999,
+   "aiConfidence": 0.64,
    "aiSignal": "impersonation",
    "signals": [
     "off_platform"
@@ -15330,7 +15541,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -15365,7 +15576,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.5900000000000001,
+   "aiConfidence": 0.61,
    "aiSignal": "ai_other",
    "signals": [
     "off_platform"
@@ -15457,7 +15668,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "remote_access",
    "signals": [
     "impersonation",
@@ -15476,7 +15687,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.91,
    "aiSignal": "impersonation",
    "signals": [
     "credential_request",
@@ -15748,7 +15959,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.93,
+   "aiConfidence": 0.91,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -15784,7 +15995,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.6799999999999999,
+   "aiConfidence": 0.65,
    "aiSignal": "impersonation",
    "signals": [
     "off_platform"
@@ -15801,7 +16012,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "remote_access",
    "signals": [
     "remote_access",
@@ -15928,7 +16139,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.82,
+   "aiConfidence": 0.81,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation",
@@ -15946,7 +16157,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "remote_access",
    "signals": [
     "remote_access",
@@ -15983,7 +16194,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "remote_access",
    "signals": [
     "remote_access",
@@ -16094,7 +16305,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -16167,7 +16378,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.93,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -16185,7 +16396,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "urgency_pressure",
@@ -16205,7 +16416,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation",
@@ -16223,7 +16434,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.66,
+   "aiConfidence": 0.87,
    "aiSignal": "phishing_link",
    "signals": [
     "off_platform",
@@ -16241,7 +16452,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform",
@@ -16295,7 +16506,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -16333,12 +16544,11 @@
    "llm": "confirmed",
    "alone": "risk",
    "aiConfidence": 0.99,
-   "aiSignal": "fee_via_link",
+   "aiSignal": "credential_request",
    "signals": [
     "off_platform",
     "credential_request",
-    "phishing_link",
-    "fee_via_link"
+    "phishing_link"
    ]
   },
   {
@@ -16424,7 +16634,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -16514,7 +16724,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -16551,7 +16761,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.56,
+   "aiConfidence": 0.55,
    "aiSignal": "urgency_pressure",
    "signals": [
     "off_platform",
@@ -16623,7 +16833,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.73,
+   "aiConfidence": 0.71,
    "aiSignal": "ai_other",
    "signals": [
     "off_platform"
@@ -16640,7 +16850,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -16658,7 +16868,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "remote_access",
    "signals": [
     "credential_request",
@@ -16677,7 +16887,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -16694,7 +16904,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.77,
+   "aiConfidence": 0.78,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation",
@@ -16712,7 +16922,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -16767,7 +16977,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.65,
+   "aiConfidence": 0.63,
    "aiSignal": "ai_other",
    "signals": [
     "off_platform"
@@ -16803,7 +17013,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.93,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -16934,7 +17144,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "remote_access",
    "signals": [
     "impersonation",
@@ -16971,7 +17181,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "remote_access",
    "signals": [
     "impersonation",
@@ -17008,7 +17218,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.91,
    "aiSignal": "off_platform",
    "signals": [
     "credential_request",
@@ -17063,7 +17273,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -17080,7 +17290,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.78,
+   "aiConfidence": 0.79,
    "aiSignal": "impersonation",
    "signals": [
     "credential_request",
@@ -17118,7 +17328,7 @@
    "llm": "confirmed",
    "alone": "risk",
    "aiConfidence": 0.99,
-   "aiSignal": "off_platform",
+   "aiSignal": "credential_request",
    "signals": [
     "off_platform",
     "credential_request"
@@ -17190,7 +17400,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.9,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -17207,7 +17417,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.88,
+   "aiConfidence": 0.84,
    "aiSignal": "impersonation",
    "signals": [
     "credential_request",
@@ -17243,7 +17453,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -17280,7 +17490,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -17351,7 +17561,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.93,
+   "aiConfidence": 0.94,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -17500,7 +17710,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.66,
+   "aiConfidence": 0.68,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation",
@@ -17593,7 +17803,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.93,
+   "aiConfidence": 0.91,
    "aiSignal": "impersonation",
    "signals": [
     "credential_request",
@@ -17612,7 +17822,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -17629,7 +17839,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.93,
+   "aiConfidence": 0.92,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -17644,9 +17854,9 @@
    "payAsk": null,
    "rules": "risk",
    "got": "risk",
-   "llm": "disagreed_low_confidence",
-   "alone": "silent",
-   "aiConfidence": 0.55,
+   "llm": "confirmed",
+   "alone": "risk",
+   "aiConfidence": 0.88,
    "aiSignal": "phishing_link",
    "signals": [
     "off_platform",
@@ -17664,7 +17874,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "remote_access",
    "signals": [
     "impersonation",
@@ -17683,7 +17893,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -17740,7 +17950,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.67,
+   "aiConfidence": 0.64,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation"
@@ -17794,7 +18004,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -17832,10 +18042,11 @@
    "llm": "confirmed",
    "alone": "risk",
    "aiConfidence": 0.98,
-   "aiSignal": "impersonation",
+   "aiSignal": "phishing_link",
    "signals": [
     "impersonation",
-    "account_threat"
+    "account_threat",
+    "phishing_link"
    ]
   },
   {
@@ -17922,7 +18133,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -17958,7 +18169,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.84,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation",
@@ -18013,7 +18224,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -18049,7 +18260,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -18067,7 +18278,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "remote_access",
    "signals": [
     "remote_access",
@@ -18122,7 +18333,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.56,
+   "aiConfidence": 0.53,
    "aiSignal": "ai_other",
    "signals": [
     "off_platform"
@@ -18139,7 +18350,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -18212,7 +18423,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "impersonation",
@@ -18251,7 +18462,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -18471,7 +18682,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.68,
+   "aiConfidence": 0.67,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation",
@@ -18507,7 +18718,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -18525,7 +18736,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.81,
+   "aiConfidence": 0.75,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation"
@@ -18542,7 +18753,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -18615,7 +18826,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -18689,7 +18900,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -18708,7 +18919,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -18764,7 +18975,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.92,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -18911,7 +19122,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.56,
+   "aiConfidence": 0.5700000000000001,
    "aiSignal": "ai_other",
    "signals": [
     "off_platform",
@@ -18947,7 +19158,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.72,
+   "aiConfidence": 0.74,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation",
@@ -18984,7 +19195,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -19019,7 +19230,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -19072,7 +19283,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.6,
+   "aiConfidence": 0.5900000000000001,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -19105,7 +19316,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -19197,7 +19408,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.93,
+   "aiConfidence": 0.94,
    "aiSignal": "credential_request",
    "signals": [
     "off_platform",
@@ -19270,7 +19481,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.93,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -19306,7 +19517,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.73,
+   "aiConfidence": 0.74,
    "aiSignal": "impersonation",
    "signals": [
     "credential_request",
@@ -19342,7 +19553,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -19379,7 +19590,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.9,
    "aiSignal": "credential_request",
    "signals": [
     "upfront_deposit",
@@ -19434,7 +19645,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.77,
+   "aiConfidence": 0.76,
    "aiSignal": "impersonation",
    "signals": [
     "off_platform"
@@ -19556,7 +19767,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -19661,7 +19872,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -19676,7 +19887,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.9299999999999999,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -19766,7 +19977,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20141,7 +20352,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20171,7 +20382,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20216,7 +20427,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20231,7 +20442,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -20396,7 +20607,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20428,7 +20639,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.85,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20443,7 +20654,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20473,7 +20684,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20488,7 +20699,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20503,7 +20714,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.88,
+   "aiConfidence": 0.87,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -20593,7 +20804,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20728,7 +20939,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20758,7 +20969,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20863,7 +21074,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.91,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20893,7 +21104,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20953,7 +21164,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20968,7 +21179,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.9299999999999999,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -20983,7 +21194,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -20998,7 +21209,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21028,7 +21239,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21043,7 +21254,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21058,7 +21269,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": [
     "impersonation"
@@ -21120,7 +21331,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21180,7 +21391,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21226,7 +21437,7 @@
    "llm": "agreed_silent",
    "alone": "silent",
    "aiConfidence": 0.91,
-   "aiSignal": "urgency_pressure",
+   "aiSignal": "ai_other",
    "signals": []
   },
   {
@@ -21240,7 +21451,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.53,
+   "aiConfidence": 0.64,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -21257,7 +21468,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21317,7 +21528,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21332,7 +21543,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21392,7 +21603,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.9,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -21422,7 +21633,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21452,7 +21663,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21467,7 +21678,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21482,7 +21693,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21587,7 +21798,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21707,7 +21918,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21812,7 +22023,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21947,7 +22158,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -21992,7 +22203,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22052,7 +22263,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22067,7 +22278,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.6,
+   "aiConfidence": 0.61,
    "aiSignal": "credential_request",
    "signals": []
   },
@@ -22082,7 +22293,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22127,7 +22338,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22142,7 +22353,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -22188,7 +22399,7 @@
    "llm": "agreed_silent",
    "alone": "silent",
    "aiConfidence": 0.97,
-   "aiSignal": "ai_other",
+   "aiSignal": "impersonation",
    "signals": []
   },
   {
@@ -22262,7 +22473,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.92,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22277,7 +22488,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22307,7 +22518,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22352,7 +22563,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22367,7 +22578,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -22382,7 +22593,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22412,7 +22623,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22457,7 +22668,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22592,7 +22803,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22667,7 +22878,7 @@
    "got": "risk",
    "llm": "disagreed_low_confidence",
    "alone": "silent",
-   "aiConfidence": 0.6599999999999999,
+   "aiConfidence": 0.61,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -22699,7 +22910,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.96,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22714,7 +22925,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22729,7 +22940,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -22789,7 +23000,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22834,7 +23045,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -22849,7 +23060,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -22909,7 +23120,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -23029,7 +23240,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -23151,7 +23362,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -23196,7 +23407,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -23248,7 +23459,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 1,
+   "aiConfidence": 0.99,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -23284,7 +23495,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.79,
+   "aiConfidence": 0.82,
    "aiSignal": "account_threat",
    "signals": [
     "impersonation",
@@ -23409,14 +23620,12 @@
    "subtype": "subscription_trap+urgency_pressure",
    "payAsk": false,
    "rules": "silent",
-   "got": "risk",
-   "llm": "added",
-   "alone": "risk",
-   "aiConfidence": 0.5,
+   "got": "silent",
+   "llm": "agreed_silent",
+   "alone": "silent",
+   "aiConfidence": 0.51,
    "aiSignal": "urgency_pressure",
-   "signals": [
-    "urgency_pressure"
-   ]
+   "signals": []
   },
   {
    "id": "scamguardbench:syn:22d6f87947f89883",
@@ -23468,7 +23677,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.7,
+   "aiConfidence": 0.98,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -23485,8 +23694,8 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.87,
-   "aiSignal": "impersonation",
+   "aiConfidence": 0.9,
+   "aiSignal": "account_threat",
    "signals": [
     "impersonation",
     "account_threat"
@@ -23560,7 +23769,7 @@
    "llm": "confirmed",
    "alone": "risk",
    "aiConfidence": 0.98,
-   "aiSignal": "phishing_link",
+   "aiSignal": "upfront_deposit",
    "signals": [
     "upfront_deposit",
     "phishing_link"
@@ -23596,7 +23805,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.99,
+   "aiConfidence": 1,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -23706,7 +23915,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -23761,7 +23970,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.87,
    "aiSignal": "account_threat",
    "signals": [
     "impersonation",
@@ -23780,7 +23989,7 @@
    "llm": "confirmed",
    "alone": "risk",
    "aiConfidence": 0.99,
-   "aiSignal": "impersonation",
+   "aiSignal": "off_platform",
    "signals": [
     "off_platform",
     "impersonation",
@@ -23910,7 +24119,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.5,
+   "aiConfidence": 0.54,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -23945,7 +24154,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 1,
+   "aiConfidence": 0.99,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request"
@@ -23996,7 +24205,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.99,
+   "aiConfidence": 1,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -24036,7 +24245,7 @@
    "llm": "confirmed",
    "alone": "risk",
    "aiConfidence": 0.99,
-   "aiSignal": "credential_request",
+   "aiSignal": "phishing_link",
    "signals": [
     "credential_request",
     "phishing_link",
@@ -24055,7 +24264,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.85,
    "aiSignal": "account_threat",
    "signals": [
     "impersonation",
@@ -24091,7 +24300,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 1,
+   "aiConfidence": 0.99,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -24145,7 +24354,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -24162,7 +24371,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 1,
+   "aiConfidence": 0.99,
    "aiSignal": "credential_request",
    "signals": [
     "credential_request",
@@ -24294,7 +24503,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -24328,8 +24537,8 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.88,
-   "aiSignal": "impersonation",
+   "aiConfidence": 0.9,
+   "aiSignal": "account_threat",
    "signals": [
     "impersonation",
     "account_threat"
@@ -24418,10 +24627,10 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.5,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.98,
+   "aiSignal": "fee_via_link",
    "signals": [
-    "ai_other"
+    "fee_via_link"
    ]
   },
   {
@@ -24453,7 +24662,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -24488,7 +24697,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "off_platform",
    "signals": [
     "credential_request",
@@ -24506,7 +24715,7 @@
    "got": "risk",
    "llm": "confirmed",
    "alone": "risk",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.95,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -24591,12 +24800,14 @@
    "subtype": "legit_other",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.51,
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.71,
    "aiSignal": "phishing_link",
-   "signals": []
+   "signals": [
+    "phishing_link"
+   ]
   },
   {
    "id": "scamguardbench:phishing_email:phishing_email-18462",
@@ -24609,8 +24820,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.95,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.94,
+   "aiSignal": "phishing_link",
    "signals": []
   },
   {
@@ -24639,7 +24850,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.85,
+   "aiConfidence": 0.87,
    "aiSignal": "credential_request",
    "signals": [
     "impersonation"
@@ -24671,7 +24882,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.9,
    "aiSignal": "impersonation",
    "signals": [
     "impersonation"
@@ -24730,12 +24941,14 @@
    "subtype": "legit_other",
    "payAsk": null,
    "rules": "silent",
-   "got": "silent",
-   "llm": "agreed_silent",
-   "alone": "silent",
-   "aiConfidence": 0.69,
-   "aiSignal": "ai_other",
-   "signals": []
+   "got": "risk",
+   "llm": "added",
+   "alone": "risk",
+   "aiConfidence": 0.93,
+   "aiSignal": "fee_via_link",
+   "signals": [
+    "fee_via_link"
+   ]
   },
   {
    "id": "scamguardbench:syn:952aaf843bb1e5d6",
@@ -24748,7 +24961,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.92,
    "aiSignal": "account_threat",
    "signals": []
   },
@@ -24793,7 +25006,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.91,
+   "aiConfidence": 0.92,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -24823,7 +25036,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
+   "aiConfidence": 0.91,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -24838,8 +25051,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9,
-   "aiSignal": "ai_other",
+   "aiConfidence": 0.92,
+   "aiSignal": "impersonation",
    "signals": []
   },
   {
@@ -24915,7 +25128,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.63,
+   "aiConfidence": 0.61,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -24930,7 +25143,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -24945,7 +25158,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -24975,7 +25188,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.95,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -24990,7 +25203,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.87,
    "aiSignal": "credential_request",
    "signals": [
     "impersonation"
@@ -25007,7 +25220,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.88,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -25052,7 +25265,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -25067,7 +25280,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "urgency_pressure",
    "signals": []
   },
@@ -25097,7 +25310,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
+   "aiConfidence": 0.99,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -25142,7 +25355,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.62,
+   "aiConfidence": 0.5700000000000001,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -25157,8 +25370,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.51,
-   "aiSignal": "off_platform",
+   "aiConfidence": 0.5800000000000001,
+   "aiSignal": "ai_other",
    "signals": []
   },
   {
@@ -25172,7 +25385,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.77,
+   "aiConfidence": 0.75,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -25189,7 +25402,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.92,
    "aiSignal": "credential_request",
    "signals": [
     "impersonation"
@@ -25221,7 +25434,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.84,
+   "aiConfidence": 0.85,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -25238,7 +25451,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.73,
+   "aiConfidence": 0.74,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -25315,7 +25528,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.87,
+   "aiConfidence": 0.88,
    "aiSignal": "credential_request",
    "signals": [
     "impersonation"
@@ -25347,7 +25560,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.94,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -25362,8 +25575,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.98,
-   "aiSignal": "impersonation",
+   "aiConfidence": 0.97,
+   "aiSignal": "ai_other",
    "signals": []
   },
   {
@@ -25472,7 +25685,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.95,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -25487,7 +25700,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.85,
+   "aiConfidence": 0.83,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -25502,7 +25715,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.96,
+   "aiConfidence": 0.97,
    "aiSignal": "credential_request",
    "signals": []
   },
@@ -25517,7 +25730,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.7,
+   "aiConfidence": 0.72,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -25562,7 +25775,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.9,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -25578,7 +25791,7 @@
    "llm": "agreed_silent",
    "alone": "silent",
    "aiConfidence": 0.94,
-   "aiSignal": "impersonation",
+   "aiSignal": "credential_request",
    "signals": [
     "impersonation"
    ]
@@ -25624,7 +25837,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.92,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -25716,7 +25929,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.54,
+   "aiConfidence": 0.52,
    "aiSignal": "phishing_link",
    "signals": [
     "phishing_link"
@@ -25748,7 +25961,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.76,
+   "aiConfidence": 0.77,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -25763,7 +25976,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.99,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -25810,7 +26023,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.81,
+   "aiConfidence": 0.78,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -25825,7 +26038,7 @@
    "got": "risk",
    "llm": "added",
    "alone": "risk",
-   "aiConfidence": 0.81,
+   "aiConfidence": 0.82,
    "aiSignal": "off_platform",
    "signals": [
     "off_platform"
@@ -25842,7 +26055,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.78,
+   "aiConfidence": 0.77,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -25857,7 +26070,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.96,
    "aiSignal": "credential_request",
    "signals": []
   },
@@ -25872,8 +26085,8 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.56,
-   "aiSignal": "off_platform",
+   "aiConfidence": 0.5800000000000001,
+   "aiSignal": "ai_other",
    "signals": []
   },
   {
@@ -25887,7 +26100,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.65,
+   "aiConfidence": 0.64,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -25932,7 +26145,7 @@
    "got": "silent",
    "llm": "downgraded",
    "alone": "silent",
-   "aiConfidence": 0.95,
+   "aiConfidence": 0.94,
    "aiSignal": "credential_request",
    "signals": [
     "impersonation",
@@ -25995,7 +26208,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.83,
+   "aiConfidence": 0.8,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -26130,7 +26343,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.88,
+   "aiConfidence": 0.87,
    "aiSignal": "phishing_link",
    "signals": []
   },
@@ -26145,7 +26358,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.94,
    "aiSignal": "urgency_pressure",
    "signals": [
     "urgency_pressure"
@@ -26162,7 +26375,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.97,
+   "aiConfidence": 0.98,
    "aiSignal": "ai_other",
    "signals": []
   },
@@ -26177,7 +26390,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.9299999999999999,
+   "aiConfidence": 0.95,
    "aiSignal": "credential_request",
    "signals": []
   },
@@ -26192,7 +26405,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.89,
+   "aiConfidence": 0.87,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -26207,7 +26420,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.92,
+   "aiConfidence": 0.9,
    "aiSignal": "impersonation",
    "signals": []
   },
@@ -26222,7 +26435,7 @@
    "got": "silent",
    "llm": "agreed_silent",
    "alone": "silent",
-   "aiConfidence": 0.94,
+   "aiConfidence": 0.95,
    "aiSignal": "ai_other",
    "signals": []
   },

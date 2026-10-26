@@ -190,6 +190,31 @@ export const SIGNAL_CRITERIA = {
   other: "Another kind of scam, or none of these"
 };
 
+// Extra yes/no questions for spam the "risky" question scores as plain marketing: premium-rate prize SMS
+// and Discord free-bait lures. Each one can only raise p(risky), and only at or above its own bar.
+// Wording and bars picked on the dev split only (eval/real/exp-typesafe-questions.mjs, RESULTS.md).
+const TS_ONE = "This is one chat or message. ";
+export const TYPESAFE_EXTRA = {
+  premium: {
+    at: 0.5,
+    signal: "fee_via_link",
+    question: { type: "noul", instructions: TS_ONE + "Does Them push the user to call or text a premium-rate number or short code (for example 09..., 087..., 0871..., or a 5-digit short code), or to sign up for a paid text service (ringtones, chat lines, adult content, quizzes) charged to the phone bill?",
+      criteria: { true: "Them asks the user to call or text a premium-rate number or short code, or to subscribe to a paid text service.", false: "No premium-rate number, short code or paid text service is pushed; normal phone numbers between people." } }
+  },
+  prize: {
+    at: 0.7,
+    signal: "fee_via_link",
+    question: { type: "noul", instructions: TS_ONE + "Does Them tell the user they have won, been chosen for, or can claim a prize, cash, voucher, holiday, free phone or other reward, or invite them into a paid quiz or draw, and tell them to call, text or reply to a number or short code, or open a link, to get it?",
+      criteria: { true: "Them announces a win, award, selection, free gift or prize draw and tells the user to call, text, reply or click to claim it.", false: "No prize or reward is claimed, or it is a friend talking about a real win, or a normal shop offer with no claim step." } }
+  },
+  lure: {
+    at: 0.7,
+    signal: "phishing_link",
+    question: { type: "noul", instructions: TS_ONE + "Does Them use free bait (free Nitro, a giveaway, an airdrop, free crypto or game items, a game, cheat or file to test, hidden or private channels) to get the user to click an unknown, shortened or lookalike link, join an invite, scan a QR code or download and run a file? Links to the official site of a well-known company (for example its blog or help pages) do not count.",
+      criteria: { true: "Free or exclusive bait pushed through an unknown or lookalike link, invite, QR code or file.", false: "Normal chat, an official company page, a link shared for a clear reason, server rules or moderation, no free bait." } }
+  }
+};
+
 function themLines(source) {
   const lines = source.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   const them = lines.filter((line) => /^Them:/.test(line)).map((line) => normalizeWs(line.slice(5)));
@@ -202,6 +227,7 @@ export function typesafeQuestions(source) {
   const lines = themLines(source);
   const questions = {
     risky: TYPESAFE_RISKY,
+    ...Object.fromEntries(Object.entries(TYPESAFE_EXTRA).map(([id, x]) => [id, x.question])),
     signal: { type: "choice", instructions: "Which kind of ask from Them is the main risk in this chat?", criteria: SIGNAL_CRITERIA }
   };
   if (lines.length > 1) {
@@ -240,13 +266,24 @@ async function classifyTypesafe(source, llm, fetchImpl) {
   const answers = body && body.answers;
   const p = Number(answers?.risky?.noul);
   if (!Number.isFinite(p)) throw llmError("llm shape", 502);
-  const prob = Math.max(0, Math.min(1, p));
+  const base = Math.max(0, Math.min(1, p));
+  let prob = base;
+  let lift = null;
+  for (const [id, x] of Object.entries(TYPESAFE_EXTRA)) {
+    const q = Number(answers?.[id]?.noul);
+    if (Number.isFinite(q) && q >= x.at && q > prob) {
+      prob = Math.min(1, q);
+      lift = x;
+    }
+  }
   const risky = prob >= 0.5;
   const picked = answers?.evidence?.choice;
   const quote = lines.length === 1 ? lines[0] : (typeof picked === "string" && /^l\d+$/.test(picked) ? lines[Number(picked.slice(1))] : null);
   const evidence = risky && quote ? [quote] : [];
   const ok = risky && evidencePasses(evidence, source);
-  const signal = SIGNALS.includes(answers?.signal?.choice) ? answers.signal.choice : (ok ? "other" : null);
+  let signal = SIGNALS.includes(answers?.signal?.choice) ? answers.signal.choice : (ok ? "other" : null);
+  // The main question said "not risky" and an extra question lifted it: name the extra's signal.
+  if (ok && lift && base < 0.5 && (!signal || signal === "other")) signal = lift.signal;
   return {
     risky: ok,
     level: ok ? (prob >= 0.9 ? "high" : "medium") : "none",
