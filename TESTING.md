@@ -6,8 +6,8 @@ The demo store and its test server are online. Everything there is pretend: fict
 
 ## 1. Download and unzip
 
-1. Open the test build: **https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.2** (you need to be signed in to GitHub with access to the repo).
-2. Download **`paybrake-extension.zip`** ([direct link](https://github.com/lamapony/paybrake/releases/download/v0.2.0-test.2/paybrake-extension.zip)) and unzip it (double-click it).
+1. Open the test build: **https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3** (you need to be signed in to GitHub with access to the repo).
+2. Download **`paybrake-extension.zip`** ([direct link](https://github.com/lamapony/paybrake/releases/download/v0.2.0-test.3/paybrake-extension.zip)) and unzip it (double-click it).
 3. You now have a folder called **`paybrake-extension`**. Inside it you should see `manifest.json`.
 
 > On Windows, "Extract All" sometimes makes a folder inside a folder: `paybrake-extension\paybrake-extension\`. Use the inner one, the one where you can see `manifest.json`.
@@ -52,5 +52,5 @@ Download the new zip, unzip it over the old folder (or into a new one), then on 
 
 - The extension talks to the hosted mock server by default (`https://paybrake-demo.spbabinov.workers.dev`). To use a local backend, open the extension's **Settings** (right-click the icon > Options), click **Use localhost:8787**, then **Save**. Run `npm run dev:backend` and `npm run serve:demo`, and open `http://localhost:8080/demo/marketplace.html?live=1`.
 - Build the zip: `npm run pack:extension` (writes `dist/paybrake-extension.zip`).
-- Hosted demo and mock backend: one Cloudflare Worker in `hosted/` (static demo pages plus the mock API, orders kept in a Durable Object for 24 hours). Mock mode only: no PayPal keys, no AI key, nothing to configure. `npm run hosted:deploy` builds and deploys it (needs `npx wrangler login`). Pages and API send `X-Robots-Tag: noindex`, and `robots.txt` disallows everything.
+- Hosted demo and mock backend: one Cloudflare Worker in `hosted/` (static demo pages plus the mock API, orders kept in a Durable Object for 24 hours). PayPal in mock mode (no PayPal keys). The AI check runs on Typesafe (key stored as the Worker secret `TYPESAFE_API_KEY`), with a size cap and a per-IP rate limit. `npm run hosted:deploy` builds and deploys it (needs `npx wrangler login`). Pages and API send `X-Robots-Tag: noindex`, and `robots.txt` disallows everything.
 - Tester end-to-end check (unzips the zip, loads it in Chromium, runs the steps above against the hosted URL, saves screenshots to `shots/tester/`): `npm run pack:extension && npm run e2e:hosted`.
