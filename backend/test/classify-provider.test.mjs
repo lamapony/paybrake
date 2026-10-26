@@ -1,11 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { classifyText, resolveLlm } from "../src/classify.js";
+import { classifyText, resolveLlm, SYSTEM } from "../src/classify.js";
 import { createServer } from "../src/server.js";
 
 const KEY = "test-openrouter-key-not-real";
 const INPUT = "Send 500 kr deposit via PayPal Friends & Family";
-const SYSTEM = "You judge whether a marketplace chat asks for a risky payment. Reply with JSON only: {risky:boolean, level:\"high\"|\"medium\"|\"none\", reason:string<=120, evidence:string[], item:string|null, amount:number|null, currency:string|null}. Every evidence string must be a verbatim substring of the user text. Do not promise a refund.";
 
 function chat(content) {
   return {
@@ -356,4 +355,13 @@ test("POST /api/classify is 503 when no provider key is configured", async () =>
   } finally {
     await close(server);
   }
+});
+
+test("confidence and signal pass through; unknown signal becomes other", async () => {
+  const ok = await classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1" }, async () => chat(verdictJson({ confidence: 0.92, signal: "off_platform_payment" })));
+  assert.equal(ok.confidence, 0.92);
+  assert.ok(typeof ok.signal === "string" && ok.signal.length > 0);
+  const odd = await classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1" }, async () => chat(verdictJson({ confidence: 7, signal: "made_up" })));
+  assert.ok(odd.confidence === null || (odd.confidence >= 0 && odd.confidence <= 1));
+  assert.equal(odd.signal, "other");
 });

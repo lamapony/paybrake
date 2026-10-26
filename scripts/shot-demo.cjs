@@ -162,6 +162,7 @@ async function livePass(browser) {
     "extension/lib/tidy.js",
     "extension/lib/atoms.js",
     "extension/lib/extract.js",
+    "extension/lib/redact.js",
     "extension/lib/pay-risk.js",
     "extension/lib/ask-llm.js",
     "extension/content.js"

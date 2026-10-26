@@ -2,7 +2,7 @@
 // Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, pay-risk.js.
 // Patterns are case-insensitive and Unicode-aware. A hit is a concrete span.
 
-const RULES_VERSION = 2;
+const RULES_VERSION = 3;
 
 function wordBound(pattern, flags = "giu") {
   const tidy = globalThis.pbTidy;
@@ -20,8 +20,18 @@ const ATOMS = [
   { id: "pay_before_see", role: "act", strength: "strong", receipt: "Pay before seeing the item" },
   { id: "urgency_pressure", role: "act", strength: "weak", receipt: "Pressure to hurry" },
   { id: "ship_before_meet", role: "act", strength: "weak", receipt: "Ships before you meet" },
+  // v3: account-takeover and phishing asks. "standalone" atoms are risky on their own,
+  // without a pay word or an amount in the same message.
+  { id: "credential_request", role: "act", strength: "strong", standalone: true, receipt: "Asks for card details, a code or a password" },
+  { id: "remote_access", role: "act", strength: "strong", standalone: true, receipt: "Asks you to install remote-access software" },
+  { id: "phishing_link", role: "act", strength: "strong", standalone: true, receipt: "Suspicious link to log in or pay" },
+  { id: "fee_via_link", role: "act", strength: "strong", standalone: true, receipt: "Fee to pay before you get something" },
+  { id: "impersonation", role: "act", strength: "weak", receipt: "Claims to be a bank, authority or platform" },
+  { id: "account_threat", role: "act", strength: "weak", receipt: "Threat to close or lock your account" },
   { id: "pay_on_collection", role: "veto", strength: "veto", receipt: "Pay on collection or checkout" },
-  { id: "goods_and_services_agreed", role: "veto", strength: "veto", receipt: "Goods & Services agreed" }
+  { id: "goods_and_services_agreed", role: "veto", strength: "veto", receipt: "Goods & Services agreed" },
+  // Not a rule: the chip shown when only the AI check flagged the chat.
+  { id: "ai_other", role: "ai", strength: "none", receipt: "Flagged by the AI check" }
 ];
 
 const META = Object.fromEntries(ATOMS.map((atom) => [atom.id, atom]));
@@ -133,6 +143,47 @@ const RULES = [
   { id: "ship_before_meet", re: "courier\\s+delivers?\\s+after\\s+payment", gate: "ship" },
   { id: "ship_before_meet", re: "kan\\s+kun\\s+sende", gate: "ship" },
   { id: "ship_before_meet", re: "kun\\s+forsendelse", gate: "ship" },
+
+  // v3: card details, one-time codes, passwords and ID numbers (gate "cred": a request verb
+  // in the same sentence, not "never share this code").
+  { id: "credential_request", re: "(?:card\\s+(?:number|details|info(?:rmation)?|no\\.?)|(?:credit|debit)\\s+card(?:\\s+(?:number|details|info(?:rmation)?))?|cvv2?|cvc2?|security\\s+code\\s+on\\s+the\\s+back|expiry\\s+date|expiration\\s+date|kortnummer|kortoplysninger|kontrolcifre)", gate: "cred" },
+  { id: "credential_request", re: "(?:one[-\\s]?time\\s+(?:pass(?:word|code)|code|pin)|otp|verification\\s+code|security\\s+code|confirmation\\s+code|login\\s+code|sms\\s+code|text\\s+code|\\d[-\\s]?digit\\s+code|(?:the\\s+)?code\\s+(?:i|we|you)(?:\\s+just)?\\s+(?:sent|got|received)|engangskode|sikkerhedskode|kode(?:n)?)", gate: "cred" },
+  { id: "credential_request", re: "(?:mit\\s*id|nem\\s*id|bank\\s*id)(?:[-\\s]?(?:kode(?:n)?|code|app|login|nøgleviser))?", gate: "cred-id" },
+  { id: "credential_request", re: "(?:pass(?:word|code)(?!\\s+(?:manager|management|reset))|pin[-\\s]?(?:code|number|kode)|(?:your|the|card|bank)\\s+pin|login\\s+(?:details|credentials|info(?:rmation)?)|log-?in\\s+details|username\\s+and\\s+password|(?:your|login|log-?in|account|bank(?:ing)?)\\s+credentials|adgangskode)", gate: "cred" },
+  { id: "credential_request", re: "(?:social\\s+security\\s+(?:number|no\\.?)|ssn|cpr(?:[-\\s]?(?:nummer|number|nr\\.?))?|personnummer)", gate: "cred" },
+
+  { id: "credential_request", re: "(?:bank\\s+)?account\\s+(?:number|details|info(?:rmation)?)(?:\\s+and\\s+(?:the\\s+)?(?:routing|sort)\\s+(?:number|code))?|routing\\s+number|bank(?:ing)?\\s+(?:details|info(?:rmation)?|login)", gate: "cred" },
+  { id: "credential_request", re: "(?:send|give|tell|provide|read|share|forward|text)\\s+(?!you\\b)(?:me\\s+|us\\s+)?(?:\\w+\\s+){0,4}?(?:the\\s+|your\\s+|that\\s+|this\\s+)?(?:code|codes)", gate: "cred-inline" },
+
+  // v3: remote-access apps. Brand names fire on their own; the generic phrase needs an install verb.
+  { id: "remote_access", re: "any\\s*desk|team\\s*viewer|quick\\s*support|quick\\s*assist|rust\\s*desk|ultra\\s*viewer|ammyy(?:\\s+admin)?|logmein|splashtop|supremo|screenconnect", gate: "negation" },
+  { id: "remote_access", re: "remote[-\\s](?:access|desktop|control|support)(?:\\s+(?:tool|app|software|program))?|screen[-\\s]?shar(?:e|ing)", gate: "remote" },
+  { id: "remote_access", re: "remote\\s+in(?:\\s*to)?\\s+(?:your|the)\\s+(?:computer|pc|laptop|device|phone|machine)", gate: "negation" },
+
+  // v3: links that ask you to log in, verify, claim or pay (gate "link" checks the host and nearby words).
+  { id: "phishing_link", re: "(?:https?://|www\\.)[^\\s<>()\\[\\]\"']+|[a-z0-9][a-z0-9-]*(?:\\.[a-z0-9-]+)*\\.(?:xyz|top|click|live|icu|ru|tk|ml|ga|cf|gq|zip|mov|cam|rest|monster|info|online|site|shop|support|link|gift|ly|gg)(?:/[^\\s<>()\\[\\]\"']*)?", gate: "link", flags: "giu" },
+  // Bare domains on common TLDs count only when the host itself looks off (lookalike, brand in a
+  // stranger's host, lure word in the host); the "link" gate checks that via suspiciousHost.
+  { id: "phishing_link", re: "\\b[a-z0-9][a-z0-9-]*(?:\\.[a-z0-9-]+)*\\.(?:com|net|org|dk|se|no|de|eu|io|co|app|me|biz|example)(?:/[^\\s<>()\\[\\]\"']*)?", gate: "link", flags: "giu" },
+  { id: "phishing_link", re: "(?:click|tap|press|follow|use|open|klik)\\s+(?:on\\s+)?(?:here|this\\s+link|the\\s+link|the\\s+button\\s+below|below|linket|her)(?:\\s+(?:and|to|og|for\\s+at))?\\s+(?:\\w+\\s+){0,2}?(?:verify|confirm|log\\s*in|login|sign\\s*in|pay|claim|update|unlock|restore|receive|reactivate|validate|bekræfte|modtage|betale|logge\\s+ind)", gate: "negation" },
+  { id: "phishing_link", re: "(?:receive|get|accept|modtag(?:e)?|få)\\s+(?:the\\s+|your\\s+)?(?:payment|money|pengene|betalingen|beløbet|funds)\\s+(?:via|through|by\\s+clicking|using|på|gennem|med)\\s+(?:this\\s+|the\\s+)?(?:link|linket)", gate: "negation" },
+  { id: "phishing_link", re: "(?:confirm|verify)\\s+(?:your\\s+)?(?:ownership|identity|account|details)\\s+(?:via|through|using|at|on)\\s+(?:this|the)\\s+(?:link|site|page)", gate: "negation" },
+
+  // v3: "pay the fee via this link" and fees to release a parcel, prize or refund.
+  { id: "fee_via_link", re: "(?:customs|delivery|shipping|handling|processing|release|clearance|redelivery|activation|verification|unlock(?:ing)?|transfer|insurance|admin(?:istration)?|tax|toll|told|gebyr|fragt)\\s*(?:fee|charge|duty|payment|cost|gebyr|afgift)s?", gate: "fee" },
+  { id: "fee_via_link", re: "(?:pay|cover|settle|betal)\\s+(?:a\\s+|the\\s+|this\\s+|small\\s+|a\\s+small\\s+)?(?:fee|charge|gebyr)", gate: "fee" },
+
+  // v3: impersonation (weak alone; with a link, code or fee ask it becomes high).
+  { id: "impersonation", re: "this\\s+is\\s+(?:the\\s+|your\\s+)?(?:bank|[a-z]+\\s+bank|fraud\\s+(?:department|team)|security\\s+(?:team|department)|discord\\s+(?:staff|team|support)|irs|hmrc|skat|politi(?:et)?|police|customs|tax\\s+(?:office|authority)|microsoft|apple|amazon|paypal|mitid|dba|postnord|gls|dao)", gate: "negation" },
+  { id: "impersonation", re: "(?:your\\s+)?bank['’]?s?\\s+(?:security|fraud|operations)(?:\\s+(?:team|department|center|centre|alert))?", gate: "negation" },
+  { id: "impersonation", re: "fraud\\s+(?:department|prevention|team|alert|unit)|security\\s+(?:team|department|operations\\s+cent(?:er|re))", gate: "negation" },
+  { id: "impersonation", re: "(?:microsoft|windows|apple|amazon|paypal|discord|facebook|meta|mitid|nemid|dba|netflix|steam|postnord|gls|dhl|ups|fedex)\\s+(?:support|security|staff|team|help\\s*desk|customer\\s+(?:service|support)|kundeservice)", gate: "negation" },
+  { id: "impersonation", re: "tech(?:nical)?\\s+support|social\\s+security\\s+administration|internal\\s+revenue\\s+service|skattestyrelsen", gate: "negation" },
+  { id: "impersonation", re: "(?:calling|writing)\\s+(?:you\\s+)?from\\s+(?:the\\s+|your\\s+)?(?:bank|police|politi(?:et)?|irs|hmrc|skat|tax\\s+office|customs|microsoft|apple|amazon)", gate: "negation" },
+
+  { id: "account_threat", re: "account\\s+(?:will\\s+be|has\\s+been|is|was|may\\s+be)\\s+(?:temporarily\\s+|permanently\\s+)?(?:closed|suspended|limited|locked|blocked|frozen|deactivated|compromised|disabled|terminated|restricted|compromise)", gate: "negation" },
+  { id: "account_threat", re: "(?:computer|pc|laptop|device|phone|system)\\s+(?:has|have|is|was)\\s+(?:been\\s+)?(?:\\d+\\s+)?(?:a\\s+)?(?:virus(?:es)?|malware|infected|hacked|compromised)|virus(?:es)?\\s+(?:infection\\s+)?detected|files\\s+(?:are|will\\s+be)\\s+locked", gate: "negation" },
+  { id: "account_threat", re: "(?:suspicious|unusual|unauthori[sz]ed)\\s+(?:activity|activities|login|log-?in|access|transactions?|sign-?in)", gate: "negation" },
 
   // "a time" is a schedule. Bare "pay when you pick" is still the handover.
   { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?!\\s+a\\s+time\\b)(?:\\s+it\\s+up)?", gate: "none" },
@@ -618,6 +669,91 @@ function giftAskOk(text, start, end) {
   return amountSpans(text).some((amount) => amount.start >= from && amount.end <= to);
 }
 
+// v3 helpers ---------------------------------------------------------------
+const REQUEST_VERB = /(?:send|share|give|tell|provide|confirm|enter|type|read|reply|text|forward|need|verify|update|submit|fill\s+in|what(?:'s|’s|\s+is|\s+are)|can\s+i\s+(?:get|have)|requires?|required|sende|send\s+mig|giv|oplys|indtast|bekræft|skriv|tast)/iu;
+const REQUEST_AFTER = /^\s*(?:please|pls|here|to\s+me|now|asap|so\s+(?:i|we)\s+can|for\s+(?:verification|the\s+refund|the\s+payment)|to\s+(?:confirm|verify|process|claim|receive|release)|tak|til\s+mig)/iu;
+const SENTENCE_NEG = /(?:never|don't|don’t|do\s+not|dont|won't|won’t|will\s+not|wouldn't|would\s+never|doesn't|does\s+not|no\s+need\s+to|aldrig|ikke)\b/iu;
+const OFFICIAL = /official\s+(?:\w+\s+)?(?:app|website|site|number)|the\s+number\s+on\s+the\s+back|ignore\s+this|didn't\s+request|did\s+not\s+request/iu;
+const LOGIN_VERB = /(?:log\s*(?:ind|in|on)|login|sign\s*in|confirm|bekræft|godkend|approve|verify|identify|identificer)\s+(?:dig\s+|yourself\s+)?(?:med|with|via|using|in|i|på)\s+(?:your\s+|din\s+)?$/iu;
+const REMOTE_VERB = /(?:download|install|open|use|run|give|grant|allow|let\s+(?:me|us)|access|connect|hent|installer|åbn)/iu;
+const LURE = /(?:verify|verification|confirm|log\s*in|login|sign\s*in|claim|pay|unlock|update|free|click|enter|gift|nitro|account|password|prize|won|reward|bonus|airdrop|refund|customs|parcel|package|suspend|limited|bekræft|log\s+ind|betal|modtag|gratis)/iu;
+const FEE_CONTEXT = /(?:https?:\/\/|www\.|\blink\b|linket|click|tap\s+(?:here|the)|klik|claim|prize|won|winner|release|unlock|customs|held|refund|gift\s*card|reward|inheritance|redeliver|toll|told)/iu;
+const SHORTENERS = /^(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|is\.gd|cutt\.ly|rb\.gy|sc\.link|ow\.ly|shorturl\.at|tiny\.cc|s\.id|t\.ly|bl\.ink|rebrand\.ly)$/iu;
+const ODD_TLD = /\.(?:xyz|top|click|live|icu|ru|tk|ml|ga|cf|gq|zip|mov|cam|rest|monster|info|online|site|shop|support|link|gift)$/iu;
+const BENIGN_SUB = /^(?:www|support|help|helpcenter|billing|account|accounts|my|app|mail|portal|customer|service|status|docs)$/iu;
+const HOST_LURE = /(?:secure|verify|verif|login|signin|account|update|confirm|wallet|unlock|claim|bonus|gift|reward|prize|nitro|refund|customs|deliver|parcel|support|check|auth|payment|airdrop|free)/iu;
+const BRANDS = ["paypal", "mitid", "nemid", "dba", "discord", "steam", "amazon", "apple", "microsoft", "netflix", "postnord", "gls", "dhl", "facebook", "mobilepay"];
+const OFFICIAL_DOMAINS = /(?:^|\.)(?:paypal\.com|paypal\.me|mitid\.dk|nemid\.nu|dba\.dk|discord\.com|discord\.gg|discordapp\.com|steampowered\.com|steamcommunity\.com|amazon\.[a-z.]+|apple\.com|microsoft\.com|netflix\.com|postnord\.[a-z]+|gls-group\.[a-z]+|gls\.dk|dhl\.[a-z]+|facebook\.com|mobilepay\.dk)$/iu;
+const LOOKALIKE = /paypa1|payp4l|pay-pal|disc0rd|dlscord|discorcl|d1scord|steamcomunity|steamcommunlty|stearn|amaz0n|micr0soft|faceb00k|netfl1x|m1tid|rnitid/iu;
+
+function sentenceAround(text, start, end) {
+  let a = start;
+  while (a > 0 && !/[.!?\n]/.test(text[a - 1])) a--;
+  let b = end;
+  while (b < text.length && !/[.!?\n]/.test(text[b])) b++;
+  return { from: a, to: b, before: text.slice(a, start), after: text.slice(end, b), whole: text.slice(a, b) };
+}
+
+function credAllowed(text, start, end, extraBefore) {
+  const s = sentenceAround(text, start, end);
+  if (SENTENCE_NEG.test(s.before) || OFFICIAL.test(s.whole)) return false;
+  const before = s.before.slice(-90);
+  if (REQUEST_VERB.test(before)) return true;
+  if (extraBefore && extraBefore.test(before)) return true;
+  return REQUEST_AFTER.test(s.after);
+}
+
+function hostOf(url) {
+  const raw = url.replace(/^(?:https?:\/\/)/iu, "").replace(/^www\./iu, "");
+  return raw.split(/[/?#:]/)[0].toLowerCase().replace(/\.+$/, "");
+}
+
+function editDistance(a, b) {
+  const row = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0];
+    row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cur = row[j];
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+  }
+  return row[b.length];
+}
+
+// "dischrd", "paypa1", "stearn": one or two edits away from a brand name.
+function lookalikeLabel(label) {
+  return BRANDS.some((brand) => brand.length >= 5 && label !== brand && Math.abs(label.length - brand.length) <= 2 && editDistance(label, brand) <= (brand.length >= 7 ? 2 : 1));
+}
+
+function suspiciousHost(host) {
+  if (!host || !host.includes(".")) return false;
+  if (SHORTENERS.test(host)) return true;
+  if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)) return true;
+  if (host.includes("xn--")) return true;
+  if (LOOKALIKE.test(host)) return true;
+  if (host.split(".").some((label) => lookalikeLabel(label.replace(/^www$/, "")))) return true;
+  if (OFFICIAL_DOMAINS.test(host)) return false;
+  if (ODD_TLD.test(host)) return true;
+  const labels = host.split(".");
+  const name = labels.slice(0, -1).join(".");
+  if (BRANDS.some((brand) => name.includes(brand))) return true;
+  // A lure word counts only in the site's own name ("secure-pay-check.com"), not in a
+  // subdomain of an ordinary site ("support.example.com").
+  // A plain service subdomain of an ordinary site ("support.example.com", "help.", "billing.")
+  // is not a lure; compound labels ("prize-verify.", "yourbank-secure.") still are.
+  const parts = labels.slice(0, -1).filter((label, i, all) => i === all.length - 1 || !BENIGN_SUB.test(label));
+  return HOST_LURE.test(parts.join("."));
+}
+
+function linkAllowed(text, start, end) {
+  const url = text.slice(start, end);
+  if (!suspiciousHost(hostOf(url))) return false;
+  const near = text.slice(Math.max(0, start - 140), Math.min(text.length, end + 140));
+  return LURE.test(near);
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
@@ -655,6 +791,24 @@ function allow(rule, text, start, end) {
     const before = text.slice(Math.max(0, start - 48), start);
     if (/(?:receive|win|won|winner|selected|reward(?:ed)?|free|claim|earn|get|give\s+you|send\s+you)\b[^.!?\n]{0,36}$/iu.test(before)) return false;
     return true;
+  }
+  if (rule.gate === "cred") return credAllowed(text, start, end, null);
+  if (rule.gate === "cred-inline") {
+    const sentence = sentenceAround(text, start, end);
+    return !SENTENCE_NEG.test(sentence.before) && !OFFICIAL.test(sentence.whole) && !/(?:promo|discount|coupon|rabat|dress|zip|post(?:al)?|qr|source)\s+codes?$/iu.test(text.slice(start, end));
+  }
+  if (rule.gate === "cred-id") return credAllowed(text, start, end, LOGIN_VERB);
+  if (rule.gate === "remote") {
+    if (negatedBefore(text, start)) return false;
+    const s = sentenceAround(text, start, end);
+    if (SENTENCE_NEG.test(s.before)) return false;
+    return REMOTE_VERB.test(s.whole);
+  }
+  if (rule.gate === "link") return linkAllowed(text, start, end);
+  if (rule.gate === "fee") {
+    if (negatedBefore(text, start)) return false;
+    const near = text.slice(Math.max(0, start - 150), Math.min(text.length, end + 150));
+    return FEE_CONTEXT.test(near) && (hasPayWord(near) || amountNear(text, start, end, 120) || /(?:https?:\/\/|www\.|click|klik)/iu.test(near));
   }
   if (rule.gate === "mobilepay") {
     if (phoneNear(text, start, end)) return true;
@@ -751,5 +905,6 @@ globalThis.pbAtoms = {
   PAY_WORD,
   findAtoms,
   hasPayWord,
+  suspiciousHost,
   goodsHit
 };

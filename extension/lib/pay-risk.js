@@ -1,6 +1,11 @@
 // Classic content script and a Node ESM side-effect module. No import/export.
-// detect(text, ctx, { askLlm }) is async. The model can only confirm or lower a
-// rules hit. It is not called on short, no_atom, weak_only, or veto.
+// detect(text, ctx, { askLlm, llmMode }) is async.
+//   llmMode "confirm" (default, v1/v2 behaviour): the model is only asked after a rules hit
+//     and can only confirm or lower it.
+//   llmMode "all" (v3, "AI check on all chats"): the model is asked about every chat that
+//     is long enough. Either side can raise a card. The model can silence a rules hit only
+//     with high confidence. A timeout or error falls back to rules only (llm "unavailable").
+// Only the other person's lines raise signals: the user's own line ("buyer") never does.
 
 // Split so a source grep for the banned phrases does not match this file.
 const BANNED = new RegExp(
@@ -15,8 +20,16 @@ const TEMPLATES = {
   before: "Payment before you see the item: if it never arrives, the money may be hard to get back.",
   off: "Off-platform payment: a transfer outside PayPal checkout is hard to reverse if the item never arrives.",
   deposit: "Upfront deposit: if the item never arrives, you may have no way to get your money back.",
+  remote: "Remote-access app: it lets a stranger control your device and your bank app. Do not install it.",
+  cred: "Asks for card details, a code or a password: no real buyer, seller or bank needs these.",
+  fee: "A fee to pay before you get something: fake delivery, customs and prize messages use this.",
+  link: "Suspicious link that asks you to log in or pay: open the real site yourself instead.",
+  impersonation: "Claims to be a bank, authority or platform: contact them through their official app instead.",
+  ai: "The AI check thinks this chat may be a scam. Do not pay or share codes until you have checked.",
   generic: "Risky payment request: a direct transfer may be hard to get back if the item never arrives."
 };
+
+const LEVEL_RANK = { none: 0, medium: 1, high: 2 };
 
 function clean(value) {
   const tidy = globalThis.pbTidy;
@@ -45,12 +58,18 @@ function emptyDeal() {
 function templateFor(signals) {
   const has = (id) => signals.includes(id);
   let reason = TEMPLATES.generic;
-  if (has("friends_family") && has("upfront_deposit")) reason = TEMPLATES.ff_deposit;
+  if (has("remote_access")) reason = TEMPLATES.remote;
+  else if (has("credential_request")) reason = TEMPLATES.cred;
+  else if (has("fee_via_link")) reason = TEMPLATES.fee;
+  else if (has("phishing_link")) reason = TEMPLATES.link;
+  else if (has("friends_family") && has("upfront_deposit")) reason = TEMPLATES.ff_deposit;
   else if (has("friends_family")) reason = TEMPLATES.ff;
   else if (has("upfront_deposit") && has("off_platform")) reason = TEMPLATES.deposit_off;
   else if (has("pay_before_see")) reason = TEMPLATES.before;
   else if (has("off_platform")) reason = TEMPLATES.off;
   else if (has("upfront_deposit")) reason = TEMPLATES.deposit;
+  else if (has("impersonation")) reason = TEMPLATES.impersonation;
+  else if (has("ai_other")) reason = TEMPLATES.ai;
   if (reason.length > 120) reason = reason.slice(0, 119).trimEnd() + "…";
   return reason;
 }
@@ -240,9 +259,11 @@ async function detect(text, ctx = {}, options = {}) {
 
   const goods = api.goodsHit(messages);
   const vetoes = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "veto");
-  // A prohibited span is not an ask. It does not open a card, and it does not
-  // count as the strong ask that would stop a collection offer from hiding one.
-  const actHits = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "act" && !hit.prohibited);
+  // A prohibited span is not an ask. The user's own line ("buyer") never raises one.
+  const actHits = perMessage
+    .filter((message) => message.from !== "buyer")
+    .flatMap((message) => message.hits)
+    .filter((hit) => hit.role === "act" && !hit.prohibited);
   const signals = api.ATOMS.map((atom) => atom.id).filter((id) => actHits.some((hit) => hit.atom === id));
   const strong = [...new Set(actHits.filter((hit) => hit.strength === "strong").map((hit) => hit.atom))];
   const weak = [...new Set(actHits.filter((hit) => hit.strength === "weak").map((hit) => hit.atom))];
@@ -259,14 +280,27 @@ async function detect(text, ctx = {}, options = {}) {
     ? null
     : vetoes.find((hit) => collectionOffer(hit) && !hit.refused) || null;
   const vetoHit = hardVeto || collectionVeto;
+
+  const rules = rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal });
+  const ask = options && options.askLlm;
+  if (typeof ask !== "function") return rules;
+  if (options.llmMode === "all") return combineAll(rules, raw, messages, ask, options);
+  if (rules.kind !== "risk") return rules;
+  return confirmOnly(rules, raw, ask, options);
+}
+
+function rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal }) {
   if (vetoHit) return silent("veto", { signals, evidence, deal });
   if (!actHits.length) return silent("no_atom", { signals, evidence, deal });
-  if (!strong.length) return silent("weak_only", { signals, evidence, deal });
+  const meta = Object.fromEntries(api.ATOMS.map((atom) => [atom.id, atom]));
+  // v3: a bank/authority claim together with an account threat is a medium on its own.
+  const impersonationCombo = weak.includes("impersonation") && weak.length >= 2;
+  if (!strong.length && !impersonationCombo) return silent("weak_only", { signals, evidence, deal });
 
   let level = null;
   if (strong.length >= 2 || (strong.length >= 1 && weak.length >= 1)) level = "high";
   else if (strong.length === 1) {
-    const host = perMessage.find((message) => message.hits.some((hit) => (
+    const host = perMessage.find((message) => message.from !== "buyer" && message.hits.some((hit) => (
       hit.atom === strong[0] && hit.strength === "strong" && !hit.prohibited
     )));
     const pay = host && api.hasPayWord(host.text);
@@ -278,11 +312,12 @@ async function detect(text, ctx = {}, options = {}) {
     ));
     // "Friends and Family only" after a refused checkout has no pay word and no amount.
     const methodOnly = host && host.hits.some((hit) => hit.gate === "ff-dictated" && !hit.prohibited);
-    if (pay || money || transferUpfront || methodOnly) level = "medium";
-  }
+    const standalone = meta[strong[0]] && meta[strong[0]].standalone;
+    if (pay || money || transferUpfront || methodOnly || standalone) level = "medium";
+  } else if (impersonationCombo) level = "medium";
   if (!level) return silent("no_atom", { signals, evidence, deal });
 
-  const rules = {
+  return {
     kind: "risk",
     level,
     reason: templateFor(signals),
@@ -290,28 +325,147 @@ async function detect(text, ctx = {}, options = {}) {
     evidence,
     deal,
     llm: "off",
+    source: "rules",
     rulesVersion: api.RULES_VERSION
   };
+}
 
-  const ask = options && options.askLlm;
-  if (typeof ask !== "function") return rules;
-
-  const timeoutMs = options.timeoutMs ?? 4000;
+function withTimeout(promise, timeoutMs) {
   let timer;
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(Object.assign(new Error("timeout"), { code: "timeout" })), timeoutMs);
+    })
+  ]).finally(() => clearTimeout(timer));
+}
+
+async function confirmOnly(rules, raw, ask, options) {
+  const timeoutMs = options.timeoutMs ?? 4000;
   try {
-    const llm = await Promise.race([
-      Promise.resolve(ask({ text: raw, level: rules.level, signals: rules.signals })),
-      new Promise((_, reject) => {
-        timer = setTimeout(() => reject(Object.assign(new Error("timeout"), { code: "timeout" })), timeoutMs);
-      })
-    ]);
+    const llm = await withTimeout(ask({ text: raw, level: rules.level, signals: rules.signals }), timeoutMs);
     return applyLlm(rules, llm, raw);
   } catch (error) {
     if (error && (error.code === "llm_off" || error.status === 503)) return rules;
     return { ...rules, level: "medium", llm: "error" };
-  } finally {
-    clearTimeout(timer);
   }
+}
+
+// ---- llmMode "all" ------------------------------------------------------------
+
+const AI_SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access", "phishing_link", "fee_via_link", "impersonation", "account_threat", "urgency_pressure"];
+const TRANSCRIPT_LIMIT = 3900;
+const CODE_NOTICE = /(?:never|do\s+not|don['’]t|not)\s+(?:share|give|tell|send|disclose|forward)|(?:aldrig|ikke)\s+(?:del|dele|giv|oplys)/iu;
+const CODE_ASK = /(?:send|give|tell|read|share|forward|provide|reply\s+with|type|enter)\s+(?:it\s+|them\s+)?(?:to\s+)?(?:me|us|our\s+(?:agent|team|staff|representative))\b/iu;
+const DEFAULTS = { downgradeConfidence: 0.85, addConfidence: 0.8, vetoOverrideConfidence: 0.9, timeoutMs: 6000 };
+
+function redactText(value) {
+  const api = globalThis.pbRedact;
+  return api && typeof api.redact === "function" ? api.redact(value) : String(value ?? "");
+}
+
+// The transcript the model sees: speaker-labelled and redacted. "Them" is the other
+// person in the chat (seller, caller, sender); "Me" is the PayBrake user.
+function transcriptOf(messages) {
+  const lines = messages.map((message) => ({
+    from: message.from === "buyer" ? "Me" : "Them",
+    text: redactText(normalizeWs(message.text))
+  })).filter((line) => line.text);
+  let text = lines.map((line) => line.from + ": " + line.text).join("\n");
+  // The backend takes at most 4000 characters; keep the latest part of a long chat.
+  if (text.length > TRANSCRIPT_LIMIT) text = text.slice(text.length - TRANSCRIPT_LIMIT).replace(/^[^\n]*\n/, "");
+  return {
+    text,
+    them: lines.filter((line) => line.from === "Them").map((line) => line.text).join("\n")
+  };
+}
+
+function confidenceOf(llm) {
+  const n = Number(llm && llm.confidence);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(0, Math.min(1, n));
+}
+
+function aiSignal(llm) {
+  const id = llm && typeof llm.signal === "string" ? llm.signal.trim() : "";
+  return AI_SIGNALS.includes(id) ? id : "ai_other";
+}
+
+function aiEvidence(quotes, raw) {
+  return quotes
+    .filter((quote) => typeof quote === "string" && normalizeWs(quote))
+    .map((quote) => {
+      const q = normalizeWs(quote);
+      const at = raw.indexOf(q);
+      return at >= 0 ? { atom: "ai", text: q, start: at, end: at + q.length } : null;
+    })
+    .filter(Boolean);
+}
+
+async function combineAll(rules, raw, messages, ask, options) {
+  const cfg = { ...DEFAULTS, ...options };
+  if (rules.silentReason === "short") return rules;
+  const transcript = transcriptOf(messages);
+  if (!transcript.them) return { ...rules, llm: "skipped" };
+  const started = Date.now();
+  let llm;
+  try {
+    llm = await withTimeout(ask({ text: transcript.text, mode: "all", level: rules.level || "none", signals: rules.signals }), cfg.timeoutMs);
+  } catch (error) {
+    const off = error && (error.code === "llm_off" || error.status === 503);
+    return { ...rules, llm: off ? "off_server" : "unavailable", llmMs: Date.now() - started };
+  }
+  const llmMs = Date.now() - started;
+  if (!llm || typeof llm !== "object") return { ...rules, llm: "unavailable", llmMs };
+
+  const confidence = confidenceOf(llm);
+  const quotes = Array.isArray(llm.evidence) ? llm.evidence.filter((q) => typeof q === "string") : [];
+  // Evidence must quote the other person, verbatim (after redaction): the user's own line never counts.
+  const quotesOk = quotes.length > 0 && quotes.every((quote) => evidenceIsSubstring(quote, transcript.them));
+  const aiRisky = llm.risky === true && llm.level !== "none" && quotesOk;
+  const aiLevel = llm.level === "high" ? "high" : "medium";
+  const signal = aiSignal(llm);
+  const ai = { risky: aiRisky, level: aiRisky ? aiLevel : "none", confidence, signal, reason: sanitizeReason(llm.reason, "") };
+
+  if (rules.kind === "risk") {
+    if (aiRisky) {
+      const level = LEVEL_RANK[aiLevel] > LEVEL_RANK[rules.level] ? aiLevel : rules.level;
+      const signals = rules.signals.includes(signal) || signal === "ai_other" ? rules.signals : rules.signals.concat(signal);
+      return { ...rules, level, signals, reason: rules.reason, aiReason: ai.reason || null, llm: "confirmed", ai, llmMs };
+    }
+    // The model may silence an obvious rules false positive, only with high confidence.
+    if (llm.risky === false && confidence != null && confidence >= cfg.downgradeConfidence) {
+      return { ...silent("llm_disagrees", { signals: rules.signals, evidence: rules.evidence, deal: rules.deal, llm: "downgraded" }), ai, llmMs };
+    }
+    return { ...rules, llm: "disagreed_low_confidence", ai, llmMs };
+  }
+
+  // Rules are silent. The model can add a card.
+  if (!aiRisky || (confidence != null && confidence < cfg.addConfidence)) {
+    return { ...rules, llm: "agreed_silent", ai, llmMs };
+  }
+  // A bank or service sending the user a code and warning them never to share it is the normal,
+  // safe pattern. Without a rules hit, the AI alone may not turn that notice into a card.
+  if (signal === "credential_request" && CODE_NOTICE.test(transcript.them) && !CODE_ASK.test(transcript.them)) {
+    return { ...rules, llm: "agreed_silent", ai, llmMs };
+  }
+  if (rules.silentReason === "veto" && !(aiLevel === "high" && confidence != null && confidence >= cfg.vetoOverrideConfidence)) {
+    return { ...rules, llm: "agreed_silent", ai, llmMs };
+  }
+  const signals = [signal];
+  return {
+    kind: "risk",
+    level: aiLevel,
+    reason: ai.reason || templateFor(signals),
+    signals,
+    evidence: aiEvidence(quotes, raw),
+    deal: rules.deal || emptyDeal(),
+    llm: "added",
+    source: "ai",
+    ai,
+    llmMs,
+    rulesVersion: atomsApi().RULES_VERSION
+  };
 }
 
 globalThis.pbPayRisk = {
@@ -319,5 +473,7 @@ globalThis.pbPayRisk = {
   templateFor,
   sanitizeReason,
   evidenceIsSubstring,
-  TEMPLATES
+  transcriptOf,
+  TEMPLATES,
+  DEFAULTS
 };
