@@ -15,8 +15,8 @@ try {
 }
 
 const root = path.resolve(__dirname, "..", "..");
-const extension = path.join(root, "extension");
-const shots = path.join(root, "shots", "ai-live");
+const extension = process.env.EXT_DIR ? path.resolve(process.env.EXT_DIR) : path.join(root, "extension");
+const shots = process.env.SHOTS_DIR ? path.resolve(process.env.SHOTS_DIR) : path.join(root, "shots", "ai-live");
 const origin = "https://paybrake-demo.spbabinov.workers.dev";
 const fallbackChrome = "/home/box/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
