@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome to PayBrake</title>
+<link rel="stylesheet" href="welcome.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <img src="icons/icon128.png" width="56" height="56" alt="">
+    <div>
+      <p class="mark">PayBrake</p>
+      <h1>You're all set</h1>
+    </div>
+  </header>
+
+  <section class="panel hero" aria-labelledby="what">
+    <h2 id="what">PayBrake stops you before you pay a scammer</h2>
+    <p>When a seller in a marketplace chat pushes you to pay in a risky way, for example a bank transfer or "Friends and Family" before you have seen the item, PayBrake shows a warning right in the chat.</p>
+    <p>It explains what looks wrong and offers a safer way to pay: a PayPal order that may come with Buyer Protection.</p>
+    <a class="btn big" id="demo" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1" target="_blank" rel="noopener">Try the demo store</a>
+    <p class="small">The demo store is a pretend marketplace. Fictional people, test orders, no real money.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="try">
+    <h2 id="try">What to try (about a minute)</h2>
+    <ol class="steps">
+      <li>In the demo store, the <b>bike</b> chat is open. A PayBrake card pops up in the chat and says <b>High risk</b>.</li>
+      <li>Click <b>Move to protected PayPal order</b>. PayBrake makes a test order.</li>
+      <li>Click <b>Open approval</b>, then <b>Approve (mock)</b>. Go back to the chat tab and click <b>I approved it, capture</b>.</li>
+      <li>Bonus: open the <b>camera</b> chat and click <b>Pay anyway</b>. PayBrake lets you, and notes it on this device.</li>
+    </ol>
+  </section>
+
+  <section class="panel quiet" aria-labelledby="more">
+    <h2 id="more">Good to know</h2>
+    <ul>
+      <li>Chats are checked inside your browser. Chat messages are not uploaded. When you make an order, only the order details (item, price, seller email) go to the test server.</li>
+      <li>This test version only works on the demo store.</li>
+      <li>Found a bug or something confusing? <a id="bug" href="https://github.com/lamapony/paybrake/issues/new?template=bug_report.md" target="_blank" rel="noopener">Report it on GitHub</a>.</li>
+      <li>Click the PayBrake icon in the toolbar to open this page again. <a href="options.html">Settings</a></li>
+    </ul>
+  </section>
+</main>
+<script src="lib/config.js"></script>
+<script src="welcome.js"></script>
+</body>
+</html>

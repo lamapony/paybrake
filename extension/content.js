@@ -7,7 +7,7 @@
   if (globalThis.__paybrakeContent) return;
   globalThis.__paybrakeContent = true;
 
-  const FRIENDLY = "Could not reach PayBrake. Start the backend and try again.";
+  const FRIENDLY = "Could not reach the PayBrake server. Check your internet connection and try again.";
   const PAID = "Paid with PayPal Goods & Services (sandbox). Buyer Protection may be eligible; see PayPal terms.";
   const ANYWAY = "You chose to pay anyway. Logged on this device.";
 
