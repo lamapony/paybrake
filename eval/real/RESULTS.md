@@ -309,6 +309,43 @@ On the 1,268 rows where OpenRouter did answer: Typesafe P 0.98 / R 0.65 / FPR 0.
 Reproduce: `LLM_PROVIDER=typesafe TYPESAFE_API_KEY=… node eval/real/run-llm-all.mjs --split=dev --n=all --sweep`, then
 `--split=test --n=all`. Add `TYPESAFE_MODEL=jev-1.13.0` to compare versions. Results: `results/llm-all-v3-test-all-typesafe-jev-1.14.0.json`.
 
+## Try: extra Typesafe questions for SMS prize spam and Discord lures (26 Oct). Rejected; setup unchanged
+
+Goal: catch more SMS prize/premium-rate spam and Discord free-bait lures without more false alarms. The rule set beforehand was:
+iterate on dev only, measure test once, and keep the change only if test false alarms stay ≤ 13 (1.5%) and precision ≥ 0.97.
+
+**Dev work** (`eval/real/exp-typesafe-questions.mjs`, raw probabilities scored offline, then confirmed with the real code path):
+
+| variant (on top of the pinned `risky` question) | dev P | dev R | dev FP |
+|---|---|---|---|
+| current (risky only, add bar 0.5) | 0.972 | 0.688 | 14 |
+| risky question rewritten to name prize/premium/bait (`risky2`) | 0.975 | 0.825 | 15 |
+| + `premium` (call/text a premium-rate number or short code) ≥ 0.5 | 0.975 | 0.773 | 14 |
+| + `prize` (won/selected, call or text to claim) ≥ 0.7 | 0.974 | 0.742 | 14 |
+| + `lure` (free Nitro/giveaway/download behind a link) ≥ 0.5 | 0.971 | 0.789 | 17 |
+| + `lure2` (same, but official company pages don't count) ≥ 0.7 | 0.977 | 0.846 (with premium + prize) | 14 |
+| **picked: premium ≥ 0.5, prize ≥ 0.7, lure2 ≥ 0.7, each can only raise p(risky)** | **0.978** | **0.854** | **14** |
+
+The one extra dev false alarm in `risky2`/`lure` was a real discord.com blog link about free Nitro, which is why `lure2` excludes official pages.
+
+**Test (run once):**
+
+| test split, rules v3 + Typesafe jev-1.14.0 | P | R | F1 | false alarms |
+|---|---|---|---|---|
+| current setup | 0.975 | 0.698 | 0.814 | 13 (1.5%) |
+| + extra questions | 0.977 | 0.846 | 0.907 | **14 (1.6%)**: fails the ≤ 13 bar |
+
+Per dataset with the extras: SMS spam recall 0.45 → 0.83 (96 more caught, 0 false alarms), Discord 0.47 → 0.55 (13 more,
+false alarms 2 → 1), scam dialogues and ScamGuardBench unchanged in recall. The net +1 false alarm is two new ScamGuardBench
+"legit" hits, minus one Discord one. Both new hits look like label noise in that dataset (spam marked legit):
+`uci_sms-03443` "Get a FREE mobile video player FREE movie. To collect text GO to 89105…" and `phishing_email-07218`,
+a cheap pirated-software email with a link.
+
+Decision: rejected under the agreed bar, so the production questions stay as before. The variant is saved as
+`eval/real/experiments/typesafe-extra-questions.patch` (classify.js + harness + one unit test; `git apply` to re-enable).
+Results: `results/llm-all-v3-dev-all-typesafe-jev-1.14.0-extra.json`, `results/llm-all-v3-test-all-typesafe-jev-1.14.0-extra-REJECTED.json`.
+The test split has now been seen by this variant, so any further tuning needs a fresh holdout.
+
 ## Error analysis (v1 rules; examples from the dev split unless marked)
 
 **10 representative false negatives**
