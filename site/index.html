@@ -580,7 +580,7 @@ footer a:hover{color:#9ccfff}
             <figure style="margin:0">
               <div class="shot"><img src="img/options.webp" width="768" height="1095" loading="lazy" decoding="async"
                 alt="PayBrake settings page: Backend URL field set to the hosted test server https://paybrake-demo.spbabinov.workers.dev with a note that it is test orders only, buttons 'Use test server' and 'Use localhost:8787', a checked box 'AI check on all chats (on by default in this demo build)' with a plain explanation of what is masked and sent, a status line saying the hosted test server has no AI provider so the AI check is off there and nothing is sent, an unchecked 'Debug HUD on chat pages' box, a Save button, and an Override log with Download JSON and Clear buttons showing one example entry: override, high, friends_family and upfront_deposit, 'Send 500 kr deposit via PayPal Friends &amp; Family to hold it'."></div>
-              <figcaption><b><span class="fn">C1</span>Settings</b>Backend URL (hosted test server by default), the "AI check on all chats" toggle (on by default) with what gets masked and sent, a line that shows whether this server has AI (the hosted test server doesn't), debug HUD, and the override log. Build: branch <code>eval-real-scams</code>.</figcaption>
+              <figcaption><b><span class="fn">C1</span>Settings</b>Backend URL (hosted test server by default), the "AI check on all chats" toggle (on by default) with what gets masked and sent, a line that shows whether this server has AI, debug HUD, and the override log. Build: branch <code>eval-real-scams</code>.</figcaption>
             </figure>
           </li>
           <li class="frame">
@@ -606,13 +606,13 @@ footer a:hover{color:#9ccfff}
       <div class="evals" aria-labelledby="eval-real-h">
         <div>
           <h3 id="eval-real-h">On public scam and normal messages</h3>
-          <p>Held-out test split of 1,573 messages from four public datasets: real SMS, real Discord chat, and two synthetic sets (phone-scam dialogues and ScamGuardBench). <strong>None of them are marketplace chats.</strong> Rules v3 and the AI check (gpt-4o-mini) were tuned on a separate dev split. The AI account ran out of credit during the run, so 305 of the 1,573 test messages were scored with rules only, as the extension does when the AI doesn't answer.</p>
+          <p>Held-out test split of 1,573 messages from four public datasets: real SMS, real Discord chat, and two synthetic sets (phone-scam dialogues and ScamGuardBench). <strong>None of them are marketplace chats.</strong> Rules v3 and the AI check (Typesafe <code>jev-1.14.0</code>, a yes/no decision model) were tuned on a separate dev split, then measured once on test. Every test message got an AI answer.</p>
         </div>
         <ul class="nums">
-          <li><span class="v">~85%</span><span class="k">of scam messages got a card, rules + AI check (606 / 713)</span></li>
-          <li><span class="v">~4.5%</span><span class="k">of normal messages got a card, rules + AI check (39 / 860)</span></li>
+          <li><span class="v">~85%</span><span class="k">of scam messages got a card, rules + AI check (603 / 713)</span></li>
+          <li><span class="v">~1.6%</span><span class="k">of normal messages got a card, rules + AI check (14 / 860; 2 of the 14 are spam the dataset labels as normal)</span></li>
           <li><span class="v">46%</span><span class="k">of scam messages got a card from the rules alone, with 0.8% of normal messages flagged</span></li>
-          <li><span class="v">16%</span><span class="k">normal messages flagged on ScamGuardBench's tricky "looks scary but legit" set</span></li>
+          <li><span class="v">10%</span><span class="k">normal messages flagged on ScamGuardBench's tricky "looks scary but legit" set (11 / 110)</span></li>
         </ul>
       </div>
 
@@ -625,7 +625,7 @@ footer a:hover{color:#9ccfff}
           <li><span class="v">30</span><span class="k">synthetic chats we wrote</span></li>
           <li><span class="v">16 / 16</span><span class="k">risky chats got a card (recall 1.0)</span></li>
           <li><span class="v">0 / 14</span><span class="k">safe chats got a card (precision 1.0)</span></li>
-          <li><span class="v">143</span><span class="k">offline tests (npm test, branch eval-real-scams)</span></li>
+          <li><span class="v">150</span><span class="k">offline tests (npm test, branch eval-real-scams)</span></li>
         </ul>
       </div>
     </div>
@@ -670,12 +670,12 @@ footer a:hover{color:#9ccfff}
         <article class="panel ai">
           <h3>AI check on all chats</h3>
           <ul>
-            <li>Backend <code>/api/classify</code> calls an LLM through OpenRouter (default <code>openai/gpt-4o-mini</code>, configurable) or any OpenAI-compatible endpoint, temperature 0, JSON output.</li>
+            <li>Backend <code>/api/classify</code> asks Typesafe's decision model (<code>jev-1.14.0</code>, pinned) typed yes/no and pick-one questions: is the chat risky, plus extra checks for prize claims, premium-rate numbers and free-bait links. OpenRouter or any OpenAI-compatible endpoint can still be configured instead.</li>
             <li><strong>Runs on every chat</strong>, not only after the rules fire, so it <strong>can add a card</strong> the rules missed. It can remove a rules card only when it is very sure (confidence 0.85 or more).</li>
             <li>Every evidence quote must be a verbatim substring of the other person's messages, or it is ignored.</li>
             <li>No answer within 6 seconds, or an error: the rules result stands and the card says <strong>"AI check unavailable"</strong>.</li>
-            <li><strong>On by default</strong> in this demo build, and you can turn it off in Settings. <strong>Not active on the hosted demo</strong>, which has no AI key: there the card says "AI check off (mock server)".</li>
-            <li>In review on branch <code>eval-real-scams</code>; not in the <code>v0.2.0-test.2</code> download yet. It costs about $0.10 per 1,000 checks, and an answer takes about 2 seconds (3.5 s at p95).</li>
+            <li><strong>On by default</strong> in this demo build, and you can turn it off in Settings. <strong>Active on the hosted demo</strong> too (Typesafe), with a size cap and a per-IP rate limit.</li>
+            <li>In review on branch <code>eval-real-scams</code>; not in the <code>v0.2.0-test.2</code> download yet. It costs about $0.07 per 1,000 checks, and an AI answer comes back in about 0.07 s (0.12 s at p95), measured from our server.</li>
           </ul>
         </article>
         <article class="panel priv">
@@ -684,7 +684,7 @@ footer a:hover{color:#9ccfff}
             <li>The rules run in the extension, on your device.</li>
             <li>With the AI check on (the default in this demo build), each chat goes to your configured server, which passes it to its AI provider. Before it leaves the browser, emails, phone numbers, card numbers, IBANs (all but the last 4), CPR and ID numbers, and one-time codes are masked. The other person's messages are sent, plus your newest message for context.</li>
             <li><strong>Names, street addresses and other free text are not masked.</strong> The masking is pattern-based and can miss things.</li>
-            <li>On a server without AI, such as the hosted test server, no chat text is sent. With the AI check off, no chat text leaves the browser.</li>
+            <li>The hosted test server has AI (Typesafe) and masks the text again before passing it on. On a server without AI, no chat text is sent. With the AI check off, no chat text leaves the browser.</li>
             <li>"Switch to a PayPal order" sends item, amount, currency, seller email and the verdict to the backend.</li>
             <li>Secrets live only in <code>backend/.env</code>, never in the extension.</li>
             <li>The override log stays in <code>chrome.storage</code> on your device (max 200 entries). You can download or clear it.</li>
@@ -697,7 +697,7 @@ footer a:hover{color:#9ccfff}
             <li>Chrome MV3 extension, plain JS, no build step.</li>
             <li>The card is rendered in a Shadow DOM.</li>
             <li>Node 20 backend on <code>node:http</code>.</li>
-            <li>Hosted demo: a Cloudflare Worker in mock mode only. No PayPal keys, no AI key. Test orders are kept 24 hours and pages are sent with noindex.</li>
+            <li>Hosted demo: a Cloudflare Worker with PayPal in mock mode (no PayPal keys) and the Typesafe AI check. Test orders are kept 24 hours and pages are sent with noindex.</li>
             <li>MIT license.</li>
           </ul>
         </article>
@@ -705,7 +705,7 @@ footer a:hover{color:#9ccfff}
           <h3>Limits</h3>
           <ul>
             <li>English and Danish phrases only.</li>
-            <li>The AI check flags some normal messages: about 4.5% on our public test data, more on bank and delivery notices.</li>
+            <li>The AI check flags some normal messages: about 1.6% on our public test data, more on family money requests and bank notices.</li>
             <li>Works on our demo page (<code>data-pb-*</code> attributes). No adapters for real marketplaces yet.</li>
             <li>Sandbox only. No real money.</li>
             <li>Local mock orders live in memory. The hosted demo keeps test orders for 24 hours.</li>
