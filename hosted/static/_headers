@@ -2,3 +2,8 @@
   X-Robots-Tag: noindex, nofollow, noarchive
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
+
+/paybrake-extension.zip
+  Content-Type: application/zip
+  Content-Disposition: attachment; filename="paybrake-extension.zip"
+  Cache-Control: no-cache
