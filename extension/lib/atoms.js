@@ -28,6 +28,8 @@ const ATOMS = [
   { id: "fee_via_link", role: "act", strength: "strong", standalone: true, receipt: "Fee to pay before you get something" },
   { id: "impersonation", role: "act", strength: "weak", receipt: "Claims to be a bank, authority or platform" },
   { id: "account_threat", role: "act", strength: "weak", receipt: "Threat to close or lock your account" },
+  // v3: the overpay-and-refund trick (the "accidental" overpayment, then refund the difference).
+  { id: "overpayment_refund", role: "act", strength: "strong", receipt: "Overpay-and-refund trick" },
   { id: "pay_on_collection", role: "veto", strength: "veto", receipt: "Pay on collection or checkout" },
   { id: "goods_and_services_agreed", role: "veto", strength: "veto", receipt: "Goods & Services agreed" },
   // Not a rule: the chip shown when only the AI check flagged the chat.
@@ -149,6 +151,13 @@ const RULES = [
   { id: "account_threat", re: "(?:computer|pc|laptop|device|phone|system)\\s+(?:has|have|is|was)\\s+(?:been\\s+)?(?:\\d+\\s+)?(?:a\\s+)?(?:virus(?:es)?|malware|infected|hacked|compromised)|virus(?:es)?\\s+(?:infection\\s+)?detected|files\\s+(?:are|will\\s+be)\\s+locked", gate: "negation" },
   { id: "account_threat", re: "(?:suspicious|unusual|unauthori[sz]ed)\\s+(?:activity|activities|login|log-?in|access|transactions?|sign-?in)", gate: "negation" },
 
+  // v3: overpay-and-refund. Both an overpay cue and a refund-the-difference ask must be present.
+  { id: "overpayment_refund", re: "refund[^\\n]{0,40}?(?:the\\s+)?(?:extra|difference|overpay(?:ment)?|rest|amount)", gate: "overpay" },
+  { id: "overpayment_refund", re: "(?:send|transfer|pay|give)\\s+(?:me\\s+)?(?:back|the\\s+extra|the\\s+difference)[^\\n]{0,30}?(?:extra|difference|rest|overpay)", gate: "overpay" },
+  { id: "overpayment_refund", re: "overpa(?:y|id|ying|yment)", gate: "overpay" },
+  { id: "overpayment_refund", re: "(?:too\\s+much|instead\\s+of)[^\\n]{0,40}?(?:by\\s+mistake|mistake)", gate: "overpay" },
+  { id: "overpayment_refund", re: "betalt[^\\n]{0,30}?for\\s+meget|overf\u00f8rt[^\\n]{0,30}?for\\s+meget", gate: "overpay" },
+
   { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?:\\s+it\\s+up)?", gate: "none" },
   { id: "pay_on_collection", re: "when\\s+you\\s+pick(?:\\s+it\\s+up)?", gate: "none" },
   { id: "pay_on_collection", re: "cash\\s+on\\s+(?:pick\\s*up|collection)", gate: "none" },
@@ -199,6 +208,28 @@ function amountNear(text, start, end, window) {
 function phoneNear(text, start, end) {
   const slice = text.slice(Math.max(0, start - 48), Math.min(text.length, end + 48));
   return /\+?\d[\d\s]{6,}\d/.test(slice);
+}
+
+const REFUND_CUE = /(?:refund|send\s+(?:me\s+)?(?:back|the\s+extra|the\s+difference)|pay\s+(?:me\s+)?back|transfer\s+back|return\s+(?:the\s+|me\s+the\s+)?(?:extra|difference)|give\s+(?:me\s+)?back|tilbagebetale|refundere)/iu;
+const OVERPAY_CUE = /(?:overpa(?:y|id|ying|yment)|too\s+much|instead\s+of|by\s+mistake|accidentally|for\s+meget|ved\s+en\s+fejl)/iu;
+
+// The overpay-and-refund trick needs both halves: an overpay cue and a refund-the-difference ask.
+function overpayAllowed(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  const window = text.slice(Math.max(0, start - 160), Math.min(text.length, end + 160));
+  return REFUND_CUE.test(window) && OVERPAY_CUE.test(window);
+}
+
+// Tags name a specific trick behind a generic signal, so the card explains the real pattern.
+// They never raise a level on their own; they only pick card wording once a card is due.
+const GIFTCARD_PAY = /(?:pay|paid|payment|paying|buy|bought|purchase|send|sent|with|via|using|only\s+way|k\u00f8b|betal)[^.!?\n]{0,60}?(?:gift\s*cards?|gavekort|(?:steam|google\s*play|itunes|apple|amazon|ebay)\s+(?:gift\s+)?cards?)|(?:gift\s*cards?|gavekort)[^.!?\n]{0,60}?(?:pay|paid|payment|buy|send|only\s+way)/iu;
+
+function riskTags(text) {
+  const source = String(text ?? "");
+  const tags = [];
+  if (OVERPAY_CUE.test(source) && REFUND_CUE.test(source)) tags.push("overpayment_refund");
+  if (GIFTCARD_PAY.test(source)) tags.push("gift_card");
+  return tags;
 }
 
 function depositRejected(text, start, end) {
@@ -315,6 +346,7 @@ function allow(rule, text, start, end) {
     if (negatedBefore(text, start)) return false;
     return payWordNear(text, start, end, 80);
   }
+  if (rule.gate === "overpay") return overpayAllowed(text, start, end);
   if (rule.gate === "giftcard") {
     if (negatedBefore(text, start)) return false;
     // A gift card offered as a prize or reward is not a request to pay with one.
@@ -418,5 +450,6 @@ globalThis.pbAtoms = {
   findAtoms,
   hasPayWord,
   suspiciousHost,
-  goodsHit
+  goodsHit,
+  riskTags
 };

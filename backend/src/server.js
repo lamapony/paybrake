@@ -129,7 +129,7 @@ function fail(res, error) {
   return send(res, 500, { error: "internal" });
 }
 
-function createHandler(env = {}, deps = {}) {
+export function createHandler(env = {}, deps = {}) {
   if (!env.ALLOWED_ORIGINS) {
     env = Object.assign({}, env, {
       ALLOWED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"
@@ -168,7 +168,9 @@ function createHandler(env = {}, deps = {}) {
           send(res, 503, { error: "llm_off" });
           return;
         }
-        const verdict = await classifyText(body.text, env, fetchImpl);
+        // The caller may send its rules level; the AI may lower it but never raise it.
+        const rulesLevel = body.rulesLevel === "high" || body.rulesLevel === "medium" ? body.rulesLevel : "";
+        const verdict = await classifyText(body.text, rulesLevel ? { ...env, PAYBRAKE_RULES_LEVEL: rulesLevel } : env, fetchImpl);
         send(res, 200, verdict);
         return;
       }

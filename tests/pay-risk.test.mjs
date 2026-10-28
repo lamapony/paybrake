@@ -210,3 +210,95 @@ test("banned promise language in a model reason is dropped", async () => {
   assert.match(verdict.reason, /may have no way/i);
   assert.equal(/you are protected/i.test(verdict.reason), false);
 });
+
+// ---- v3 fixes: the AI can never raise the level; trick-specific advice ----
+
+test("llmMode all: the AI cannot raise a medium rules level to high", async () => {
+  // Chat 5 shape: a lone strong credential_request atom is medium by the rules.
+  const text = "Before I can send the bike, they need to verify you are a real buyer. I just sent a 6-digit code to your phone, please send me the code here so I can confirm.";
+  const verdict = await detect(text, {}, {
+    llmMode: "all",
+    askLlm: async () => ({ risky: true, level: "high", confidence: 0.97, signal: "credential_request", reason: "x", evidence: ["please send me the code here so I can confirm"] })
+  });
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "medium", "AI raised a medium rules level");
+  assert.equal(verdict.rulesLevel, "medium");
+});
+
+test("roleplay chats 2, 4 and 5 stay medium when the AI says high", async () => {
+  const chats = [
+    ["friends and family", "Please send it as friends and family, not goods and services. G&S takes fees and I'm only a private seller. 2500 kr to my PayPal, then I'll ship it tomorrow.", "friends and family"],
+    ["off-platform", "Facebook takes a long time to verify buyers. Can you pay me on WhatsApp instead? MobilePay 2500 kr to +45 22 33 44 55 and I'll keep it for you.", "MobilePay"],
+    ["verification code", "Before I can send the bike, Facebook needs to verify you are a real buyer. I just sent a 6-digit code to your phone, please send me the code here so I can confirm.", "please send me the code here so I can confirm"]
+  ];
+  for (const [name, text, quote] of chats) {
+    const verdict = await detect(text, {
+      listingTitle: "Used road bike",
+      listingPrice: "2,500 kr",
+      messages: [
+        { from: "buyer", text: "Hi! Is the road bike still available?" },
+        { from: "seller", text }
+      ]
+    }, {
+      llmMode: "all",
+      askLlm: async () => ({ risky: true, level: "high", confidence: 0.99, signal: "off_platform", reason: "Pay immediately by bank transfer.", evidence: [quote] })
+    });
+    assert.equal(verdict.kind, "risk", name);
+    assert.equal(verdict.rulesLevel, "medium", name + " rules");
+    assert.equal(verdict.level, "medium", name + " final");
+  }
+});
+
+test("a verification-code chat does not become a PayPal order when the AI adds a payment signal", async () => {
+  const text = "Before I can send the bike, Facebook needs to verify you are a real buyer. I just sent a 6-digit code to your phone, please send me the code here so I can confirm.";
+  const verdict = await detect(text, {
+    listingTitle: "Used road bike",
+    listingPrice: "2,500 kr",
+    sellerEmail: "chris@example.com",
+    messages: [
+      { from: "buyer", text: "Hi! Is the road bike still available?" },
+      { from: "seller", text }
+    ]
+  }, {
+    llmMode: "all",
+    askLlm: async () => ({ risky: true, level: "high", confidence: 0.99, signal: "off_platform", reason: "Switch to a PayPal order now.", evidence: ["please send me the code here so I can confirm"] })
+  });
+  assert.equal(verdict.level, "medium");
+  assert.deepEqual(verdict.rulesSignals, ["credential_request"]);
+  assert.equal(payRisk.isPaymentRisk(verdict), false);
+  assert.match(verdict.reason, /never share/i);
+  assert.equal(/switch to a paypal order/i.test(verdict.reason), false);
+});
+
+test("llmMode all: the AI can still lower a high rules level", async () => {
+  const verdict = await detect(FF, {}, {
+    llmMode: "all",
+    askLlm: async () => ({ risky: true, level: "medium", confidence: 0.9, signal: "friends_family", reason: "x", evidence: ["Friends & Family"] })
+  });
+  assert.equal(verdict.level, "medium");
+  assert.equal(verdict.rulesLevel, "high");
+});
+
+test("overpayment chat names the overpay-and-refund trick", async () => {
+  const text = "I've paid you 3000 kr instead of 2500 by mistake! To receive the payment confirm your details through this link: paypal-secure-verify.example.com/claim. Then please refund the extra 500 kr by bank transfer.";
+  const verdict = await detect(text, {});
+  assert.equal(verdict.kind, "risk");
+  assert.ok(verdict.signals.includes("overpayment_refund"), verdict.signals.join(","));
+  assert.match(verdict.reason, /overpay/i);
+  assert.match(verdict.reason, /refund/i);
+});
+
+test("gift-card chat names the gift card, not a plain direct transfer", async () => {
+  const text = "Today only: if you pay half now with a gift card (Amazon or Steam) I'll hold it for you. Others are interested and the first to pay gets it.";
+  const verdict = await detect(text, {});
+  assert.equal(verdict.kind, "risk");
+  assert.match(verdict.reason, /gift card/i);
+  assert.equal(/direct transfer/i.test(verdict.reason), false);
+});
+
+test("verification-code advice says never share the code", async () => {
+  const text = "Before I can send the bike, they need to verify you are a real buyer. I just sent a 6-digit code to your phone, please send me the code here so I can confirm.";
+  const verdict = await detect(text, {});
+  assert.match(verdict.reason, /never share/i);
+  assert.equal(/switch to a paypal order/i.test(verdict.reason), false);
+});

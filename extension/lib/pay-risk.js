@@ -3,8 +3,10 @@
 //   llmMode "confirm" (default, v1/v2 behaviour): the model is only asked after a rules hit
 //     and can only confirm or lower it.
 //   llmMode "all" (v3, "AI check on all chats"): the model is asked about every chat that
-//     is long enough. Either side can raise a card. The model can silence a rules hit only
-//     with high confidence. A timeout or error falls back to rules only (llm "unavailable").
+//     is long enough. Either side can raise a card (the AI can add one where the rules are
+//     silent). The AI never raises the level of a rules card: it may only lower it. The model
+//     can silence a rules hit only with high confidence. A timeout or error falls back to
+//     rules only (llm "unavailable").
 // Only the other person's lines raise signals: the user's own line ("buyer") never does.
 
 // Split so a source grep for the banned phrases does not match this file.
@@ -21,7 +23,9 @@ const TEMPLATES = {
   off: "Off-platform payment: a transfer outside PayPal checkout is hard to reverse if the item never arrives.",
   deposit: "Upfront deposit: if the item never arrives, you may have no way to get your money back.",
   remote: "Remote-access app: it lets a stranger control your device and your bank app. Do not install it.",
-  cred: "Asks for card details, a code or a password: no real buyer, seller or bank needs these.",
+  cred: "Never share the code or card details with anyone: your bank, PayPal or a real buyer never asks.",
+  overpayment_refund: "Overpayment refund trick: the buyer 'accidentally' overpays, then asks you to refund the difference.",
+  gift_card: "Gift card payment: no real seller wants gift cards, and the code cannot be taken back once read out.",
   fee: "A fee to pay before you get something: fake delivery, customs and prize messages use this.",
   prize: "Prize or fee bait: real prizes never ask you to pay or text a premium number.",
   bait: "Free-gift bait: free Nitro, giveaways and downloads behind a link are a common scam.",
@@ -32,6 +36,41 @@ const TEMPLATES = {
 };
 
 const LEVEL_RANK = { none: 0, medium: 1, high: 2 };
+
+// Signals that mean the chat is pushing a payment the user could route through a PayPal
+// order. A card whose signals are account-safety only (a code, a remote-access tool, a
+// bank or support impostor) has nothing to pay, so it offers different advice and no
+// "Switch to a PayPal order" button.
+const PAYMENT_SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "fee_via_link", "overpayment_refund"];
+const GENERIC_SIGNALS = ["ai_other", "other"];
+
+// The final level is the lower of the rules level and the AI level: the AI may lower a
+// rules card or leave it as it is, but it must never raise it above the rules level.
+function clampLevel(rulesLevel, aiLevel) {
+  const rulesRank = LEVEL_RANK[rulesLevel] || 0;
+  const aiRank = LEVEL_RANK[aiLevel] || 0;
+  return aiRank < rulesRank ? aiLevel : rulesLevel;
+}
+
+// The PayPal action follows the rules signals. The AI may add a chip, but that chip must
+// not turn a code or remote-access warning into "Switch to a PayPal order".
+function decisionSignals(verdict) {
+  if (verdict && Array.isArray(verdict.rulesSignals) && verdict.rulesSignals.length) return verdict.rulesSignals;
+  return verdict && Array.isArray(verdict.signals) ? verdict.signals : [];
+}
+
+function isPaymentRisk(verdict) {
+  if (!verdict || verdict.kind !== "risk") return false;
+  const signals = decisionSignals(verdict);
+  if (signals.some((id) => PAYMENT_SIGNALS.includes(id))) return true;
+  // A card the AI added with a generic signal may still be a payment scam: fall back to a
+  // concrete amount + currency. A named account-safety signal (a code, a remote-access tool,
+  // an impostor) never gets the PayPal action, even when the listing has a price.
+  const generic = signals.length === 0 || signals.some((id) => GENERIC_SIGNALS.includes(id));
+  if (!generic) return false;
+  const deal = verdict.deal || {};
+  return Number.isFinite(deal.amount) && deal.amount > 0 && Boolean(deal.currency);
+}
 
 function clean(value) {
   const tidy = globalThis.pbTidy;
@@ -57,15 +96,19 @@ function emptyDeal() {
   return { item: null, amount: null, currency: null, depositAmount: null, payeeEmail: null };
 }
 
-function templateFor(signals) {
+function templateFor(signals, tags) {
   const has = (id) => signals.includes(id);
+  const tag = (id) => Array.isArray(tags) && tags.includes(id);
   let reason = TEMPLATES.generic;
   if (has("remote_access")) reason = TEMPLATES.remote;
+  else if (has("overpayment_refund")) reason = TEMPLATES.overpayment_refund;
   else if (has("credential_request")) reason = TEMPLATES.cred;
   else if (has("prize_bait")) reason = TEMPLATES.prize;
   else if (has("free_bait")) reason = TEMPLATES.bait;
   else if (has("fee_via_link")) reason = TEMPLATES.fee;
   else if (has("phishing_link")) reason = TEMPLATES.link;
+  // A gift-card ask must be named as such, not described as a plain "direct transfer".
+  else if (tag("gift_card")) reason = TEMPLATES.gift_card;
   else if (has("friends_family") && has("upfront_deposit")) reason = TEMPLATES.ff_deposit;
   else if (has("friends_family")) reason = TEMPLATES.ff;
   else if (has("upfront_deposit") && has("off_platform")) reason = TEMPLATES.deposit_off;
@@ -149,10 +192,7 @@ function applyLlm(rules, llm, text) {
       llm: "confirmed"
     });
   }
-  const rank = { high: 2, medium: 1 };
-  const rulesRank = rank[rules.level] || 1;
-  const llmRank = rank[llm.level] || rulesRank;
-  const level = Math.min(rulesRank, llmRank) >= 2 ? "high" : "medium";
+  const level = clampLevel(rules.level, llm.level === "high" ? "high" : "medium");
   const deal = { ...rules.deal };
   if (typeof llm.item === "string" && llm.item.trim() && evidenceIsSubstring(llm.item, text) && !deal.item) {
     deal.item = llm.item.trim();
@@ -168,6 +208,7 @@ function applyLlm(rules, llm, text) {
   return {
     ...rules,
     level,
+    rulesLevel: rules.level,
     reason: sanitizeReason(llm.reason, rules.reason),
     deal,
     llm: "confirmed"
@@ -209,7 +250,7 @@ async function detect(text, ctx = {}, options = {}) {
     ? extract.extractDeal(raw, ctx, actHits.map((hit) => ({ ...hit, start: hit.start, end: hit.end, atom: hit.atom })))
     : emptyDeal();
 
-  const rules = rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal });
+  const rules = rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal, messages });
   const ask = options && options.askLlm;
   if (typeof ask !== "function") return rules;
   if (options.llmMode === "all") return combineAll(rules, raw, messages, ask, options);
@@ -217,7 +258,7 @@ async function detect(text, ctx = {}, options = {}) {
   return confirmOnly(rules, raw, ask, options);
 }
 
-function rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal }) {
+function rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal, messages }) {
   if (vetoHit) return silent("veto", { signals, evidence, deal });
   if (!actHits.length) return silent("no_atom", { signals, evidence, deal });
   const meta = Object.fromEntries(api.ATOMS.map((atom) => [atom.id, atom]));
@@ -236,11 +277,23 @@ function rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak
   } else if (impersonationCombo) level = "medium";
   if (!level) return silent("no_atom", { signals, evidence, deal });
 
+  // Tags name the specific trick behind a generic signal (a gift-card ask, the overpay-and-
+  // refund trick) so the card explains the real pattern instead of a plain "direct transfer".
+  const themText = (Array.isArray(messages) ? messages : [])
+    .filter((message) => message && message.from !== "buyer")
+    .map((message) => message.text)
+    .join("\n");
+  const tags = api.riskTags ? api.riskTags(themText) : [];
+
   return {
     kind: "risk",
     level,
-    reason: templateFor(signals),
+    reason: templateFor(signals, tags),
     signals,
+    // Frozen copy of the rules signals. combineAll may append an AI signal to `signals`;
+    // the PayPal action keeps using this list so the AI cannot change the advice.
+    rulesSignals: signals.slice(),
+    tags,
     evidence,
     deal,
     llm: "off",
@@ -348,9 +401,11 @@ async function combineAll(rules, raw, messages, ask, options) {
 
   if (rules.kind === "risk") {
     if (aiRisky) {
-      const level = LEVEL_RANK[aiLevel] > LEVEL_RANK[rules.level] ? aiLevel : rules.level;
+      // The AI may lower a rules level but must never raise it above the rules level.
+      const level = clampLevel(rules.level, aiLevel);
       const signals = rules.signals.includes(signal) || signal === "ai_other" ? rules.signals : rules.signals.concat(signal);
-      return { ...rules, level, signals, reason: rules.reason, aiReason: ai.reason || null, llm: "confirmed", ai, llmMs };
+      const tags = rules.tags || [];
+      return { ...rules, level, rulesLevel: rules.level, signals, tags, reason: rules.reason, aiReason: ai.reason || null, llm: "confirmed", ai, llmMs };
     }
     // The model may silence an obvious rules false positive, only with high confidence.
     if (llm.risky === false && confidence != null && confidence >= cfg.downgradeConfidence) {
@@ -378,11 +433,13 @@ async function combineAll(rules, raw, messages, ask, options) {
     return { ...rules, llm: "agreed_silent", ai, llmMs };
   }
   const signals = [signal];
+  const tags = atomsApi().riskTags ? atomsApi().riskTags(quotes.join("\n")) : [];
   return {
     kind: "risk",
     level: aiLevel,
-    reason: ai.reason || templateFor(signals),
+    reason: ai.reason || templateFor(signals, tags),
     signals,
+    tags,
     evidence: aiEvidence(quotes, raw),
     deal: rules.deal || emptyDeal(),
     llm: "added",
@@ -399,6 +456,9 @@ globalThis.pbPayRisk = {
   sanitizeReason,
   evidenceIsSubstring,
   transcriptOf,
+  clampLevel,
+  isPaymentRisk,
+  PAYMENT_SIGNALS,
   TEMPLATES,
   DEFAULTS
 };

@@ -13,10 +13,14 @@ async function askLlm(payload, options = {}) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
+    const body = { text: payload && payload.text != null ? payload.text : payload };
+    // Send the rules level so the server can cap the AI level (the AI never raises it).
+    const level = payload && payload.level;
+    if (level === "high" || level === "medium") body.rulesLevel = level;
     const res = await fetchImpl(base + "/api/classify", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text: payload && payload.text != null ? payload.text : payload }),
+      body: JSON.stringify(body),
       signal: ctrl.signal
     });
     const data = await res.json().catch(() => null);

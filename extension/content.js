@@ -10,6 +10,7 @@
   const FRIENDLY = "Could not reach the PayBrake server. Check your internet connection and try again.";
   const PAID = "Paid with PayPal Goods & Services (sandbox). Buyer Protection may be eligible; see PayPal terms.";
   const ANYWAY = "You chose to pay anyway. Logged on this device.";
+  const DISMISSED = "Card hidden. Nothing was sent or typed in the chat.";
 
   const SITES = [
     {
@@ -382,6 +383,18 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
 
+  function paymentRisk(verdict) {
+    const api = globalThis.pbPayRisk;
+    if (api && typeof api.isPaymentRisk === "function") return api.isPaymentRisk(verdict);
+    return true;
+  }
+
+  // A card the user has acted on (order created, paid, paid anyway, dismissed) must not be
+  // replaced by a later rescan or AI pass.
+  function isTerminal(state) {
+    return state === "created" || state === "paid" || state === "override" || state === "dismissed";
+  }
+
   function stopPoll(session) {
     if (session.poll) {
       clearInterval(session.poll);
@@ -392,7 +405,7 @@
   function startPoll(session) {
     stopPoll(session);
     session.poll = setInterval(async () => {
-      if (!session.orderId || session.state === "paid" || session.state === "override") {
+      if (!session.orderId || session.state === "paid" || session.state === "override" || session.state === "dismissed") {
         stopPoll(session);
         return;
       }
@@ -432,7 +445,7 @@
       const style = document.createElement("style");
       style.textContent = cssText;
       shadow.append(style);
-      shadow.append(session.state === "override" ? collapsedCard(session) : fullCard(session));
+      shadow.append(session.state === "override" || session.state === "dismissed" ? collapsedCard(session) : fullCard(session));
     } finally {
       leave();
     }
@@ -442,7 +455,7 @@
     const card = el("aside", "pb is-collapsed");
     card.id = "pb-card";
     card.dataset.pbRisk = (session.verdict && session.verdict.level) || "high";
-    const note = el("p", "pb-collapsed", ANYWAY);
+    const note = el("p", "pb-collapsed", session.state === "dismissed" ? DISMISSED : ANYWAY);
     note.tabIndex = -1;
     note.setAttribute("role", "status");
     card.append(note);
@@ -452,6 +465,7 @@
 
   function fullCard(session) {
     const verdict = session.verdict || {};
+    const isPayment = paymentRisk(verdict);
     const card = el("aside", "pb");
     card.id = "pb-card";
     card.dataset.pbRisk = verdict.level || "high";
@@ -464,8 +478,14 @@
     const badge = el("span", "risk-badge");
     badge.id = "pb-title";
     badge.append(badgeSvg());
-    badge.append(document.createTextNode(verdict.level === "medium" ? "Possible payment risk" : "High risk payment request"));
+    const long = el("span", "pb-headline-long", isPayment
+      ? (verdict.level === "medium" ? "Possible payment risk" : "High risk payment request")
+      : "Account safety risk");
+    const short = el("span", "pb-headline-short", isPayment ? "Payment risk" : "Account safety");
+    badge.append(long, short);
     top.append(badge);
+    // Narrow viewports: the level is shown as its own pill next to a short headline.
+    top.append(el("span", "pb-level", verdict.level === "medium" ? "Medium" : "High"));
     if (session.mode === "mock") top.append(el("span", "pb-tag mock", "mock mode"));
     else top.append(el("span", "pb-tag", "Checked just now"));
     // Visible AI state, so a rules-only card is never mistaken for an AI-checked one.
@@ -473,7 +493,19 @@
     else if (verdict.llm === "off_server") top.append(el("span", "pb-tag ai-off", "AI check off (mock server)"));
     else if (verdict.llm === "added" || verdict.llm === "confirmed") top.append(el("span", "pb-tag ai", "AI checked"));
 
+    // Collapsible details (chips, the seller-email field). Collapsed by default on a narrow
+    // viewport so the card stays small; always shown on desktop.
+    const detailsId = "pb-details";
+    const toggle = el("button", "pb-toggle");
+    toggle.type = "button";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-controls", detailsId);
+    toggle.append(document.createTextNode("Details"));
+    top.append(toggle);
+
     const explain = el("p", "pb-explain", verdict.reason || "");
+    const details = el("div", "pb-details");
+    details.id = detailsId;
     const label = el("p", "signals-label", "Detected signals");
     label.id = "signals-label";
     const chips = el("ul", "chips");
@@ -482,7 +514,7 @@
 
     const deal = verdict.deal || {};
     let emailInput = null;
-    if (!deal.payeeEmail && session.state !== "created" && session.state !== "paid") {
+    if (isPayment && !deal.payeeEmail && session.state !== "created" && session.state !== "paid") {
       const labelEmail = el("label", "pb-email");
       labelEmail.append(el("span", null, "Seller email for this order"));
       emailInput = document.createElement("input");
@@ -521,7 +553,7 @@
       capture.id = "pb-capture";
       capture.addEventListener("click", () => captureOrder(session, foot));
       actions.append(open, capture);
-    } else {
+    } else if (isPayment) {
       const protect = el("button", "btn btn-primary", "Switch to a PayPal order");
       protect.type = "button";
       protect.id = "pb-protect";
@@ -538,10 +570,33 @@
         foot.classList.add("is-error");
         foot.replaceChildren(el("span", null, session.error));
       }
+    } else {
+      // No payment to route through PayPal (a code, a remote-access tool, an impostor).
+      // The safe action is to acknowledge and hide the card; there is no order to create.
+      const dismiss = el("button", "btn btn-primary", "Got it, hide this");
+      dismiss.type = "button";
+      dismiss.id = "pb-dismiss";
+      dismiss.addEventListener("click", () => dismissCard(session));
+      actions.append(dismiss);
+      const brandSpan = brand();
+      brandSpan.append(document.createTextNode(footerText(verdict, session)));
+      foot.append(brandSpan);
+      if (session.error) {
+        foot.classList.add("is-error");
+        foot.replaceChildren(el("span", null, session.error));
+      }
     }
 
-    body.append(top, explain, label, chips);
-    if (emailInput) body.append(emailInput.parentElement);
+    details.append(label, chips);
+    if (emailInput) details.append(emailInput.parentElement);
+
+    toggle.addEventListener("click", () => {
+      const open = card.classList.toggle("pb-open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toggle.replaceChildren(document.createTextNode(open ? "Hide" : "Details"));
+    });
+
+    body.append(top, explain, details);
     if (session.state !== "paid") body.append(actions);
     card.append(body, foot);
     return card;
@@ -600,6 +655,26 @@
     render(session);
   }
 
+  async function dismissCard(session) {
+    const verdict = session.verdict || {};
+    const res = await send("pb:mark", {
+      hash: session.hash,
+      action: "dismiss",
+      signals: verdict.signals || [],
+      level: verdict.level || "",
+      head: verdict.reason || ""
+    });
+    if (!res || !res.ok) {
+      session.error = (res && res.error) || FRIENDLY;
+      render(session);
+      return;
+    }
+    session.state = "dismissed";
+    session.error = "";
+    stopPoll(session);
+    render(session);
+  }
+
   async function payAnyway(session) {
     const verdict = session.verdict || {};
     const res = await send("pb:override", {
@@ -617,6 +692,17 @@
     session.error = "";
     stopPoll(session);
     render(session);
+  }
+
+  // The AI must never raise the level above the rules level. If a verdict still carries a
+  // rule-based level, clamp the shown level to it.
+  function clampVerdictLevel(verdict) {
+    const api = globalThis.pbPayRisk;
+    if (!verdict || !api || typeof api.clampLevel !== "function") return verdict;
+    const base = verdict.rulesLevel || (verdict.source === "rules" ? verdict.level : null);
+    if (!base) return verdict;
+    const level = api.clampLevel(base, verdict.level);
+    return level === verdict.level ? verdict : Object.assign({}, verdict, { level });
   }
 
   function updateHud(line) {
@@ -643,7 +729,7 @@
   function showVerdict(thread, hash, text, verdict, res) {
     let session = sessions.get(hash);
     if (verdict.kind !== "risk") {
-      if (session && session.host && session.state !== "created" && session.state !== "paid" && session.state !== "override") {
+      if (session && session.host && !isTerminal(session.state)) {
         session.host.remove();
         unhighlight(thread);
       }
@@ -656,7 +742,7 @@
       sessions.set(hash, session);
     }
     session.thread = thread;
-    session.verdict = verdict;
+    session.verdict = clampVerdictLevel(verdict);
     session.text = text;
     session.mode = (res && res.mode) || session.mode || null;
     session.aiPending = aiState.get(hash) === "pending";
@@ -686,7 +772,7 @@
         if (session && session.host && session.host.isConnected) render(session);
         return;
       }
-      if (session && session.host && session.host.isConnected && (session.state === "created" || session.state === "paid" || session.state === "override")) return;
+      if (session && session.host && session.host.isConnected && isTerminal(session.state)) return;
       enter();
       try {
         showVerdict(thread, hash, text, res.verdict, res);
@@ -712,7 +798,7 @@
       messages: messages
     };
     const session = sessions.get(hash);
-    if (session && session.host && session.host.isConnected && (session.state === "created" || session.state === "paid" || session.state === "override")) {
+    if (session && session.host && session.host.isConnected && isTerminal(session.state)) {
       return;
     }
     if (session && session.state === "risk" && session.host && session.host.isConnected && session.text === text) {
@@ -775,7 +861,7 @@
   }
 
   function fallbackCss() {
-    return ":host{all:initial;display:block;max-width:min(560px,100%);margin:4px 0 8px 36px;font-family:system-ui,sans-serif;font-size:15px;line-height:1.45;color:#1c2530;container-type:inline-size}*{box-sizing:border-box}button,input,a{font:inherit}:focus-visible{outline:3px solid #2e90fa;outline-offset:2px}.pb{border-radius:16px;background:#fff;border:1px solid #f1c27d;box-shadow:0 8px 24px rgba(180,35,24,.12);position:relative;overflow:hidden}.pb::before{content:'';position:absolute;inset:0 auto 0 0;width:5px;background:linear-gradient(180deg,#f5a524,#b42318)}.pb-body{padding:14px 14px 12px 18px}.pb-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}.risk-badge{display:inline-flex;align-items:center;gap:6px;background:#fef3f2;color:#b42318;border:1px solid #fecdca;font-weight:700;font-size:13px;padding:5px 10px;border-radius:999px}.pb-explain{margin:0 0 10px;overflow-wrap:anywhere}.chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0 0 12px;padding:0}.chip{background:#fff8eb;border:1px solid #f3c46b;border-radius:8px;padding:4px 8px;font-size:13px;font-weight:600}.actions{display:flex;flex-wrap:wrap;gap:8px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:999px;font-weight:650;text-decoration:none;cursor:pointer}.btn-primary{background:#0062a8;color:#fff;border:1px solid #0062a8}.btn-ghost{background:transparent;color:#4a5666;border:1px solid #c3ccd7}.pb-foot{padding:8px 14px 8px 18px;background:#f6f8fb;border-top:1px solid #dde3ea;font-size:12px;overflow-wrap:anywhere}.pb-foot.is-status{background:#eef4ff;color:#1e3a8a;font-weight:600}.pb-foot.is-error{background:#fef3f2;color:#7a271a}.pb.is-collapsed{border-color:#dde3ea;box-shadow:none}.pb-collapsed{margin:0;padding:11px 14px 11px 18px}.pb-email{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}.pb-email input{min-height:44px;width:100%;border:1px solid #c3ccd7;border-radius:10px;padding:8px 12px}@container (max-width:520px){.actions{flex-direction:column}.actions .btn{width:100%}}@media (max-width:520px){:host{margin-left:0}.actions{flex-direction:column}.actions .btn{width:100%}}@media (prefers-reduced-motion:reduce){.btn{transition:none}}";
+    return ":host{all:initial;display:block;max-width:min(560px,100%);margin:4px 0 8px 36px;font-family:system-ui,sans-serif;font-size:15px;line-height:1.45;color:#1c2530;container-type:inline-size}*{box-sizing:border-box}button,input,a{font:inherit}:focus-visible{outline:3px solid #2e90fa;outline-offset:2px}.pb{border-radius:16px;background:#fff;border:1px solid #f1c27d;box-shadow:0 8px 24px rgba(180,35,24,.12);position:relative;overflow:hidden}.pb::before{content:'';position:absolute;inset:0 auto 0 0;width:5px;background:linear-gradient(180deg,#f5a524,#b42318)}.pb-body{padding:14px 14px 12px 18px}.pb-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}.risk-badge{display:inline-flex;align-items:center;gap:6px;background:#fef3f2;color:#b42318;border:1px solid #fecdca;font-weight:700;font-size:13px;padding:5px 10px;border-radius:999px}.pb-explain{margin:0 0 10px;overflow-wrap:anywhere}.chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0 0 12px;padding:0}.chip{background:#fff8eb;border:1px solid #f3c46b;border-radius:8px;padding:4px 8px;font-size:13px;font-weight:600}.actions{display:flex;flex-wrap:wrap;gap:8px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:999px;font-weight:650;text-decoration:none;cursor:pointer}.btn-primary{background:#0062a8;color:#fff;border:1px solid #0062a8}.btn-ghost{background:transparent;color:#4a5666;border:1px solid #c3ccd7}.pb-foot{padding:8px 14px 8px 18px;background:#f6f8fb;border-top:1px solid #dde3ea;font-size:12px;overflow-wrap:anywhere}.pb-foot.is-status{background:#eef4ff;color:#1e3a8a;font-weight:600}.pb-foot.is-error{background:#fef3f2;color:#7a271a}.pb.is-collapsed{border-color:#dde3ea;box-shadow:none}.pb-collapsed{margin:0;padding:11px 14px 11px 18px}.pb-email{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}.pb-email input{min-height:44px;width:100%;border:1px solid #c3ccd7;border-radius:10px;padding:8px 12px}.pb-headline-short,.pb-level,.pb-toggle{display:none}.pb-details{display:block}@container (max-width:520px){.actions{flex-direction:column}.actions .btn{width:100%}}@media (max-width:520px){:host{margin-left:0}.pb-headline-long{display:none}.pb-headline-short{display:inline}.pb-level{display:inline-flex;font-size:11px;font-weight:700;text-transform:uppercase;color:#7a271a;background:#fef3f2;border:1px solid #fecdca;border-radius:999px;padding:3px 9px}.pb-tag:not(.mock):not(.ai):not(.ai-off){display:none}.pb-toggle{display:inline-flex;margin-left:auto;padding:6px 10px;font-size:12px;font-weight:650;color:#4a5666;background:#f6f8fb;border:1px solid #c3ccd7;border-radius:999px;cursor:pointer}.pb-explain{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}.pb-details{display:none}.pb-open .pb-explain{display:block;-webkit-line-clamp:unset;overflow:visible}.pb-open .pb-details{display:block}.actions{flex-direction:column}.actions .btn{width:100%}}@media (prefers-reduced-motion:reduce){.btn{transition:none}}";
   }
 
   document.addEventListener("click", (event) => {

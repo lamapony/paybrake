@@ -195,11 +195,15 @@ async function livePass(browser) {
 
   const phone = await openLive(390, 844, 2);
   const phoneText = await phone.locator("#pb-card").innerText();
-  check(phoneText.includes("High risk"), "live 390: card says High risk");
+  // Compact mobile card: a short headline plus the level, not the long desktop headline.
+  check(phoneText.includes("Payment risk") && phoneText.includes("High"), "live 390: card shows the compact headline and level");
   for (const id of ["#pb-protect", "#pb-anyway"]) {
     const box = await phone.locator(id).boundingBox();
     check(box && box.height >= 44, `live 390: ${id} is at least 44px tall (${box && box.height})`);
   }
+  const compact = await phone.locator("#pb-card").boundingBox();
+  check(compact && compact.height <= 0.4 * 844, `live 390: card fits in 40% of the viewport (${compact && Math.round((compact.height / 844) * 100)}%)`);
+  check(!(await phone.locator("#pb-card .pb-details").isVisible()), "live 390: details start collapsed");
   await noHorizontalOverflow(phone, "live 390");
   const safeCount = await phone.locator("#thread-lamp [data-pb-host]").count();
   check(safeCount === 0, "live 390: lamp chat has no card");
