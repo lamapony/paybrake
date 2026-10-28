@@ -411,7 +411,7 @@ async function confirmOnly(rules, raw, ask, options) {
 // ---- llmMode "all" ------------------------------------------------------------
 
 const AI_SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access", "phishing_link", "fee_via_link", "impersonation", "account_threat", "urgency_pressure", "prize_bait", "free_bait"];
-const TRANSCRIPT_LIMIT = 3900;
+const TRANSCRIPT_LIMIT = 1900;
 const CODE_NOTICE = /(?:never|do\s+not|don['’]t|not)\s+(?:share|give|tell|send|disclose|forward)|(?:aldrig|ikke)\s+(?:del|dele|giv|oplys)/iu;
 const CODE_ASK = /(?:send|give|tell|read|share|forward|provide|reply\s+with|type|enter)\s+(?:it\s+|them\s+)?(?:to\s+)?(?:me|us|our\s+(?:agent|team|staff|representative))\b/iu;
 const DEFAULTS = { downgradeConfidence: 0.85, addConfidence: 0.8, vetoOverrideConfidence: 0.9, timeoutMs: 6000 };
@@ -429,7 +429,7 @@ function transcriptOf(messages) {
     text: redactText(normalizeWs(message.text))
   })).filter((line) => line.text);
   let text = lines.map((line) => line.from + ": " + line.text).join("\n");
-  // The backend takes at most 4000 characters; keep the latest part of a long chat.
+  // The hosted server takes at most 2000 characters (a local backend 4000); keep the latest part of a long chat.
   if (text.length > TRANSCRIPT_LIMIT) text = text.slice(text.length - TRANSCRIPT_LIMIT).replace(/^[^\n]*\n/, "");
   return {
     text,

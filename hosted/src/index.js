@@ -11,12 +11,39 @@ const BODY_LIMIT = 16 * 1024;
 const NOINDEX = "noindex, nofollow, noarchive";
 const ORDER_TTL_MS = 24 * 60 * 60 * 1000;
 const MAX_ORDERS = 5000; // per day; keeps a public mock server from filling storage
-const MAX_AI_PER_DAY = 20000; // all users together; ~$1/day at Typesafe list price
-const AI_TEXT_LIMIT = 4000;
-const AI_PER_IP_PER_MINUTE = 30;
+// Abuse protection for the AI check (the Typesafe key is Dima's own; it must not get burned).
+// Defaults below; vars can lower them (never raise past the hard maxima). Listed in README ("Hosted demo limits").
+const AI_TEXT_LIMIT = 2000; // characters per /api/classify call (the extension keeps the latest 1900)
+const AI_PER_IP_PER_MINUTE = 20; // strict, counted in the Durable Object
+const AI_PER_IP_PER_DAY = 150;
+const AI_PER_DAY = 2000; // all users together
+const HARD_MAX = { AI_PER_IP_PER_MINUTE: 60, AI_PER_IP_PER_DAY: 1000, AI_PER_DAY: 20000 };
+
+function limitFrom(env, name, fallback) {
+  const raw = env && env[name] != null ? Number(env[name]) : NaN;
+  const n = Number.isFinite(raw) && raw >= 0 ? Math.floor(raw) : fallback;
+  return Math.min(n, HARD_MAX[name]);
+}
+
+export function aiLimits(env) {
+  return {
+    perIpPerMinute: limitFrom(env, "AI_PER_IP_PER_MINUTE", AI_PER_IP_PER_MINUTE),
+    perIpPerDay: limitFrom(env, "AI_PER_IP_PER_DAY", AI_PER_IP_PER_DAY),
+    perDay: limitFrom(env, "AI_PER_DAY", AI_PER_DAY),
+    textLimit: AI_TEXT_LIMIT
+  };
+}
+
+// Kill switch: set AI_KILL_SWITCH to 1/true/on (wrangler secret put AI_KILL_SWITCH, no redeploy needed)
+// and the AI check is off at once. The extension then falls back to its on-device rules.
+export function aiKilled(env) {
+  const v = env && env.AI_KILL_SWITCH != null ? String(env.AI_KILL_SWITCH).trim().toLowerCase() : "";
+  return v === "1" || v === "true" || v === "on" || v === "yes";
+}
 
 // The AI config is fixed here, not taken from vars: pinned model, dev-tuned add bar, 6 s timeout.
 export function aiEnv(env) {
+  if (aiKilled(env)) return null;
   const key = env && typeof env.TYPESAFE_API_KEY === "string" ? env.TYPESAFE_API_KEY.trim() : "";
   if (!key) return null;
   return { LLM_PROVIDER: "typesafe", TYPESAFE_API_KEY: key, TYPESAFE_MODEL: "jev-1.14.0", TYPESAFE_ADD_CONFIDENCE: "0.5", LLM_TIMEOUT_MS: "6000" };
@@ -92,18 +119,28 @@ export class MockOrders extends DurableObject {
     const { op, id, deal, origin } = await request.json();
     const store = this.ctx.storage;
     if (op === "ai_quota") {
-      // Strict per-IP limit: one Durable Object sees every call. Kept in memory, per minute.
-      const minute = Math.floor(Date.now() / 60000);
+      // Strict per-IP limits plus a global daily cap: one Durable Object sees every call.
+      const lim = deal || {};
+      const now = Date.now();
+      const minute = Math.floor(now / 60000);
+      const today = new Date(now).toISOString().slice(0, 10);
       if (!this.hits || this.hitsMinute !== minute) { this.hits = new Map(); this.hitsMinute = minute; }
       const ipKey = String(id || "unknown").slice(0, 64);
       const n = (this.hits.get(ipKey) || 0) + 1;
       this.hits.set(ipKey, n);
-      if (n > AI_PER_IP_PER_MINUTE) return Response.json({ ok: false, reason: "rate" }, { status: 429 });
-      const day = "ai:" + new Date().toISOString().slice(0, 10);
+      if (n > lim.perIpPerMinute) return Response.json({ ok: false, reason: "rate" }, { status: 429 });
+      const ipDay = "aiip:" + today + ":" + ipKey;
+      const ipUsed = (await store.get(ipDay)) || 0;
+      if (ipUsed >= lim.perIpPerDay) return Response.json({ ok: false, reason: "ip_day" }, { status: 429 });
+      const day = "ai:" + today;
       const used = (await store.get(day)) || 0;
-      if (used >= MAX_AI_PER_DAY) return Response.json({ ok: false }, { status: 429 });
-      await store.put(day, used + 1);
-      return Response.json({ ok: true });
+      if (used >= lim.perDay) return Response.json({ ok: false, reason: "day" }, { status: 429 });
+      await store.put({ [day]: used + 1, [ipDay]: ipUsed + 1 });
+      if (!this.aiAlarmSet) {
+        this.aiAlarmSet = true;
+        if (!(await store.getAlarm())) await store.setAlarm(now + ORDER_TTL_MS);
+      }
+      return Response.json({ ok: true, left: lim.perDay - used - 1 });
     }
     if (op === "create") {
       const count = (await store.get("meta:count")) || 0;
@@ -148,7 +185,16 @@ export class MockOrders extends DurableObject {
     for (let i = 0; i < old.length; i += 128) await this.ctx.storage.delete(old.slice(i, i + 128));
     const left = all.size - old.length;
     await this.ctx.storage.put("meta:count", left);
-    if (left > 0) await this.ctx.storage.setAlarm(Date.now() + ORDER_TTL_MS);
+    // Drop AI counters from earlier days (per-IP day keys and the global day key).
+    const today = new Date().toISOString().slice(0, 10);
+    const counters = [];
+    for (const prefix of ["aiip:", "ai:"]) {
+      const rows = await this.ctx.storage.list({ prefix });
+      for (const k of rows.keys()) if (k.slice(prefix.length, prefix.length + 10) !== today) counters.push(k);
+    }
+    for (let i = 0; i < counters.length; i += 128) await this.ctx.storage.delete(counters.slice(i, i + 128));
+    const aiLeft = (await this.ctx.storage.list({ prefix: "aiip:" })).size;
+    if (left > 0 || aiLeft > 0) await this.ctx.storage.setAlarm(Date.now() + ORDER_TTL_MS);
   }
 }
 
@@ -170,26 +216,36 @@ function ordersPort(env, origin) {
   };
 }
 
+// Rate-limit key: the IPv4 address, or the /64 prefix of an IPv6 address (one IPv6 host usually owns a whole /64).
+export function ipBucket(ip) {
+  const raw = String(ip || "unknown").trim().toLowerCase();
+  if (!raw.includes(":")) return raw.slice(0, 64);
+  const [head, tail = ""] = raw.split("::");
+  const left = head ? head.split(":") : [];
+  const right = tail ? tail.split(":") : [];
+  const full = raw.includes("::") ? [...left, ...Array(Math.max(0, 8 - left.length - right.length)).fill("0"), ...right] : left;
+  return full.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, "")).join(":") + "::/64";
+}
+
 async function classify(request, env) {
   const body = await readJson(request);
   const ai = aiEnv(env);
   if (!ai) return json(503, { error: "llm_off" });
   if (typeof body.text !== "string" || !body.text.trim()) return json(400, { error: "bad_request", message: "text is required" });
-  if (body.text.length > AI_TEXT_LIMIT) return json(400, { error: "bad_request", message: "text is too long" });
-  // Abuse protection: per-IP limit (approximate, per location), then a strict daily cap.
-  const ip = request.headers.get("cf-connecting-ip") || "unknown";
+  if (body.text.length > AI_TEXT_LIMIT) return json(413, { error: "text_too_long", max: AI_TEXT_LIMIT });
+  // Abuse protection: per-IP limit (approximate, per location), then strict per-IP and daily caps.
+  const ip = ipBucket(request.headers.get("cf-connecting-ip") || "unknown");
   if (env.AI_LIMIT) {
     const { success } = await env.AI_LIMIT.limit({ key: "classify:" + ip });
     if (!success) return json(429, { error: "rate_limited" }, { "retry-after": "60" });
   }
-  if (env.ORDERS) {
-    const stub = env.ORDERS.get(env.ORDERS.idFromName("demo"));
-    const quota = await stub.fetch("https://orders/", { method: "POST", body: JSON.stringify({ op: "ai_quota", id: ip }) });
-    if (quota.status === 429) {
-      const why = await quota.json().catch(() => ({}));
-      if (why && why.reason === "rate") return json(429, { error: "rate_limited" }, { "retry-after": "60" });
-      return json(429, { error: "busy", message: "The demo AI check is busy. Try again tomorrow." });
-    }
+  if (!env.ORDERS) return json(503, { error: "llm_off" }); // no counter, no AI: never call the model unmetered
+  const stub = env.ORDERS.get(env.ORDERS.idFromName("demo"));
+  const quota = await stub.fetch("https://orders/", { method: "POST", body: JSON.stringify({ op: "ai_quota", id: ip, deal: aiLimits(env) }) });
+  if (quota.status === 429) {
+    const why = await quota.json().catch(() => ({}));
+    if (why && why.reason === "rate") return json(429, { error: "rate_limited" }, { "retry-after": "60" });
+    return json(429, { error: "busy", message: "The demo AI check has reached its daily limit. PayBrake still checks with its on-device rules. Try the AI check again tomorrow." });
   }
   // The extension masks before sending; mask again here for direct callers (the mask is idempotent).
   const text = globalThis.pbRedact.redact(body.text);
@@ -213,7 +269,13 @@ async function api(request, env) {
 
   if (request.method === "GET" && path === "/health") {
     const ai = aiEnv(env);
-    return json(200, { ok: true, name: "PayBrake", env: "sandbox", paypal: "mock", llm: ai ? "configured" : "off", llmProvider: ai ? "typesafe" : "off", hosted: true });
+    const lim = aiLimits(env);
+    return json(200, {
+      ok: true, name: "PayBrake", env: "sandbox", paypal: "mock",
+      llm: ai ? "configured" : "off", llmProvider: ai ? "typesafe" : "off", hosted: true,
+      aiLimits: { perIpPerMinute: lim.perIpPerMinute, perIpPerDay: lim.perIpPerDay, perDay: lim.perDay, maxChars: lim.textLimit },
+      aiKillSwitch: aiKilled(env)
+    });
   }
   if (request.method === "POST" && path === "/api/classify") {
     return classify(request, env);

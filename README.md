@@ -1,12 +1,44 @@
 # PayBrake
 
-**Brakes before you pay.** A Chrome extension that reads a marketplace chat on your device, stays quiet unless a payment ask has a concrete span of evidence, and can open a PayPal sandbox order for the listed item instead of a blind transfer.
+**Brakes before you pay.** PayBrake is a Chrome extension that uses **AI** and on-device rules to spot scam payment requests in a marketplace chat, then offers a **PayPal** Goods & Services order (PayPal Orders v2, sandbox) instead of a blind transfer, Friends & Family payment, gift card, or code.
+
+Built with: **PayPal** Orders v2 API (sandbox, plus a no-credentials mock), the **PayPal Agent Toolkit** tool names (`create_order`, `get_order`, `pay_order`), an **AI** scam check on Typesafe models (`jev-1.14.0`, server-side key), Chrome Manifest V3, Node 20, Cloudflare Workers.
 
 Fictional names only. Not affiliated with PayPal or any marketplace. No real money moves in this build.
 
-**Just want to try it?** See [TESTING.md](TESTING.md): download a zip, load it in Chrome, open the hosted demo store. No servers, about 2 minutes.
+## Try it (hosted, nothing to run locally)
 
-## Run in 5 minutes
+**Start here: https://paybrake-demo.spbabinov.workers.dev/** (demo link, not indexed by search engines)
+
+1. Download **[paybrake-extension.zip](https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip)** from that page and unzip it.
+2. In Chrome (or Edge / Brave) open `chrome://extensions`, switch on **Developer mode**, click **Load unpacked**, and pick the `paybrake-extension` folder (the one with `manifest.json`). A **Welcome to PayBrake** tab opens.
+3. Click **Try the demo store** (or open https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1). In the bike chat a **High risk** card appears, tagged **AI checked** once the AI verdict is back.
+4. **Switch to a PayPal order** → **Open approval** → **Approve (mock)** → back in the chat **I approved it, capture**.
+
+About 2 minutes. Step-by-step with screenshots hints: [TESTING.md](TESTING.md).
+
+The hosted server is one Cloudflare Worker (free plan): the demo store pages, the mock PayPal backend (orders kept 24 hours), and `/api/classify`, the AI check. The Typesafe key lives only in the Worker as a secret; the extension never sees it.
+
+### Hosted demo limits
+
+The AI check spends a real API key, so `/api/classify` on the hosted Worker is capped (see `hosted/src/index.js`):
+
+| Limit | Value | When hit |
+|---|---|---|
+| Input length | 2000 characters (the extension sends the latest 1900) | 413 `text_too_long`, no model call |
+| Per IP, per minute | 20 (strict, Durable Object) and 30 (Cloudflare rate-limit binding) | 429 `rate_limited`, `Retry-After: 60` |
+| Per IP, per day | 150 | 429 `busy` |
+| All visitors, per day (UTC) | 2000 | 429 `busy` |
+| Request body | 16 KB | 413 |
+| Kill switch | `AI_KILL_SWITCH=1` (Worker secret or var) | AI off at once: `/health` says `"llm": "off"`, `/api/classify` 503 `llm_off` |
+
+On any non-200 the extension falls back to its on-device rules, so the demo keeps working with the AI off. `GET /health` shows the active limits and the kill switch state. Optional vars `AI_PER_IP_PER_MINUTE`, `AI_PER_IP_PER_DAY`, `AI_PER_DAY` change the caps, up to hard maxima of 60, 1000 and 20000.
+
+Kill switch: `cd hosted && npx wrangler secret put AI_KILL_SWITCH` (enter `1`). Turn it back on with `npx wrangler secret delete AI_KILL_SWITCH`. No redeploy needed.
+
+Deploy: `npm run hosted:deploy` (builds the extension zip and the pages into `hosted/public/`, then `wrangler deploy`; wrangler 4 itself needs Node 22+). Set the key once with `npx wrangler secret put TYPESAFE_API_KEY`. Never commit it.
+
+## Run it locally (5 minutes)
 
 From a clean clone, Node 20:
 
@@ -96,7 +128,7 @@ The bike price is DKK. Rest accepts DKK, EUR, and USD.
 
 ## Turn on the AI check
 
-In `backend/.env`, set `LLM_PROVIDER=openrouter` and set `OPENROUTER_API_KEY` to your OpenRouter key. Restart the backend. `/health` shows `"llm": "configured"` and `"llmProvider": "openrouter"`. A key with `LLM_PROVIDER` and `LLM_BASE_URL` both empty selects openrouter the same way. If `LLM_BASE_URL` is set, that empty provider means openai-compatible instead. In the extension options, turn on **Ask the backend for an AI check (off uses rules only)** and save. The model can confirm a rules hit or lower it. It cannot raise one. A quote that is not in the message is ignored.
+Typesafe (what the hosted demo uses): in `backend/.env`, set `LLM_PROVIDER=typesafe` and `TYPESAFE_API_KEY`. OpenRouter: set `LLM_PROVIDER=openrouter` and set `OPENROUTER_API_KEY` to your OpenRouter key. Restart the backend. `/health` shows `"llm": "configured"` and `"llmProvider": "openrouter"`. A key with `LLM_PROVIDER` and `LLM_BASE_URL` both empty selects openrouter the same way. If `LLM_BASE_URL` is set, that empty provider means openai-compatible instead. In the extension options, turn on **Ask the backend for an AI check (off uses rules only)** and save. The model can confirm a rules hit or lower it. It cannot raise one. A quote that is not in the message is ignored.
 
 ## Checks
 
@@ -107,7 +139,7 @@ npm test
 npm run eval
 ```
 
-`npm test` passes 102 tests, all offline.
+`npm test` passes 173 tests on Node 20, all offline.
 
 Rules eval on 30 synthetic chats (16 risky, 14 safe, fictional names): precision 1, recall 1, F1 1, false alarms 0. The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
 
