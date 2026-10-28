@@ -53,6 +53,10 @@ const CASES = {
     fire: "Your account will be suspended within 24 hours",
     miss: "My account on the forum is old but I still use it"
   },
+  overpayment_refund: {
+    fire: "I paid you 3,000 kr by mistake, please refund the extra 500 kr",
+    miss: "I will refund your deposit if the bike is not as described"
+  },
   pay_on_collection: {
     fire: "Cash on pickup when you come by tomorrow",
     miss: "Pay when you have time to decide on the colour"

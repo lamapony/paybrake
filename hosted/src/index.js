@@ -193,8 +193,11 @@ async function classify(request, env) {
   }
   // The extension masks before sending; mask again here for direct callers (the mask is idempotent).
   const text = globalThis.pbRedact.redact(body.text);
+  // The caller may send its rules level; the AI may lower it but never raise it.
+  const rulesLevel = body.rulesLevel === "high" || body.rulesLevel === "medium" ? body.rulesLevel : "";
+  const aiEnvWithLevel = rulesLevel ? { ...ai, PAYBRAKE_RULES_LEVEL: rulesLevel } : ai;
   try {
-    const verdict = await classifyText(text, ai);
+    const verdict = await classifyText(text, aiEnvWithLevel);
     return json(200, { ...verdict, provider: "typesafe" });
   } catch (error) {
     if (error && error.status === 400) return json(400, { error: "bad_request", message: "text is too long" });

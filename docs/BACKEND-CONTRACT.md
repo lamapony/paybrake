@@ -145,7 +145,9 @@ With OpenRouter configured and rest selected, the same route looks like:
 
 `POST /api/classify`
 
-Request: `{ "text": "Send 500 kr via Friends & Family" }`
+Request: `{ "text": "Send 500 kr via Friends & Family", "rulesLevel": "medium" }`
+
+`rulesLevel` is optional. `"high"` or `"medium"` is the level the rules already gave this chat. Any other value is ignored. The model may lower that level. It cannot raise it: a model `"high"` with `rulesLevel: "medium"` comes back `"medium"`. The extension sends this field and also clamps on its own, so a server that ignores it still cannot raise the card.
 
 `text` must be a string. Longer than 4000 characters is **400** `{ "error": "bad_request", "message": "text is too long" }`. Fetch is not called.
 
@@ -177,7 +179,7 @@ Every evidence quote must be a whitespace-normalized substring of `text`. If `ri
 }
 ```
 
-`level` is `"high"` only when the model said `"high"`. Any other level on a passing result becomes `"medium"`. `reason` is replaced when it is empty, longer than 120 characters, or matches the banned-phrase check in `backend/src/classify.js`. A fenced ` ```json ` body is accepted. Provider failures, non-JSON output, and a thrown fetch are **502** `{ "error": "llm_error" }`. The provider body is discarded. Error text is `llm error` or `llm <status>` and does not include the key.
+`level` is `"high"` only when the model said `"high"` and `rulesLevel` is not `"medium"`. Any other level on a passing result becomes `"medium"`. When `rulesLevel` is set, the returned level is the lower of the model level and that rules level. `reason` is replaced when it is empty, longer than 120 characters, or matches the banned-phrase check in `backend/src/classify.js`. A fenced ` ```json ` body is accepted. Provider failures, non-JSON output, and a thrown fetch are **502** `{ "error": "llm_error" }`. The provider body is discarded. Error text is `llm error` or `llm <status>` and does not include the key.
 
 `POST /api/protect`
 

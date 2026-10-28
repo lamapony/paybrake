@@ -136,6 +136,16 @@ async function run() {
     const protectBox = await page.locator("#thread-bike #pb-protect").boundingBox();
     if (!protectBox || protectBox.height < 44) throw new Error("protect button shorter than 44px at 390");
 
+    // Compact card on a phone: it must not cover more than ~40% of the viewport, the
+    // details start collapsed, and the Details toggle expands them.
+    const cardBox = await page.locator("#thread-bike #pb-card").boundingBox();
+    if (!cardBox) throw new Error("no card box at 390");
+    if (cardBox.height > 0.4 * 844) throw new Error(`card covers ${Math.round((cardBox.height / 844) * 100)}% of a 390x844 viewport (max 40%)`);
+    if (await page.locator("#thread-bike #pb-card .pb-details").isVisible()) throw new Error("details should start collapsed on a phone");
+    await page.locator("#thread-bike #pb-card .pb-toggle").click();
+    if (!(await page.locator("#thread-bike #pb-card .pb-details").isVisible())) throw new Error("Details toggle did not expand the card");
+    await page.locator("#thread-bike #pb-card .pb-toggle").click();
+
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.locator("#thread-bike #pb-protect").click();
     await page.locator("#thread-bike #pb-foot").getByText(/MOCK-/).waitFor({ timeout: 5000 });

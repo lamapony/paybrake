@@ -36,6 +36,17 @@ export function evidencePasses(evidence, input) {
   return evidence.every((quote) => typeof quote === "string" && evidenceIsSubstring(quote, input));
 }
 
+// The AI may lower a level but must never raise it above the rules level. The extension
+// already clamps locally; this is the same cap enforced on the server so a direct caller
+// (or a future adapter) cannot get a higher-than-rules level out of /api/classify either.
+const LEVEL_RANK = { none: 0, medium: 1, high: 2 };
+
+export function capLevel(level, rulesLevel) {
+  if (!rulesLevel || !(rulesLevel in LEVEL_RANK)) return level;
+  const aiRank = LEVEL_RANK[level] || 0;
+  return aiRank < LEVEL_RANK[rulesLevel] ? level : rulesLevel;
+}
+
 export function sanitizeReason(reason, fallback = FALLBACK) {
   const text = normalizeWs(reason);
   if (!text || text.length > 120 || BANNED.test(text)) return fallback;
@@ -151,15 +162,23 @@ export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch)
   if (!llm.configured) throw llmError("llm_off", 503);
   const source = String(text ?? "");
   if (source.length > TEXT_LIMIT) throw badRequest("text is too long");
-  if (llm.provider === "typesafe") {
-    try {
-      return await classifyTypesafe(source, llm, fetchImpl);
-    } catch (error) {
-      if (!llm.fallback) throw error;
-      return classifyChat(source, llm.fallback, fetchImpl);
-    }
+  const verdict = llm.provider === "typesafe"
+    ? await classifyTypesafeCapped(source, llm, fetchImpl)
+    : await classifyChat(source, llm, fetchImpl);
+  // env.PAYBRAKE_RULES_LEVEL carries the rules level from the caller (the extension sends
+  // it on the request). The AI can lower the level but never raise it above that level.
+  if (!verdict || verdict.level === "none") return verdict;
+  const level = capLevel(verdict.level, trim(env.PAYBRAKE_RULES_LEVEL));
+  return level === verdict.level ? verdict : { ...verdict, level };
+}
+
+async function classifyTypesafeCapped(source, llm, fetchImpl) {
+  try {
+    return await classifyTypesafe(source, llm, fetchImpl);
+  } catch (error) {
+    if (!llm.fallback) throw error;
+    return classifyChat(source, llm.fallback, fetchImpl);
   }
-  return classifyChat(source, llm, fetchImpl);
 }
 
 // Typesafe (https://docs.typesafe.ai/api) is a decision model, not a chat model: POST

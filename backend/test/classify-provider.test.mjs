@@ -365,3 +365,31 @@ test("confidence and signal pass through; unknown signal becomes other", async (
   assert.ok(odd.confidence === null || (odd.confidence >= 0 && odd.confidence <= 1));
   assert.equal(odd.signal, "other");
 });
+
+test("POST /api/classify caps the AI level at the rulesLevel from the request", async () => {
+  const fetchImpl = async () => chat(verdictJson());
+  const env = {
+    PAYPAL_ENV: "sandbox",
+    PAYPAL_CLIENT_ID: "",
+    PAYPAL_ADAPTER: "mock",
+    LLM_PROVIDER: "openrouter",
+    OPENROUTER_API_KEY: KEY
+  };
+  const { server, url } = await listen(env, { fetchImpl });
+  try {
+    const capped = await (await fetch(url + "/api/classify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: INPUT, rulesLevel: "medium" })
+    })).json();
+    assert.equal(capped.level, "medium");
+    const free = await (await fetch(url + "/api/classify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: INPUT })
+    })).json();
+    assert.equal(free.level, "high");
+  } finally {
+    await close(server);
+  }
+});

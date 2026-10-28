@@ -132,7 +132,9 @@ reminder). The other changes come from dev false negatives only.
 - Now: rules run first and show a card at once. About 0.8 s after the chat stops changing, the chat is sent to the AI check.
   Each chat text (hash) is checked once and the answer is cached.
 - Show a card if either one says risky:
-  - Rules risky + AI risky: the higher level, AI signal added.
+  - Rules risky + AI risky: the rules level, AI signal added. The AI may lower the level but never
+    raise it above the rules level (`clampLevel` in `extension/lib/pay-risk.js`; the same cap runs
+    server-side in `backend/src/classify.js` via the request's `rulesLevel`).
   - Rules risky + AI not risky: the card goes away only if the AI's confidence is at least 0.85. Otherwise it stays, marked "AI check unsure".
   - Rules silent + AI risky with confidence at least 0.8: the AI adds a card (signal from the AI, receipt "Flagged by the AI check").
     One exception: a code notice that tells the user never to share the code, and does not ask for it, stays silent.
