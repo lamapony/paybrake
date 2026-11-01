@@ -25,3 +25,7 @@ Run on 1 November 2026 with rules-only detection. `npm install` succeeded (0 rep
 | 9 | silent | silent (veto) | yes |
 
 Messages are from `/workspace/night-1101/scam-examples.md`; they were evaluated individually with `pbPayRisk.detect` and no AI. Branch context inspected locally: fix/terra-detection-1027 and eval-real-scams contain detector/eval work; tester-friendly includes hosted/tester and backend changes; promo-page contains a separate site; backend-rest contains PayPal and provider adapters. None was merged. Branch names are local remote-tracking refs, not evidence of current PR status.
+
+## Follow-up on this branch
+
+The roleplay rules now match all nine expected levels in rules-only mode, with a regression test. These additions are deliberately narrow and do not establish general phishing detection. The unconditional veto and real sandbox/AI integration remain open. Recreate roleplay images with `CHROME_PATH=/path/to/chrome node scripts/shot-messages.cjs` after `npm install`. The script injects the actual content scripts into `?live=1` in rules-only mode; no payment is made. Message 9 intentionally has no card. The static comparison panel is removed in these images because its original 500 kr claim applies only to the default demo message.
