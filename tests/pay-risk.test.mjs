@@ -88,6 +88,80 @@ test("one strong atom with an amount is medium", async () => {
   assert.deepEqual(verdict.signals, ["off_platform"]);
 });
 
+const CODE_REQUESTS = [
+  "Please send me the 6-digit code.",
+  "Please send me the 6-digit code from your phone.",
+  "Please send me your verification code.",
+  "Before I can send the bike, please send me the 6-digit code I texted to your phone.",
+  "Please send the 6-digit code to me here so I can confirm."
+];
+
+for (const text of CODE_REQUESTS) {
+  test(`verification code request is medium: ${text}`, async () => {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk");
+    assert.equal(verdict.level, "medium");
+    assert.ok(verdict.signals.includes("verification_code"), JSON.stringify(verdict.signals));
+  });
+}
+
+test("gift card code plus an incidental phone stays off-platform only", async () => {
+  const text = "Buy a gift card and send me the code. Call my phone when you have it.";
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "medium");
+  assert.deepEqual(verdict.signals, ["off_platform"]);
+});
+
+test("incidental phone and digit substrings do not request a verification code", async () => {
+  const samples = [
+    "The headphones are ready. Send me the code for the padlock.",
+    "The smartphone is ready. Send me the code for the padlock.",
+    "Send me the code, the serial is 16-digit.",
+    "Send me the code for the garage door. My phone is in the car so I cannot open it."
+  ];
+  for (const text of samples) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal((verdict.signals || []).includes("verification_code"), false, text);
+  }
+});
+
+test("benign secure and delivery hosts do not card", async () => {
+  const samples = [
+    "Pay here https://secure.example.com/payment",
+    "See https://insecure.example.com/pay",
+    "https://redelivery.example.com/pay",
+    "https://secure.example.com/payments",
+    "Open https://secure.example.com/paypal today please"
+  ];
+  for (const text of samples) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal((verdict.signals || []).includes("suspicious_link"), false, text);
+  }
+});
+
+test("a decimal shipping label fee is medium", async () => {
+  const samples = [
+    "Pay a small fee of $4.99 for the shipping label.",
+    "Pay a small fee of 49.50 kr for the shipping label."
+  ];
+  for (const text of samples) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["shipping_fee"], text);
+  }
+});
+
+test("a shipping label after a sentence period stays silent", async () => {
+  const text = "Pay a small fee of 49 kr. Shipping label is extra and not included.";
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "silent");
+  assert.equal((verdict.signals || []).includes("shipping_fee"), false);
+});
+
 test("rules result stands when no askLlm is passed", async () => {
   const verdict = await detect(FF);
   assert.equal(verdict.llm, "off");

@@ -2,7 +2,7 @@
 // Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, pay-risk.js.
 // Patterns are case-insensitive and Unicode-aware. A hit is a concrete span.
 
-const RULES_VERSION = 2;
+const RULES_VERSION = 3;
 
 function wordBound(pattern, flags = "giu") {
   const tidy = globalThis.pbTidy;
@@ -67,9 +67,9 @@ const RULES = [
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "none" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
 
-  { id: "verification_code", re: "(?:send|share|tell)\\s+(?:me\\s+)?(?:the|your)\\s+code", gate: "code" },
-  { id: "suspicious_link", re: "[a-z0-9-]*(?:secure|verify|delivery)[a-z0-9.-]*\\.[a-z]{2,}/(?:claim|pay|verify)[a-z0-9/-]*", gate: "none" },
-  { id: "shipping_fee", re: "pay\\s+(?:a\\s+)?(?:small\\s+)?fee\\s+of\\s+[^.]{1,30}shipping\\s+label", gate: "none" },
+  { id: "verification_code", re: "(?:send|share|tell)\\s+(?:me\\s+)?(?:the|your)\\s+(?:(?:6-digit|verification|login)\\s+)?code", gate: "code" },
+  { id: "suspicious_link", re: "(?:[a-z0-9]+[.-])*(?:secure|verify|delivery)(?![a-z0-9])(?:[.-][a-z0-9]+)*\\.[a-z]{2,}/(?:claim|pay|verify)(?![a-z0-9])(?:[/-][a-z0-9]+)*", gate: "none" },
+  { id: "shipping_fee", re: "pay\\s+(?:a\\s+)?(?:small\\s+)?fee\\s+of\\s+[^.]{0,24}?\\d+(?:[.,]\\d+)*[^.]{0,40}?shipping\\s+label", gate: "none" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -148,6 +148,21 @@ function phoneNear(text, start, end) {
   return /\+?\d[\d\s]{6,}\d/.test(slice);
 }
 
+// "phone, please send me the code" is inside this gap. The garage-door phone is not.
+const CODE_WINDOW = 24;
+
+function boundedNear(text, start, end, pattern, window) {
+  const re = wordBound(pattern, "giu");
+  const found = [];
+  for (const match of text.matchAll(re)) {
+    const tokenStart = match.index ?? 0;
+    const tokenEnd = tokenStart + match[0].length;
+    const gap = tokenEnd <= start ? start - tokenEnd : tokenStart >= end ? tokenStart - end : 0;
+    if (gap <= window) found.push(match[0].toLowerCase());
+  }
+  return found;
+}
+
 function depositRejected(text, start, end) {
   const before = text.slice(Math.max(0, start - 48), start);
   const after = text.slice(end, Math.min(text.length, end + 40));
@@ -160,7 +175,14 @@ function depositRejected(text, start, end) {
 
 function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
-  if (rule.gate === "code") return /(?:phone|verification|login|6-digit)/iu.test(text) && !negatedBefore(text, start);
+  if (rule.gate === "code") {
+    if (negatedBefore(text, start)) return false;
+    const tokens = boundedNear(text, start, end, "phone|verification|login|6-digit", CODE_WINDOW);
+    if (!tokens.length) return false;
+    const giftCard = boundedNear(text, start, end, "gift\\s*cards?|gavekort", 80);
+    if (giftCard.length && tokens.every((token) => token === "phone")) return false;
+    return true;
+  }
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "deposit-word") {
