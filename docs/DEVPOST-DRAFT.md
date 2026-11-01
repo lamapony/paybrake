@@ -2,6 +2,12 @@
 
 **Team:** Dima, Christopher, David
 
+**Video:** [TODO video link]
+
+**Hosted demo:** [TODO hosted demo]
+
+Judges can run the credential-free local mock from the README today. This branch has no public hosted demo and no recorded video. Do not replace the placeholders until those exist.
+
 ## Inspiration
 
 A marketplace conversation can look ordinary until a seller asks for a payment method that leaves the buyer with fewer options. We wanted to give someone a moment to reconsider while the request is still in context.
@@ -20,8 +26,8 @@ Payment language is contextual: an ordinary mention of a payment method is not a
 
 ## Accomplishments that we're proud of
 
-We connected an evidence-based intervention to a complete mock order and approval flow. The repository includes an offline evaluation and tests for detection, copy and backend behavior; see [the evaluation cases](../eval/cases/pay-risk.json) and run `npm run eval` for the current results.
+We connected an evidence-based intervention to a complete mock order and approval flow. The offline evaluation is 30 synthetic cases in [eval/cases/pay-risk.json](../eval/cases/pay-risk.json): fictional chats written for this prototype. Run `npm run eval` to reproduce it. That run is a regression check on those 30 cases. It is not a measure of real-world accuracy, and this draft does not quote its scores as field performance.
 
 ## What's next
 
-Make the credential-free judge path easier to access, validate detection on independently sourced data, and review privacy and site permissions before any real-world pilot. A PayPal sandbox adapter is being developed separately; this branch uses mock orders.
+Make the credential-free judge path easier to access ([TODO hosted demo]), validate detection on independently sourced data, and review privacy and site permissions before any real-world pilot. A PayPal sandbox adapter is being developed separately; this branch uses mock orders. The demo video is not recorded yet ([TODO video link]). Record it from [the video script](DEMO-VIDEO-SCRIPT.md) against the local mock, then add captions.
