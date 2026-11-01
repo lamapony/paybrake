@@ -2,7 +2,7 @@
 // Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, pay-risk.js.
 // Patterns are case-insensitive and Unicode-aware. A hit is a concrete span.
 
-const RULES_VERSION = 1;
+const RULES_VERSION = 2;
 
 function wordBound(pattern, flags = "giu") {
   const tidy = globalThis.pbTidy;
@@ -17,6 +17,9 @@ const ATOMS = [
   { id: "friends_family", role: "act", strength: "strong", receipt: "Friends & Family" },
   { id: "upfront_deposit", role: "act", strength: "strong", receipt: "Upfront deposit" },
   { id: "off_platform", role: "act", strength: "strong", receipt: "Off-platform payment" },
+  { id: "verification_code", role: "act", strength: "strong", receipt: "Request for a verification code" },
+  { id: "suspicious_link", role: "act", strength: "strong", receipt: "Link to verify or pay" },
+  { id: "shipping_fee", role: "act", strength: "strong", receipt: "Shipping label fee" },
   { id: "pay_before_see", role: "act", strength: "strong", receipt: "Pay before seeing the item" },
   { id: "urgency_pressure", role: "act", strength: "weak", receipt: "Pressure to hurry" },
   { id: "ship_before_meet", role: "act", strength: "weak", receipt: "Ships before you meet" },
@@ -63,6 +66,10 @@ const RULES = [
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "negation" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "none" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
+
+  { id: "verification_code", re: "(?:send|share|tell)\\s+(?:me\\s+)?(?:the|your)\\s+code", gate: "code" },
+  { id: "suspicious_link", re: "[a-z0-9-]*(?:secure|verify|delivery)[a-z0-9.-]*\\.[a-z]{2,}/(?:claim|pay|verify)[a-z0-9/-]*", gate: "none" },
+  { id: "shipping_fee", re: "pay\\s+(?:a\\s+)?(?:small\\s+)?fee\\s+of\\s+[^.]{1,30}shipping\\s+label", gate: "none" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -153,6 +160,7 @@ function depositRejected(text, start, end) {
 
 function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
+  if (rule.gate === "code") return /(?:phone|verification|login|6-digit)/iu.test(text) && !negatedBefore(text, start);
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "deposit-word") {

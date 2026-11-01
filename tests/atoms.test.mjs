@@ -17,6 +17,9 @@ const CASES = {
     fire: "Please pay by bank transfer, 200 kr",
     miss: "The frame serial is DE89370400440532013000, check it when you visit"
   },
+  verification_code: { fire: "I sent a code to your phone, please send me the code", miss: "Send me the code from the gift card" },
+  suspicious_link: { fire: "Visit paypal-secure-verify.example.com/claim", miss: "Visit paypal.com for help" },
+  shipping_fee: { fire: "Pay a small fee of 49 kr for the shipping label", miss: "Shipping label included at no cost" },
   pay_before_see: {
     fire: "Pay first then I send the bike to you",
     miss: "You can pay after you see the bike in person"

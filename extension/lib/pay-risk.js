@@ -15,6 +15,9 @@ const TEMPLATES = {
   before: "Payment before you see the item: if it never arrives, the money may be hard to get back.",
   off: "Off-platform payment: a transfer outside PayPal checkout is hard to reverse if the item never arrives.",
   deposit: "Upfront deposit: if the item never arrives, you may have no way to get your money back.",
+  code: "A request for a verification code can give someone access to your account.",
+  link: "Check this payment or verification link carefully before opening it.",
+  fee: "A request for a shipping label fee may be a payment scam.",
   generic: "Risky payment request: a direct transfer may be hard to get back if the item never arrives."
 };
 
@@ -51,6 +54,9 @@ function templateFor(signals) {
   else if (has("pay_before_see")) reason = TEMPLATES.before;
   else if (has("off_platform")) reason = TEMPLATES.off;
   else if (has("upfront_deposit")) reason = TEMPLATES.deposit;
+  else if (has("verification_code")) reason = TEMPLATES.code;
+  else if (has("suspicious_link")) reason = TEMPLATES.link;
+  else if (has("shipping_fee")) reason = TEMPLATES.fee;
   if (reason.length > 120) reason = reason.slice(0, 119).trimEnd() + "…";
   return reason;
 }
@@ -192,7 +198,7 @@ async function detect(text, ctx = {}, options = {}) {
     const host = perMessage.find((message) => message.hits.some((hit) => hit.atom === strong[0] && hit.strength === "strong"));
     const pay = host && api.hasPayWord(host.text);
     const money = host && host.amounts && host.amounts.length > 0;
-    if (pay || money) level = "medium";
+    if (pay || money || strong[0] === "verification_code") level = "medium";
   }
   if (!level) return silent("no_atom", { signals, evidence, deal });
 
