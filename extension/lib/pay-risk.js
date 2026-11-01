@@ -1,6 +1,7 @@
 // Classic content script and a Node ESM side-effect module. No import/export.
-// detect(text, ctx, { askLlm }) is async. The model can only confirm or lower a
-// rules hit. It is not called on short, no_atom, weak_only, or veto.
+// detect(text, ctx, { askLlm, askJudge }) is async. A model can only confirm or
+// lower a rules hit. It is not called on short, no_atom, weak_only, or veto.
+// askJudge speaks the tiny-judge JSON contract (extension/lib/tiny-judge.js).
 
 // Split so a source grep for the banned phrases does not match this file.
 const BANNED = new RegExp(
@@ -15,6 +16,8 @@ const TEMPLATES = {
   before: "Payment before you see the item: if it never arrives, the money may be hard to get back.",
   off: "Off-platform payment: a transfer outside PayPal checkout is hard to reverse if the item never arrives.",
   deposit: "Upfront deposit: if the item never arrives, you may have no way to get your money back.",
+  overpay: "Overpay and refund: sending extra and waiting for a refund is a common way to lose the difference.",
+  label_fee: "A fee before shipping: a label or customs fee up front is hard to get back if nothing is sent.",
   generic: "Risky payment request: a direct transfer may be hard to get back if the item never arrives."
 };
 
@@ -45,7 +48,9 @@ function emptyDeal() {
 function templateFor(signals) {
   const has = (id) => signals.includes(id);
   let reason = TEMPLATES.generic;
-  if (has("friends_family") && has("upfront_deposit")) reason = TEMPLATES.ff_deposit;
+  if (has("overpayment_refund")) reason = TEMPLATES.overpay;
+  else if (has("label_fee") && !has("friends_family")) reason = TEMPLATES.label_fee;
+  else if (has("friends_family") && has("upfront_deposit")) reason = TEMPLATES.ff_deposit;
   else if (has("friends_family")) reason = TEMPLATES.ff;
   else if (has("upfront_deposit") && has("off_platform")) reason = TEMPLATES.deposit_off;
   else if (has("pay_before_see")) reason = TEMPLATES.before;
@@ -99,6 +104,7 @@ function silent(reason, extra) {
     evidence: extra.evidence || [],
     deal: extra.deal || emptyDeal(),
     llm: extra.llm || "off",
+    judge: extra.judge || "off",
     rulesVersion: atomsApi().RULES_VERSION
   };
 }
@@ -149,6 +155,30 @@ function applyLlm(rules, llm, text) {
     deal,
     llm: "confirmed"
   };
+}
+
+async function consultJudge(rules, raw, options) {
+  const ask = options && options.askJudge;
+  if (typeof ask !== "function") return null;
+  const judgeApi = globalThis.pbTinyJudge;
+  if (!judgeApi || typeof judgeApi.packPrompt !== "function" || typeof judgeApi.decide !== "function") return null;
+  const prompt = judgeApi.packPrompt(raw, rules);
+  const timeoutMs = options.judgeTimeoutMs ?? 6000;
+  let timer;
+  try {
+    const out = await Promise.race([
+      Promise.resolve(ask({ text: raw, level: rules.level, signals: rules.signals, prompt })),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(Object.assign(new Error("timeout"), { code: "timeout" })), timeoutMs);
+      })
+    ]);
+    return judgeApi.decide(out, raw, rules);
+  } catch (error) {
+    if (error && error.code === "model_off") return { action: "off" };
+    return { action: "error" };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function detect(text, ctx = {}, options = {}) {
@@ -204,8 +234,21 @@ async function detect(text, ctx = {}, options = {}) {
     evidence,
     deal,
     llm: "off",
+    judge: "off",
     rulesVersion: api.RULES_VERSION
   };
+
+  const judged = await consultJudge(rules, raw, options);
+  if (judged && judged.action === "keep") {
+    const why = judged.why && TEMPLATES[judged.why] ? TEMPLATES[judged.why] : rules.reason;
+    return { ...rules, level: judged.level || rules.level, reason: why, judge: "confirmed" };
+  }
+  if (judged && judged.action === "reject") {
+    return silent("llm_disagrees", { signals: rules.signals, evidence: rules.evidence, deal: rules.deal, judge: "rejected" });
+  }
+  if (judged && judged.action === "error" && !(options && typeof options.askLlm === "function")) {
+    return { ...rules, level: "medium", judge: "error" };
+  }
 
   const ask = options && options.askLlm;
   if (typeof ask !== "function") return rules;

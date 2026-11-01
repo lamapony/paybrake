@@ -464,6 +464,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     <div class="switcher" role="group" aria-label="Conversations">
       <button type="button" id="pb-show-thread-1" aria-pressed="true">Jonas Holm · bike</button>
       <button type="button" id="pb-show-thread-2" aria-pressed="false">Signe Kruse · camera</button>
+      <button type="button" id="pb-show-thread-3" aria-pressed="false">Lars Møller · speaker</button>
     </div>
 
     <section class="card chat" id="thread-bike" data-pb-thread data-pb-listing-title="Used road bike" data-pb-listing-price="1,800 kr" data-pb-seller-email="jonas.holm@example.com" data-pb-seller-name="Jonas Holm" aria-label="Conversation with Jonas Holm">
@@ -571,6 +572,34 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
       </div>
     </section>
 
+    <section class="card chat" id="thread-speaker" data-pb-thread data-pb-listing-title="Bookshelf speaker" data-pb-listing-price="1,200 kr" data-pb-seller-email="lars.moller@example.com" data-pb-seller-name="Lars Møller" aria-label="Conversation with Lars Møller" hidden>
+      <div class="chat-head">
+        <span class="avatar" aria-hidden="true">LM</span>
+        <div>
+          <div class="title">Lars Møller</div>
+          <div class="sub">About: Bookshelf speaker · 1,200 kr</div>
+        </div>
+      </div>
+      <div class="thread">
+        <div class="day">Today</div>
+        <div class="msg out">
+          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi, is the bookshelf speaker still available?</div>
+          <span class="time">18:02</span>
+        </div>
+        <div class="msg in">
+          <span class="avatar" aria-hidden="true">LM</span>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Lars Møller: </span>Pay 1,600 kr and I will refund the difference of 400 kr after you receive it. Also pay the 80 kr shipping label fee first.</div>
+          <span class="time">18:04</span>
+        </div>
+      </div>
+      <div class="composer" aria-hidden="true">
+        <div class="fake-input">Aa</div>
+        <span class="send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-7z"/></svg>
+        </span>
+      </div>
+    </section>
+
     <p class="safe-label" id="safe-label">Another chat · no false alarm</p>
     <section class="card safe" id="thread-lamp" data-pb-thread data-pb-listing-title="Desk lamp" data-pb-listing-price="250 kr" data-pb-seller-email="mette.lund@example.com" data-pb-seller-name="Mette Lund" aria-labelledby="safe-label">
       <div class="chat-head">
@@ -658,19 +687,21 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
       document.documentElement.dataset.pbLive = "1";
     }
 
-    var bike = document.getElementById("thread-bike");
-    var camera = document.getElementById("thread-camera");
-    var showBike = document.getElementById("pb-show-thread-1");
-    var showCamera = document.getElementById("pb-show-thread-2");
-    function showThread(which) {
-      var bikeOn = which === 1;
-      bike.hidden = !bikeOn;
-      camera.hidden = bikeOn;
-      showBike.setAttribute("aria-pressed", bikeOn ? "true" : "false");
-      showCamera.setAttribute("aria-pressed", bikeOn ? "false" : "true");
+    var threads = [
+      { button: document.getElementById("pb-show-thread-1"), panel: document.getElementById("thread-bike") },
+      { button: document.getElementById("pb-show-thread-2"), panel: document.getElementById("thread-camera") },
+      { button: document.getElementById("pb-show-thread-3"), panel: document.getElementById("thread-speaker") }
+    ];
+    function showThread(index) {
+      threads.forEach(function (item, i) {
+        var on = i === index;
+        item.panel.hidden = !on;
+        item.button.setAttribute("aria-pressed", on ? "true" : "false");
+      });
     }
-    showBike.addEventListener("click", function () { showThread(1); });
-    showCamera.addEventListener("click", function () { showThread(2); });
+    threads.forEach(function (item, i) {
+      item.button.addEventListener("click", function () { showThread(i); });
+    });
 
     var card = document.getElementById("pb-card");
     var foot = document.getElementById("pb-foot");

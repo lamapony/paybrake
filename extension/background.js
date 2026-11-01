@@ -5,6 +5,7 @@ importScripts(
   "lib/tidy.js",
   "lib/atoms.js",
   "lib/extract.js",
+  "lib/tiny-judge.js",
   "lib/pay-risk.js",
   "lib/ask-llm.js"
 );
@@ -36,28 +37,33 @@ async function getOpts() {
   return {
     backendUrl: String(opts.backendUrl || DEFAULT_BACKEND).replace(/\/$/, ""),
     llm: Boolean(opts.llm),
+    judge: opts.judge !== false,
     debug: Boolean(opts.debug)
   };
 }
 
-async function readCache(hash, llmOn) {
+function modeStamp(opts) {
+  return (opts.llm ? "s" : "r") + (opts.judge ? "j" : "n");
+}
+
+async function readCache(hash, stamp) {
   const key = cacheKey(hash);
   const mem = memory.get(key);
-  if (mem && fresh(mem) && mem.llmOn === llmOn && mem.verdict && mem.verdict.llm !== "error") return mem;
+  if (mem && fresh(mem) && mem.stamp === stamp && mem.verdict && mem.verdict.llm !== "error" && mem.verdict.judge !== "error") return mem;
   const stored = await chrome.storage.local.get(key);
   const row = stored[key];
-  if (row && fresh(row) && row.llmOn === llmOn && row.verdict && row.verdict.llm !== "error") {
+  if (row && fresh(row) && row.stamp === stamp && row.verdict && row.verdict.llm !== "error" && row.verdict.judge !== "error") {
     memory.set(key, row);
     return row;
   }
   return null;
 }
 
-async function writeCache(hash, verdict, llmOn, context) {
-  const row = { verdict, llmOn, context, ts: Date.now() };
+async function writeCache(hash, verdict, stamp, context) {
+  const row = { verdict, stamp, context, ts: Date.now() };
   const key = cacheKey(hash);
   memory.set(key, row);
-  if (verdict && verdict.llm === "error") return;
+  if (verdict && (verdict.llm === "error" || verdict.judge === "error")) return;
   await chrome.storage.local.set({ [key]: row });
 }
 
@@ -139,17 +145,21 @@ async function onDetect(message, opts) {
   const hash = String(message.hash || "");
   const text = String(message.text || "");
   const context = message.context && typeof message.context === "object" ? message.context : {};
-  const cached = hash ? await readCache(hash, opts.llm) : null;
+  const stamp = modeStamp(opts);
+  const cached = hash ? await readCache(hash, stamp) : null;
   const info = await health();
   if (cached) {
     return { ok: true, verdict: cached.verdict, debug: opts.debug, mode: info && info.paypal, cached: true };
   }
-  const ask = opts.llm
+  const askLlm = opts.llm
     ? (payload) => globalThis.pbAskLlm.askLlm(payload, { baseUrl: opts.backendUrl })
     : null;
-  const verdict = await globalThis.pbPayRisk.detect(text, context, ask ? { askLlm: ask } : {});
+  const askJudge = opts.judge && globalThis.pbTinyJudge
+    ? (payload) => globalThis.pbTinyJudge.askBrowser(payload)
+    : null;
+  const verdict = await globalThis.pbPayRisk.detect(text, context, { askLlm, askJudge });
   if (hash) {
-    await writeCache(hash, verdict, opts.llm, context);
+    await writeCache(hash, verdict, stamp, context);
     await rememberDeal(hash, { verdict, context, text: text.slice(0, 500) });
   }
   return { ok: true, verdict, debug: opts.debug, mode: info && info.paypal };

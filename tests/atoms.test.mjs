@@ -21,6 +21,14 @@ const CASES = {
     fire: "Pay first then I send the bike to you",
     miss: "You can pay after you see the bike in person"
   },
+  overpayment_refund: {
+    fire: "Pay the full 2,000 kr and I will refund the difference once it sells",
+    miss: "You can return it within 14 days for a refund if you change your mind"
+  },
+  label_fee: {
+    fire: "Please pay the 40 kr shipping label fee before I can send the bike",
+    miss: "Shipping is included and there is no label fee at all"
+  },
   urgency_pressure: {
     fire: "Several people are asking, so today only",
     miss: "Several people liked the photos of the bike"
@@ -60,6 +68,16 @@ test("goods and services near-miss when the seller refuses", () => {
     { from: "seller", text: "I will not use Goods & Services. My friends and family loved this lamp." }
   ]);
   assert.equal(hit, null);
+});
+
+test("a gift card used as payment is off-platform", () => {
+  const hits = findAtoms("Buy a €100 gift card and send me the code. That is the only way I can take payment.");
+  assert.ok(hits.some((hit) => hit.atom === "off_platform"));
+});
+
+test("a gift card offered as a prize is not a payment", () => {
+  const hits = findAtoms("Congratulations, you won a free gift card as a prize with this camera.");
+  assert.equal(hits.some((hit) => hit.atom === "off_platform"), false);
 });
 
 test("evidence spans are slices of the input", () => {

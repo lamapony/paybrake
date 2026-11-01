@@ -37,6 +37,7 @@ async function load() {
   const stored = await chrome.storage.local.get("pb_opts");
   const opts = stored.pb_opts || {};
   $("backend").value = opts.backendUrl || DEFAULT_BACKEND;
+  $("judge").checked = opts.judge !== false;
   $("llm").checked = Boolean(opts.llm);
   $("debug").checked = Boolean(opts.debug);
   renderLog(await readLog());
@@ -48,6 +49,7 @@ $("opts").addEventListener("submit", async (event) => {
   await chrome.storage.local.set({
     pb_opts: {
       backendUrl,
+      judge: $("judge").checked,
       llm: $("llm").checked,
       debug: $("debug").checked
     }

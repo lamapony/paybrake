@@ -1,8 +1,8 @@
 // Classic content script and a Node ESM side-effect module. No import/export.
-// Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, pay-risk.js.
+// Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, tiny-judge.js, pay-risk.js.
 // Patterns are case-insensitive and Unicode-aware. A hit is a concrete span.
 
-const RULES_VERSION = 1;
+const RULES_VERSION = 2;
 
 function wordBound(pattern, flags = "giu") {
   const tidy = globalThis.pbTidy;
@@ -18,6 +18,8 @@ const ATOMS = [
   { id: "upfront_deposit", role: "act", strength: "strong", receipt: "Upfront deposit" },
   { id: "off_platform", role: "act", strength: "strong", receipt: "Off-platform payment" },
   { id: "pay_before_see", role: "act", strength: "strong", receipt: "Pay before seeing the item" },
+  { id: "overpayment_refund", role: "act", strength: "strong", receipt: "Overpay and refund" },
+  { id: "label_fee", role: "act", strength: "strong", receipt: "Fee before shipping" },
   { id: "urgency_pressure", role: "act", strength: "weak", receipt: "Pressure to hurry" },
   { id: "ship_before_meet", role: "act", strength: "weak", receipt: "Ships before you meet" },
   { id: "pay_on_collection", role: "veto", strength: "veto", receipt: "Pay on collection or checkout" },
@@ -60,7 +62,7 @@ const RULES = [
   { id: "off_platform", re: "revolut", gate: "negation" },
   { id: "off_platform", re: "(?:transferwise|wise\\.com|(?:via|on|with|til)\\s+wise)", gate: "negation" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
-  { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "negation" },
+  { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "gift-pay" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "none" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
 
@@ -68,6 +70,20 @@ const RULES = [
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
   { id: "pay_before_see", re: "payment\\s+before\\s+(?:viewing|seeing|you\\s+see)", gate: "none" },
   { id: "pay_before_see", re: "pay\\s+before\\s+(?:you\\s+)?(?:see|view|viewing|meeting)", gate: "none" },
+
+  { id: "overpayment_refund", re: "refund\\s+the\\s+(?:difference|extra|rest)", gate: "overpay" },
+  { id: "overpayment_refund", re: "send\\s+(?:me\\s+)?the\\s+(?:extra|difference)\\s+back", gate: "overpay" },
+  { id: "overpayment_refund", re: "overpay(?:ment|ing)?", gate: "overpay" },
+  { id: "overpayment_refund", re: "(?:paid|sent)\\s+too\\s+much", gate: "overpay" },
+  { id: "overpayment_refund", re: "tilbagebetal(?:e|er)?\\s+forskellen", gate: "overpay" },
+  { id: "overpayment_refund", re: "betalt\\s+for\\s+meget", gate: "overpay" },
+
+  { id: "label_fee", re: "shipping\\s+label(?:\\s+fee)?", gate: "fee" },
+  { id: "label_fee", re: "label\\s+fee", gate: "fee" },
+  { id: "label_fee", re: "customs\\s+fee", gate: "fee" },
+  { id: "label_fee", re: "release\\s+fee", gate: "fee" },
+  { id: "label_fee", re: "fragtlabel", gate: "fee" },
+  { id: "label_fee", re: "betal\\s+for\\s+(?:fragt|labelen|label)", gate: "fee" },
 
   { id: "urgency_pressure", re: "several\\s+people(?:\\s+are)?\\s+asking", gate: "none" },
   { id: "urgency_pressure", re: "others?\\s+are\\s+interested", gate: "none" },
@@ -151,9 +167,36 @@ function depositRejected(text, start, end) {
   return false;
 }
 
+function windowAround(text, start, end, before, after) {
+  return text.slice(Math.max(0, start - before), Math.min(text.length, end + after));
+}
+
+function prizeGift(text, start, end) {
+  return /(?:won|win|prize|winner|congratulat|giveaway|vundet|vinder|præmie|gratis gavekort|free\s+gift)/iu.test(windowAround(text, start, end, 70, 40));
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "negation") return !negatedBefore(text, start);
+  if (rule.gate === "gift-pay") {
+    if (negatedBefore(text, start) || prizeGift(text, start, end)) return false;
+    return /(?:pay|send|buy|purchase|bought|betal|køb|købe|overfør|overfoer)/iu.test(windowAround(text, start, end, 80, 80));
+  }
+  if (rule.gate === "overpay") {
+    if (negatedBefore(text, start)) return false;
+    const slice = windowAround(text, start, end, 70, 70);
+    const policy = /(?:refund policy|14[- ]day|change your mind|fortryder)/iu.test(slice);
+    const ask = /(?:overpay|too much|the difference|the extra|forskellen|for meget)/iu.test(slice);
+    if (policy && !ask) return false;
+    return /(?:pay|send|paid|sent|betal|overfør|refund|tilbage)/iu.test(slice);
+  }
+  if (rule.gate === "fee") {
+    if (negatedBefore(text, start)) return false;
+    const before = text.slice(Math.max(0, start - 36), start);
+    if (/(?:no|without|ingen|uden|free|included)\s+$/iu.test(before)) return false;
+    if (/(?:no extra|included in the price|already included|ingen ekstra)/iu.test(windowAround(text, start, end, 70, 40))) return false;
+    return true;
+  }
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "deposit-word") {
     if (depositRejected(text, start, end)) return false;

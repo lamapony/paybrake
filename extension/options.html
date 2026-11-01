@@ -20,8 +20,12 @@
       <input id="backend" name="backend" type="url" required spellcheck="false" autocomplete="off" value="http://localhost:8787">
     </label>
     <label class="check">
+      <input id="judge" name="judge" type="checkbox" checked>
+      <span>Browser judge: ask Chrome's on-device model to confirm or lower a rules hit. Off keeps the rules result.</span>
+    </label>
+    <label class="check">
       <input id="llm" name="llm" type="checkbox">
-      <span>Ask the backend for an AI check (off uses rules only)</span>
+      <span>If the browser has no model, ask the backend AI check</span>
     </label>
     <label class="check">
       <input id="debug" name="debug" type="checkbox">

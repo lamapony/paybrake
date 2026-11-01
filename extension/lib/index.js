@@ -3,12 +3,13 @@
 // worker load the lib files as classic scripts, which set globalThis.pb*.
 //
 //   manifest / addScriptTag order:
-//   brand.js, tidy.js, atoms.js, extract.js, pay-risk.js, ask-llm.js, content.js
+//   brand.js, tidy.js, atoms.js, extract.js, tiny-judge.js, pay-risk.js, ask-llm.js, content.js
 
 import "./brand.js";
 import "./tidy.js";
 import "./atoms.js";
 import "./extract.js";
+import "./tiny-judge.js";
 import "./pay-risk.js";
 import "./ask-llm.js";
 
@@ -17,4 +18,5 @@ export const tidy = globalThis.pbTidy;
 export const atoms = globalThis.pbAtoms;
 export const extract = globalThis.pbExtract;
 export const payRisk = globalThis.pbPayRisk;
+export const tinyJudge = globalThis.pbTinyJudge;
 export const askLlmClient = globalThis.pbAskLlm;

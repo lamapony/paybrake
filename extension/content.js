@@ -202,7 +202,9 @@
   }
 
   function footerText(verdict) {
-    const check = verdict && verdict.llm === "confirmed" ? "AI check" : "rules check";
+    let check = "rules check";
+    if (verdict && verdict.judge === "confirmed") check = "browser judge";
+    else if (verdict && verdict.llm === "confirmed") check = "AI check";
     return "PayBrake · " + check + " · only you can see this";
   }
 

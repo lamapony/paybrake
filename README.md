@@ -31,7 +31,9 @@ The static card is hidden. The extension draws its own card in the bike thread. 
 
 `Signe Kruse · camera` is a second risky thread for **Pay anyway**. `demo/safe-chats.html` should stay silent.
 
-Options (right-click the toolbar icon, or open the extension's options page): backend URL (default `http://localhost:8787`), rules-only vs an AI check, a debug HUD, and the on-device override log (download JSON or clear).
+`Lars Møller · speaker` is an overpay-and-refund plus a shipping-label fee. The lamp thread should stay silent.
+
+Options (right-click the toolbar icon, or open the extension's options page): backend URL (default `http://localhost:8787`), the browser judge, a backend AI check used only when the browser has no model, a debug HUD, and the on-device override log (download JSON or clear).
 
 ## What the pieces do
 
@@ -40,19 +42,38 @@ demo page (data-pb-* threads)
         |
         v
 content.js  ----messages---->  background.js
- shadow card                     cache by hash + rules version
- never clicks the site           override ring log (max 200)
-        ^                          |
-        |                          v
+ shadow card                     rules first, then the browser judge
+ never clicks the site           cache by hash + rules version
+        ^                        override ring log (max 200)
+        |                          |
+        |                          +---- LanguageModel (on-device, if Chrome has it)
+        |                          |
         +-------- JSON --------  server.js   :8787
                                  OrdersPort
                                    mock   (this build, no credentials)
                                    rest   (not implemented)
                                    toolkit (not implemented)
-                                 /api/classify -> 503 llm_off until LLM_BASE_URL is set
+                                 /api/classify -> only if the browser judge is off
+                                                  and the backend AI check is on
 ```
 
-Detection runs in the extension from regex atoms (English and Danish). The backend is only for orders and, later, the model. With the AI check left off, a stopped backend still shows the card. Protect then shows one line: the helper could not be reached.
+Detection runs in the extension from regex atoms (English and Danish). The card stays hidden until an atom matches a span. The backend is for orders. A stopped backend still shows the card. Protect then shows one line: the helper could not be reached.
+
+## Browser judge
+
+The judge is a small task so a tiny on-device model can do it. Rules decide that a payment ask is risky. The model only confirms, lowers, or rejects that hit, and it must quote a span that is already in the message. It cannot open a card the rules did not open, and it cannot raise the level.
+
+The prompt is capped at 900 characters. The reply is one JSON object:
+
+```json
+{"v":"confirm|lower|reject","lv":"high|medium|none","q":"verbatim quote","why":"ff_deposit|ff|deposit_off|before|off|deposit|overpay|label_fee|generic"}
+```
+
+`why` picks a fixed sentence. The model does not write the card copy.
+
+Chrome's Prompt API (`LanguageModel`, the on-device Gemini Nano) is the runtime. It runs in the extension service worker when `LanguageModel.availability()` is `available`. A missing model, a model that still needs a download, or a timeout leaves the rules result and the footer says `rules check`. A confirmed hit says `browser judge`. No chat text leaves the browser for that check.
+
+The same prompt is the contract for a later tiny model. Swap `browserGenerate` in `extension/lib/tiny-judge.js`. Do not send the model an open "is this a scam?" question.
 
 ## Mock and sandbox
 
@@ -74,7 +95,7 @@ npm test
 npm run eval
 ```
 
-Rules eval on 30 synthetic chats (16 risky, 14 safe, fictional names): precision 1, recall 1, F1 1, false alarms 0. The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
+Rules eval on the synthetic chats in `eval/cases/pay-risk.json` (fictional names). The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Those scores are a regression check on that file, not field accuracy. Live eval exits 0 with a skip message unless `/health` reports the model configured.
 
 Screenshots: `npm run shots`. Extension smoke: `npm run e2e` (Chromium with the unpacked extension). If the browser cannot load an extension in this environment, that script prints `SKIP` and exits 0.
 

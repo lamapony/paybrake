@@ -307,6 +307,57 @@
       "messages": [
         { "from": "seller", "text": "Ja, den er der stadig. Stellet er aluminium og dækkene er næsten nye." }
       ]
+    },
+    {
+      "id": "en-overpay",
+      "lang": "en",
+      "expect": "risk",
+      "level": "medium",
+      "signals": ["overpayment_refund"],
+      "context": { "listingTitle": "Bookshelf speaker", "listingPrice": "1,200 kr" },
+      "messages": [
+        { "from": "seller", "text": "Pay the full 1,600 kr for the speaker and I will refund the difference of 400 kr after it arrives." }
+      ]
+    },
+    {
+      "id": "en-label-fee",
+      "lang": "en",
+      "expect": "risk",
+      "level": "medium",
+      "signals": ["label_fee"],
+      "context": { "listingTitle": "Bookshelf speaker", "listingPrice": "1,200 kr" },
+      "messages": [
+        { "from": "seller", "text": "Please pay the 80 kr shipping label fee before I can send the speaker to you." }
+      ]
+    },
+    {
+      "id": "da-fragtlabel",
+      "lang": "da",
+      "expect": "risk",
+      "level": "medium",
+      "signals": ["label_fee"],
+      "context": { "listingTitle": "Højttaler", "listingPrice": "1.200 kr" },
+      "messages": [
+        { "from": "seller", "text": "Betal 80 kr for fragtlabel, så sender jeg højttaleren i morgen tidlig." }
+      ]
+    },
+    {
+      "id": "en-gift-prize",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Camera", "listingPrice": "2,400 kr" },
+      "messages": [
+        { "from": "seller", "text": "Congratulations, you won a free gift card as a prize with this camera. I can ship or you can pick it up." }
+      ]
+    },
+    {
+      "id": "en-refund-policy",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Desk lamp", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "seller", "text": "You can return the lamp within 14 days for a refund if you change your mind about the colour." }
+      ]
     }
   ]
 }
