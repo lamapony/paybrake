@@ -12,7 +12,7 @@
     "backend"
   ],
   "scripts": {
-    "test": "node --test tests/ backend/test/",
+    "test": "node --test tests/*.mjs backend/test/*.mjs",
     "eval": "node eval/run-eval.mjs --mode=rules",
     "dev:backend": "node backend/src/server.js",
     "serve:demo": "node scripts/serve.mjs",
