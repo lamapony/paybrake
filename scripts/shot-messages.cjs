@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const root = path.resolve(__dirname, '..');
 const messages = require('../night/messages.json');
-const files = ['brand.js', 'tidy.js', 'atoms.js', 'extract.js', 'pay-risk.js', 'ask-llm.js'];
+const files = ['brand.js', 'tidy.js', 'atoms.js', 'extract.js', 'redact.js', 'pay-risk.js', 'ask-llm.js', 'chat-state.js'];
 const expected = ['High', 'Medium', 'High', 'Medium', 'Medium', 'High', 'High', 'High', null];
 const server = spawn(process.execPath, ['scripts/serve.mjs'], { cwd: root, env: { ...process.env, PORT: '18080' }, stdio: 'inherit' });
 (async () => {
@@ -31,7 +31,8 @@ const server = spawn(process.execPath, ['scripts/serve.mjs'], { cwd: root, env: 
       const card = page.locator('#thread-bike #pb-card');
       if (expected[i]) {
         await card.waitFor({ state: 'visible', timeout: 5000 });
-        if (!(await card.innerText()).includes((expected[i] === 'High' ? 'High risk' : 'Possible payment risk'))) throw Error(`Unexpected level for message ${i + 1}: ${await card.innerText()}`);
+        const text = await card.innerText();
+        if (!text.includes(expected[i])) throw Error(`Unexpected level for message ${i + 1}: ${text}`);
       } else {
         await page.waitForTimeout(1000);
         if (await card.count()) throw Error('Honest control showed a card');
