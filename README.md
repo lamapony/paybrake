@@ -1,6 +1,14 @@
 # PayBrake
 
-**Brakes before you pay.** PayBrake is a Chrome extension that uses **AI** and on-device rules to spot scam payment requests in a marketplace chat, then offers a **PayPal** Goods & Services order (PayPal Orders v2, sandbox) instead of a blind transfer, Friends & Family payment, gift card, or code.
+**Brakes before you pay.** PayBrake is a Chrome extension that catches scam payment requests in marketplace chats and offers a safer **PayPal** checkout instead.
+
+When a "seller" asks for a blind transfer, a PayPal Friends & Family payment, a gift card or a code, PayBrake flags it with on-device rules plus an **AI** check, quotes the risky line, and offers a **PayPal** Goods & Services order (PayPal Orders v2, **sandbox**) for the item and price in the chat.
+
+**Try it in about 2 minutes, nothing to run locally:** https://paybrake-demo.spbabinov.workers.dev/ ([steps below](#try-it-hosted-nothing-to-run-locally))
+
+- **PayPal (sandbox):** one click turns the risky ask into a PayPal Orders v2 order for the item and price in the chat: create, approve, capture. Live PayPal is refused in code.
+- **AI:** a server-side AI check (Typesafe `jev-1.14.0`) confirms or lowers the rules verdict. It can never raise it, and if the AI is down, the rules still work.
+- **Explains itself:** the card names the risky payment request with a quote from the message.
 
 Built with: **PayPal** Orders v2 API (sandbox, plus a no-credentials mock), the **PayPal Agent Toolkit** tool names (`create_order`, `get_order`, `pay_order`), an **AI** scam check on Typesafe models (`jev-1.14.0`, server-side key), Chrome Manifest V3, Node 20, Cloudflare Workers.
 
@@ -15,20 +23,6 @@ Marketplace scams usually end the same way: the "seller" pushes the buyer off th
 - **PayPal (sandbox only).** "Switch to a PayPal order" creates a PayPal Orders v2 order (`intent: CAPTURE`) for the item and price in the chat, sends the buyer to PayPal's sandbox approval page, and captures after approval. Code: `backend/src/paypal-rest.js`, used by both the local backend and the hosted Worker. Without sandbox keys the same flow runs on a mock (`MOCK-` order ids), so the demo never breaks. Live PayPal is refused in code.
 - **AI.** On-device rules find the payment request; an AI check (`/api/classify`, Typesafe model `jev-1.14.0`, key server-side only) confirms or lowers the risk level and can add a card when the rules are silent on a clear scam. It can never raise the rules level, and a quote not present in the message is ignored. If the AI is down or rate-limited, the extension falls back to rules only.
 
-## Architecture
-
-```
- Chrome extension (MV3)                       Cloudflare Worker (hosted demo) / Node backend (local)
- ┌──────────────────────────────┐            ┌─────────────────────────────────────────────┐
- │ content.js: reads the chat,  │  /api/     │ /api/classify  -> AI check (Typesafe)       │
- │ rules (atoms.js), redacts,   │ ─classify─>│   capped per IP and per day, kill switch    │
- │ draws the PayBrake card      │            │                                             │
- │ background.js: cache, log    │ ─protect─> │ /api/protect, /api/orders/:id/capture       │
- └──────────────────────────────┘            │   PayPal Orders v2 sandbox (keys set)       │
-                                             │   or mock orders in a Durable Object        │
-                                             └─────────────────────────────────────────────┘
-```
-
 ## Try it (hosted, nothing to run locally)
 
 **Start here: https://paybrake-demo.spbabinov.workers.dev/** (demo link, not indexed by search engines)
@@ -38,7 +32,7 @@ Marketplace scams usually end the same way: the "seller" pushes the buyer off th
 3. Click **Try the demo store** (or open https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1). In the bike chat a **High risk** card appears, tagged **AI checked** once the AI verdict is back.
 4. **Switch to a PayPal order** → **Open approval** → **Approve (mock)** → back in the chat **I approved it, capture**.
 
-About 2 minutes. Step-by-step with screenshots hints: [TESTING.md](TESTING.md).
+About 2 minutes. When the hosted server runs on PayPal sandbox (`/health` shows `"paypal": "rest"`), **Open approval** goes to PayPal's sandbox approval page instead of the **Approve (mock)** button. Step-by-step guide: [TESTING.md](TESTING.md).
 
 The hosted server is one Cloudflare Worker (free plan): the demo store pages, the PayPal order backend (PayPal sandbox when the `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` Worker secrets are set, otherwise mock orders kept 24 hours; `/health` shows `"paypal": "rest"` or `"mock"`; optional `PAYPAL_PAYEE_EMAIL` = your sandbox Business account), and `/api/classify`, the AI check. The Typesafe key lives only in the Worker as a secret; the extension never sees it.
 
@@ -60,6 +54,20 @@ On any non-200 the extension falls back to its on-device rules, so the demo keep
 Kill switch: `cd hosted && npx wrangler secret put AI_KILL_SWITCH` (enter `1`). Turn it back on with `npx wrangler secret delete AI_KILL_SWITCH`. No redeploy needed.
 
 Deploy: `npm run hosted:deploy` (builds the extension zip and the pages into `hosted/public/`, then `wrangler deploy`; wrangler 4 itself needs Node 22+). Set the key once with `npx wrangler secret put TYPESAFE_API_KEY`. Never commit it.
+
+## Architecture
+
+```
+ Chrome extension (MV3)                       Cloudflare Worker (hosted demo) / Node backend (local)
+ ┌──────────────────────────────┐            ┌─────────────────────────────────────────────┐
+ │ content.js: reads the chat,  │  /api/     │ /api/classify  -> AI check (Typesafe)       │
+ │ rules (atoms.js), redacts,   │ ─classify─>│   capped per IP and per day, kill switch    │
+ │ draws the PayBrake card      │            │                                             │
+ │ background.js: cache, log    │ ─protect─> │ /api/protect, /api/orders/:id/capture       │
+ └──────────────────────────────┘            │   PayPal Orders v2 sandbox (keys set)       │
+                                             │   or mock orders in a Durable Object        │
+                                             └─────────────────────────────────────────────┘
+```
 
 ## Run it locally (5 minutes)
 
@@ -127,7 +135,7 @@ Detection runs in the extension from regex atoms (English and Danish). The backe
 
 With an empty client id, `PAYPAL_ADAPTER=rest` still selects mock. `/health` then shows `"paypal": "mock"`.
 
-### Toolkit finding (SPEC §5)
+### PayPal Agent Toolkit: what we found (SPEC §5)
 
 Published `@paypal/agent-toolkit` 1.11.0: `create_order` has no payee field, and `currencyCode` is USD only. The package also pulls in `ai`, `openai`, `langchain`, `axios`, and the PayPal server SDK. This repo does not install it.
 

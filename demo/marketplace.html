@@ -25,7 +25,6 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     --amber-line: #f3c46b;
     --pp-blue: #0062a8;
     --pp-blue-hover: #004f88;
-    --pp-navy: #002f6c;
     --ok: #067647;
     --ok-bg: #ecfdf3;
     --radius: 14px;
@@ -335,7 +334,8 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     background: #eef4ff; color: #1d4ed8; border: 1px solid #c7d7fe;
     padding: 3px 8px; border-radius: 6px; white-space: nowrap;
   }
-  .wordmark { font-weight: 800; font-style: italic; font-size: 20px; letter-spacing: -.02em; color: var(--pp-navy); }
+  .method { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .method b { color: var(--ink); }
   .preview-body { padding: 16px 18px 18px; }
   .order-item {
     display: flex; gap: 12px; align-items: center;
@@ -416,7 +416,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
 <body>
 
 <div class="concept" role="note">
-  <strong>DEMO</strong> — fictional marketplace and names. Not affiliated with any payment provider or social network.
+  <strong>DEMO</strong> — fictional marketplace and names. Not affiliated with PayPal or any marketplace. No real money moves.
 </div>
 
 <header class="topbar">
@@ -448,14 +448,14 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
         </svg>
       </div>
       <div>
-        <h1>Used road bike</h1>
-        <p class="price">1,800 kr</p>
-        <p class="listed">Listed 2 days ago · Aluminium frame, size 56 · Shipping available</p>
+        <h1>Specialized Allez road bike, 56 cm</h1>
+        <p class="price">1,850 kr</p>
+        <p class="listed">Listed 2 days ago · Nørrebro, Copenhagen · Aluminium frame, Shimano Claris 2x8, new tyres in May · Shipping available</p>
         <div class="seller">
           <span class="avatar" aria-hidden="true">JH</span>
           <div>
             <div class="seller-name">Jonas Holm</div>
-            <div class="seller-sub">Joined 3 weeks ago · 0 ratings</div>
+            <div class="seller-sub">Joined 3 weeks ago · 0 ratings · usually replies within minutes</div>
           </div>
         </div>
       </div>
@@ -466,12 +466,12 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
       <button type="button" id="pb-show-thread-2" aria-pressed="false">Signe Kruse · camera</button>
     </div>
 
-    <section class="card chat" id="thread-bike" data-pb-thread data-pb-listing-title="Used road bike" data-pb-listing-price="1,800 kr" data-pb-seller-email="jonas.holm@example.com" data-pb-seller-name="Jonas Holm" aria-label="Conversation with Jonas Holm">
+    <section class="card chat" id="thread-bike" data-pb-thread data-pb-listing-title="Specialized Allez road bike, 56 cm" data-pb-listing-price="1,850 kr" data-pb-seller-email="jonas.holm@example.com" data-pb-seller-name="Jonas Holm" aria-label="Conversation with Jonas Holm">
       <div class="chat-head">
         <span class="avatar" aria-hidden="true">JH</span>
         <div>
           <div class="title">Jonas Holm</div>
-          <div class="sub">About: Used road bike · 1,800 kr</div>
+          <div class="sub">About: Specialized Allez road bike, 56 cm · 1,850 kr</div>
         </div>
       </div>
 
@@ -479,20 +479,26 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
         <div class="day">Today</div>
 
         <div class="msg out">
-          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi! Is the road bike still available?</div>
-          <span class="time">14:02</span>
+          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi Jonas, is the Allez still for sale? Could I come and see it on Thursday after work? I live in Frederiksberg.</div>
+          <span class="time">19:41</span>
         </div>
 
         <div class="msg in">
           <span class="avatar" aria-hidden="true">JH</span>
-          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Yes, but several people are asking 🙂</div>
-          <span class="time">14:04</span>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Hi! Yes, still for sale. Several people are asking though, I've had three messages since this morning 🙂</div>
+          <span class="time">19:47</span>
         </div>
 
         <div class="msg in">
           <span class="avatar" aria-hidden="true">JH</span>
-          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Send <mark>500 kr deposit</mark> via PayPal <mark>Friends &amp; Family</mark> to hold it, <mark>I ship tomorrow</mark></div>
-          <span class="time">14:05</span>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>I'm working in Aarhus all week, so no viewings, sorry.</div>
+          <span class="time">19:47</span>
+        </div>
+
+        <div class="msg in">
+          <span class="avatar" aria-hidden="true">JH</span>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Send <mark>500 kr deposit</mark> via PayPal <mark>Friends &amp; Family</mark> to hold it, <mark>I ship tomorrow</mark> with GLS. The other 1,350 kr when it arrives.</div>
+          <span class="time">19:48</span>
         </div>
 
         <!-- PayBrake injected risk card (static mock) -->
@@ -538,29 +544,29 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
       </div>
     </section>
 
-    <section class="card chat" id="thread-camera" data-pb-thread data-pb-listing-title="Mirrorless camera" data-pb-listing-price="2,400 kr" data-pb-seller-email="signe.kruse@example.com" data-pb-seller-name="Signe Kruse" aria-label="Conversation with Signe Kruse" hidden>
+    <section class="card chat" id="thread-camera" data-pb-thread data-pb-listing-title="Sony a6400 with 16-50 mm kit lens" data-pb-listing-price="4,150 kr" data-pb-seller-email="signe.kruse@example.com" data-pb-seller-name="Signe Kruse" aria-label="Conversation with Signe Kruse" hidden>
       <div class="chat-head">
         <span class="avatar" aria-hidden="true">SK</span>
         <div>
           <div class="title">Signe Kruse</div>
-          <div class="sub">About: Mirrorless camera · 2,400 kr</div>
+          <div class="sub">About: Sony a6400 with 16-50 mm kit lens · 4,150 kr</div>
         </div>
       </div>
       <div class="thread">
         <div class="day">Today</div>
         <div class="msg out">
-          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi, is the mirrorless camera still available?</div>
+          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi Signe, is the a6400 still available? Could I see it in Valby this weekend?</div>
           <span class="time">16:18</span>
         </div>
         <div class="msg in">
           <span class="avatar" aria-hidden="true">SK</span>
-          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Yes. Today only, and I can only ship. I am abroad this week.</div>
-          <span class="time">16:19</span>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Yes, but today only. I'm in Hamburg for work until the 14th, so I can only ship.</div>
+          <span class="time">16:23</span>
         </div>
         <div class="msg in">
           <span class="avatar" aria-hidden="true">SK</span>
-          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Send 2,400 kr on MobilePay to 20 34 56 78. Bank transfer works too.</div>
-          <span class="time">16:20</span>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Send 4,150 kr on MobilePay to the number on my profile and I'll post it tonight. Bank transfer works too.</div>
+          <span class="time">16:24</span>
         </div>
       </div>
       <div class="composer" aria-hidden="true">
@@ -572,23 +578,23 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     </section>
 
     <p class="safe-label" id="safe-label">Another chat · no false alarm</p>
-    <section class="card safe" id="thread-lamp" data-pb-thread data-pb-listing-title="Desk lamp" data-pb-listing-price="250 kr" data-pb-seller-email="mette.lund@example.com" data-pb-seller-name="Mette Lund" aria-labelledby="safe-label">
+    <section class="card safe" id="thread-lamp" data-pb-thread data-pb-listing-title="Desk lamp" data-pb-listing-price="275 kr" data-pb-seller-email="mette.lund@example.com" data-pb-seller-name="Mette Lund" aria-labelledby="safe-label">
       <div class="chat-head">
         <span class="avatar ml" aria-hidden="true">ML</span>
         <div>
           <div class="title">Mette Lund</div>
-          <div class="sub">About: Desk lamp · 250 kr</div>
+          <div class="sub">About: Desk lamp · 275 kr</div>
         </div>
       </div>
       <div class="thread">
         <div class="msg out">
           <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi, is the lamp still available? How do I pay?</div>
-          <span class="time">15:10</span>
+          <span class="time">15:06</span>
         </div>
         <div class="msg in">
           <span class="avatar ml" aria-hidden="true">ML</span>
-          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Mette Lund: </span>Sure, pay through the Marketplace checkout or cash when you pick it up</div>
-          <span class="time">15:12</span>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Mette Lund: </span>Sure, pay through the Marketplace checkout or cash when you pick it up. I'm home after 17:00 most days.</div>
+          <span class="time">15:13</span>
         </div>
       </div>
       <p class="quiet">
@@ -605,25 +611,25 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
         <span class="sandbox">Sandbox demo</span>
       </div>
       <div class="preview-body">
-        <div class="wordmark">PayPal</div>
+        <p class="method">Pay with <b>PayPal</b> · Goods &amp; Services</p>
 
         <div class="order-item">
           <div class="order-thumb" aria-hidden="true">
             <svg width="38" height="24" viewBox="0 0 200 120" fill="none" stroke="#3d5168" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><circle cx="48" cy="80" r="30"/><circle cx="152" cy="80" r="30"/><path d="M48 80 L82 40 L134 40 L152 80 M82 40 L100 80 L48 80 M100 80 L134 40"/></svg>
           </div>
           <div>
-            <div class="name">Used road bike</div>
+            <div class="name">Specialized Allez road bike, 56 cm</div>
             <div class="by">Seller: Jonas Holm</div>
           </div>
         </div>
 
         <dl class="rows">
-          <dt>Item</dt><dd>Used road bike</dd>
+          <dt>Item</dt><dd>Specialized Allez, 56 cm</dd>
           <dt>Payee</dt><dd>jonas.holm@example.com</dd>
           <dt>Payment type</dt><dd>Goods &amp; Services</dd>
           <dt>Deposit</dt><dd>None</dd>
           <dt>Buyer Protection</dt><dd><span class="maybe">may be eligible*</span></dd>
-          <dt class="total">Amount</dt><dd class="total">1,800 kr</dd>
+          <dt class="total">Amount</dt><dd class="total">1,850 kr</dd>
         </dl>
 
         <div class="compare">

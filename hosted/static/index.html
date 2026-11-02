@@ -29,9 +29,9 @@
 <main>
   <section class="panel">
     <div class="brand"><img src="/logo.svg" width="56" height="56" alt="PayBrake logo"><h1>Try PayBrake in 2 minutes</h1></div>
-    <p class="lead"><b>PayBrake</b> is a Chrome extension that brakes before you pay a scammer. On-device rules plus an <b>AI check</b> read a marketplace chat; when a seller pushes a risky payment (PayPal Friends &amp; Family, bank transfer, gift cards, codes), PayBrake warns you and offers a <b>PayPal</b> Goods &amp; Services order instead.</p>
+    <p class="lead"><b>PayBrake</b> is a Chrome extension that brakes before you pay a scammer. It reads a marketplace chat with on-device rules plus an <b>AI check</b>. When a seller pushes a risky payment (PayPal Friends &amp; Family, a bank transfer, gift cards, codes), PayBrake quotes the line that worried it and offers a <b>PayPal</b> Goods &amp; Services order (<b>sandbox</b>) instead.</p>
     <ul class="tags"><li>PayPal Orders v2 (sandbox / mock)</li><li>AI scam check (Typesafe)</li><li>Chrome extension, MV3</li></ul>
-    <p class="note">This is a demo: a pretend marketplace, fictional people, test orders only. No real money moves, nothing to run locally. Not affiliated with PayPal.</p>
+    <p class="note">Two steps: load the extension, then open the demo store. Fictional marketplace and names, not affiliated with PayPal. Test orders only: no real money moves, and nothing runs on your machine except the extension.</p>
   </section>
 
   <section class="panel">
@@ -50,14 +50,14 @@
     <p><a class="btn" href="/demo/marketplace.html?live=1">Open the demo store</a><a class="btn alt" href="/demo/safe-chats.html?live=1">Safe chats (stay quiet)</a></p>
     <ol>
       <li>In the <b>bike</b> chat a PayBrake card says <b>High risk</b> and lists what it noticed. The <b>AI checked</b> tag shows the AI verdict came back.</li>
-      <li>Click <b>Switch to a PayPal order</b>, then <b>Open approval</b> and <b>Approve (mock)</b>.</li>
+      <li>Click <b>Switch to a PayPal order</b>, then <b>Open approval</b> and <b>Approve (mock)</b>. If this server runs on PayPal sandbox, <b>Open approval</b> goes to PayPal's sandbox approval page instead.</li>
       <li>Back in the chat click <b>I approved it, capture</b>: <b>Paid with PayPal Goods &amp; Services (sandbox)</b>.</li>
-      <li>The <b>desk lamp</b> chat is a normal chat and stays quiet. Bonus: open the <b>camera</b> chat and press <b>Pay anyway</b>; PayBrake lets you and notes it on this device.</li>
+      <li>The <b>desk lamp</b> chat is a normal chat and stays quiet. Bonus: open the <b>camera</b> chat and press <b>Pay anyway</b>. PayBrake steps aside and logs the override on this device only.</li>
     </ol>
   </section>
 
   <section class="panel note">
-    <b>About the AI check.</b> Chats are masked in the browser (emails, phones, card numbers, IBANs, codes) before the AI check sees them. The key stays on this server. The demo AI check has a per-visitor rate limit and a daily cap; when it is reached, PayBrake keeps working with its on-device rules. Server status: <a href="/health">/health</a>.
+    <b>About the AI check.</b> Chats are masked in the browser (emails, phones, card numbers, IBANs, codes) before the AI check sees them. The key stays on this server. The demo AI check has a per-visitor rate limit and a daily cap; when it is reached, PayBrake keeps working with its on-device rules. Server status, including whether orders run on PayPal sandbox or the mock: <a href="/health">/health</a>.
   </section>
 </main>
 </body>

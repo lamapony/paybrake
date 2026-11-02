@@ -5,7 +5,7 @@
 document.write("<" + "me" + "ta charset=\"utf-8\">");
 document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
 </script>
-<title>Sandbox approval (mock)</title>
+<title>Approve your payment · Sandbox (mock)</title>
 <style>
   :root {
     --bg: #eef1f5;
@@ -62,16 +62,23 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
   h1 { font-size: 24px; margin: 10px 0 8px; }
   p { margin: 0 0 12px; color: var(--ink-2); }
   code {
-    display: block;
-    margin: 8px 0 16px;
-    padding: 10px 12px;
-    background: #f6f8fb;
-    border: 1px solid var(--line);
-    border-radius: 10px;
     font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--ink);
   }
+  .shop { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; font-size: 13px; color: var(--ink-3); }
+  .shop b { font-size: 16px; color: var(--ink); }
+  .steps { display: flex; gap: 6px; list-style: none; margin: 0 0 16px; padding: 0; font-size: 12px; color: var(--ink-3); }
+  .steps li { flex: 1; padding-top: 6px; border-top: 3px solid var(--line); }
+  .steps li.done { border-color: #9aa7b6; }
+  .steps li[aria-current] { border-color: var(--blue); color: var(--ink); font-weight: 650; }
+  dl.rows { margin: 4px 0 18px; display: grid; grid-template-columns: auto minmax(0, 1fr); border-top: 1px solid var(--line); font-size: 14px; }
+  dl.rows dt, dl.rows dd { margin: 0; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  dl.rows dt { color: var(--ink-2); padding-right: 16px; }
+  dl.rows dd { text-align: right; font-weight: 600; min-width: 0; }
+  .method { display: inline-flex; align-items: center; gap: 8px; }
+  .method svg { flex: none; }
+  .fine { font-size: 12px; color: var(--ink-3); margin: 12px 0 0; }
   .btn {
     display: inline-flex;
     align-items: center;
@@ -99,13 +106,23 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
 <div class="banner">MOCK · sandbox approval stand-in · no real payment</div>
 <main class="wrap">
   <section class="panel" aria-labelledby="title">
-    <span class="tag">Mock mode</span>
-    <h1 id="title">Sandbox approval</h1>
-    <p>This page only marks a mock order as approved. It does not contact a payment provider.</p>
-    <p>Order token</p>
-    <code id="token">(none)</code>
+    <div class="shop"><b>Marketplace checkout</b><span class="tag">Mock mode</span></div>
+    <ol class="steps" aria-label="Checkout progress">
+      <li class="done">1. Order created</li>
+      <li aria-current="step">2. Approve payment</li>
+      <li>3. Capture in the chat</li>
+    </ol>
+    <h1 id="title">Approve your payment</h1>
+    <p>Check the details, then approve. In mock mode this only marks the test order as approved. It does not contact a payment provider.</p>
+    <dl class="rows">
+      <dt>Pay with</dt><dd><span class="method"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5d6a7c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M16 14.5h2"/></svg>PayPal (sandbox)</span></dd>
+      <dt>Payment type</dt><dd>Goods &amp; Services</dd>
+      <dt>Paying</dt><dd>The seller from your chat</dd>
+      <dt>Order reference</dt><dd><code id="token">(none)</code></dd>
+    </dl>
     <button type="button" class="btn" id="approve">Approve (mock)</button>
     <p id="status" role="status" aria-live="polite"></p>
+    <p class="fine">Nothing is charged at this step. The payment is captured only when you press <b>I approved it, capture</b> back in the chat. Test orders only, no real money moves.</p>
     <a class="back" href="marketplace.html?live=1">Return to the chat</a>
   </section>
 </main>
