@@ -574,7 +574,8 @@ function findAtoms(text) {
         end,
         role: meta.role,
         strength: meta.strength,
-        receipt: meta.receipt
+        receipt: meta.receipt,
+        gate: rule.gate
       });
     }
   }
