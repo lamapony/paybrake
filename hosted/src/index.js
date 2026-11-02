@@ -1,10 +1,12 @@
-// PayBrake hosted demo: static demo store + mock backend on one Cloudflare Worker.
-// Mock PayPal only: no PayPal credentials, no real money. The AI check uses Typesafe when the
+// PayBrake hosted demo: static demo store + order backend on one Cloudflare Worker.
+// PayPal sandbox (Orders v2) when the PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET secrets are set, otherwise a
+// mock with no credentials. Never live: the rest adapter refuses any non-sandbox host. No real money. The AI check uses Typesafe when the
 // TYPESAFE_API_KEY secret is set (same classify code as the backend), otherwise it is off.
 // Orders live in one Durable Object so approve and capture see the same state.
 import { DurableObject } from "cloudflare:workers";
 import { protectDeal } from "../../backend/src/agent.js";
 import { classifyText } from "../../backend/src/classify.js";
+import { createRestPort } from "../../backend/src/paypal-rest.js";
 import "../../extension/lib/redact.js";
 
 const BODY_LIMIT = 16 * 1024;
@@ -198,7 +200,41 @@ export class MockOrders extends DurableObject {
   }
 }
 
+// Sandbox mode needs both secrets. Anything missing means mock, so the public demo never breaks.
+export function sandboxConfigured(env) {
+  const id = env && typeof env.PAYPAL_CLIENT_ID === "string" ? env.PAYPAL_CLIENT_ID.trim() : "";
+  const secret = env && typeof env.PAYPAL_CLIENT_SECRET === "string" ? env.PAYPAL_CLIENT_SECRET.trim() : "";
+  return Boolean(id && secret);
+}
+
+let restCache = null; // keeps the OAuth token between requests in one isolate
+function sandboxPort(env, origin) {
+  const key = origin + "|" + env.PAYPAL_CLIENT_ID;
+  if (!restCache || restCache.key !== key) {
+    const port = createRestPort({
+      PAYPAL_CLIENT_ID: env.PAYPAL_CLIENT_ID.trim(),
+      PAYPAL_CLIENT_SECRET: env.PAYPAL_CLIENT_SECRET.trim(),
+      PAYPAL_BASE_URL: "https://api-m.sandbox.paypal.com",
+      PAYPAL_RETURN_URL: origin + "/return",
+      PAYPAL_CANCEL_URL: origin + "/cancel"
+    });
+    restCache = { key, port };
+  }
+  const rest = restCache.port;
+  // Demo sellers use example.com emails that are not sandbox accounts. Pay the sandbox Business
+  // account in PAYPAL_PAYEE_EMAIL if set, else the app's own sandbox merchant (no payee field).
+  const payee = typeof env.PAYPAL_PAYEE_EMAIL === "string" ? env.PAYPAL_PAYEE_EMAIL.trim() : "";
+  return {
+    mode: "rest",
+    createOrder: (deal) => rest.createOrder({ ...deal, payeeEmail: payee || undefined }),
+    getOrder: (id) => rest.getOrder(id),
+    approve: async () => null, // approval happens on PayPal's sandbox page
+    captureOrder: (id) => rest.captureOrder(id)
+  };
+}
+
 function ordersPort(env, origin) {
+  if (sandboxConfigured(env)) return sandboxPort(env, origin);
   const stub = env.ORDERS.get(env.ORDERS.idFromName("demo"));
   async function call(payload) {
     const res = await stub.fetch("https://orders/", { method: "POST", body: JSON.stringify(Object.assign({ origin }, payload)) });
@@ -271,7 +307,7 @@ async function api(request, env) {
     const ai = aiEnv(env);
     const lim = aiLimits(env);
     return json(200, {
-      ok: true, name: "PayBrake", env: "sandbox", paypal: "mock",
+      ok: true, name: "PayBrake", env: "sandbox", paypal: orders.mode,
       llm: ai ? "configured" : "off", llmProvider: ai ? "typesafe" : "off", hosted: true,
       aiLimits: { perIpPerMinute: lim.perIpPerMinute, perIpPerDay: lim.perIpPerDay, perDay: lim.perDay, maxChars: lim.textLimit },
       aiKillSwitch: aiKilled(env)
@@ -305,10 +341,10 @@ async function api(request, env) {
   }
   if (request.method === "GET" && (path === "/return" || path === "/cancel")) {
     const token = url.searchParams.get("token") || "";
-    if (path === "/return" && token) await orders.approve(token);
+    if (path === "/return" && token && orders.mode === "mock") await orders.approve(token);
     const dest = new URL("/demo/checkout-return.html", url.origin);
     if (token) dest.searchParams.set("token", token);
-    dest.searchParams.set("mock", "1");
+    if (orders.mode === "mock") dest.searchParams.set("mock", "1");
     if (path === "/cancel") dest.searchParams.set("cancel", "1");
     return new Response(null, { status: 302, headers: { location: dest.toString(), "x-robots-tag": NOINDEX } });
   }

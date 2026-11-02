@@ -6,6 +6,29 @@ Built with: **PayPal** Orders v2 API (sandbox, plus a no-credentials mock), the 
 
 Fictional names only. Not affiliated with PayPal or any marketplace. No real money moves in this build.
 
+## Why
+
+Marketplace scams usually end the same way: the "seller" pushes the buyer off the protected path, to PayPal Friends & Family, a bank transfer, a gift card, crypto, or an upfront deposit for an item the buyer has not seen. PayBrake puts a brake on that moment. It reads the chat, names the risky payment request with a quote from the message, and offers a PayPal Goods & Services order for the listed item instead.
+
+## How PayPal and AI are used
+
+- **PayPal (sandbox only).** "Switch to a PayPal order" creates a PayPal Orders v2 order (`intent: CAPTURE`) for the item and price in the chat, sends the buyer to PayPal's sandbox approval page, and captures after approval. Code: `backend/src/paypal-rest.js`, used by both the local backend and the hosted Worker. Without sandbox keys the same flow runs on a mock (`MOCK-` order ids), so the demo never breaks. Live PayPal is refused in code.
+- **AI.** On-device rules find the payment request; an AI check (`/api/classify`, Typesafe model `jev-1.14.0`, key server-side only) confirms or lowers the risk level and can add a card when the rules are silent on a clear scam. It can never raise the rules level, and a quote not present in the message is ignored. If the AI is down or rate-limited, the extension falls back to rules only.
+
+## Architecture
+
+```
+ Chrome extension (MV3)                       Cloudflare Worker (hosted demo) / Node backend (local)
+ ┌──────────────────────────────┐            ┌─────────────────────────────────────────────┐
+ │ content.js: reads the chat,  │  /api/     │ /api/classify  -> AI check (Typesafe)       │
+ │ rules (atoms.js), redacts,   │ ─classify─>│   capped per IP and per day, kill switch    │
+ │ draws the PayBrake card      │            │                                             │
+ │ background.js: cache, log    │ ─protect─> │ /api/protect, /api/orders/:id/capture       │
+ └──────────────────────────────┘            │   PayPal Orders v2 sandbox (keys set)       │
+                                             │   or mock orders in a Durable Object        │
+                                             └─────────────────────────────────────────────┘
+```
+
 ## Try it (hosted, nothing to run locally)
 
 **Start here: https://paybrake-demo.spbabinov.workers.dev/** (demo link, not indexed by search engines)
@@ -17,7 +40,7 @@ Fictional names only. Not affiliated with PayPal or any marketplace. No real mon
 
 About 2 minutes. Step-by-step with screenshots hints: [TESTING.md](TESTING.md).
 
-The hosted server is one Cloudflare Worker (free plan): the demo store pages, the mock PayPal backend (orders kept 24 hours), and `/api/classify`, the AI check. The Typesafe key lives only in the Worker as a secret; the extension never sees it.
+The hosted server is one Cloudflare Worker (free plan): the demo store pages, the PayPal order backend (PayPal sandbox when the `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` Worker secrets are set, otherwise mock orders kept 24 hours; `/health` shows `"paypal": "rest"` or `"mock"`; optional `PAYPAL_PAYEE_EMAIL` = your sandbox Business account), and `/api/classify`, the AI check. The Typesafe key lives only in the Worker as a secret; the extension never sees it.
 
 ### Hosted demo limits
 
@@ -152,6 +175,14 @@ Screenshots: `npm run shots`. Extension smoke: `npm run e2e` (Chromium with the 
 - Mock orders live in memory on one Node process. Rest orders live at PayPal. This process keeps the OAuth token in memory.
 - One demo adapter (`data-pb-*` on our own pages). No adapters for real marketplaces.
 - Buyer Protection copy says **may be eligible**, and points at PayPal's terms. The UI does not claim a payment is certain or covered.
+
+## Team
+
+- Dmitrii Babinov ([@lamapony](https://github.com/lamapony)): hosted demo, extension, README
+- Christopher Wang ([@christopherwang0129SE](https://github.com/christopherwang0129SE)): PayPal backend
+- David ([@David-Dashboard](https://github.com/David-Dashboard)): AI model
+
+Built for the PayPal AI Hackathon on Devpost.
 
 ## License
 
