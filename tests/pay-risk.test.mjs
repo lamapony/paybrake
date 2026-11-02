@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { atoms, payRisk } from "../extension/lib/index.js";
 
 const { detect } = payRisk;
+const { findAtoms } = atoms;
 
 const FF = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow";
 const SAFE_FRIENDS = "My friends and family loved this lamp, but I am moving house soon";
@@ -38,6 +39,30 @@ test("weak atoms alone are silent and do not ask the model", async () => {
   assert.equal(verdict.kind, "silent");
   assert.equal(verdict.silentReason, "weak_only");
   assert.equal(state.calls, 0);
+});
+
+test("when you pick a time does not veto a Friends and Family deposit", async () => {
+  const text = "Send 500 kr deposit via PayPal Friends and Family now. We can meet when you pick a time.";
+  const hits = findAtoms(text);
+  assert.equal(hits.some((hit) => hit.atom === "pay_on_collection"), false, JSON.stringify(hits));
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "high");
+  assert.ok(verdict.signals.includes("friends_family"));
+  assert.ok(verdict.signals.includes("upfront_deposit"));
+  assert.equal(verdict.signals.includes("pay_on_collection"), false);
+  assert.equal(verdict.deal.amount, 500);
+  for (const span of verdict.evidence) assert.equal(text.slice(span.start, span.end), span.text);
+});
+
+test("pay on collection only stays a silent veto", async () => {
+  const text = "You can pay cash when you pick it up. No deposit needed before we meet.";
+  const hits = findAtoms(text);
+  assert.ok(hits.some((hit) => hit.atom === "pay_on_collection"), JSON.stringify(hits));
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "veto");
+  assert.deepEqual(verdict.signals, []);
 });
 
 test("a veto is silent and does not ask the model", async () => {

@@ -62,6 +62,18 @@ test("goods and services near-miss when the seller refuses", () => {
   assert.equal(hit, null);
 });
 
+test("when you pick a time is not pay on collection", () => {
+  const text = "We can meet when you pick a time.";
+  const hits = findAtoms(text);
+  assert.equal(hits.some((hit) => hit.atom === "pay_on_collection"), false, JSON.stringify(hits));
+});
+
+test("when you pick it up is still pay on collection", () => {
+  const text = "See you when you pick it up tomorrow.";
+  const hits = findAtoms(text);
+  assert.ok(hits.some((hit) => hit.atom === "pay_on_collection" && hit.text.toLowerCase() === "when you pick it up"), JSON.stringify(hits));
+});
+
 test("evidence spans are slices of the input", () => {
   const text = "Send a 500 kr deposit via PayPal Friends & Family today";
   for (const hit of findAtoms(text)) {

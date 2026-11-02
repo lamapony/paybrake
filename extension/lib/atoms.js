@@ -117,7 +117,7 @@ const RULES = [
   { id: "ship_before_meet", re: "kun\\s+forsendelse", gate: "ship" },
 
   { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?:\\s+it\\s+up)?", gate: "none" },
-  { id: "pay_on_collection", re: "when\\s+you\\s+pick(?:\\s+it\\s+up)?", gate: "none" },
+  { id: "pay_on_collection", re: "when\\s+you\\s+pick(?:\\s+it)?\\s+up", gate: "none" },
   { id: "pay_on_collection", re: "cash\\s+on\\s+(?:pick\\s*up|collection)", gate: "none" },
   { id: "pay_on_collection", re: "cash\\s+when\\s+you\\s+pick", gate: "none" },
   { id: "pay_on_collection", re: "pay\\s+on\\s+(?:pick\\s*up|collection)", gate: "none" },
