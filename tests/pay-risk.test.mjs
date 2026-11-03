@@ -210,3 +210,51 @@ test("banned promise language in a model reason is dropped", async () => {
   assert.match(verdict.reason, /may have no way/i);
   assert.equal(/you are protected/i.test(verdict.reason), false);
 });
+
+test("named payment rails with an amount are off-platform", async () => {
+  const high = [
+    "Please send 500 kr via Western Union today, I ship tomorrow.",
+    "Please send 500 kr via MoneyGram today, I ship tomorrow.",
+    "Please send 500 kr via Venmo today, I ship tomorrow.",
+    "Please send 500 kr via Zelle today, I ship tomorrow.",
+    "Please send 500 kr via Cash App today, I ship tomorrow.",
+    "Please send 500 kr via Swish today, I ship tomorrow.",
+    "Send 500 kr via Vipps i dag, jeg kan kun sende varen."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const swish = await detect("Please send 500 kr via Swish today.");
+  assert.equal(swish.kind, "risk");
+  assert.equal(swish.level, "medium");
+  assert.deepEqual(swish.signals, ["off_platform"]);
+
+  const mobile = await detect("Send 500 kr via MobilePay nu, jeg kan kun sende varen.");
+  assert.equal(mobile.kind, "risk");
+  assert.equal(mobile.level, "high");
+  assert.deepEqual(mobile.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("bare rail names and a gift card stay in their lanes", async () => {
+  const quiet = [
+    "I heard a swish when the bike chain moved on Thursday.",
+    "The cash app on my phone crashed before the meeting.",
+    "Venmo is not how we should meet to see the bike.",
+    "Western Union is a street I walked down last Thursday."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+
+  const card = await detect("Send a gift card for 500 kr via email today please.");
+  assert.equal(card.kind, "risk");
+  assert.equal(card.level, "medium");
+  assert.deepEqual(card.signals, ["off_platform"]);
+});

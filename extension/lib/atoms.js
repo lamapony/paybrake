@@ -63,6 +63,13 @@ const RULES = [
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "negation" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "none" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
+  { id: "off_platform", re: "western\\s+union", gate: "deposit-word" },
+  { id: "off_platform", re: "moneygram", gate: "deposit-word" },
+  { id: "off_platform", re: "venmo", gate: "deposit-word" },
+  { id: "off_platform", re: "zelle", gate: "deposit-word" },
+  { id: "off_platform", re: "cash\\s+app", gate: "deposit-word" },
+  { id: "off_platform", re: "swish", gate: "deposit-word" },
+  { id: "off_platform", re: "vipps", gate: "deposit-word" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
