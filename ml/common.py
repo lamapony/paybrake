@@ -15,6 +15,28 @@ def tokenize(text, ngram_max=2):
     return out
 
 
+WS_RE = re.compile(r"\s+", re.UNICODE)
+
+
+def char_ngrams(text, nmin=2, nmax=4):
+    """sklearn char_wb semantics: per whitespace word, padded with spaces."""
+    out = []
+    for w in WS_RE.sub(" ", text.lower()).split():
+        w = " " + w + " "
+        for n in range(nmin, nmax + 1):
+            if len(w) <= n:  # sklearn counts a short/exact word once, then stops
+                out.append(w)
+                break
+            out += [w[i:i + n] for i in range(len(w) - n + 1)]
+    return out
+
+
+def analyze(text, p):
+    if p.get("analyzer") == "char_wb":
+        return char_ngrams(text, p.get("char_min", 2), p.get("char_max", 4))
+    return tokenize(text, p["ngram_max"])
+
+
 def load(paths):
     rows = []
     for p in paths:

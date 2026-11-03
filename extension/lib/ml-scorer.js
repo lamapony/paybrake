@@ -13,10 +13,25 @@ export function tokenize(text, ngramMax = 2) {
   return out;
 }
 
+/** sklearn char_wb semantics (matches ml/common.py char_ngrams): per word, space-padded. */
+export function charNgrams(text, nmin = 2, nmax = 4) {
+  const out = [];
+  for (const word of String(text).toLowerCase().split(/\s+/u)) {
+    if (!word) continue;
+    const w = Array.from(" " + word + " ");
+    for (let n = nmin; n <= nmax; n++) {
+      if (w.length <= n) { out.push(w.join("")); break; }
+      for (let i = 0; i + n <= w.length; i++) out.push(w.slice(i, i + n).join(""));
+    }
+  }
+  return out;
+}
+
 export function score(model, text) {
-  const { ngram_max = 2, sublinear_tf = true } = model.params || {};
+  const { ngram_max = 2, sublinear_tf = true, analyzer = "word", char_min = 2, char_max = 4 } = model.params || {};
   const counts = new Map();
-  for (const t of tokenize(text, ngram_max)) if (model.terms[t]) counts.set(t, (counts.get(t) || 0) + 1);
+  const grams = analyzer === "char_wb" ? charNgrams(text, char_min, char_max) : tokenize(text, ngram_max);
+  for (const t of grams) if (model.terms[t]) counts.set(t, (counts.get(t) || 0) + 1);
   let norm = 0;
   const w = [];
   for (const [t, c] of counts) {

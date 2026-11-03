@@ -24,3 +24,9 @@ test("score is in [0,1] and warn follows threshold", () => {
   assert.ok(r.score > 0 && r.score < 1);
   assert.equal(r.warn, r.score >= model.threshold);
 });
+
+test("char_wb n-grams match sklearn semantics", async () => {
+  const { charNgrams } = await import("../extension/lib/ml-scorer.js");
+  assert.deepEqual(charNgrams("Hi  Ø", 2, 3), [" h", "hi", "i ", " hi", "hi ", " ø", "ø ", " ø "]);
+  assert.deepEqual(charNgrams("a", 2, 4), [" a", "a ", " a "]);
+});
