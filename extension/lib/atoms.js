@@ -50,7 +50,11 @@ const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family\\s+only", gate: "ff-dictated" },
   { id: "friends_family", re: "family\\s+(?:and|&)\\s+friends\\s+only", gate: "ff-dictated" },
   { id: "friends_family", re: "F\\s+&\\s+F", gate: "none" },
-  { id: "friends_family", re: "send\\s+as\\s+gift", gate: "none" },
+  // Whole words only (sender/sende are listed; resend and gifted are not).
+  // The gap cannot cross . ! ? or a newline, and it cannot swallow as/som.
+  // "gift card" / "gavekort" stay off-platform.
+  { id: "friends_family", re: `send(?:er|e)?(?![\\p{L}\\p{N}])(?:[ \\t]+(?!as(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+as[ \\t]+(?:a[ \\t]+)?gift(?![\\p{L}\\p{N}])(?![ \\t]*cards?(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
+  { id: "friends_family", re: `(?:send(?:er|e)?|betal(?:e|ing)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!som(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   { id: "friends_family", re: "personal\\s+(?:paypal\\s+)?payment", gate: "none" },
 
   { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific" },
@@ -564,7 +568,53 @@ function payFirstLanguage(text) {
   return false;
 }
 
+function sentenceEndFrom(text, index) {
+  for (let i = index; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === "!" || ch === "?" || ch === "\n") return i;
+    if (ch !== ".") continue;
+    const prev = text[i - 1] || "";
+    const next = text[i + 1] || "";
+    if (prev >= "0" && prev <= "9" && next >= "0" && next <= "9") continue;
+    return i;
+  }
+  return text.length;
+}
+
+// "send as gift" / "betal som gave" is the instruction. A gap ("500 kr", "it",
+// "den") counts in the same sentence when that sentence names money or a pay
+// rail. The opening verb is not that rail. "to an address" with neither is
+// delivery. "overfør" and "MobilePay" as the verb are not covered here.
+const GIFT_TIGHT = /^(?:send\s+as\s+(?:a\s+)?gift|(?:send|betal(?:e|ing)?)\s+som\s+gave)$/iu;
+const GIFT_DELIVERY = /(?<![\p{L}\p{N}])(?:address|adresse)(?![\p{L}\p{N}])/iu;
+const GIFT_PAY = /(?<![\p{L}\p{N}])(?:paypal|pay(?:ment|ing)?|paid|betal(?:e|ing)?|overf(?:ør|oer)(?:er)?|mobile\s*pay|venmo|zelle|cash\s*app|revolut|western\s+union|moneygram|swisha?|vipps|bitcoin|btc|usdt|crypto|iban)(?![\p{L}\p{N}])/iu;
+
+function giftPayInSentence(text, from, to, verbAt) {
+  const sentence = text.slice(from, to);
+  const re = new RegExp(GIFT_PAY.source, "giu");
+  for (const match of sentence.matchAll(re)) {
+    const at = from + (match.index ?? 0);
+    if (at === verbAt && /^betal/iu.test(match[0])) continue;
+    return true;
+  }
+  return false;
+}
+
+function giftAskOk(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  const span = text.slice(start, end);
+  const from = sentenceFromAt(text, start);
+  const to = sentenceEndFrom(text, end);
+  const inSpan = amountSpans(text).some((amount) => amount.start < end && amount.end > start);
+  if (inSpan) return true;
+  if (giftPayInSentence(text, from, to, start)) return true;
+  if (GIFT_DELIVERY.test(text.slice(from, to))) return false;
+  if (GIFT_TIGHT.test(span)) return true;
+  return amountSpans(text).some((amount) => amount.start >= from && amount.end <= to);
+}
+
 function allow(rule, text, start, end) {
+  if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
   // Wider than negatedBefore: the refusal can sit a short clause back,

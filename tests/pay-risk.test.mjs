@@ -1356,3 +1356,92 @@ test("paying through checkout stays a silent veto", async () => {
   assert.equal(verdict.silentReason, "veto");
   assert.deepEqual(verdict.signals, []);
 });
+
+test("as a gift between send and the phrase is friends and family", async () => {
+  const medium = [
+    "Please send 500 kr as a gift via PayPal.",
+    "Please send 500 kroner as a gift via PayPal today.",
+    "Kan du sende 500 kr som gave via PayPal i dag?"
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["friends_family"], text);
+  }
+
+  const high = [
+    "Please send 500 kr as a gift via PayPal today, I ship tomorrow.",
+    "Send it as a gift on PayPal, 500 kr, I ship tomorrow.",
+    "Please send as gift via PayPal to my sister's address, 500 kr, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["friends_family", "ship_before_meet"], text);
+  }
+});
+
+test("som gave is friends and family", async () => {
+  const quiet = await detect("Send 500 kr som gave via PayPal.");
+  assert.equal(quiet.kind, "risk");
+  assert.equal(quiet.level, "medium");
+  assert.deepEqual(quiet.signals, ["friends_family"]);
+
+  const shipped = await detect("Send 500 kr som gave via PayPal nu. Jeg kan kun sende varen.");
+  assert.equal(shipped.kind, "risk");
+  assert.equal(shipped.level, "high");
+  assert.deepEqual(shipped.signals, ["friends_family", "ship_before_meet"]);
+
+  const sender = await detect("Jeg sender 500 kr som gave via PayPal i dag.");
+  assert.equal(sender.kind, "risk");
+  assert.equal(sender.level, "medium");
+  assert.deepEqual(sender.signals, ["friends_family"]);
+
+  const betal = await detect("Betal 500 kr som gave via PayPal i dag.");
+  assert.equal(betal.kind, "risk");
+  assert.equal(betal.level, "medium");
+  assert.deepEqual(betal.signals, ["friends_family"]);
+});
+
+test("gift wording controls stay put", async () => {
+  const quiet = [
+    "My friends and family loved this lamp.",
+    "Det er en gave til min søster, ikke et salg. Du kan hente den i morgen.",
+    "Can you send me photos? I bought it as a gift for my mom.",
+    "Can you send it as a gift to my sister's address?",
+    "Jeg sender den som gave til min mor.",
+    "Jeg kan sende den som gave til min mor i morgen.",
+    "Please resend the photos as a gift idea for her birthday.",
+    "This lamp is a godsend as a gift for the new flat.",
+    "Please send the scarf as a gifted item for her birthday.",
+    "Please don't send 500 kr as a gift via PayPal today."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("friends_family"), false, text);
+  }
+
+  const exact = await detect("Please send as gift via PayPal, 500 kr, I ship tomorrow.");
+  assert.equal(exact.kind, "risk");
+  assert.equal(exact.level, "high");
+  assert.deepEqual(exact.signals, ["friends_family", "ship_before_meet"]);
+
+  const card = await detect("Send a gift card for 500 kr via email.");
+  assert.equal(card.kind, "risk");
+  assert.equal(card.level, "medium");
+  assert.deepEqual(card.signals, ["off_platform"]);
+
+  const asCard = await detect("Please send 500 kr as a gift card via email today.");
+  assert.equal(asCard.kind, "risk");
+  assert.equal(asCard.level, "medium");
+  assert.deepEqual(asCard.signals, ["off_platform"]);
+
+  const gavekort = await detect("Send 500 kr som gavekort på mail i dag tak.");
+  assert.equal(gavekort.kind, "risk");
+  assert.equal(gavekort.level, "medium");
+  assert.deepEqual(gavekort.signals, ["off_platform"]);
+});
