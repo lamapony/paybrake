@@ -865,6 +865,63 @@ test("Swedish Swish asks are off-platform", async () => {
   }
 });
 
+test("paying in person or at Swedish pickup stays quiet", async () => {
+  const quiet = [
+    "Pay 500 kr with Vipps when we meet.",
+    "You can pay 500 kr by Swish when we meet in town.",
+    "Du kan betala 500 kr med Swish när du hämtar den.",
+    "Kan betala 500 kr med Swish vid upphämtning.",
+    "Du kan betala 500 kr med Swish när vi ses."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+test("named rails at pickup or when we meet stay quiet", async () => {
+  const quiet = [
+    "Can I pay $50 with Venmo when I pick it up?",
+    "I can pay $50 with Venmo when I pick it up.",
+    "Bring cash or pay $80 with Zelle when you come to see it."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+test("a refusal after the pickup word does not hide Swish", async () => {
+  const asks = [
+    "Pickup isn't possible, pay 500 kr by Swish and I'll ship it.",
+    "Pickup is not possible. Pay 500 kr by Swish and I send it."
+  ];
+  for (const text of asks) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+});
+
+test("Swish as a verb plus shipping is off-platform", async () => {
+  const asks = [
+    "Swish me 500 kr now and I ship it today.",
+    "Swish 500 kr to 0701234567 and I post it tomorrow.",
+    "Swish me 500 kr and I'll send it tomorrow."
+  ];
+  for (const text of asks) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+});
+
 test("a bare cashtag counts and a dollar amount does not", async () => {
   const tag = await detect("Send 500 kr to $bikeseller, I ship tomorrow");
   assert.equal(tag.kind, "risk");

@@ -341,7 +341,9 @@ function railNegated(text, start) {
   return /(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+(?!(?:so|but)(?![\p{L}\p{N}]))[\p{L}\p{N}]+){0,6}\s+$/iu.test(before);
 }
 
-function pickupRefused(before) {
+function pickupRefused(before, after) {
+  // "Pickup isn't possible" refuses. Those words sit after the pickup word.
+  if (/^\s*(?:isn't|isn\u2019t|isnt|is\s+not)\s+possible\b/iu.test(after || "")) return true;
   const match = before.match(/(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|can't|cant|cannot|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+\w+){0,3}\s+$/iu);
   if (!match) return false;
   // "no problem at pickup" offers the handover.
@@ -349,18 +351,22 @@ function pickupRefused(before) {
 }
 
 function handoverPay(text) {
-  const re = /pick\s*up|(?<![\p{L}\p{N}])collect(?:ion)?(?![\p{L}\p{N}])|afhent|når\s+du\s+henter|ved\s+afhentning|on\s+delivery|ved\s+levering/giu;
-  for (const match of String(text ?? "").matchAll(re)) {
-    const before = text.slice(Math.max(0, match.index - 48), match.index);
-    if (!pickupRefused(before)) return true;
+  const source = String(text ?? "");
+  const re = /pick(?:\s+it)?\s*up(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])collect(?:ion)?(?![\p{L}\p{N}])|afhent|når\s+du\s+henter|ved\s+afhentning|on\s+delivery|ved\s+levering|(?<![\p{L}\p{N}])when\s+we\s+meet(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])come\s+to\s+see(?:\s+it)?(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])(?:hämtar|upphämtning)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])när\s+vi\s+ses(?![\p{L}\p{N}])/giu;
+  for (const match of source.matchAll(re)) {
+    const at = match.index ?? 0;
+    const before = source.slice(Math.max(0, at - 48), at);
+    const after = source.slice(at + match[0].length, at + match[0].length + 40);
+    if (!pickupRefused(before, after)) return true;
   }
   return false;
 }
 
 function payFirstLanguage(text) {
   const source = String(text ?? "");
-  // "no payment before we meet" cancels the ask. "så skickar jag" is the Swedish ship line.
-  const re = /pay(?:ment)?\s+first|betal\s+først|pay(?:ment)?\s+before|(?:swisha?|vipps)\s+first|first,?\s+then\s+i\s+(?:ship|send|post)|then\s+i\s+(?:ship|send|post)|først,?\s+så\s+send|så\s+sender\s+jeg|så\s+skickar\s+jag|innan\s+jag\s+skickar/giu;
+  // "no payment before we meet" cancels the ask. "and I ship/post" counts like "then I ship".
+  // "så skickar jag" is the Swedish ship line.
+  const re = /pay(?:ment)?\s+first|betal\s+først|pay(?:ment)?\s+before|(?:swisha?|vipps)\s+first|first,?\s+then\s+i\s+(?:ship|send|post)|then\s+i\s+(?:ship|send|post)|and\s+i(?:['\u2019]ll|\s+will)?\s+(?:ship|post)(?![\p{L}\p{N}])|først,?\s+så\s+send|så\s+sender\s+jeg|så\s+skickar\s+jag|innan\s+jag\s+skickar/giu;
   for (const match of source.matchAll(re)) {
     if (!negatedBefore(source, match.index ?? 0)) return true;
   }
@@ -389,6 +395,7 @@ function allow(rule, text, start, end) {
   }
   if (rule.gate === "named-rail" || rule.gate === "cashtag") {
     if (railNegated(text, start)) return false;
+    if (handoverPay(text) && !payFirstLanguage(text)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
   if (rule.gate === "local-rail") {
