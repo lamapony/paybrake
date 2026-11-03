@@ -11,9 +11,10 @@
 <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://preview.paybrake-preview.pages.dev/">
 <meta property="og:title" content="PayBrake: spots payment scams in marketplace chats">
 <meta property="og:description" content="A browser extension that spots payment-scam messages in marketplace chats and offers a PayPal Goods &amp; Services order instead.">
-<meta property="og:image" content="img/og.jpg">
+<meta property="og:image" content="https://preview.paybrake-preview.pages.dev/img/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="PayBrake card under a seller message asking for a 500 kr deposit via PayPal Friends &amp; Family.">
@@ -70,7 +71,7 @@ ol.steps li::before{content:counter(s);position:absolute;left:0;top:.05em;width:
 .note{font-size:.875rem;color:var(--ink-2)}
 
 ul.nums{list-style:none;margin:0 0 1.25rem;padding:0;border-top:1px solid var(--line)}
-ul.nums li{display:grid;grid-template-columns:5.25rem 1fr;gap:1rem;align-items:baseline;padding:.875rem 0;border-bottom:1px solid var(--line)}
+ul.nums li{display:grid;grid-template-columns:6.5rem 1fr;gap:1rem;align-items:baseline;padding:.875rem 0;border-bottom:1px solid var(--line)}
 ul.nums .v{font-size:1.5rem;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .tab{font-variant-numeric:tabular-nums;white-space:nowrap}
 
@@ -102,7 +103,7 @@ footer p{margin:0}
 <div class="wrap">
 <header>
   <a class="brand" href="./" aria-label="PayBrake home"><img src="img/logo.svg" width="32" height="32" alt=""><span>PayBrake</span></a>
-  <nav aria-label="Project"><a href="https://github.com/lamapony/paybrake">GitHub</a></nav>
+  <nav aria-label="Project"><a href="https://paybrake-demo.spbabinov.workers.dev/">Demo</a></nav>
 </header>
 
 <main>
@@ -120,29 +121,31 @@ footer p{margin:0}
     <p>No install needed to look: the demo page shows a built-in preview of the card.</p>
     <div class="actions">
       <a class="btn" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html">Open the demo</a>
-      <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">Download the test build</a>
+      <a href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip">Download the test build</a>
     </div>
     <p>To run the real extension in Chrome:</p>
     <ol class="steps">
-      <li>Download <code>paybrake-extension.zip</code> from the <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">v0.2.0-test.3 release</a> and unzip it.</li>
+      <li>Download <code>paybrake-extension.zip</code> from the <a href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip">public demo</a> (no GitHub account) and unzip it.</li>
       <li>Open <code>chrome://extensions</code>, turn on Developer mode, click Load unpacked and pick the unzipped <code>paybrake-extension</code> folder.</li>
       <li>Open the <a href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">live demo</a>. PayBrake shows a card under the risky message in the bike chat.</li>
     </ol>
-    <p class="note">The test build works on our demo page only. The GitHub repo is private until judging, so the download needs repo access.</p>
+    <p class="note">The test build works on our demo page only. The source repo is private until judging, so this page does not link to GitHub, the README or issues.</p>
   </section>
 
   <section aria-labelledby="acc-h">
-    <h2 id="acc-h">How accurate it is</h2>
+    <h2 id="acc-h">How accurate the rules are</h2>
     <ul class="nums">
-      <li><span class="v">~85%</span><span>of scam messages got a card <span class="tab">(603 / 713)</span></span></li>
-      <li><span class="v">~1.6%</span><span>of normal messages got a card by mistake <span class="tab">(14 / 860)</span></span></li>
+      <li><span class="v">45.6%</span><span>of scam messages got a card <span class="tab">(325 / 713)</span></span></li>
+      <li><span class="v">0.9%</span><span>of normal messages got a card by mistake <span class="tab">(8 / 860)</span></span></li>
     </ul>
-    <p class="muted">Measured on a held-out test split of 1,573 messages from public datasets, not on marketplace chats. The AI check uses Typesafe <code>jev-1.14.0</code> on masked text and answers in about 0.07&nbsp;s.</p>
+    <p class="muted">Rules only, rules v4, on the held-out test split of 1,573 messages from public datasets. Remeasured 3 Nov 2026 in <code>eval/real/RESULTS.md</code> (precision 0.976). Not marketplace chats. An older rules-plus-AI run (26 Oct, rules v3, Typesafe <code>jev-1.14.0</code>) was not repeated after the later detectors, so those figures are not listed here.</p>
   </section>
 
   <section aria-labelledby="priv-h">
     <h2 id="priv-h">Privacy</h2>
-    <p>The rules run in your browser. With the AI check on (the default in this build), a masked copy of the chat goes to the configured server: emails, phone numbers, card numbers, IBANs, ID numbers and one-time codes are masked, but names, addresses and other free text are not. PayBrake never types or clicks in the chat.</p>
+    <p>The rules run in your browser. AI check on all chats is on by default in this build. Turn it off in the extension's Settings and no chat text leaves the browser.</p>
+    <p>With it on, PayBrake masks emails, phone numbers, card numbers, IBANs (all but the last 4 characters), ID numbers and one-time codes before anything is sent. Names, addresses and other free text are not masked. Only the other person's messages can raise a card, and your newest message is included for context. The masked chat goes to the server in Settings (the free test server by default). That server passes it to its AI provider, Typesafe <code>jev-1.14.0</code>, and keeps nothing. The free test server does not send the chat to a second provider. On your own server, <code>LLM_FALLBACK=openrouter</code> does: a Typesafe failure other than a rejected request (a bad key or any other 4xx) sends the same masked chat to OpenRouter.</p>
+    <p>PayBrake never types or clicks in the chat. If the AI does not answer within 6 seconds, the rules result stands.</p>
   </section>
 
   <details>
@@ -150,16 +153,16 @@ footer p{margin:0}
     <div class="body">
       <h3>How it works</h3>
       <ul>
-        <li>Rules in English and Danish check the open chat for risky payment requests. The AI check also reads every chat and can add a card the rules missed.</li>
-        <li>Switch to a PayPal order creates a PayPal sandbox order for the item. In the test build PayPal runs in mock mode.</li>
+        <li>The rules are mostly English and Danish, with some Swedish phrases (på Wise, Swish, and a few handover lines). They check the open chat for risky payment requests. The AI check, on by default, also reads every chat and can add a card the rules missed. It cannot raise the rules level.</li>
+        <li>Switch to a PayPal order creates a PayPal Orders v2 order (sandbox) for the item in the chat. With no sandbox keys, the same steps use a mock order, as in the screenshot. Live PayPal is refused.</li>
         <li>Pay anyway hides the card and saves your choice on your device.</li>
       </ul>
       <h3>Limits</h3>
       <ul>
-        <li>English and Danish only. No support for real marketplace sites yet.</li>
-        <li>The numbers above come from public datasets, so real marketplace accuracy is unknown.</li>
+        <li>Not a full Swedish ruleset. Coverage is English and Danish, plus those Swedish phrases. The test build runs on the demo page only, not on real marketplace sites.</li>
+        <li>The numbers above are the rules-only remeasure on public datasets, so real marketplace accuracy is unknown. The 26 Oct rules-plus-AI run was not repeated after later detectors.</li>
       </ul>
-      <p style="margin:.75rem 0 0">More in the <a href="https://github.com/lamapony/paybrake#readme">README</a>. Found a bug? <a href="https://github.com/lamapony/paybrake/issues">Open an issue</a>.</p>
+      <p style="margin:.75rem 0 0">Install steps and server status are on the <a href="https://paybrake-demo.spbabinov.workers.dev/">public demo</a>. The source repo stays private until judging.</p>
     </div>
   </details>
 </main>
