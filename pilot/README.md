@@ -1,6 +1,6 @@
 # PayBrake pilot — do not publish this folder as the demo
 
-**Before going public.** This directory is a private rehearsal build, not the hackathon judge path. `extension/manifest.json` injects on `facebook.com` messages, `facebook.com` marketplace, and `messenger.com`, and a second content script matches all of `facebook.com` so the scan can follow that site's in-app navigation. `INSTALL-RU.md` tells a tester to open those live chats. The judge demo is the local mock in the repository [README](../README.md): `demo/marketplace.html` on localhost, with mock orders and no third-party site.
+**Before going public.** This directory is a private rehearsal build, not the hackathon judge path. `extension/manifest.json` injects on `facebook.com` messages, `facebook.com` marketplace, and `messenger.com`, and a second content script matches all of `facebook.com` so the scan can follow that site's in-app navigation. `INSTALL-RU.md` tells a tester to open those live chats. The judge demo is the one in the repository [README](../README.md): the hosted demo, or the local mock at `demo/marketplace.html` on localhost. It is not this folder.
 
 Dima decides whether this tree stays, moves to a private repo, or is removed before any public remote. The commands for that decision are in [docs/SUBMISSION-GAPS.md](../docs/SUBMISSION-GAPS.md) under **Before going public**. They were not run on this branch. Deleting the files from the next commit does not erase them from history. `.gitignore` does not untrack them either.
 

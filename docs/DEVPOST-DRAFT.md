@@ -4,9 +4,9 @@
 
 **Video:** [TODO video link]
 
-**Hosted demo:** [TODO hosted demo]
+**Hosted demo:** https://paybrake-demo.spbabinov.workers.dev/
 
-Judges can run the credential-free local mock from the README today. This branch has no public hosted demo and no recorded video. Do not replace the placeholders until those exist.
+Judges can open that hosted demo, or run the credential-free local mock from the README. The video is not recorded yet. Do not replace the video placeholder until it exists. This branch did not redeploy the hosted demo.
 
 ## Inspiration
 
@@ -14,11 +14,11 @@ A marketplace conversation can look ordinary until a seller asks for a payment m
 
 ## What it does
 
-PayBrake is a browser extension that looks for evidence of risky payment requests in a supported chat and shows a card explaining the signals. In the included local marketplace demo, the user can start a mock PayPal order for the item, approve it on a mock page and simulate capture. The demo needs no credentials or real payment. PayPal Buyer Protection eligibility depends on its terms; the prototype cannot determine coverage.
+PayBrake is a browser extension that looks for evidence of risky payment requests in a supported chat and shows a card explaining the signals. In the hosted demo and the local marketplace demo, the user can start a PayPal order for the item (sandbox when keys are set, otherwise a mock order), approve it, and simulate capture. The mock path needs no credentials and moves no real money. PayPal Buyer Protection eligibility depends on its terms; the prototype cannot determine coverage.
 
 ## How we built it
 
-A Chrome extension extracts messages from our demo page and applies English and Danish rules on device. A Node.js backend supplies an in-memory mock order flow. An optional model integration can review rule hits when configured. The included pages and fictional chats let judges try the interaction locally.
+A Chrome extension reads the demo chat and applies English and Danish rules on the device. Those rules cover PayPal Friends & Family (including reversed phrasing and gift wording), a personal PayPal payment, Wise, Western Union, Venmo, Swish, Zelle, a payment ask that names Telegram or WhatsApp, and upfront, holding-fee, or reserve requests. A Node backend creates the order: PayPal Orders v2 sandbox when credentials are set, otherwise an in-memory mock. An optional server-side model check can confirm or lower a rules hit. It cannot raise one. The hosted demo and the local pages use fictional chats.
 
 ## Challenges we ran into
 
@@ -26,8 +26,8 @@ Payment language is contextual: an ordinary mention of a payment method is not a
 
 ## Accomplishments that we're proud of
 
-We connected an evidence-based intervention to a complete mock order and approval flow. The offline evaluation is 30 synthetic cases in [eval/cases/pay-risk.json](../eval/cases/pay-risk.json): fictional chats written for this prototype. Run `npm run eval` to reproduce it. That run is a regression check on those 30 cases. It is not a measure of real-world accuracy, and this draft does not quote its scores as field performance.
+We connected an evidence-based intervention to a mock order and approval flow, with a PayPal sandbox adapter when keys are set. The offline evaluation is 35 synthetic cases in [eval/cases/pay-risk.json](../eval/cases/pay-risk.json): fictional chats written for this prototype. Run `npm run eval` to reproduce it. That run is a regression check on those 35 cases. It is not a measure of real-world accuracy, and this draft does not quote its scores as field performance.
 
 ## What's next
 
-Make the credential-free judge path easier to access ([TODO hosted demo]), validate detection on independently sourced data, and review privacy and site permissions before any real-world pilot. A PayPal sandbox adapter is being developed separately; this branch uses mock orders. The demo video is not recorded yet ([TODO video link]). Record it from [the video script](DEMO-VIDEO-SCRIPT.md) against the local mock, then add captions.
+Record and caption the demo video ([TODO video link]) from [the video script](DEMO-VIDEO-SCRIPT.md). Validate detection on independently sourced data before quoting it. Review privacy and the pilot's site permissions before any real-world use. The hosted demo is linked above; confirm it still matches this commit before submission day.
