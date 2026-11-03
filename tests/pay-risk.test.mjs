@@ -352,3 +352,33 @@ test("bare upfront and everyday reserve wording stay silent", async () => {
   assert.equal(pickup.kind, "silent");
   assert.equal(pickup.silentReason, "veto");
 });
+
+test("negation after upfront wording and cross-sentence joins stay silent", async () => {
+  const quiet = [
+    "Payment upfront is not required",
+    "No deposit in advance needed",
+    "No need to pay in advance for the bike today.",
+    "You do not have to pay upfront for the bike today.",
+    "Pickup in Aarhus. Pay upfront elsewhere is a scam.",
+    "I'll pay for fuel. Upfront I should say the tank was full.",
+    "Payment in advance isn't needed before we meet on Thursday.",
+    "The holding fee of 500 kr is not required before we meet.",
+    "Send 500 kr to reserve the bike is not required today."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+
+  const nothing = await detect("You can pay at pickup, nothing upfront is due before Thursday.");
+  assert.equal(nothing.kind, "silent");
+  assert.equal(nothing.signals.includes("upfront_deposit"), false);
+});
+
+test("an upfront ask still flags when the next sentence mentions a scam", async () => {
+  const verdict = await detect("Please pay 500 kr upfront. The other offer is a scam.");
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "medium");
+  assert.deepEqual(verdict.signals, ["upfront_deposit"]);
+});

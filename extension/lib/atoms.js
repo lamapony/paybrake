@@ -26,6 +26,9 @@ const ATOMS = [
 
 const META = Object.fromEntries(ATOMS.map((atom) => [atom.id, atom]));
 
+// Words between "pay" and "upfront" / "in advance" stay in one sentence.
+const SPAN_GAP = "[ \\t]+(?:[^\\s.!?\\n]+[ \\t]+){0,8}";
+
 const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family", gate: "ff-phrase" },
   { id: "friends_family", re: "venner\\s+(?:og|&)\\s+familie", gate: "ff-phrase" },
@@ -47,10 +50,10 @@ const RULES = [
   { id: "upfront_deposit", re: "forudbetaling", gate: "deposit-word" },
   { id: "upfront_deposit", re: "forskud", gate: "deposit-word" },
   { id: "upfront_deposit", re: "reserver(?:e|er|ing)?", gate: "reserve" },
-  { id: "upfront_deposit", re: "pay(?:ing|ment)?\\s+(?:\\S+\\s+){0,8}upfront", gate: "none" },
-  { id: "upfront_deposit", re: "pay(?:ing|ment)?\\s+(?:\\S+\\s+){0,8}in\\s+advance(?!\\s+of\\b)", gate: "none" },
-  { id: "upfront_deposit", re: "holding\\s+fee", gate: "deposit-word" },
-  { id: "upfront_deposit", re: "to\\s+reserve\\s+the\\s+bike", gate: "reserve" },
+  { id: "upfront_deposit", re: `pay(?:ing|ment)?${SPAN_GAP}upfront`, gate: "upfront-window" },
+  { id: "upfront_deposit", re: `pay(?:ing|ment)?${SPAN_GAP}in[ \\t]+advance(?!\\s+of\\b)`, gate: "upfront-window" },
+  { id: "upfront_deposit", re: "holding\\s+fee", gate: "deposit-word", spanNegation: true },
+  { id: "upfront_deposit", re: "to\\s+reserve\\s+the\\s+bike", gate: "reserve", spanNegation: true },
 
   { id: "off_platform", re: "mobile\\s*pay", gate: "mobilepay" },
   { id: "off_platform", re: "IBAN", gate: "iban" },
@@ -131,6 +134,25 @@ function negatedBefore(text, start) {
   return /(?:no|not|don't|dont|never|without|ingen|uden|ikke|nej)\s+$/iu.test(before);
 }
 
+// Same sentence only: "is not required", "isn't needed", and "is a scam" cancel the phrase.
+function phraseNegated(text, start, end) {
+  if (negatedBefore(text, start)) return true;
+  const before = text.slice(Math.max(0, start - 48), start);
+  const boundary = Math.max(before.lastIndexOf("."), before.lastIndexOf("!"), before.lastIndexOf("?"), before.lastIndexOf("\n"));
+  const prefix = boundary === -1 ? before : before.slice(boundary + 1);
+  if (/\b(?:no|ingen)\s+need\s+to\s+$/iu.test(prefix)) return true;
+  if (/\b(?:do\s+not|don['’]?t|dont|does\s+not|doesn['’]?t)\s+(?:have\s+to|need\s+to)\s+$/iu.test(prefix)) return true;
+  if (/\bnot\s+(?:required|necessary|needed)\s+to\s+$/iu.test(prefix)) return true;
+  const span = text.slice(start, end);
+  if (/(?:^|[^\p{L}\p{N}'’])(?:not|no|never|nothing|without|ikke|ingen|uden|nej)(?:[^\p{L}\p{N}'’]|$)|n['’]t/iu.test(span)) return true;
+  const rest = text.slice(end);
+  const cut = rest.search(/[.!?\n]/);
+  const sentence = cut === -1 ? rest : rest.slice(0, cut);
+  const tail = sentence.split(/[^\p{L}\p{N}'’]+/u).filter(Boolean).slice(0, 8).join(" ");
+  if (!tail) return false;
+  return /^(?:\S+\s+){0,4}(?:(?:is|are|was|were)\s+not\s+(?:required|necessary|needed|a\s+requirement)\b|(?:is|are|was|were)n['’]?t\s+(?:required|necessary|needed)\b|not\s+(?:required|necessary|needed)\b|is\s+a\s+scam\b)/iu.test(tail);
+}
+
 function amountSpans(text) {
   const extract = globalThis.pbExtract;
   if (extract && typeof extract.parseAmounts === "function") return extract.parseAmounts(text);
@@ -160,6 +182,8 @@ function depositRejected(text, start, end) {
 }
 
 function allow(rule, text, start, end) {
+  if (rule.gate === "upfront-window") return !phraseNegated(text, start, end);
+  if (rule.spanNegation && phraseNegated(text, start, end)) return false;
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
