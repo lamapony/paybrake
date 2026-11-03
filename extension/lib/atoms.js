@@ -47,6 +47,10 @@ const RULES = [
   { id: "upfront_deposit", re: "forudbetaling", gate: "deposit-word" },
   { id: "upfront_deposit", re: "forskud", gate: "deposit-word" },
   { id: "upfront_deposit", re: "reserver(?:e|er|ing)?", gate: "reserve" },
+  { id: "upfront_deposit", re: "pay(?:ing|ment)?\\s+(?:\\S+\\s+){0,8}upfront", gate: "none" },
+  { id: "upfront_deposit", re: "pay(?:ing|ment)?\\s+(?:\\S+\\s+){0,8}in\\s+advance(?!\\s+of\\b)", gate: "none" },
+  { id: "upfront_deposit", re: "holding\\s+fee", gate: "deposit-word" },
+  { id: "upfront_deposit", re: "to\\s+reserve\\s+the\\s+bike", gate: "reserve" },
 
   { id: "off_platform", re: "mobile\\s*pay", gate: "mobilepay" },
   { id: "off_platform", re: "IBAN", gate: "iban" },
