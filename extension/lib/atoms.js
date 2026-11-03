@@ -71,6 +71,9 @@ const RULES = [
   // "gift card" / "gavekort" stay off-platform.
   { id: "friends_family", re: `send(?:er|e)?(?![\\p{L}\\p{N}])(?:[ \\t]+(?!as(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+as[ \\t]+(?:a[ \\t]+)?gift(?![\\p{L}\\p{N}])(?![ \\t]*cards?(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   { id: "friends_family", re: `(?:send(?:er|e)?|betal(?:e|ing)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!som(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
+  // Amount between the verb and "som gave". "overfør billederne som gave" has
+  // no amount, and "overførte" does not match the verb.
+  { id: "friends_family", re: `(?:overfør(?:er)?|overfoer(?:er)?|mobile\\s*pay)(?![\\p{L}\\p{N}])[ \\t]+\\d+(?:[.,]\\d+)?[ \\t]+(?:kr\\.?|kroner)[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   { id: "friends_family", re: "personal\\s+(?:paypal\\s+)?payment", gate: "none" },
 
   { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific" },
