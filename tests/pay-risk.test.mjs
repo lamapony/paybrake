@@ -553,3 +553,47 @@ test("negating the payment itself stays silent", async () => {
     assert.equal(verdict.signals.includes("upfront_deposit"), false, message);
   }
 });
+
+test("upfront as a figure of speech or a place on the bike stays silent", async () => {
+  const quiet = [
+    "To be upfront with you, I can only pay 400 kr.",
+    "The light up front is new, you can pay by cash Thursday."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
+test("modal negation and a question answered no stay silent", async () => {
+  const quiet = [
+    "You shouldn't pay upfront for a used bike.",
+    "You won't have to pay upfront, we meet Thursday.",
+    "Pay in advance? No, cash when we meet is fine."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
+test("send, transfer, and paid still count as an upfront ask", async () => {
+  const high = [
+    "Send 500 kr upfront via PayPal, I ship tomorrow",
+    "500 kr paid upfront, I ship tomorrow"
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit", "ship_before_meet"], text);
+  }
+
+  const medium = await detect("Transfer 500 kr in advance");
+  assert.equal(medium.kind, "risk");
+  assert.equal(medium.level, "medium");
+  assert.deepEqual(medium.signals, ["upfront_deposit"]);
+});

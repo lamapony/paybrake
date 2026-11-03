@@ -31,7 +31,10 @@ const META = Object.fromEntries(ATOMS.map((atom) => [atom.id, atom]));
 const GAP_TOKEN = "(?:\\$?\\d+(?:[.,]\\d+)+|(?:[A-Za-z]\\.){2,}|[^\\s.!?\\n]+)";
 const SPAN_GAP = `[ \\t]+(?:${GAP_TOKEN}[ \\t]+){0,8}`;
 const UP_FRONT = "up[ \\t]*front";
-const PAY_CUE = "pay(?:ing|ment)?[:,;]?";
+const PAY_CUE = "(?:paid|pay(?:ing|ment)?|send|transfer)[:,;]?";
+// Reversed "upfront payment" only. A wide gap treats "to be upfront" and
+// "the light up front" as a deposit when "pay" shows up later in the line.
+const REVERSE_GAP = "[ \\t]+";
 
 const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family", gate: "ff-phrase" },
@@ -56,7 +59,7 @@ const RULES = [
   { id: "upfront_deposit", re: "reserver(?:e|er|ing)?", gate: "reserve" },
   { id: "upfront_deposit", re: `${PAY_CUE}${SPAN_GAP}${UP_FRONT}`, gate: "upfront-window" },
   { id: "upfront_deposit", re: `${PAY_CUE}${SPAN_GAP}in[ \\t]+advance(?!\\s+of\\b)`, gate: "upfront-window" },
-  { id: "upfront_deposit", re: `${UP_FRONT}${SPAN_GAP}${PAY_CUE}`, gate: "upfront-window" },
+  { id: "upfront_deposit", re: `${UP_FRONT}${REVERSE_GAP}${PAY_CUE}`, gate: "upfront-window" },
   { id: "upfront_deposit", re: "holding\\s+fee", gate: "deposit-word", spanNegation: true },
   { id: "upfront_deposit", re: "to\\s+reserve\\s+(?:the\\s+bike|it)", gate: "reserve", spanNegation: true },
 
@@ -147,8 +150,19 @@ function cueNegated(span) {
   return /(?:^|[^\p{L}\p{N}'’])(?:not|no|never|nothing|without|ikke|ingen|uden|nej|\p{L}+n['’]t)\s+(?:up[ \t]*front|in[ \t]+advance)\s*$/iu.test(span);
 }
 
-// Negation has to target this phrase ("no upfront", "don't pay", "is not required"
-// right after it). A later clause does not ("no meetup", "meeting is not necessary").
+// "shouldn't pay", "won't have to pay", "cannot pay". "can pay" does not match.
+const MODAL_NEG = "(?:(?:should|would|could|must|shall|can)(?:\\s+not|n['’]?t)|will\\s+not|won['’]?t|cannot|shan['’]?t)";
+const MODAL_NEG_BEFORE = new RegExp(`\\b${MODAL_NEG}\\s+(?:(?:have|need)\\s+to\\s+)?$`, "iu");
+
+// "Pay in advance? No, cash when we meet is fine." The question mark ends the
+// ask, and the answer refuses it. "No problem" does not.
+function refusedAfterQuestion(rest) {
+  return /^\s*\?\s*(?:no|nope|nah)\b(?!\s+(?:problem|worries|issues?|rush)\b)/iu.test(rest);
+}
+
+// Negation has to target this phrase ("no upfront", "don't pay", "shouldn't pay",
+// "is not required" right after it, or a "No" answer). A later clause does not
+// ("no meetup", "meeting is not necessary").
 function phraseNegated(text, start, end) {
   if (negatedBefore(text, start)) return true;
   const before = text.slice(Math.max(0, start - 48), start);
@@ -157,8 +171,10 @@ function phraseNegated(text, start, end) {
   if (/\b(?:no|ingen)\s+need\s+to\s+$/iu.test(prefix)) return true;
   if (/\b(?:do\s+not|don['’]?t|dont|does\s+not|doesn['’]?t)\s+(?:have\s+to|need\s+to)\s+$/iu.test(prefix)) return true;
   if (/\bnot\s+(?:required|necessary|needed)\s+to\s+$/iu.test(prefix)) return true;
+  if (MODAL_NEG_BEFORE.test(prefix)) return true;
   if (cueNegated(text.slice(start, end))) return true;
   const rest = text.slice(end);
+  if (refusedAfterQuestion(rest)) return true;
   const cut = rest.search(/[.!?\n]/);
   const sentence = cut === -1 ? rest : rest.slice(0, cut);
   const tail = sentence.split(/[^\p{L}\p{N}'’]+/u).filter(Boolean).slice(0, 8).join(" ");
