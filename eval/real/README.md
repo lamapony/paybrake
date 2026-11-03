@@ -2,6 +2,7 @@
 
 The 35-chat synthetic eval in `eval/cases/` was written by us and scores 1.0 / 1.0.
 This harness runs the same detector (`extension/lib`) on third-party public data.
+Current rules are v4. The measured rules numbers are at the top of `RESULTS.md`. The v1–v3 and AI figures below that are the 26 Oct log.
 
 ```
 npm run eval:real:download     # pinned HF revisions -> eval/real/.data/ (gitignored)
