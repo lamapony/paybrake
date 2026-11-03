@@ -929,7 +929,6 @@ test("paying before the handover stays off-platform", async () => {
     "Pay $300 by Cash App now, I will hold it until you pick it up.",
     "Send 500 kr by Swish now to reserve, you can pick it up Saturday.",
     "Venmo me $50 today so I hold it, pick up Sunday.",
-    "Zelle me $100 now to reserve it, then come to see it tomorrow.",
     "Pay $50 with Venmo now and the rest when we meet."
   ];
   for (const text of asks) {
@@ -938,6 +937,11 @@ test("paying before the handover stays off-platform", async () => {
     assert.equal(verdict.level, "medium", text);
     assert.deepEqual(verdict.signals, ["off_platform"], text);
   }
+
+  const reserve = await detect("Zelle me $100 now to reserve it, then come to see it tomorrow.");
+  assert.equal(reserve.kind, "risk");
+  assert.equal(reserve.level, "high");
+  assert.deepEqual(reserve.signals, ["upfront_deposit", "off_platform"]);
 
   const deposit = await detect("Send me a $100 Zelle deposit today to hold it, you can pick it up Saturday.");
   assert.equal(deposit.kind, "risk");
@@ -972,11 +976,11 @@ test("a later hold or today still yields to pickup", async () => {
   }
 });
 
-test("in advance, a split rest, and a Swedish hold stay quiet", async () => {
+test("in advance flags the deposit, and a split rest and a Swedish hold stay quiet", async () => {
   const advance = await detect("Pay $100 by Venmo in advance, then pay the rest when we meet.");
-  assert.equal(advance.kind, "silent");
-  assert.equal(advance.silentReason, "no_atom");
-  assert.deepEqual(advance.signals, []);
+  assert.equal(advance.kind, "risk");
+  assert.equal(advance.level, "medium");
+  assert.deepEqual(advance.signals, ["upfront_deposit"]);
 
   const split = await detect("Zelle me $100 to hold it, pay the rest when you pick it up.");
   assert.equal(split.kind, "silent");
