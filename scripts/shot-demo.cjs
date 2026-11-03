@@ -165,6 +165,7 @@ async function livePass(browser) {
     "extension/lib/redact.js",
     "extension/lib/pay-risk.js",
     "extension/lib/ask-llm.js",
+    "extension/lib/chat-state.js",
     "extension/content.js"
   ];
 

@@ -50,6 +50,7 @@
         "lib/redact.js",
         "lib/pay-risk.js",
         "lib/ask-llm.js",
+        "lib/chat-state.js",
         "content.js"
       ],
       "run_at": "document_idle"
