@@ -266,4 +266,31 @@ test("household friends and family stays silent", async () => {
     assert.equal(verdict.silentReason, "no_atom", text);
     assert.deepEqual(verdict.signals, [], text);
   }
+test("personal PayPal payment is friends and family", async () => {
+  const medium = await detect("Please send a personal PayPal payment of 500 kr today.");
+  assert.equal(medium.kind, "risk");
+  assert.equal(medium.level, "medium");
+  assert.deepEqual(medium.signals, ["friends_family"]);
+
+  const high = await detect("Please send a personal PayPal payment of 500 kr, I ship tomorrow.");
+  assert.equal(high.kind, "risk");
+  assert.equal(high.level, "high");
+  assert.deepEqual(high.signals, ["friends_family", "ship_before_meet"]);
+
+  const exact = await detect("Please send a personal payment of 500 kr, I ship tomorrow.");
+  assert.equal(exact.kind, "risk");
+  assert.equal(exact.level, "high");
+  assert.deepEqual(exact.signals, ["friends_family", "ship_before_meet"]);
+});
+
+test("personal PayPal without the word payment stays silent", async () => {
+  const story = await detect("This is my personal PayPal. I bought tickets yesterday.");
+  assert.equal(story.kind, "silent");
+  assert.equal(story.silentReason, "no_atom");
+  assert.deepEqual(story.signals, []);
+
+  const card = await detect("Send a gift card for 500 kr via email today please.");
+  assert.equal(card.kind, "risk");
+  assert.equal(card.level, "medium");
+  assert.deepEqual(card.signals, ["off_platform"]);
 });
