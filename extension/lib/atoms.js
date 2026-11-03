@@ -110,6 +110,8 @@ const RULES = [
   { id: "off_platform", re: "sort\\s+codes?", gate: "acct" },
   { id: "off_platform", re: "revolut", gate: "negation" },
   { id: "off_platform", re: "(?:transferwise|wise\\.com|\\b(?:via|on|with|til|through|på)\\s+wise\\b|\\bwise\\s+transfer\\b)", gate: "negation" },
+  // "using Wise" and "by Wise". The Wise line above is unchanged.
+  { id: "off_platform", re: "(?:using|by)\\s+wise", gate: "negation" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
   // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
