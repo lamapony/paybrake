@@ -1,0 +1,80 @@
+{
+ "A before: word, seed only": {
+  "seed 0FA-tuned": {
+   "recall": 0.167,
+   "FA": 1,
+   "honest": 17,
+   "scam": 18
+  },
+  "seed 1FA-tuned": {
+   "recall": 0.222,
+   "FA": 1,
+   "honest": 17,
+   "scam": 18
+  },
+  "da 0FA-tuned": {
+   "recall": 0.139,
+   "FA": 0,
+   "honest": 80,
+   "scam": 72
+  },
+  "da 1FA-tuned": {
+   "recall": 0.181,
+   "FA": 0,
+   "honest": 80,
+   "scam": 72
+  }
+ },
+ "B prev commit: char + public + seed": {
+  "seed 0FA-tuned": {
+   "recall": 0.278,
+   "FA": 1,
+   "honest": 17,
+   "scam": 18
+  },
+  "seed 1FA-tuned": {
+   "recall": 0.278,
+   "FA": 2,
+   "honest": 17,
+   "scam": 18
+  },
+  "da 0FA-tuned": {
+   "recall": 0.014,
+   "FA": 2,
+   "honest": 80,
+   "scam": 72
+  },
+  "da 1FA-tuned": {
+   "recall": 0.042,
+   "FA": 5,
+   "honest": 80,
+   "scam": 72
+  }
+ },
+ "C new: char + public + TOMATO + seed + da": {
+  "seed 0FA-tuned": {
+   "recall": 0.333,
+   "FA": 0,
+   "honest": 17,
+   "scam": 18
+  },
+  "seed 1FA-tuned": {
+   "recall": 0.556,
+   "FA": 1,
+   "honest": 17,
+   "scam": 18
+  },
+  "da 0FA-tuned": {
+   "recall": 0.208,
+   "FA": 3,
+   "honest": 80,
+   "scam": 72
+  },
+  "da 1FA-tuned": {
+   "recall": 0.347,
+   "FA": 5,
+   "honest": 80,
+   "scam": 72
+  }
+ }
+}

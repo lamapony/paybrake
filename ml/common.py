@@ -54,4 +54,9 @@ def load(paths):
 
 
 def default_paths():
-    return sorted(str(p) for p in (ROOT / "data" / "labeled").glob("*.jsonl"))
+    """Hand-labeled seed only. Synthetic Danish dialogs (da_synthetic.jsonl) are kept separate: see da_paths()."""
+    return sorted(str(p) for p in (ROOT / "data" / "labeled").glob("*.jsonl") if "synthetic" not in p.name)
+
+
+def da_paths():
+    return [str(ROOT / "data" / "labeled" / "da_synthetic.jsonl")]

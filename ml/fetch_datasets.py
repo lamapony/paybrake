@@ -10,6 +10,7 @@ FILES = {
     "BothBosu__scam-dialogue.csv": ("BothBosu/scam-dialogue", "scam-dialogue_all.csv"),
     "FredZhang7__all-scam-spam.csv": ("FredZhang7/all-scam-spam", "junkmail_dataset.csv"),
 }
+TOMATO = "https://zenodo.org/records/17742187/files/TOMATO.zip?download=1"  # CC BY 4.0, 303 MB
 SMS = ("ucirvine/sms_spam", "plain_text/train-00000-of-00001.parquet")
 
 
@@ -24,6 +25,13 @@ def main():
     for name, (repo, path) in FILES.items():
         if not (d / name).exists():
             get(repo, path, d / name)
+    if not (d / "TOMATO" / "answers" / "ato_users.csv").exists():
+        import zipfile
+        z = d / "TOMATO.zip"
+        if not z.exists():
+            print("GET", TOMATO); urllib.request.urlretrieve(TOMATO, z)
+        with zipfile.ZipFile(z) as f:  # only the files we use (~135 MB unpacked)
+            f.extractall(d, [n for n in f.namelist() if n.endswith("ad_messages.csv") or "/answers/" in n])
     if a.sms and not (d / "ucirvine__sms_spam.csv").exists():
         import pandas as pd  # needs pandas + pyarrow
         tmp = d / "sms_spam.parquet"; get(*SMS, tmp)

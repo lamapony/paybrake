@@ -9,7 +9,7 @@ import argparse, json, sys
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, StratifiedGroupKFold
 from common import tokenize, analyze, load, default_paths
 
 DEFAULT = dict(analyzer="word", ngram_max=2, min_df=1, sublinear_tf=True, C=1.0, max_features=20000)
@@ -34,10 +34,17 @@ def fit(p, texts, y, pre=None, seed_weight=1.0):
     return vec, clf
 
 
-def oof_scores(texts, y, p, folds=5, seed=0, pre=None, seed_weight=1.0):
+def group_of(r):
+    """CV group: synthetic rows share a group per pattern so templates never straddle train/test."""
+    return r["notes"].split(";")[0] if r.get("source") == "synthetic" else r["id"]
+
+
+def oof_scores(texts, y, p, folds=5, seed=0, pre=None, seed_weight=1.0, groups=None):
     k = max(2, min(folds, int(np.bincount(y).min())))
     s = np.zeros(len(y))
-    for tr, te in StratifiedKFold(k, shuffle=True, random_state=seed).split(texts, y):
+    split = (StratifiedGroupKFold(k, shuffle=True, random_state=seed).split(texts, y, groups) if groups is not None
+             else StratifiedKFold(k, shuffle=True, random_state=seed).split(texts, y))
+    for tr, te in split:
         vec, clf = fit(p, [texts[i] for i in tr], y[tr], pre, seed_weight)
         s[te] = clf.predict_proba(vec.transform([texts[i] for i in te]))[:, 1]
     return s
@@ -81,6 +88,7 @@ def main(argv=None):
     ap.add_argument("--analyzer", choices=["word", "char_wb"], default=None)
     ap.add_argument("--max-features", type=int, default=None)
     ap.add_argument("--seed-weight", type=float, default=5.0)
+    ap.add_argument("--tomato", action="store_true", help="add TOMATO marketplace conversations to pretrain")
     a = ap.parse_args(argv)
     rows = load(a.data or default_paths())
     texts = [r["text"] for r in rows]
@@ -92,11 +100,14 @@ def main(argv=None):
     if a.pretrain is not None:
         from pretrain_data import load_pretrain
         pre, sw = load_pretrain(a.pretrain or None), a.seed_weight
+        if a.tomato:
+            from pretrain_data import load_tomato
+            tx, ty = load_tomato(); pre = (pre[0] + tx, list(pre[1]) + ty)
         print(f"pretrain rows={len(pre[0])} scam={sum(pre[1])}")
     print(f"seed rows={len(rows)} scam={y.sum()} honest={(y == 0).sum()} params={p}")
     if (y == 0).sum() < y.sum():
         print("WARNING: fewer honest than scam chats; labeling rule says honest >= scam", file=sys.stderr)
-    s = oof_scores(texts, y, p, pre=pre, seed_weight=sw)
+    s = oof_scores(texts, y, p, pre=pre, seed_weight=sw, groups=[group_of(r) for r in rows])
     thr = pick_threshold(s, y, a.max_far, max_fa=a.max_fa)
     m = metrics(s, y, thr)
     print("CV @0.5:", json.dumps(metrics(s, y, 0.5)))
