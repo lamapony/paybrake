@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { payRisk } from "../extension/lib/index.js";
+import { atoms, payRisk } from "../extension/lib/index.js";
 
 const { detect } = payRisk;
 
@@ -295,4 +295,65 @@ test("personal PayPal without the word payment stays silent", async () => {
   assert.equal(card.kind, "risk");
   assert.equal(card.level, "medium");
   assert.deepEqual(card.signals, ["off_platform"]);
+});
+
+test("through Wise, på Wise, and Wise transfer are off-platform", async () => {
+  assert.equal(atoms.hasPayWord("Please make a Wise transfer of 500 kr today"), false);
+
+  const high = [
+    "Please send 500 kr through Wise today, I ship tomorrow.",
+    "Send 500 kr på Wise i dag, jeg kan kun sende varen.",
+    "Please make a Wise transfer of 500 kr today, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const medium = [
+    "Please send 500 kr through Wise today.",
+    "Send 500 kr på Wise i dag.",
+    "Please make a Wise transfer of 500 kr today."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+
+  const via = await detect("Please send 500 kr via Wise today, I ship tomorrow.");
+  assert.equal(via.kind, "risk");
+  assert.equal(via.level, "high");
+  assert.deepEqual(via.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a town called Wise and the adjective stay silent", async () => {
+  const quiet = [
+    "Wise is a town I visited last summer with my sister.",
+    "Be wise and pick the bike up on Thursday afternoon."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+test("otherwise transfer and likewise transfer are not Wise", async () => {
+  const quiet = [
+    "Please send 500 kr or otherwise transfer the bike next week.",
+    "Please likewise transfer 500 kr for the spare keys today.",
+    "You can pay cash or otherwise transfer at pickup.",
+    "Please pay 500 kr upon wise advice from the seller today.",
+    "Please send 500 kr through wiser choices next week."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("off_platform"), false, text);
+  }
 });
