@@ -266,6 +266,8 @@ test("household friends and family stays silent", async () => {
     assert.equal(verdict.silentReason, "no_atom", text);
     assert.deepEqual(verdict.signals, [], text);
   }
+});
+
 test("personal PayPal payment is friends and family", async () => {
   const medium = await detect("Please send a personal PayPal payment of 500 kr today.");
   assert.equal(medium.kind, "risk");
