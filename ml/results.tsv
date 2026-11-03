@@ -1,0 +1,17 @@
+ts	trial	kept	false_alarms	honest	recall	threshold	params
+2026-11-03T22:10:11	0	baseline	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:11	1	no	0	5	0.333	0.596	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 3.0, 'max_features': 20000}
+2026-11-03T22:10:11	2	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	3	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	4	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	5	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	6	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 2000}
+2026-11-03T22:10:12	7	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 2000}
+2026-11-03T22:10:12	8	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	9	no	0	5	0.167	0.542	{'ngram_max': 3, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	10	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	11	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	12	no	0	5	0.167	0.542	{'ngram_max': 3, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	13	no	0	5	0.167	0.549	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': False, 'C': 1.0, 'max_features': 20000}
+2026-11-03T22:10:12	14	no	0	5	0.333	0.547	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': True, 'C': 1.0, 'max_features': 2000}
+2026-11-03T22:10:12	15	no	0	5	0.167	0.549	{'ngram_max': 2, 'min_df': 1, 'sublinear_tf': False, 'C': 1.0, 'max_features': 20000}
