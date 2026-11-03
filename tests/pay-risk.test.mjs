@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { atoms, payRisk } from "../extension/lib/index.js";
 
 const { detect } = payRisk;
+const { hasPayWord } = atoms;
 
 const FF = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow";
 const SAFE_FRIENDS = "My friends and family loved this lamp, but I am moving house soon";
@@ -1035,4 +1036,50 @@ test("a bare cashtag counts and a dollar amount does not", async () => {
   const dollars = await detect("Send 500 kr to $500, I ship tomorrow.");
   assert.equal(dollars.kind, "silent");
   assert.equal(dollars.signals.includes("off_platform"), false);
+});
+
+test("transfer and wire to a bank or IBAN warn when the item ships", async () => {
+  const holes = [
+    "Please transfer 500 kr to IBAN DK5000400440116243 today, I ship tomorrow.",
+    "Please wire 500 kr to IBAN DK5000400440116243 today, I ship tomorrow.",
+    "Please wire 500 kr to my bank today, I ship tomorrow.",
+    "Please transfer 500 kr to my bank account today, I ship tomorrow."
+  ];
+  for (const text of holes) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.ok(verdict.signals.includes("off_platform"), text);
+    assert.ok(verdict.signals.includes("ship_before_meet"), text);
+  }
+});
+
+test("pay, send, wire transfer, and account number stay high", async () => {
+  const kept = [
+    "Please pay 500 kr to IBAN DK5000400440116243 today, I ship tomorrow.",
+    "Send 500 kr to IBAN DK5000400440116243 today, I ship tomorrow.",
+    "Please make a wire transfer of 500 kr today, I ship tomorrow.",
+    "Transfer 500 kr to account number 1234567890 today, I ship tomorrow."
+  ];
+  for (const text of kept) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.ok(verdict.signals.includes("off_platform"), text);
+    assert.ok(verdict.signals.includes("ship_before_meet"), text);
+  }
+});
+
+test("moving a bike is not a wire", async () => {
+  const thursday = await detect("I can transfer the bike to you on Thursday.");
+  assert.equal(thursday.kind, "silent");
+  assert.equal(thursday.silentReason, "no_atom");
+
+  const pickup = await detect("I can transfer the bike when you pick it up.");
+  assert.equal(pickup.kind, "silent");
+  assert.equal(pickup.silentReason, "veto");
+  assert.deepEqual(pickup.signals, []);
+
+  assert.equal(hasPayWord("Please transfer 500 kr to my bank account today"), false);
+  assert.equal(hasPayWord("Please wire 500 kr to my bank today"), false);
 });

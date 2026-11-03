@@ -68,6 +68,7 @@ const RULES = [
   { id: "off_platform", re: "[A-Za-z]{2}\\d{2}[A-Za-z0-9]{11,30}", gate: "iban", flags: "g" },
   { id: "off_platform", re: "bank\\s+transfers?", gate: "negation" },
   { id: "off_platform", re: "wire\\s+transfers?", gate: "negation" },
+  { id: "off_platform", re: "(?:wire|transfer)(?:\\s+(?!to\\b)\\S+){0,6}\\s+to\\s+(?:my\\s+)?bank(?:\\s+account)?", gate: "negation" },
   { id: "off_platform", re: "bankoverførsel", gate: "negation" },
   { id: "off_platform", re: "reg\\.?\\s*nr", gate: "negation" },
   { id: "off_platform", re: "registreringsnummer", gate: "negation" },
@@ -158,6 +159,11 @@ function localPayNear(text, start, end, window) {
     " "
   );
   return hasPayWord(listing);
+}
+
+function transferVerbNear(text, start, end, window) {
+  const slice = text.slice(Math.max(0, start - window), Math.min(text.length, end + window));
+  return /(?<![\p{L}\p{N}])(?:transfer|wire)(?![\p{L}\p{N}])/iu.test(slice);
 }
 
 function negatedBefore(text, start) {
@@ -445,7 +451,7 @@ function allow(rule, text, start, end) {
     if (depositRejected(text, start, end)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
-  if (rule.gate === "iban") return payWordNear(text, start, end, 80);
+  if (rule.gate === "iban") return payWordNear(text, start, end, 80) || transferVerbNear(text, start, end, 80);
   if (rule.gate === "mobilepay") {
     if (phoneNear(text, start, end)) return true;
     return hasPayWord(text) && amountSpans(text).length > 0;
