@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { payRisk } from "../extension/lib/index.js";
+import { atoms, payRisk } from "../extension/lib/index.js";
 
 const { detect } = payRisk;
+const { findAtoms } = atoms;
 
 const FF = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow";
 const SAFE_FRIENDS = "My friends and family loved this lamp, but I am moving house soon";
@@ -209,4 +210,31 @@ test("banned promise language in a model reason is dropped", async () => {
   assert.equal(verdict.kind, "risk");
   assert.match(verdict.reason, /may have no way/i);
   assert.equal(/you are protected/i.test(verdict.reason), false);
+});
+
+test("refusing the checkout does not hide friends and family", async () => {
+  const texts = [
+    "Don't use the checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Ignore the marketplace checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Do not pay through the checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow."
+  ];
+  for (const text of texts) {
+    const hits = findAtoms(text);
+    assert.equal(hits.some((hit) => hit.atom === "pay_on_collection"), false, JSON.stringify(hits));
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.ok(verdict.signals.includes("friends_family"), text);
+    assert.ok(verdict.signals.includes("ship_before_meet"), text);
+  }
+});
+
+test("paying through checkout stays a silent veto", async () => {
+  const text = "Pay through the marketplace checkout when you pick it up. No deposit.";
+  const hits = findAtoms(text);
+  assert.ok(hits.some((hit) => hit.atom === "pay_on_collection"));
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "veto");
+  assert.deepEqual(verdict.signals, []);
 });

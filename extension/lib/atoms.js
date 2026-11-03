@@ -99,9 +99,9 @@ const RULES = [
   { id: "pay_on_collection", re: "betal(?:ing)?\\s+ved\\s+afhentning", gate: "none" },
   { id: "pay_on_collection", re: "ved\\s+afhentning", gate: "none" },
   { id: "pay_on_collection", re: "når\\s+du\\s+henter", gate: "none" },
-  { id: "pay_on_collection", re: "through\\s+the\\s+(?:\\w+\\s+){0,3}checkout", gate: "none" },
-  { id: "pay_on_collection", re: "(?:the|platform(?:ens)?|marketplace)\\s+checkout", gate: "none" },
-  { id: "pay_on_collection", re: "brug\\s+(?:platformens\\s+)?checkout", gate: "none" }
+  { id: "pay_on_collection", re: "through\\s+the\\s+(?:\\w+\\s+){0,3}checkout", gate: "checkout" },
+  { id: "pay_on_collection", re: "(?:the|platform(?:ens)?|marketplace)\\s+checkout", gate: "checkout" },
+  { id: "pay_on_collection", re: "brug\\s+(?:platformens\\s+)?checkout", gate: "checkout" }
 ];
 
 const GS = wordBound("goods\\s*(?:&|and)\\s*services|varer\\s+og\\s+tjenester|G&S", "iu");
@@ -121,6 +121,13 @@ function payWordNear(text, start, end, window) {
 function negatedBefore(text, start) {
   const before = text.slice(Math.max(0, start - 28), start);
   return /(?:no|not|don't|dont|never|without|ingen|uden|ikke|nej)\s+$/iu.test(before);
+}
+
+function checkoutDismissed(text, start) {
+  const before = text.slice(Math.max(0, start - 64), start);
+  if (/(?:don't|dont|do\s+not|never)\s+(?:use|pay|paying)\b[^.]{0,40}$/iu.test(before)) return true;
+  if (/\bignore\b[^.]{0,40}$/iu.test(before)) return true;
+  return false;
 }
 
 function amountSpans(text) {
@@ -152,6 +159,7 @@ function depositRejected(text, start, end) {
 }
 
 function allow(rule, text, start, end) {
+  if (rule.gate === "checkout") return !negatedBefore(text, start) && !checkoutDismissed(text, start);
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
