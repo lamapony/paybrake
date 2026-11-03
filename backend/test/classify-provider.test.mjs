@@ -404,9 +404,9 @@ test("POST /api/classify is 503 when no provider key is configured", async () =>
 test("confidence and signal pass through; unknown signal becomes other", async () => {
   const ok = await classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1" }, async () => chat(verdictJson({ confidence: 0.92, signal: "off_platform_payment" })));
   assert.equal(ok.confidence, 0.92);
-  assert.ok(typeof ok.signal === "string" && ok.signal.length > 0);
+  assert.equal(ok.signal, "other");
   const odd = await classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1" }, async () => chat(verdictJson({ confidence: 7, signal: "made_up" })));
-  assert.ok(odd.confidence === null || (odd.confidence >= 0 && odd.confidence <= 1));
+  assert.equal(odd.confidence, 1);
   assert.equal(odd.signal, "other");
 });
 
