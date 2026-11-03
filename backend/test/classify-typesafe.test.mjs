@@ -10,20 +10,28 @@ function answer(answers, status = 200) {
 }
 
 test("resolveLlm: typesafe by key, explicit, custom key name, base URL and model", () => {
-  const auto = resolveLlm({ TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or" });
-  assert.equal(auto.provider, "typesafe");
-  assert.equal(auto.baseUrl, "https://api.typesafe.ai");
-  assert.equal(auto.model, "jev-1.14.0");
-  assert.equal(auto.addConfidence, 0.5);
-  assert.equal(auto.fallback, null);
-  const custom = resolveLlm({ LLM_PROVIDER: "typesafe", TYPESAFE_API_KEY_NAME: "MY_TS", MY_TS: KEY, TYPESAFE_BASE_URL: "https://ts.example/", TYPESAFE_MODEL: "jev-1.13.0" });
+  const only = resolveLlm({ TYPESAFE_API_KEY: KEY });
+  assert.equal(only.provider, "typesafe");
+  assert.equal(only.baseUrl, "https://api.typesafe.ai");
+  assert.equal(only.model, "jev-1.14.0");
+  assert.equal(only.addConfidence, 0.5);
+  assert.equal(only.fallback, null);
+  // Both keys and an empty provider: OpenRouter stays first.
+  const both = resolveLlm({ TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or" });
+  assert.equal(both.provider, "openrouter");
+  const custom = resolveLlm({ LLM_PROVIDER: "typesafe", TYPESAFE_API_KEY_NAME: "TYPESAFE_MY_KEY", TYPESAFE_MY_KEY: KEY, TYPESAFE_BASE_URL: "https://ts.example/", TYPESAFE_MODEL: "jev-1.13.0" });
   assert.equal(custom.apiKey, KEY);
   assert.equal(custom.baseUrl, "https://ts.example");
   assert.equal(custom.model, "jev-1.13.0");
+  // A name that does not start with TYPESAFE_ is ignored, so another secret is not sent as the bearer.
+  const ignored = resolveLlm({ LLM_PROVIDER: "typesafe", TYPESAFE_API_KEY_NAME: "OPENROUTER_API_KEY", OPENROUTER_API_KEY: "or-secret" });
+  assert.equal(ignored.configured, false);
+  assert.equal(ignored.apiKey, "");
   assert.equal(resolveLlm({ LLM_PROVIDER: "typesafe" }).configured, false);
-  // OpenRouter still works when asked for, and as an opt-in fallback.
+  // OpenRouter still works when asked for, and as an opt-in fallback on an explicit Typesafe provider.
   assert.equal(resolveLlm({ LLM_PROVIDER: "openrouter", TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or" }).provider, "openrouter");
-  const fb = resolveLlm({ TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or", LLM_FALLBACK: "openrouter" });
+  const fb = resolveLlm({ LLM_PROVIDER: "typesafe", TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or", LLM_FALLBACK: "openrouter" });
+  assert.equal(fb.provider, "typesafe");
   assert.equal(fb.fallback.provider, "openrouter");
 });
 
@@ -59,18 +67,47 @@ test("typesafe single message: the whole line is the evidence, no evidence quest
   assert.equal(lines.length, 1);
 });
 
-test("typesafe error is 502 without the key or body; fallback to OpenRouter when enabled", async () => {
-  const bad = async () => ({ ok: false, status: 401, async text() { return "bad key " + KEY; } });
-  await assert.rejects(classifyText(CHAT, { TYPESAFE_API_KEY: KEY }, bad), (e) => e.status === 502 && !String(e.message).includes(KEY));
+test("typesafe error is 502 without the key or body; 4xx does not fall back", async () => {
+  const bad = (status) => async () => ({ ok: false, status, async text() { return "bad key " + KEY; } });
+  await assert.rejects(
+    classifyText(CHAT, { TYPESAFE_API_KEY: KEY }, bad(401)),
+    (e) => e.status === 502 && e.upstream === 401 && !String(e.message).includes(KEY)
+  );
+  const calls401 = [];
+  await assert.rejects(
+    classifyText(CHAT, { LLM_PROVIDER: "typesafe", TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or-key", LLM_FALLBACK: "openrouter" }, async (url) => {
+      calls401.push(url);
+      return bad(401)();
+    }),
+    (e) => e.upstream === 401
+  );
+  assert.equal(calls401.length, 1);
   const calls = [];
-  const out = await classifyText(CHAT, { TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or-key", LLM_FALLBACK: "openrouter" }, async (url) => {
+  const out = await classifyText(CHAT, { LLM_PROVIDER: "typesafe", TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or-key", LLM_FALLBACK: "openrouter" }, async (url) => {
     calls.push(url);
-    if (url.includes("typesafe")) return bad();
+    if (url.includes("typesafe")) return bad(503)();
     return { ok: true, status: 200, async text() { return JSON.stringify({ choices: [{ message: { content: JSON.stringify({ risky: true, level: "high", confidence: 0.9, signal: "friends_family", reason: "F&F deposit.", evidence: ["Friends & Family"] }) } }] }); } };
   });
   assert.equal(calls.length, 2);
   assert.ok(calls[1].startsWith("https://openrouter.ai/api/v1"));
   assert.equal(out.risky, true);
+});
+
+test("typesafe keeps continuation lines of a multi-line Them message as evidence", async () => {
+  const src = "Them: Hello\nplease send the 500 kr deposit via Friends & Family\nMe: ok\nI can pay tomorrow";
+  const { questions, lines } = typesafeQuestions(src);
+  assert.deepEqual(lines, ["Hello please send the 500 kr deposit via Friends & Family"]);
+  assert.equal(questions.evidence, undefined);
+  const out = await classifyText(src, { TYPESAFE_API_KEY: KEY }, async () => answer({
+    risky: { type: "noul", noul: 0.96 },
+    signal: { type: "choice", choice: "friends_family" }
+  }));
+  assert.equal(out.risky, true);
+  assert.deepEqual(out.evidence, ["Hello please send the 500 kr deposit via Friends & Family"]);
+  const two = "Them: Hi\nMe: Yes\nThem: Great\nsend it Friends & Family";
+  const picked = typesafeQuestions(two);
+  assert.deepEqual(picked.lines, ["Hi", "Great send it Friends & Family"]);
+  assert.equal(picked.questions.evidence.criteria.l1, "Great send it Friends & Family");
 });
 
 test("typesafe extra questions: lift p(risky) only at their own bar, and name the signal", async () => {
