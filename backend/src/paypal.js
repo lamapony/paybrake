@@ -1,8 +1,9 @@
-// OrdersPort. Mock adapter ships in this build.
-// rest and toolkit are Christopher's: see docs/BACKEND-CONTRACT.md.
+// OrdersPort. Mock when there is no client id. rest calls the sandbox API.
+// toolkit exposes toolkit-shaped tools and executes them through rest.
 import { randomUUID } from "node:crypto";
+import { createRestPort } from "./paypal-rest.js";
+import { createToolkitPort } from "./paypal-toolkit.js";
 
-const NOT_READY = "not implemented yet: see docs/BACKEND-CONTRACT.md";
 const DEMO_RETURN = "http://localhost:8080/demo/checkout-return.html";
 
 export function formatAmount(value) {
@@ -77,10 +78,12 @@ export function createMockPort() {
   };
 }
 
-export function createOrdersPort(env = {}) {
+export function createOrdersPort(env = {}, deps = {}) {
   assertSandbox(env);
   const adapter = String(env.PAYPAL_ADAPTER || "").trim().toLowerCase();
   const hasId = String(env.PAYPAL_CLIENT_ID || "").trim().length > 0;
   if (!hasId || adapter === "mock") return createMockPort();
-  throw new Error(NOT_READY);
+  if (adapter === "toolkit") return createToolkitPort(env, deps);
+  if (adapter === "rest" || adapter === "") return createRestPort(env, deps);
+  throw new Error("Unknown PAYPAL_ADAPTER");
 }

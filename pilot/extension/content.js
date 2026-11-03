@@ -39,12 +39,12 @@
       badge.append(document.createTextNode(verdict.level==='high'?'High risk payment request':'Possible payment risk'));
       top.append(badge,element('span','pb-tag','Checked just now'));
       const chips=element('ul','chips');verdict.signals.forEach(s=>chips.append(element('li','chip',labels[s])));
-      const actions=element('div','actions'),protect=element('button','btn btn-primary','Move to protected PayPal order'),anyway=element('button','btn btn-ghost','Pay anyway');
+      const actions=element('div','actions'),protect=element('button','btn btn-primary','Switch to a PayPal order'),anyway=element('button','btn btn-ghost','Pay anyway');
       protect.dataset.pbAction='protect';anyway.dataset.pbAction='anyway';actions.append(protect,anyway);
       const foot=element('footer','pb-foot','PayBrake · on-device check · only you can see this');foot.setAttribute('aria-live','polite');
       protect.addEventListener('click',safe(async()=>{
         const parts=title.split(' · ');const result=await send({type:'pb:protect',deal:verdict.deal,item:parts.length>1?parts.slice(1).join(' · '):'Item from chat',seller:parts.length>1?parts[0]:'Seller',hash:id,signals:verdict.signals,reason:verdict.reason});
-        foot.textContent=result?.ok?'Opened a protected order draft in a new tab':'Could not open the draft. Reload this page and try again.';
+        foot.textContent=result?.ok?'Opened a PayPal order draft in a new tab':'Could not open the draft. Reload this page and try again.';
       }));
       anyway.addEventListener('click',safe(async()=>{
         const result=await send({type:'pb:log',entry:{action:'pay_anyway',hash:id,signals:verdict.signals,level:verdict.level,head:text.slice(0,160),url:location.origin+location.pathname,ts:Date.now()}});

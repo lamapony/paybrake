@@ -77,3 +77,4 @@ h2 { margin: 0; font-size: 18px; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+.hint { margin: 8px 0 0; color: var(--ink-2); font-size: 14px; }
