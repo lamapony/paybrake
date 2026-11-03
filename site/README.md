@@ -21,6 +21,10 @@ Checked in. This repo has no script that regenerates them.
 
 The page quotes the rules-only rules v4 test split in `eval/real/RESULTS.md` (remeasured 3 Nov 2026): recall 0.456 (325 / 713), false-positive rate 0.009 (8 / 860), precision 0.976. The 26 Oct rules-plus-AI headline was not re-run after later detectors and is not shown.
 
+Language on the page follows `extension/lib/atoms.js` in this tree (rules version 4): mostly English and Danish, plus Swedish phrases (på Wise, Swish, a few handover and ship lines) and the Norwegian rail name Vipps. Where the extension runs follows `extension/manifest.json`: the hosted demo host, localhost, 127.0.0.1, and local files. Privacy follows `extension/options.html` and the hosted worker default in this tree (Typesafe `jev-1.14.0`, no OpenRouter fallback).
+
+The download URL is the zip the demo worker currently serves. On 3 Nov 2026 that file's `version_name` was `0.2.0-test.4` and its `RULES_VERSION` was 3. It is not a pack of this tree. The page says so.
+
 ## Indexing
 
 `noindex` via the meta tag, `_headers` and `robots.txt`. Preview only, on Cloudflare Pages.
