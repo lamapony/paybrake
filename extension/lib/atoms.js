@@ -124,6 +124,9 @@ const RULES = [
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
   { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
+  // Skrill and Interac. A bare name ("Skrill is a town") is not an ask.
+  { id: "off_platform", re: "skrill", gate: "pay-or-amount" },
+  { id: "off_platform", re: "interac", gate: "pay-or-amount" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -893,6 +896,11 @@ function allow(rule, text, start, end) {
     if (pay && money) return true;
     if (useRailAsk(text, start)) return true;
     return scam && money;
+  }
+  // Money or a pay word nearby. A bare name does not fire.
+  if (rule.gate === "pay-or-amount") {
+    if (negatedBefore(text, start)) return false;
+    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
   if (rule.gate === "ship") {
     if (PICKUP_ALT.test(text)) return false;
