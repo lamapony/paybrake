@@ -31,7 +31,8 @@ const RULES = [
   { id: "friends_family", re: "venner\\s+(?:og|&)\\s+familie", gate: "ff-phrase" },
   { id: "friends_family", re: "F&F", gate: "none" },
   { id: "friends_family", re: "FnF", gate: "none" },
-  { id: "friends_family", re: "send\\s+as\\s+gift", gate: "none" },
+  { id: "friends_family", re: "send(?:\\s+(?!as\\b)\\S+){0,6}\\s+as\\s+(?:a\\s+)?gift(?!\\s*cards?)", gate: "none" },
+  { id: "friends_family", re: "(?:send|betal(?:e|ing)?)(?:\\s+\\S+){0,6}\\s+som\\s+gave(?!\\s*kort)", gate: "none" },
   { id: "friends_family", re: "personal\\s+payment", gate: "none" },
 
   { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific" },
