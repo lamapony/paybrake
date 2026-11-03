@@ -366,16 +366,44 @@ function handoverPay(text) {
   return false;
 }
 
+// Clause breaks keep "available now" away from "pay with Zelle". "and"/"but"/"so"/"then" start one too.
+const CLAUSE_BREAK = /[.!?;\n]|(?<!\d),(?!\d)|\s(?:and|but|so|then)\s/giu;
+const SENTENCE_BREAK = /[.!?\n]/gu;
+const TIMING_WORD = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?)(?![\p{L}\p{N}])/giu;
+const RAIL_WORD = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swisha?|vipps|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
+
+function sliceAround(text, at, length, breaks) {
+  const re = new RegExp(breaks.source, breaks.flags);
+  let start = 0;
+  let end = text.length;
+  for (const match of text.matchAll(re)) {
+    const from = match.index ?? 0;
+    const to = from + match[0].length;
+    if (to <= at) start = to;
+    else if (from >= at + length) {
+      end = from;
+      break;
+    }
+  }
+  return { start, end, text: text.slice(start, end) };
+}
+
 function paysBeforeHandover(text) {
   const source = String(text ?? "");
-  // "when we meet today" times the meeting. The same words before it time the payment.
-  const marker = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?)(?![\p{L}\p{N}])/giu;
-  const tail = new RegExp(`(?:${TIED_HANDOVER.source})\\s*$`, "iu");
-  for (const match of source.matchAll(marker)) {
+  // "home today" and "available now" come after the handover and time the visit.
+  // Count a timing word only in the same clause as the pay or rail word, and
+  // only when this sentence has not already named the handover.
+  const handoverRe = new RegExp(`(?<![\\p{L}\\p{N}])(?:${TIED_HANDOVER.source})(?![\\p{L}\\p{N}])`, "giu");
+  const handovers = [...source.matchAll(handoverRe)].map((match) => match.index ?? 0);
+  TIMING_WORD.lastIndex = 0;
+  for (const match of source.matchAll(TIMING_WORD)) {
     const at = match.index ?? 0;
+    const length = match[0].length;
     if (negatedBefore(source, at)) continue;
-    const before = source.slice(Math.max(0, at - 64), at);
-    if (tail.test(before)) continue;
+    const clause = sliceAround(source, at, length, CLAUSE_BREAK);
+    if (!hasPayWord(clause.text) && !RAIL_WORD.test(clause.text)) continue;
+    const sentence = sliceAround(source, at, length, SENTENCE_BREAK);
+    if (handovers.some((start) => start >= sentence.start && start < at)) continue;
     return true;
   }
   return false;

@@ -945,6 +945,49 @@ test("paying before the handover stays off-platform", async () => {
   assert.deepEqual(deposit.signals, ["upfront_deposit", "off_platform"]);
 });
 
+test("a timing word after the handover does not make the rail early", async () => {
+  const quiet = [
+    "Pay with Zelle when you collect, $90, available now.",
+    "You can pay by Cash App when you collect, I'll hold it till then.",
+    "Venmo $40 when we meet, I am home today.",
+    "Venmo $50 when we meet tomorrow first thing."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+test("a later hold or today still yields to pickup", async () => {
+  const quiet = [
+    "Pay by Cash App when you pick it up, I can hold it till Saturday.",
+    "Pay $70 by Venmo at pickup. I can deliver today if you prefer."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "veto", text);
+  }
+});
+
+test("in advance, a split rest, and a Swedish hold stay quiet", async () => {
+  const advance = await detect("Pay $100 by Venmo in advance, then pay the rest when we meet.");
+  assert.equal(advance.kind, "silent");
+  assert.equal(advance.silentReason, "no_atom");
+  assert.deepEqual(advance.signals, []);
+
+  const split = await detect("Zelle me $100 to hold it, pay the rest when you pick it up.");
+  assert.equal(split.kind, "silent");
+  assert.equal(split.silentReason, "veto");
+
+  const swedish = await detect("Swisha 500 kr nu så håller jag den, hämta på lördag.");
+  assert.equal(swedish.kind, "silent");
+  assert.equal(swedish.silentReason, "no_atom");
+  assert.deepEqual(swedish.signals, []);
+});
+
 test("a bare cashtag counts and a dollar amount does not", async () => {
   const tag = await detect("Send 500 kr to $bikeseller, I ship tomorrow");
   assert.equal(tag.kind, "risk");
