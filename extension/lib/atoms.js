@@ -11,7 +11,7 @@ function wordBound(pattern, flags = "giu") {
   return new RegExp(`(?<![\\p{L}\\p{N}])(?:${source})(?![\\p{L}\\p{N}])`, flags);
 }
 
-const PAY_WORD = wordBound("send|pay|paid|payment|paying|via|paypal|betal|betale|betaling|overfør|overfører|overfoer", "iu");
+const PAY_WORD = wordBound("send|pay|paid|payment|paying|via|paypal|betal|betale|betala|betaling|skicka|skickar|overfør|overfører|overfoer", "iu");
 
 const ATOMS = [
   { id: "friends_family", role: "act", strength: "strong", receipt: "Friends & Family" },
@@ -88,7 +88,7 @@ const RULES = [
   { id: "off_platform", re: "\\bzelle\\b", gate: "named-rail" },
   { id: "off_platform", re: "\\bcash\\s*app\\b", gate: "named-rail" },
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
-  { id: "off_platform", re: "\\bswish\\b", gate: "local-rail" },
+  { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
@@ -147,8 +147,12 @@ function payWordNear(text, start, end, window) {
 
 function localPayNear(text, start, end, window) {
   const slice = text.slice(Math.max(0, start - window), Math.min(text.length, end + window));
-  // "betalning via Swish" names a method. It is not a pay-first ask.
-  const listing = slice.replace(/(?<![\p{L}\p{N}])(?:via|betaling|betalning)(?![\p{L}\p{N}])/giu, " ");
+  // "Payment by Swish" and "betalning via Swish" name a method.
+  // "pay 500" stays an ask; "pay by Swish" does not.
+  const listing = slice.replace(
+    /(?<![\p{L}\p{N}])(?:via|betaling|betalning|payment)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])pay(?![\p{L}\p{N}])(?!\s+\d)/giu,
+    " "
+  );
   return hasPayWord(listing);
 }
 
@@ -332,12 +336,16 @@ function paymentViaChat(text, start, end) {
 
 function railNegated(text, start) {
   const before = text.slice(Math.max(0, start - 48), start);
-  // One word keeps "don't take Venmo". "not" inside "cannot", or "so Zelle", does not.
-  return /(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+\w+){0,1}\s+$/iu.test(before);
+  // A list stays under the negation ("don't take Venmo or Zelle").
+  // "so"/"but" start a new ask, and "not" inside "cannot" does not count.
+  return /(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+(?!(?:so|but)(?![\p{L}\p{N}]))[\p{L}\p{N}]+){0,6}\s+$/iu.test(before);
 }
 
 function pickupRefused(before) {
-  return /(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|can't|cant|cannot|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+\w+){0,3}\s+$/iu.test(before);
+  const match = before.match(/(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|can't|cant|cannot|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+\w+){0,3}\s+$/iu);
+  if (!match) return false;
+  // "no problem at pickup" offers the handover.
+  return !/(?<![\p{L}\p{N}])no(?:t)?(?![\p{L}\p{N}])(?:\s+a)?\s+problems?\b/iu.test(match[0]);
 }
 
 function handoverPay(text) {
@@ -350,7 +358,13 @@ function handoverPay(text) {
 }
 
 function payFirstLanguage(text) {
-  return /pay(?:ment)?\s+first|betal\s+først|pay(?:ment)?\s+before|(?:swish|vipps)\s+first|first,?\s+then\s+i\s+(?:ship|send|post)|then\s+i\s+(?:ship|send|post)|først,?\s+så\s+send|så\s+sender\s+jeg/iu.test(text);
+  const source = String(text ?? "");
+  // "no payment before we meet" cancels the ask. "så skickar jag" is the Swedish ship line.
+  const re = /pay(?:ment)?\s+first|betal\s+først|pay(?:ment)?\s+before|(?:swisha?|vipps)\s+first|first,?\s+then\s+i\s+(?:ship|send|post)|then\s+i\s+(?:ship|send|post)|først,?\s+så\s+send|så\s+sender\s+jeg|så\s+skickar\s+jag|innan\s+jag\s+skickar/giu;
+  for (const match of source.matchAll(re)) {
+    if (!negatedBefore(source, match.index ?? 0)) return true;
+  }
+  return false;
 }
 
 function allow(rule, text, start, end) {
