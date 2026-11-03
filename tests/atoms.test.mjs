@@ -151,3 +151,72 @@ test("evidence spans are slices of the input", () => {
     assert.equal(text.slice(hit.start, hit.end), hit.text);
   }
 });
+
+const LABEL_FEE_FIRES = [
+  ["Pay a small fee of $4.99 for the shipping label.", "shipping label"],
+  ["Pay a small fee of 49.50 kr for the shipping label.", "shipping label"],
+  ["Pay a small fee of 4,99 kr for the shipping label.", "shipping label"],
+  ["Could you cover the courier label charge of 8 euro before I print it?", "courier label charge"],
+  ["Please pay 12 euro for the courier label and I will ship this afternoon.", "courier label"],
+  ["Betal et gebyr på 39 kr for fragtlabelen, så sender jeg pakken i dag.", "fragtlabelen"],
+  ["Fragtlabelen koster et gebyr på 29 kr før jeg kan booke buddet.", "gebyr"],
+  ["Du skal lige betale fragtgebyret for labelen inden afhentning.", "fragtgebyret"]
+];
+
+for (const [text, span] of LABEL_FEE_FIRES) {
+  test(`label fee fires: ${text}`, () => {
+    const hits = findAtoms(text);
+    assert.ok(
+      hits.some((hit) => hit.atom === "fee_via_link" && hit.text.toLowerCase().includes(span)),
+      JSON.stringify(hits)
+    );
+  });
+}
+
+const LABEL_FEE_MISSES = [
+  "Shipping label included at no cost",
+  "The shipping cost is included in the price",
+  "Pay a small fee of 49 kr. Shipping label is extra and not included.",
+  "No need to pay for the shipping label, postage is included.",
+  "The shipping label fee is included in the postage.",
+  "Fragtlabelen koster 29 kr, og den er inkluderet i prisen."
+];
+
+for (const text of LABEL_FEE_MISSES) {
+  test(`label fee stays quiet: ${text}`, () => {
+    const hits = findAtoms(text);
+    assert.equal(hits.some((hit) => hit.atom === "fee_via_link"), false, JSON.stringify(hits));
+  });
+}
+
+const BANK_HOSTS = [
+  "Please pay at https://secure.mybank.com/pay",
+  "Pay here https://secure.example.com/payment",
+  "See https://insecure.example.com/pay",
+  "https://redelivery.example.com/pay",
+  "https://secure.example.com/payments",
+  "Open https://secure.example.com/paypal today",
+  "Your statement is ready at https://verify.mybank.com/pay",
+  "Track it at https://delivery.mybank.com/pay"
+];
+
+for (const text of BANK_HOSTS) {
+  test(`ordinary bank host is not a phishing link: ${text}`, () => {
+    const hits = findAtoms(text);
+    assert.equal(hits.some((hit) => hit.atom === "phishing_link"), false, JSON.stringify(hits));
+  });
+}
+
+const LOOKALIKE_LINKS = [
+  "Visit paypal-secure-verify.example.com/claim",
+  "https://postnord-delivery-secure.example.com/pay",
+  "Confirm payment at https://secure-pay-check.com/login",
+  "Claim your prize at https://prize-verify.example.com/win"
+];
+
+for (const text of LOOKALIKE_LINKS) {
+  test(`lookalike or lure host is a phishing link: ${text}`, () => {
+    const hits = findAtoms(text);
+    assert.ok(hits.some((hit) => hit.atom === "phishing_link"), JSON.stringify(hits));
+  });
+}

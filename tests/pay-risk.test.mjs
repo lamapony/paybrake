@@ -1537,3 +1537,61 @@ test("verification-code advice says never share the code", async () => {
   assert.match(verdict.reason, /never share/i);
   assert.equal(/switch to a paypal order/i.test(verdict.reason), false);
 });
+
+test("a code ask is medium with no pay word and no amount", async () => {
+  const text = "Please tell me your verification code.";
+  assert.equal(hasPayWord(text), false);
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "medium");
+  assert.deepEqual(verdict.signals, ["credential_request"]);
+  assert.match(verdict.reason, /never share/i);
+});
+
+test("a shipping label fee with no link is medium", async () => {
+  const samples = [
+    "Pay a small fee of $4.99 for the shipping label.",
+    "Could you cover the courier label charge of 8 euro before I print it?",
+    "Betal et gebyr på 39 kr for fragtlabelen, så sender jeg pakken i dag.",
+    "Du skal lige betale fragtgebyret for labelen inden afhentning."
+  ];
+  for (const text of samples) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["fee_via_link"], text);
+    assert.match(verdict.reason, /fee to pay/i, text);
+  }
+});
+
+test("a label fee split by a period stays silent", async () => {
+  const text = "Pay a small fee of 49 kr. Shipping label is extra and not included.";
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "silent");
+  assert.equal((verdict.signals || []).includes("fee_via_link"), false);
+});
+
+test("a plain secure bank host with /pay stays silent", async () => {
+  const samples = [
+    "Please pay at https://secure.mybank.com/pay",
+    "Pay here https://secure.example.com/payment",
+    "See https://insecure.example.com/pay",
+    "https://redelivery.example.com/pay",
+    "https://secure.example.com/payments",
+    "Track it at https://delivery.mybank.com/pay"
+  ];
+  for (const text of samples) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal((verdict.signals || []).includes("phishing_link"), false, text);
+  }
+});
+
+test("a lookalike pay link tells you to open the real site", async () => {
+  const verdict = await detect("Confirm it at https://paypal-secure-verify.example.com/claim");
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "medium");
+  assert.ok(verdict.signals.includes("phishing_link"));
+  assert.match(verdict.reason, /open the real site yourself/i);
+  assert.equal(/check carefully/i.test(verdict.reason), false);
+});

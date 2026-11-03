@@ -2,7 +2,7 @@
 // Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, pay-risk.js.
 // Patterns are case-insensitive and Unicode-aware. A hit is a concrete span.
 
-const RULES_VERSION = 4;
+const RULES_VERSION = 5;
 
 function wordBound(pattern, flags = "giu") {
   const tidy = globalThis.pbTidy;
@@ -52,6 +52,9 @@ const REVERSE_GAP = "[ \\t]+";
 // Words between wire/transfer and "to <bank>". . , ; ! ? end the clause.
 // An amount may still contain a dot or comma (1.500, 1,800, $12.50).
 const WIRE_BANK_GAP = "(?:\\$?\\d+(?:[.,]\\d+)+|[^\\s.,;!?]+)";
+
+// A sentence period stops the span. A dot between two digits ($4.99, 49.50) does not.
+const SAME_SENTENCE = "(?:[^.!?\\n]|(?<=\\d)\\.(?=\\d))";
 
 const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family", gate: "ff-phrase" },
@@ -178,6 +181,15 @@ const RULES = [
   // v3: "pay the fee via this link" and fees to release a parcel, prize or refund.
   { id: "fee_via_link", re: "(?:customs|delivery|shipping|handling|processing|release|clearance|redelivery|activation|verification|unlock(?:ing)?|transfer|insurance|admin(?:istration)?|tax|toll|told|gebyr|fragt)\\s*(?:fee|charge|duty|payment|cost|gebyr|afgift)s?", gate: "fee" },
   { id: "fee_via_link", re: "(?:pay|cover|settle|betal)\\s+(?:a\\s+|the\\s+|this\\s+|small\\s+|a\\s+small\\s+)?(?:fee|charge|gebyr)", gate: "fee" },
+  // A shipping-label fee in the same sentence. A sentence period between the fee
+  // and the label does not count; a dot inside an amount ($4.99, 49.50) does.
+  // Danish "gebyr" / "fragtlabel" as well as English, and wordings other than
+  // "pay a small fee of … shipping label".
+  { id: "fee_via_link", re: `(?:pay|cover|settle|betal(?:e|er)?)${SAME_SENTENCE}{0,80}?(?:fee|charge|gebyr|afgift)${SAME_SENTENCE}{0,80}?(?:(?:shipping|courier|parcel)\\s+labels?|fragtlabels?(?:en|et)?)`, gate: "label-fee" },
+  { id: "fee_via_link", re: `(?:pay|cover|settle|betal(?:e|er)?)${SAME_SENTENCE}{0,50}?(?:for|til)\\s+(?:(?:the|a|en|et|den)\\s+)?(?:(?:shipping|courier|parcel)\\s+labels?|fragtlabels?(?:en|et)?)`, gate: "label-fee" },
+  { id: "fee_via_link", re: "(?:(?:shipping|courier|parcel)\\s+labels?|fragtlabels?(?:en|et)?)\\s+(?:fee|charge|gebyr|afgift)", gate: "label-fee" },
+  { id: "fee_via_link", re: `fragtlabels?(?:en|et)?${SAME_SENTENCE}{0,48}?(?:gebyr|afgift|fee|charge)`, gate: "label-fee" },
+  { id: "fee_via_link", re: `(?:pay|cover|settle|betal(?:e|er)?)${SAME_SENTENCE}{0,40}?fragtgebyr(?:et|en)?${SAME_SENTENCE}{0,40}?labels?(?:en|et)?`, gate: "label-fee" },
 
   // v3: impersonation (weak alone; with a link, code or fee ask it becomes high).
   { id: "impersonation", re: "this\\s+is\\s+(?:the\\s+|your\\s+)?(?:bank|[a-z]+\\s+bank|fraud\\s+(?:department|team)|security\\s+(?:team|department)|discord\\s+(?:staff|team|support)|irs|hmrc|skat|politi(?:et)?|police|customs|tax\\s+(?:office|authority)|microsoft|apple|amazon|paypal|mitid|dba|postnord|gls|dao)", gate: "negation" },
@@ -741,7 +753,7 @@ const FEE_CONTEXT = /(?:https?:\/\/|www\.|\blink\b|linket|click|tap\s+(?:here|th
 const SHORTENERS = /^(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|is\.gd|cutt\.ly|rb\.gy|sc\.link|ow\.ly|shorturl\.at|tiny\.cc|s\.id|t\.ly|bl\.ink|rebrand\.ly)$/iu;
 const ODD_TLD = /\.(?:xyz|top|click|live|icu|ru|tk|ml|ga|cf|gq|zip|mov|cam|rest|monster|info|online|site|shop|support|link|gift)$/iu;
 const BENIGN_SUB = /^(?:www|support|help|helpcenter|billing|account|accounts|my|app|mail|portal|customer|service|status|docs)$/iu;
-const HOST_LURE = /(?:secure|verify|verif|login|signin|account|update|confirm|wallet|unlock|claim|bonus|gift|reward|prize|nitro|refund|customs|deliver|parcel|support|check|auth|payment|airdrop|free)/iu;
+const HOST_LURE_TOKEN = /^(?:secure|verify|verif|login|signin|account|update|confirm|wallet|unlock|claim|bonus|gift|reward|prize|nitro|refund|customs|deliver|parcel|support|check|auth|payment|airdrop|free)$/iu;
 const BRANDS = ["paypal", "mitid", "nemid", "dba", "discord", "steam", "amazon", "apple", "microsoft", "netflix", "postnord", "gls", "dhl", "facebook", "mobilepay"];
 const OFFICIAL_DOMAINS = /(?:^|\.)(?:paypal\.com|paypal\.me|mitid\.dk|nemid\.nu|dba\.dk|discord\.com|discord\.gg|discordapp\.com|steampowered\.com|steamcommunity\.com|amazon\.[a-z.]+|apple\.com|microsoft\.com|netflix\.com|postnord\.[a-z]+|gls-group\.[a-z]+|gls\.dk|dhl\.[a-z]+|facebook\.com|mobilepay\.dk)$/iu;
 const LOOKALIKE = /paypa1|payp4l|pay-pal|disc0rd|dlscord|discorcl|d1scord|steamcomunity|steamcommunlty|stearn|amaz0n|micr0soft|faceb00k|netfl1x|m1tid|rnitid/iu;
@@ -787,6 +799,28 @@ function lookalikeLabel(label) {
   return BRANDS.some((brand) => brand.length >= 5 && label !== brand && Math.abs(label.length - brand.length) <= 2 && editDistance(label, brand) <= (brand.length >= 7 ? 2 : 1));
 }
 
+function hostTokens(label) {
+  return String(label || "").split("-").filter(Boolean);
+}
+
+// A lure counts as its own hyphen-token in the registrable name
+// (secure-pay-check.com, prize-verify.com) or in a compound subdomain
+// (prize-verify.example.com, yourbank-secure.example.com).
+// A single label on an ordinary host does not: secure.mybank.com, verify.example.com.
+// "insecure" and "redelivery" are not the tokens "secure" and "deliver".
+function lureInSiteName(host) {
+  const labels = host.split(".");
+  if (labels.length < 2) return false;
+  const site = labels[labels.length - 2];
+  if (hostTokens(site).some((token) => HOST_LURE_TOKEN.test(token))) return true;
+  for (const sub of labels.slice(0, -2)) {
+    if (BENIGN_SUB.test(sub)) continue;
+    const tokens = hostTokens(sub);
+    if (tokens.length >= 2 && tokens.some((token) => HOST_LURE_TOKEN.test(token))) return true;
+  }
+  return false;
+}
+
 function suspiciousHost(host) {
   if (!host || !host.includes(".")) return false;
   if (SHORTENERS.test(host)) return true;
@@ -799,12 +833,39 @@ function suspiciousHost(host) {
   const labels = host.split(".");
   const name = labels.slice(0, -1).join(".");
   if (BRANDS.some((brand) => name.includes(brand))) return true;
-  // A lure word counts only in the site's own name ("secure-pay-check.com"), not in a
-  // subdomain of an ordinary site ("support.example.com").
-  // A plain service subdomain of an ordinary site ("support.example.com", "help.", "billing.")
-  // is not a lure; compound labels ("prize-verify.", "yourbank-secure.") still are.
-  const parts = labels.slice(0, -1).filter((label, i, all) => i === all.length - 1 || !BENIGN_SUB.test(label));
-  return HOST_LURE.test(parts.join("."));
+  return lureInSiteName(host);
+}
+
+function labelFeeAllowed(text, start, end) {
+  if (phraseNegated(text, start, end)) return false;
+  const span = text.slice(start, end);
+  if (/(?:^|[^\p{L}\p{N}])(?:no|not|without|ingen|uden|ikke)\s+(?:\w+\s+){0,4}?(?:fee|charge|gebyr|cost|afgift|label)/iu.test(span)) return false;
+  let from = start;
+  while (from > 0) {
+    const ch = text[from - 1];
+    if (ch === "!" || ch === "?" || ch === "\n") break;
+    if (ch === ".") {
+      const prev = text[from - 2];
+      const next = text[from];
+      if (!(prev >= "0" && prev <= "9" && next >= "0" && next <= "9")) break;
+    }
+    from--;
+  }
+  let to = end;
+  while (to < text.length) {
+    const ch = text[to];
+    if (ch === "!" || ch === "?" || ch === "\n") break;
+    if (ch === ".") {
+      const prev = text[to - 1];
+      const next = text[to + 1];
+      if (!(prev >= "0" && prev <= "9" && next >= "0" && next <= "9")) break;
+    }
+    to++;
+  }
+  const sentence = text.slice(from, to);
+  if (/(?:pay|cover|settle|betal)/iu.test(sentence)) return true;
+  if (/\b(?:included|inkluderet|gratis)\b|no\s+cost|free\s+of\s+charge|uden\s+gebyr|ingen\s+gebyr/iu.test(sentence)) return false;
+  return true;
 }
 
 function linkAllowed(text, start, end) {
@@ -872,6 +933,7 @@ function allow(rule, text, start, end) {
     const near = text.slice(Math.max(0, start - 150), Math.min(text.length, end + 150));
     return FEE_CONTEXT.test(near) && (hasPayWord(near) || amountNear(text, start, end, 120) || /(?:https?:\/\/|www\.|click|klik)/iu.test(near));
   }
+  if (rule.gate === "label-fee") return labelFeeAllowed(text, start, end);
   if (rule.gate === "mobilepay") {
     if (phoneNear(text, start, end)) return true;
     const money = amountSpans(text).length > 0;
