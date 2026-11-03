@@ -1002,3 +1002,38 @@ test("a bare cashtag counts and a dollar amount does not", async () => {
   assert.equal(dollars.kind, "silent");
   assert.equal(dollars.signals.includes("off_platform"), false);
 });
+
+
+test("to my PayPal with an amount or a pay ask is off-platform", async () => {
+  const ready = await detect("Please send 500 kr to my PayPal today, the bike is ready.");
+  assert.equal(ready.kind, "risk");
+  assert.equal(ready.level, "medium");
+  assert.deepEqual(ready.signals, ["off_platform"]);
+
+  const high = [
+    "Please send 500 kr to my PayPal today, I ship tomorrow.",
+    "Send 500 kr to my PayPal seller@example.com, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const link = await detect("Please send 500 kr via paypal.me/seller now, I ship tomorrow.");
+  assert.equal(link.kind, "risk");
+  assert.equal(link.level, "high");
+  assert.deepEqual(link.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a museum PayPal payment and pickup stay silent", async () => {
+  const museum = await detect("I paid with PayPal yesterday for the museum tickets.");
+  assert.equal(museum.kind, "silent");
+  assert.equal(museum.silentReason, "no_atom");
+  assert.deepEqual(museum.signals, []);
+
+  const pickup = await detect("PayPal is fine when you pick it up on Thursday.");
+  assert.equal(pickup.kind, "silent");
+  assert.equal(pickup.silentReason, "veto");
+});

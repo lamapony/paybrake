@@ -90,6 +90,7 @@ const RULES = [
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
   { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
+  { id: "off_platform", re: "my\\s+paypal", gate: "pay-or-amount" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -212,6 +213,12 @@ function amountNear(text, start, end, window) {
     const gap = amount.end <= start ? start - amount.end : amount.start >= end ? amount.start - end : 0;
     return gap <= window;
   });
+}
+
+function payWordOutside(text, start, end, window) {
+  const before = text.slice(Math.max(0, start - window), start);
+  const after = text.slice(end, Math.min(text.length, end + window));
+  return hasPayWord(before) || hasPayWord(after);
 }
 
 // "send" and "transfer" count only when the gap names money ("500 kr", "$50",
@@ -431,6 +438,10 @@ function allow(rule, text, start, end) {
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
+  if (rule.gate === "pay-or-amount") {
+    if (negatedBefore(text, start)) return false;
+    return amountNear(text, start, end, 80) || payWordOutside(text, start, end, 80);
+  }
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "deposit-word") {
