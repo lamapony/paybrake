@@ -1002,3 +1002,54 @@ test("a bare cashtag counts and a dollar amount does not", async () => {
   assert.equal(dollars.kind, "silent");
   assert.equal(dollars.signals.includes("off_platform"), false);
 });
+
+
+test("an amount next to Messenger, Facebook Pay, Snapchat, or Viber is off-platform", async () => {
+  const medium = [
+    "Send 500 kr via Messenger today, the bike is ready.",
+    "Send 500 kr via Facebook Pay today, the bike is ready.",
+    "Send 500 kr via Snapchat today, the bike is ready.",
+    "Send 500 kr via Viber today, the bike is ready."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+
+  const high = [
+    "Send 500 kr via Messenger today, I ship tomorrow.",
+    "Pay me on Messenger, 500 kr, I ship tomorrow.",
+    "Send 500 kr via Facebook Pay, I ship tomorrow.",
+    "Send 500 kr via Snapchat today, I ship tomorrow.",
+    "Send 500 kr via Viber today, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const telegram = await detect("Pay me on Telegram, 500 kr, I ship tomorrow.");
+  assert.equal(telegram.kind, "risk");
+  assert.equal(telegram.level, "high");
+  assert.deepEqual(telegram.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a Messenger chat or a photo without an amount stays off the rail", async () => {
+  const chat = await detect("We can chat on Messenger about the bike on Thursday.");
+  assert.equal(chat.kind, "silent");
+  assert.equal(chat.silentReason, "no_atom");
+  assert.deepEqual(chat.signals, []);
+
+  const photo = await detect("Send a photo on Messenger of the bike, I ship tomorrow.");
+  assert.equal(photo.kind, "silent");
+  assert.equal(photo.silentReason, "weak_only");
+  assert.deepEqual(photo.signals, ["ship_before_meet"]);
+
+  const address = await detect("Send the address via Messenger when you pick it up.");
+  assert.equal(address.kind, "silent");
+  assert.equal(address.silentReason, "veto");
+});
