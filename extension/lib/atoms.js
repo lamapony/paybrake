@@ -145,6 +145,13 @@ function payWordNear(text, start, end, window) {
   return hasPayWord(slice);
 }
 
+function localPayNear(text, start, end, window) {
+  const slice = text.slice(Math.max(0, start - window), Math.min(text.length, end + window));
+  // "betalning via Swish" names a method. It is not a pay-first ask.
+  const listing = slice.replace(/(?<![\p{L}\p{N}])(?:via|betaling|betalning)(?![\p{L}\p{N}])/giu, " ");
+  return hasPayWord(listing);
+}
+
 function negatedBefore(text, start) {
   const before = text.slice(Math.max(0, start - 28), start);
   return /(?:no|not|don't|dont|never|without|ingen|uden|ikke|nej)\s+$/iu.test(before);
@@ -324,13 +331,22 @@ function paymentViaChat(text, start, end) {
 }
 
 function railNegated(text, start) {
-  if (negatedBefore(text, start)) return true;
   const before = text.slice(Math.max(0, start - 48), start);
-  return /(?:no|not|never|without|won't|wont|don't|dont|do\s+not|ikke|ingen|uden|nej|aldrig)(?:\s+\w+){0,3}\s+$/iu.test(before);
+  // One word keeps "don't take Venmo". "not" inside "cannot", or "so Zelle", does not.
+  return /(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+\w+){0,1}\s+$/iu.test(before);
+}
+
+function pickupRefused(before) {
+  return /(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|can't|cant|cannot|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+\w+){0,3}\s+$/iu.test(before);
 }
 
 function handoverPay(text) {
-  return /pick\s*up|(?<![\p{L}\p{N}])collect(?:ion)?(?![\p{L}\p{N}])|afhent|når\s+du\s+henter|ved\s+afhentning|on\s+delivery|ved\s+levering/iu.test(text);
+  const re = /pick\s*up|(?<![\p{L}\p{N}])collect(?:ion)?(?![\p{L}\p{N}])|afhent|når\s+du\s+henter|ved\s+afhentning|on\s+delivery|ved\s+levering/giu;
+  for (const match of String(text ?? "").matchAll(re)) {
+    const before = text.slice(Math.max(0, match.index - 48), match.index);
+    if (!pickupRefused(before)) return true;
+  }
+  return false;
 }
 
 function payFirstLanguage(text) {
@@ -359,12 +375,11 @@ function allow(rule, text, start, end) {
   }
   if (rule.gate === "named-rail" || rule.gate === "cashtag") {
     if (railNegated(text, start)) return false;
-    if (rule.gate === "cashtag" && !/cashtag|cash\s*app/iu.test(text)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
   if (rule.gate === "local-rail") {
     if (railNegated(text, start)) return false;
-    const pay = payWordNear(text, start, end, 80);
+    const pay = localPayNear(text, start, end, 80);
     const money = amountNear(text, start, end, 80);
     const scam = payFirstLanguage(text);
     if (handoverPay(text) && !scam) return false;

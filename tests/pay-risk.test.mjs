@@ -785,3 +785,50 @@ test("paying by Swish before the seller ships is off-platform", async () => {
   assert.equal(tag.level, "high");
   assert.deepEqual(tag.signals, ["off_platform", "ship_before_meet"]);
 });
+
+test("ordinary Swish and Vipps lines are not pay-first", async () => {
+  const quiet = [
+    "Betalning via Swish, 500 kr",
+    "Betaling med Vipps, 500 kr"
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("off_platform"), false, text);
+  }
+});
+
+test("a refused pickup does not hide Swish, a real pickup offer stays quiet", async () => {
+  const ask = await detect("Pay 500 kr by Swish, no pick up possible, I ship tomorrow");
+  assert.equal(ask.kind, "risk");
+  assert.equal(ask.level, "high");
+  assert.deepEqual(ask.signals, ["off_platform", "ship_before_meet"]);
+
+  const offer = await detect("Pay 500 kr by Swish on pickup tomorrow.");
+  assert.equal(offer.kind, "silent");
+  assert.equal(offer.signals.includes("off_platform"), false);
+});
+
+test("negation cancels a rail only when it negates that payment", async () => {
+  const flagged = [
+    "We cannot meet so Venmo 500 kr",
+    "Not local so Zelle me 500 kr",
+    "I won't be home so Zelle me 500 kr, I ship tomorrow"
+  ];
+  for (const text of flagged) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.signals.includes("off_platform"), true, text);
+  }
+});
+
+test("a bare cashtag counts and a dollar amount does not", async () => {
+  const tag = await detect("Send 500 kr to $bikeseller, I ship tomorrow");
+  assert.equal(tag.kind, "risk");
+  assert.equal(tag.level, "high");
+  assert.deepEqual(tag.signals, ["off_platform", "ship_before_meet"]);
+
+  const dollars = await detect("Send 500 kr to $500, I ship tomorrow.");
+  assert.equal(dollars.kind, "silent");
+  assert.equal(dollars.signals.includes("off_platform"), false);
+});
