@@ -97,6 +97,16 @@ The static card is hidden. The extension draws its own card in the bike thread. 
 
 `Signe Kruse · camera` is a second risky thread for **Pay anyway**. `demo/safe-chats.html` should stay silent.
 
+![PayBrake card on the local bike thread](shots/ext-live-1280.png)
+
+That image is the unpacked extension on the local demo, from `npm run e2e`. The bike card says **High risk payment request** and lists four signals: Friends & Family, Upfront deposit, Pressure to hurry, and Ships before you meet. The buttons are **Switch to a PayPal order** and **Pay anyway**. With no model configured, the card says the AI check is off on the mock server. The lamp thread on the same page stays silent. On a phone the details start collapsed and those two buttons stack (`shots/ext-live-390.png`).
+
+![The card appears, then Switch to a PayPal order creates a mock order](shots/demo.gif)
+
+The clip is that same thread: no card, then the card, then **Open approval** after the mock order is created. The order id changes on every run.
+
+These steps are the local path. The hosted path above is the same interaction without Node. Narration for a recording is in [the video script](docs/DEMO-VIDEO-SCRIPT.md). Open items before a public submission are in [submission gaps](docs/SUBMISSION-GAPS.md).
+
 Options (right-click the toolbar icon, or open the extension's options page): backend URL (default: the hosted mock server `https://paybrake-demo.spbabinov.workers.dev`; one click switches to `http://localhost:8787`), rules-only vs an AI check, a debug HUD, and the on-device override log (download JSON or clear).
 
 ## What the pieces do
@@ -170,11 +180,13 @@ npm test
 npm run eval
 ```
 
-`npm test` passes 253 tests. All of them are offline.
+`npm test` passes 253 tests. All of them are offline. The script lists `tests/*.mjs` and `backend/test/*.mjs` in Node (`scripts/run-tests.mjs`). It does not need the shell to expand globs, so the same command works on Node 20 and on Windows `cmd`.
 
 Rules eval on the synthetic set in `eval/cases/` (35 chats): precision 1, recall 1, false alarms 0 (tp 18, fp 0, fn 0, tn 17). The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
 
-TODO (stale assets): screenshots and GIFs under `shots/` (including `shots/tester/`, `shots/tester-v2/`, `shots/tester-v3/`, and `shots/ai-live/`) were not regenerated in this headless checkout. Do not treat them as current. Regenerate with `npm run shots` and `npm run e2e` / `npm run e2e:hosted` on a machine that can launch Chromium.
+`npm run shots` and `npm run e2e` refreshed `shots/demo-1280.png`, `shots/demo-390.png`, `shots/demo-1280-protect.png`, `shots/live-1280.png`, `shots/live-1280-order.png`, `shots/live-390.png`, `shots/ext-live-1280.png`, `shots/ext-live-390.png`, and `shots/demo.gif` on this branch. `shots/safe-1280.png` was rewritten by the same shots run and matched the file already on main.
+
+TODO (stale assets): `shots/tester/`, `shots/tester-v2/`, `shots/tester-v3/`, `shots/ai-live/`, and `shots/pilot-*.png` were not regenerated here. Do not treat those as current. `npm run e2e:hosted` was not run.
 
 Screenshots: `npm run shots`. Extension smoke: `npm run e2e` (Chromium with the unpacked extension). If the browser cannot load an extension in this environment, that script prints `SKIP` and exits 0.
 

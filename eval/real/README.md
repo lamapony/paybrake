@@ -1,6 +1,6 @@
 # Real-message eval (Hugging Face scam / ham datasets)
 
-The 30-chat synthetic eval in `eval/cases/` was written by us and scores 1.0 / 1.0.
+The 35-chat synthetic eval in `eval/cases/` was written by us and scores 1.0 / 1.0.
 This harness runs the same detector (`extension/lib`) on third-party public data.
 
 ```
