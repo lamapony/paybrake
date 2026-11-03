@@ -17,6 +17,11 @@ function countingAsk(impl) {
   return { askLlm, state };
 }
 
+function threadVerdict(messages, context) {
+  const text = messages.map((message) => message.text).join("\n");
+  return detect(text, { ...context, messages });
+}
+
 test("short text is silent and does not ask the model", async () => {
   const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["x"] }));
   const verdict = await detect("pay F&F now", {}, { askLlm });
@@ -1536,4 +1541,38 @@ test("verification-code advice says never share the code", async () => {
   const verdict = await detect(text, {});
   assert.match(verdict.reason, /never share/i);
   assert.equal(/switch to a paypal order/i.test(verdict.reason), false);
+});
+
+test("a seller who refuses PayPal F&F and says to use checkout stays silent", { todo: true }, async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "Can I pay another way?" },
+    { from: "seller", text: "I won't take PayPal F&F, use checkout" }
+  ], { listingTitle: "Desk lamp", listingPrice: "250 kr" });
+  assert.equal(verdict.kind, "silent");
+});
+
+test("a price next to WhatsApp with no payment ask stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "What do you want for the lamp?" },
+    { from: "seller", text: "price is 200, text me on WhatsApp" }
+  ], { listingTitle: "Desk lamp", listingPrice: "250 kr" });
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "no_atom");
+});
+
+test("past tense paid about a flat deposit stays silent", { todo: true }, async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "Are you moving?" },
+    { from: "seller", text: "I already paid the deposit for my flat" }
+  ], { listingTitle: "Desk lamp", listingPrice: "250 kr" });
+  assert.equal(verdict.kind, "silent");
+});
+
+test("battery at 50 percent now stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "How is the battery on the speaker?" },
+    { from: "seller", text: "battery is at 50% now" }
+  ], { listingTitle: "Bluetooth speaker", listingPrice: "600 kr" });
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "no_atom");
 });
