@@ -62,7 +62,7 @@ const RULES = [
   { id: "off_platform", re: "account\\s+numbers?", gate: "negation" },
   { id: "off_platform", re: "sort\\s+codes?", gate: "negation" },
   { id: "off_platform", re: "revolut", gate: "negation" },
-  { id: "off_platform", re: "(?:transferwise|wise\\.com|(?:via|on|with|til)\\s+wise)", gate: "negation" },
+  { id: "off_platform", re: "(?:transferwise|wise\\.com|(?:via|on|with|til|through|på)\\s+wise|wise\\s+transfer)", gate: "negation" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "negation" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "none" },
