@@ -342,3 +342,18 @@ test("a town called Wise and the adjective stay silent", async () => {
     assert.deepEqual(verdict.signals, [], text);
   }
 });
+
+test("otherwise transfer and likewise transfer are not Wise", async () => {
+  const quiet = [
+    "Please send 500 kr or otherwise transfer the bike next week.",
+    "Please likewise transfer 500 kr for the spare keys today.",
+    "You can pay cash or otherwise transfer at pickup.",
+    "Please pay 500 kr upon wise advice from the seller today.",
+    "Please send 500 kr through wiser choices next week."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("off_platform"), false, text);
+  }
+});
