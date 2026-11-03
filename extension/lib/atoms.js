@@ -195,6 +195,38 @@ function amountNear(text, start, end, window) {
   });
 }
 
+// "send" and "transfer" count only when the gap names money ("500 kr", "$50",
+// "money", "the deposit"). "send the address in advance" does not.
+// "paid ... ago" and "paid ... last month" are history, not an ask.
+const MONEY_WORD = /(?<![\p{L}\p{N}])(?:money|cash|funds|fees?|deposits?|depositum|kroner|dollars?|euros?)(?![\p{L}\p{N}])/iu;
+const PAST_PAY = /(?<![\p{L}\p{N}])(?:ago|last[ \t]+(?:night|week|month|year))(?![\p{L}\p{N}])/iu;
+
+function upfrontCue(span) {
+  const match = /^(paid|paying|payment|pay|send|transfer)(?![\p{L}\p{N}])/iu.exec(span)
+    || /(?<![\p{L}\p{N}])(paid|paying|payment|pay|send|transfer)(?![\p{L}\p{N}])\s*$/iu.exec(span);
+  return match ? match[1].toLowerCase() : "";
+}
+
+function spanHasMoney(text, start, end) {
+  if (MONEY_WORD.test(text.slice(start, end))) return true;
+  return amountSpans(text).some((amount) => amount.start < end && amount.end > start);
+}
+
+function paidHistory(text, start) {
+  const rest = text.slice(start);
+  const cut = rest.search(/[.!?\n]/);
+  const sentence = cut === -1 ? rest : rest.slice(0, cut);
+  return PAST_PAY.test(sentence);
+}
+
+function upfrontWindowOk(text, start, end) {
+  if (phraseNegated(text, start, end)) return false;
+  const cue = upfrontCue(text.slice(start, end));
+  if ((cue === "send" || cue === "transfer") && !spanHasMoney(text, start, end)) return false;
+  if (cue === "paid" && paidHistory(text, start)) return false;
+  return true;
+}
+
 function phoneNear(text, start, end) {
   const slice = text.slice(Math.max(0, start - 48), Math.min(text.length, end + 48));
   return /\+?\d[\d\s]{6,}\d/.test(slice);
@@ -224,7 +256,7 @@ function paymentViaChat(text, start, end) {
 }
 
 function allow(rule, text, start, end) {
-  if (rule.gate === "upfront-window") return !phraseNegated(text, start, end);
+  if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);

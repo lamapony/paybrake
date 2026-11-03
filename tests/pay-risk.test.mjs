@@ -592,8 +592,51 @@ test("send, transfer, and paid still count as an upfront ask", async () => {
     assert.deepEqual(verdict.signals, ["upfront_deposit", "ship_before_meet"], text);
   }
 
-  const medium = await detect("Transfer 500 kr in advance");
-  assert.equal(medium.kind, "risk");
-  assert.equal(medium.level, "medium");
-  assert.deepEqual(medium.signals, ["upfront_deposit"]);
+  const medium = [
+    "Transfer 500 kr in advance",
+    "Send $50 upfront today please.",
+    "Please send the money in advance today.",
+    "Send the deposit upfront today please.",
+    "Please transfer the money in advance today.",
+    "Transfer the deposit upfront today please.",
+    "Pay in advance? No problem, send 500 kr now."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit"], text);
+  }
+});
+
+test("send and transfer without money stay silent", async () => {
+  const quiet = [
+    "Can you send the address in advance?",
+    "Send me your number in advance and I will call.",
+    "I will send you the pickup address in advance.",
+    "I will send you the exact location in advance.",
+    "Can I send you a message in advance before I come?",
+    "Please send your questions upfront, I reply fast."
+  ];
+  for (const text of quiet) {
+    assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
+test("paid history stays silent", async () => {
+  const quiet = [
+    "I paid 3000 kr for it upfront at the shop two years ago.",
+    "I paid 500 kr upfront last month at the shop."
+  ];
+  for (const text of quiet) {
+    assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
 });
