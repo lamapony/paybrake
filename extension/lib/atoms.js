@@ -11,7 +11,7 @@ function wordBound(pattern, flags = "giu") {
   return new RegExp(`(?<![\\p{L}\\p{N}])(?:${source})(?![\\p{L}\\p{N}])`, flags);
 }
 
-const PAY_WORD = wordBound("send|pay|paid|payment|paying|via|paypal|betal|betale|betaling|overfør|overfører|overfoer", "iu");
+const PAY_WORD = wordBound("send|pay|paid|payment|paying|via|paypal|betal|betale|betala|betaling|skicka|skickar|overfør|overfører|overfoer", "iu");
 
 const ATOMS = [
   { id: "friends_family", role: "act", strength: "strong", receipt: "Friends & Family" },
@@ -82,6 +82,14 @@ const RULES = [
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "negation" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "chat-pay" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
+  { id: "off_platform", re: "\\bwestern\\s+union\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\bmoneygram\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\bvenmo\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\bzelle\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\bcash\\s*app\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
+  { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
+  { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -135,6 +143,17 @@ function hasPayWord(text) {
 function payWordNear(text, start, end, window) {
   const slice = text.slice(Math.max(0, start - window), Math.min(text.length, end + window));
   return hasPayWord(slice);
+}
+
+function localPayNear(text, start, end, window) {
+  const slice = text.slice(Math.max(0, start - window), Math.min(text.length, end + window));
+  // "Payment by Swish" and "betalning via Swish" name a method.
+  // "pay 500" stays an ask; "pay by Swish" does not.
+  const listing = slice.replace(
+    /(?<![\p{L}\p{N}])(?:via|betaling|betalning|payment)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])pay(?![\p{L}\p{N}])(?!\s+\d)/giu,
+    " "
+  );
+  return hasPayWord(listing);
 }
 
 function negatedBefore(text, start) {
@@ -315,6 +334,98 @@ function paymentViaChat(text, start, end) {
   return amountSpans(text).some((amount) => amount.start >= start && amount.end <= gapEnd);
 }
 
+function railNegated(text, start) {
+  const before = text.slice(Math.max(0, start - 48), start);
+  // A list stays under the negation ("don't take Venmo or Zelle").
+  // "so"/"but" start a new ask, and "not" inside "cannot" does not count.
+  return /(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+(?!(?:so|but)(?![\p{L}\p{N}]))[\p{L}\p{N}]+){0,6}\s+$/iu.test(before);
+}
+
+function pickupRefused(before, after) {
+  // "Pickup isn't possible" refuses. Those words sit after the pickup word.
+  if (/^\s*(?:isn't|isn\u2019t|isnt|is\s+not)\s+possible\b/iu.test(after || "")) return true;
+  const match = before.match(/(?<![\p{L}\p{N}])(?:won't|wont|don't|dont|do\s+not|can't|cant|cannot|no|not|never|without|ikke|ingen|uden|nej|aldrig)(?![\p{L}\p{N}])(?:\s+\w+){0,3}\s+$/iu);
+  if (!match) return false;
+  // "no problem at pickup" offers the handover.
+  return !/(?<![\p{L}\p{N}])no(?:t)?(?![\p{L}\p{N}])(?:\s+a)?\s+problems?\b/iu.test(match[0]);
+}
+
+// Payment at the handover ("when I pick it up", "at pickup", "when we meet").
+// "collect the car" and "pick it up Saturday" name a later handover.
+const TIED_HANDOVER = /(?:at|on)\s+pick\s*up|(?:at|on)\s+collection|when\s+you\s+collect|when\s+(?:i|you|we)\s+pick(?:\s+it)?\s*up|when\s+we\s+meet|when\s+you\s+come\s+to\s+see(?:\s+it)?|on\s+delivery|ved\s+levering|ved\s+afhentning|når\s+du\s+henter|när\s+du\s+hämtar|vid\s+upphämtning|när\s+vi\s+ses/iu;
+
+function handoverPay(text) {
+  const source = String(text ?? "");
+  const re = new RegExp(`(?<![\\p{L}\\p{N}])(?:${TIED_HANDOVER.source})(?![\\p{L}\\p{N}])`, "giu");
+  for (const match of source.matchAll(re)) {
+    const at = match.index ?? 0;
+    const before = source.slice(Math.max(0, at - 48), at);
+    const after = source.slice(at + match[0].length, at + match[0].length + 40);
+    if (!pickupRefused(before, after)) return true;
+  }
+  return false;
+}
+
+// Clause breaks keep "available now" away from "pay with Zelle". "and"/"but"/"so"/"then" start one too.
+const CLAUSE_BREAK = /[.!?;\n]|(?<!\d),(?!\d)|\s(?:and|but|so|then)\s/giu;
+const SENTENCE_BREAK = /[.!?\n]/gu;
+const TIMING_WORD = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?)(?![\p{L}\p{N}])/giu;
+const RAIL_WORD = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swisha?|vipps|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
+
+function sliceAround(text, at, length, breaks) {
+  const re = new RegExp(breaks.source, breaks.flags);
+  let start = 0;
+  let end = text.length;
+  for (const match of text.matchAll(re)) {
+    const from = match.index ?? 0;
+    const to = from + match[0].length;
+    if (to <= at) start = to;
+    else if (from >= at + length) {
+      end = from;
+      break;
+    }
+  }
+  return { start, end, text: text.slice(start, end) };
+}
+
+function paysBeforeHandover(text) {
+  const source = String(text ?? "");
+  // "home today" and "available now" come after the handover and time the visit.
+  // Count a timing word only in the same clause as the pay or rail word, and
+  // only when this sentence has not already named the handover.
+  const handoverRe = new RegExp(`(?<![\\p{L}\\p{N}])(?:${TIED_HANDOVER.source})(?![\\p{L}\\p{N}])`, "giu");
+  const handovers = [...source.matchAll(handoverRe)].map((match) => match.index ?? 0);
+  TIMING_WORD.lastIndex = 0;
+  for (const match of source.matchAll(TIMING_WORD)) {
+    const at = match.index ?? 0;
+    const length = match[0].length;
+    if (negatedBefore(source, at)) continue;
+    const clause = sliceAround(source, at, length, CLAUSE_BREAK);
+    if (!hasPayWord(clause.text) && !RAIL_WORD.test(clause.text)) continue;
+    const sentence = sliceAround(source, at, length, SENTENCE_BREAK);
+    if (handovers.some((start) => start >= sentence.start && start < at)) continue;
+    return true;
+  }
+  return false;
+}
+
+function handoverQuietsRail(text) {
+  if (!handoverPay(text)) return false;
+  if (payFirstLanguage(text) || paysBeforeHandover(text)) return false;
+  return true;
+}
+
+function payFirstLanguage(text) {
+  const source = String(text ?? "");
+  // "no payment before we meet" cancels the ask. "and I ship/post" counts like "then I ship".
+  // "så skickar jag" is the Swedish ship line.
+  const re = /pay(?:ment)?\s+first|betal\s+først|pay(?:ment)?\s+before|(?:swisha?|vipps)\s+first|first,?\s+then\s+i\s+(?:ship|send|post)|then\s+i\s+(?:ship|send|post)|and\s+i(?:['\u2019]ll|\s+will)?\s+(?:ship|post)(?![\p{L}\p{N}])|først,?\s+så\s+send|så\s+sender\s+jeg|så\s+skickar\s+jag|innan\s+jag\s+skickar/giu;
+  for (const match of source.matchAll(re)) {
+    if (!negatedBefore(source, match.index ?? 0)) return true;
+  }
+  return false;
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
@@ -334,6 +445,20 @@ function allow(rule, text, start, end) {
   if (rule.gate === "mobilepay") {
     if (phoneNear(text, start, end)) return true;
     return hasPayWord(text) && amountSpans(text).length > 0;
+  }
+  if (rule.gate === "named-rail" || rule.gate === "cashtag") {
+    if (railNegated(text, start)) return false;
+    if (handoverQuietsRail(text)) return false;
+    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
+  }
+  if (rule.gate === "local-rail") {
+    if (railNegated(text, start)) return false;
+    const pay = localPayNear(text, start, end, 80);
+    const money = amountNear(text, start, end, 80);
+    const scam = payFirstLanguage(text);
+    if (handoverQuietsRail(text)) return false;
+    if (pay && money) return true;
+    return scam && money;
   }
   if (rule.gate === "ship") {
     if (PICKUP_ALT.test(text)) return false;
