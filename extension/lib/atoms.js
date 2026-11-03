@@ -600,6 +600,13 @@ function railDirectAsk(text, start, end) {
   return /^\s+(?:the|my|a)\s+(?:money|deposit|payment|funds)\b/iu.test(after);
 }
 
+// "payment protection" and "a payment app" name the product. "send" and "via" still count.
+function namedRailPayNear(text, start, end) {
+  const slice = text.slice(Math.max(0, start - 80), Math.min(text.length, end + 80));
+  const stripped = slice.replace(/(?<![\p{L}\p{N}])payment\s+(?:protection|apps?)(?![\p{L}\p{N}])/giu, " ");
+  return hasPayWord(stripped);
+}
+
 function railNegated(text, start) {
   const before = text.slice(Math.max(0, start - 48), start);
   // A list stays under the negation ("don't take Venmo or Zelle").
@@ -890,7 +897,8 @@ function allow(rule, text, start, end) {
   if (rule.gate === "named-rail" || rule.gate === "cashtag") {
     if (railNegated(text, start)) return false;
     if (handoverQuietsRail(text)) return false;
-    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80) || railDirectAsk(text, start, end);
+    const pay = rule.gate === "named-rail" ? namedRailPayNear(text, start, end) : payWordNear(text, start, end, 80);
+    return pay || amountNear(text, start, end, 80) || railDirectAsk(text, start, end);
   }
   if (rule.gate === "local-rail") {
     if (railNegated(text, start)) return false;
@@ -1051,7 +1059,7 @@ function findAtoms(text) {
       const end = start + match[0].length;
       if (!allow(rule, source, start, end)) continue;
       const meta = META[rule.id];
-      found.push({
+      const hit = {
         atom: rule.id,
         text: match[0],
         start,
@@ -1060,7 +1068,9 @@ function findAtoms(text) {
         strength: meta.strength,
         receipt: meta.receipt,
         gate: rule.gate
-      });
+      };
+      if (rule.gate === "named-rail" && railDirectAsk(source, start, end)) hit.directAsk = true;
+      found.push(hit);
     }
   }
   found.push(...findTypoAtoms(source));
