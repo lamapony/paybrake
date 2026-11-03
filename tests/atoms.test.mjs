@@ -68,10 +68,30 @@ test("when you pick a time is not pay on collection", () => {
   assert.equal(hits.some((hit) => hit.atom === "pay_on_collection"), false, JSON.stringify(hits));
 });
 
-test("when you pick it up is still pay on collection", () => {
-  const text = "See you when you pick it up tomorrow.";
+test("when you pick it, them, or the item up is pay on collection", () => {
+  const phrases = [
+    ["See you when you pick it up tomorrow.", "when you pick it up"],
+    ["See you when you pick them up tomorrow.", "when you pick them up"],
+    ["See you when you pick the lamp up tomorrow.", "when you pick the lamp up"],
+    ["See you when you pick a bike up tomorrow.", "when you pick a bike up"],
+    ["See you when you pick up tomorrow.", "when you pick up"]
+  ];
+  for (const [text, span] of phrases) {
+    const hits = findAtoms(text);
+    assert.ok(
+      hits.some((hit) => hit.atom === "pay_on_collection" && hit.text.toLowerCase() === span),
+      JSON.stringify(hits)
+    );
+  }
+});
+
+test("when you pick up the phone still counts as pay on collection", () => {
+  const text = "Text me when you pick up the phone.";
   const hits = findAtoms(text);
-  assert.ok(hits.some((hit) => hit.atom === "pay_on_collection" && hit.text.toLowerCase() === "when you pick it up"), JSON.stringify(hits));
+  assert.ok(
+    hits.some((hit) => hit.atom === "pay_on_collection" && hit.text.toLowerCase() === "when you pick up"),
+    JSON.stringify(hits)
+  );
 });
 
 test("evidence spans are slices of the input", () => {
