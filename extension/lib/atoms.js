@@ -137,9 +137,9 @@ const RULES = [
   { id: "pay_on_collection", re: "betal(?:ing)?\\s+ved\\s+afhentning", gate: "none" },
   { id: "pay_on_collection", re: "ved\\s+afhentning", gate: "none" },
   { id: "pay_on_collection", re: "når\\s+du\\s+henter", gate: "none" },
-  { id: "pay_on_collection", re: "through\\s+the\\s+(?:\\w+\\s+){0,3}checkout", gate: "none" },
-  { id: "pay_on_collection", re: "(?:the|platform(?:ens)?|marketplace)\\s+checkout", gate: "none" },
-  { id: "pay_on_collection", re: "brug\\s+(?:platformens\\s+)?checkout", gate: "none" }
+  { id: "pay_on_collection", re: "through\\s+the\\s+(?:\\w+\\s+){0,3}checkout", gate: "checkout" },
+  { id: "pay_on_collection", re: "(?:the|platform(?:ens)?|marketplace)\\s+checkout", gate: "checkout" },
+  { id: "pay_on_collection", re: "brug\\s+(?:platformens\\s+)?checkout", gate: "checkout" }
 ];
 
 const GS = wordBound("goods\\s*(?:&|and)\\s*services|varer\\s+og\\s+tjenester|G&S", "iu");
@@ -238,6 +238,45 @@ function phraseNegated(text, start, end) {
   const tail = sentence.split(/[^\p{L}\p{N}'’]+/u).filter(Boolean).slice(0, 8).join(" ");
   if (!tail) return false;
   return TAIL_NEG.test(tail);
+}
+
+// Words that can sit between "don't use / don't pay" and the checkout phrase.
+// An amount may contain a dot or comma (1.800, 1,800, $12.50).
+const CHECKOUT_OBJECT = "(?:through|via|using|the|a|an|our|your|my|this|that|me|us|him|her|them|\\$?\\d+(?:[.,]\\d+)*|kr|dkk|eur|euro|usd|sek|gbp)";
+// Same sentence only. "." "!" "?" ";" and a newline end it. A dot inside an
+// amount does not. "outside", "except", "other than", "directly", and ", use"
+// are advice to stay on checkout, so they keep the veto.
+const CHECKOUT_STOP = /\b(?:outside|except|directly)\b|other\s+than|uden\s+for|,\s*(?:just\s+|bare\s+)?(?:use|brug)\b/iu;
+const CHECKOUT_REFUSAL = new RegExp(
+  `(?:don['’]?t|dont|do\\s+not|never)\\s+(?:use|pay|paying)\\s+(?:${CHECKOUT_OBJECT}\\s+)*$` +
+    `|(?:brug\\s+ikke|betal\\s+ikke|ikke\\s+bruge|lad\\s+være\\s+med\\s+at\\s+bruge)\\s+(?:(?:gennem|via|på|i|over|\\$?\\d+(?:[.,]\\d+)*|kr|dkk|eur|euro|usd|sek|gbp)\\s+)*$`,
+  "iu"
+);
+const CHECKOUT_IGNORE = /(?<![\p{L}\p{N}])(?:ignore|ignorer)\s+(?:(?:the|a|an|our|your|my|this|that)\s+)*$/iu;
+const CHECKOUT_IGNORE_NEG = /(?:don['’]?t|dont|do\s+not|never|not|no|cannot|can\s+not|can['’]?t|won['’]?t|will\s+not|ikke|aldrig)\s+$/iu;
+
+function checkoutClause(text, start) {
+  const before = text.slice(0, start);
+  for (let i = before.length - 1; i >= 0; i--) {
+    const ch = before[i];
+    if (ch === "!" || ch === "?" || ch === ";" || ch === "\n") return before.slice(i + 1);
+    if (ch === ".") {
+      const prev = before[i - 1];
+      const next = before[i + 1];
+      if (prev >= "0" && prev <= "9" && next >= "0" && next <= "9") continue;
+      return before.slice(i + 1);
+    }
+  }
+  return before;
+}
+
+function checkoutDismissed(text, start) {
+  const clause = checkoutClause(text, start);
+  if (CHECKOUT_STOP.test(clause)) return false;
+  if (CHECKOUT_REFUSAL.test(clause)) return true;
+  const ignore = clause.match(CHECKOUT_IGNORE);
+  if (!ignore) return false;
+  return !CHECKOUT_IGNORE_NEG.test(clause.slice(0, ignore.index));
 }
 
 function amountSpans(text) {
@@ -468,6 +507,9 @@ function payFirstLanguage(text) {
 function allow(rule, text, start, end) {
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
+  // Wider than negatedBefore: the refusal can sit a short clause back,
+  // as long as it still targets this checkout phrase. See checkoutDismissed.
+  if (rule.gate === "checkout") return !negatedBefore(text, start) && !checkoutDismissed(text, start);
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
   if (rule.gate === "negation") return !negatedBefore(text, start);

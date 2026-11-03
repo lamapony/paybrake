@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { atoms, payRisk } from "../extension/lib/index.js";
 
 const { detect } = payRisk;
-const { hasPayWord } = atoms;
+const { hasPayWord, findAtoms } = atoms;
 
 const FF = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow";
 const SAFE_FRIENDS = "My friends and family loved this lamp, but I am moving house soon";
@@ -1122,4 +1122,63 @@ test("wire and transfer to a bank need money and a real word", async () => {
   assert.equal(comma.level, "high");
   assert.ok(comma.signals.includes("off_platform"));
   assert.ok(comma.signals.includes("ship_before_meet"));
+});
+
+test("refusing the checkout does not hide friends and family", async () => {
+  const texts = [
+    "Don't use the checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Ignore the marketplace checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Do not pay through the checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Don't pay 1.800 kr through the checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Please ignore the marketplace checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Ignorer platformens checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Brug ikke platformens checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Betal ikke gennem platformens checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Lad være med at bruge platformens checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Du må ikke bruge platformens checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow."
+  ];
+  for (const text of texts) {
+    const hits = findAtoms(text);
+    assert.equal(hits.some((hit) => hit.atom === "pay_on_collection"), false, text + " " + JSON.stringify(hits));
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.ok(verdict.signals.includes("friends_family"), text);
+    assert.ok(verdict.signals.includes("ship_before_meet"), text);
+  }
+});
+
+test("advice to use the checkout stays a silent veto", async () => {
+  const texts = [
+    "Never pay outside the marketplace checkout.",
+    "Don't pay me directly, use the checkout.",
+    "Don't pay anyone except through the checkout.",
+    "Don't pay other than through the checkout.",
+    "Don't send cash!\nUse the checkout.",
+    "Don't pay now! Use the checkout.",
+    "Don't send cash; use the checkout.",
+    "Don't send cash. Pay through the checkout.",
+    "Ignore my last message, pay through the checkout.",
+    "Don't ignore the checkout.",
+    "Don't worry, use the checkout.",
+    "Betal ikke uden for platformens checkout.",
+    "Betal ikke kontant, brug platformens checkout."
+  ];
+  for (const text of texts) {
+    const hits = findAtoms(text);
+    assert.ok(hits.some((hit) => hit.atom === "pay_on_collection"), text + " " + JSON.stringify(hits));
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "veto", text);
+  }
+});
+
+test("paying through checkout stays a silent veto", async () => {
+  const text = "Pay through the marketplace checkout when you pick it up. No deposit.";
+  const hits = findAtoms(text);
+  assert.ok(hits.some((hit) => hit.atom === "pay_on_collection"));
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "veto");
+  assert.deepEqual(verdict.signals, []);
 });
