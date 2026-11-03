@@ -31,6 +31,10 @@ const RULES = [
   { id: "friends_family", re: "venner\\s+(?:og|&)\\s+familie", gate: "ff-phrase" },
   { id: "friends_family", re: "F&F", gate: "none" },
   { id: "friends_family", re: "FnF", gate: "none" },
+  { id: "friends_family", re: "family\\s+(?:and|&)\\s+friends", gate: "ff-phrase" },
+  { id: "friends_family", re: "familie\\s+(?:og|&)\\s+venner", gate: "ff-phrase" },
+  { id: "friends_family", re: "friends\\s*/\\s*family", gate: "ff-phrase" },
+  { id: "friends_family", re: "F\\s+&\\s+F", gate: "none" },
   { id: "friends_family", re: "send\\s+as\\s+gift", gate: "none" },
   { id: "friends_family", re: "personal\\s+payment", gate: "none" },
 

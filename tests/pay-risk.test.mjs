@@ -210,3 +210,60 @@ test("banned promise language in a model reason is dropped", async () => {
   assert.match(verdict.reason, /may have no way/i);
   assert.equal(/you are protected/i.test(verdict.reason), false);
 });
+
+test("reversed friends and family, slash, and spaced F & F", async () => {
+  const high = [
+    "Please send 500 kr via PayPal family and friends, I ship tomorrow.",
+    "Send 500 kr via PayPal til familie og venner, jeg kan kun sende varen.",
+    "Send 500 kr PayPal friends/family, I ship tomorrow.",
+    "Send 500 kr via F & F now, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["friends_family", "ship_before_meet"], text);
+  }
+
+  const medium = [
+    "Please send 500 kr via PayPal family and friends today.",
+    "Send 500 kr via PayPal til familie og venner i dag.",
+    "Please send 500 kr via PayPal friends/family today.",
+    "Please send 500 kr via F & F today."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["friends_family"], text);
+  }
+});
+
+test("exact friends and family, F&F, and FnF stay high", async () => {
+  const exact = [
+    "Please send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Please send 500 kr via F&F now, I ship tomorrow.",
+    "Please send 500 kr via FnF now, I ship tomorrow."
+  ];
+  for (const text of exact) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["friends_family", "ship_before_meet"], text);
+  }
+});
+
+test("household friends and family stays silent", async () => {
+  const quiet = [
+    "My friends and family loved this lamp.",
+    "My family and friends loved this lamp.",
+    "Mine venner og familie kommer på besøg i morgen.",
+    "Min familie og venner kigger forbi i morgen."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
