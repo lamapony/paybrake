@@ -1080,6 +1080,46 @@ test("moving a bike is not a wire", async () => {
   assert.equal(pickup.silentReason, "veto");
   assert.deepEqual(pickup.signals, []);
 
+  assert.equal(typeof hasPayWord, "function");
   assert.equal(hasPayWord("Please transfer 500 kr to my bank account today"), false);
   assert.equal(hasPayWord("Please wire 500 kr to my bank today"), false);
+});
+
+test("a frame serial or order id next to transfer is not an IBAN", async () => {
+  const quiet = [
+    "I can transfer the bike to you, frame no. WT12A3B4C5D6E7F8.",
+    "I can transfer the bike, order ID AB12C3D4E5F6G7H8 is on the frame.",
+    "The bike is 1,800 kr. I can transfer it to you, frame no. WT12A3B4C5D6E7F8."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("off_platform"), false, text);
+  }
+});
+
+test("wire and transfer to a bank need money and a real word", async () => {
+  const quiet = [
+    "I'll transfer the photos to my bank of images when you visit.",
+    "Please firewire 500 kr to my bank today and I will include the cable.",
+    "I can transfer the bike tomorrow. Please come to my bank with 500 kr today.",
+    "Do not wire 500 kr to my bank today, I ship tomorrow."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("off_platform"), false, text);
+  }
+
+  const dotted = await detect("Please transfer 1.500 kr to my bank today, I ship tomorrow.");
+  assert.equal(dotted.kind, "risk");
+  assert.equal(dotted.level, "high");
+  assert.ok(dotted.signals.includes("off_platform"));
+  assert.ok(dotted.signals.includes("ship_before_meet"));
+
+  const comma = await detect("Please wire 1,800 kr to my bank account today, I ship tomorrow.");
+  assert.equal(comma.kind, "risk");
+  assert.equal(comma.level, "high");
+  assert.ok(comma.signals.includes("off_platform"));
+  assert.ok(comma.signals.includes("ship_before_meet"));
 });

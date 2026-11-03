@@ -35,6 +35,9 @@ const PAY_CUE = "(?:paid|pay(?:ing|ment)?|send|transfer)[:,;]?";
 // Reversed "upfront payment" only. A wide gap treats "to be upfront" and
 // "the light up front" as a deposit when "pay" shows up later in the line.
 const REVERSE_GAP = "[ \\t]+";
+// Words between wire/transfer and "to <bank>". . , ; ! ? end the clause.
+// An amount may still contain a dot or comma (1.500, 1,800, $12.50).
+const WIRE_BANK_GAP = "(?:\\$?\\d+(?:[.,]\\d+)+|[^\\s.,;!?]+)";
 
 const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family", gate: "ff-phrase" },
@@ -68,7 +71,10 @@ const RULES = [
   { id: "off_platform", re: "[A-Za-z]{2}\\d{2}[A-Za-z0-9]{11,30}", gate: "iban", flags: "g" },
   { id: "off_platform", re: "bank\\s+transfers?", gate: "negation" },
   { id: "off_platform", re: "wire\\s+transfers?", gate: "negation" },
-  { id: "off_platform", re: "(?:wire|transfer)(?:\\s+(?!to\\b)\\S+){0,6}\\s+to\\s+(?:my\\s+)?bank(?:\\s+account)?", gate: "negation" },
+  // "wire/transfer … to my bank" or "to my bank account". Still open:
+  // "to our bank", "to the bank account", "to your account", and
+  // Danish/Swedish "overfør" / "överför … til min konto".
+  { id: "off_platform", re: `(?<![\\p{L}\\p{N}])(?:wire|transfer)(?:[ \\t]+(?!to\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+to[ \\t]+(?:my[ \\t]+)?bank(?:[ \\t]+account)?`, gate: "wire-bank", flags: "giu" },
   { id: "off_platform", re: "bankoverførsel", gate: "negation" },
   { id: "off_platform", re: "reg\\.?\\s*nr", gate: "negation" },
   { id: "off_platform", re: "registreringsnummer", gate: "negation" },
@@ -161,9 +167,32 @@ function localPayNear(text, start, end, window) {
   return hasPayWord(listing);
 }
 
-function transferVerbNear(text, start, end, window) {
-  const slice = text.slice(Math.max(0, start - window), Math.min(text.length, end + window));
-  return /(?<![\p{L}\p{N}])(?:transfer|wire)(?![\p{L}\p{N}])/iu.test(slice);
+function clauseBreakBetween(text, a, b) {
+  const lo = Math.min(a, b);
+  const hi = Math.max(a, b);
+  return /[.!?;]|(?<!\d),(?!\d)/u.test(text.slice(lo, hi));
+}
+
+// transfer/wire unlocks an IBAN-like span only when an amount shares its
+// clause. "transfer the bike, frame no. WT12…" has no amount. A price in
+// the previous sentence does not count.
+function transferAskNear(text, start, end, window) {
+  const from = Math.max(0, start - window);
+  const to = Math.min(text.length, end + window);
+  const re = /(?<![\p{L}\p{N}])(?:transfer|wire)(?![\p{L}\p{N}])/giu;
+  for (const match of text.slice(from, to).matchAll(re)) {
+    const verbAt = from + (match.index ?? 0);
+    const verbEnd = verbAt + match[0].length;
+    if (clauseBreakBetween(text, verbEnd, start)) continue;
+    const money = amountSpans(text).some((amount) => {
+      const gap = amount.end <= start ? start - amount.end : amount.start >= end ? amount.start - end : 0;
+      if (gap > window) return false;
+      const amountAt = amount.end <= start ? amount.end : amount.start;
+      return !clauseBreakBetween(text, verbEnd, amountAt) && !clauseBreakBetween(text, amountAt, start);
+    });
+    if (money) return true;
+  }
+  return false;
 }
 
 function negatedBefore(text, start) {
@@ -451,7 +480,11 @@ function allow(rule, text, start, end) {
     if (depositRejected(text, start, end)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
-  if (rule.gate === "iban") return payWordNear(text, start, end, 80) || transferVerbNear(text, start, end, 80);
+  if (rule.gate === "iban") return payWordNear(text, start, end, 80) || transferAskNear(text, start, end, 80);
+  if (rule.gate === "wire-bank") {
+    if (negatedBefore(text, start)) return false;
+    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
+  }
   if (rule.gate === "mobilepay") {
     if (phoneNear(text, start, end)) return true;
     return hasPayWord(text) && amountSpans(text).length > 0;
