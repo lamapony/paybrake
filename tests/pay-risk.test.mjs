@@ -296,3 +296,59 @@ test("personal PayPal without the word payment stays silent", async () => {
   assert.equal(card.level, "medium");
   assert.deepEqual(card.signals, ["off_platform"]);
 });
+
+test("upfront, in advance, holding fee, and reserve the bike", async () => {
+  const pairs = [
+    ["Please pay 500 kr upfront via PayPal today.", "Please pay 500 kr upfront via PayPal today. I ship tomorrow."],
+    ["Please pay 500 kr in advance via PayPal today.", "Please pay 500 kr in advance via PayPal today. I ship tomorrow."],
+    ["Please pay a holding fee of 500 kr via PayPal today.", "Please pay a holding fee of 500 kr via PayPal today. I ship tomorrow."],
+    ["Send 500 kr to reserve the bike via PayPal today.", "Send 500 kr to reserve the bike via PayPal today. I ship tomorrow."]
+  ];
+  for (const [mediumText, highText] of pairs) {
+    const medium = await detect(mediumText);
+    assert.equal(medium.kind, "risk", mediumText);
+    assert.equal(medium.level, "medium", mediumText);
+    assert.deepEqual(medium.signals, ["upfront_deposit"], mediumText);
+
+    const high = await detect(highText);
+    assert.equal(high.kind, "risk", highText);
+    assert.equal(high.level, "high", highText);
+    assert.deepEqual(high.signals, ["upfront_deposit", "ship_before_meet"], highText);
+  }
+});
+
+test("half now and Danish reservere stay high", async () => {
+  const stay = [
+    "Pay half now, 500 kr via PayPal, I ship tomorrow.",
+    "Send 500 kr for at reservere cyklen via PayPal, jeg kan kun sende varen."
+  ];
+  for (const text of stay) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.ok(verdict.signals.includes("upfront_deposit"), text);
+    assert.ok(verdict.signals.includes("ship_before_meet"), text);
+  }
+});
+
+test("bare upfront and everyday reserve wording stay silent", async () => {
+  const quiet = [
+    "The upfront cost of new tyres was 500 kr last year.",
+    "I will write in advance of our meeting on Thursday.",
+    "I reserve the right to cancel the viewing on Thursday.",
+    "We walked through the nature reserve and saw a deer.",
+    "Please reserve a table for four at the cafe tonight.",
+    "I am holding the bike in the garage until Thursday.",
+    "The museum has a holding fee for coats, not for this bike."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+
+  const pickup = await detect("You can pay cash when you pick it up. No deposit needed before we meet.");
+  assert.equal(pickup.kind, "silent");
+  assert.equal(pickup.silentReason, "veto");
+});
