@@ -90,6 +90,7 @@ const RULES = [
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
   { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
+  { id: "off_platform", re: "(?:on|via|på)\\s+(?:signal|discord|imessage)", gate: "amount" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -431,6 +432,7 @@ function allow(rule, text, start, end) {
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
+  if (rule.gate === "amount") return !negatedBefore(text, start) && amountNear(text, start, end, 80);
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "deposit-word") {
