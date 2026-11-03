@@ -116,6 +116,9 @@ const RULES = [
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
   // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
   { id: "off_platform", re: "(?:steam|google\\s*play|itunes|apple|amazon|ebay)\\s+(?:gift\\s+)?cards?", gate: "giftcard" },
+  // PlayStation, Xbox, Nintendo, and Netflix cards. The store-card line above stays.
+  // A console or the show has no "card", so it does not match.
+  { id: "off_platform", re: "(?:playstation|xbox|nintendo|netflix)\\s+(?:gift\\s+)?cards?", gate: "pay-or-amount" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "chat-pay" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
   { id: "off_platform", re: "\\bwestern\\s+union\\b", gate: "named-rail" },
@@ -895,6 +898,11 @@ function allow(rule, text, start, end) {
     if (pay && money) return true;
     if (useRailAsk(text, start)) return true;
     return scam && money;
+  }
+  // Money or a pay word nearby. A bare name does not fire.
+  if (rule.gate === "pay-or-amount") {
+    if (negatedBefore(text, start)) return false;
+    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
   if (rule.gate === "ship") {
     if (PICKUP_ALT.test(text)) return false;
