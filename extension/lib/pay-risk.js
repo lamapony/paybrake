@@ -96,9 +96,11 @@ function baseOffsets(text, messages) {
 // "500 kr. Send…" is a new sentence.
 const ABBR_BEFORE_DOT = /(?:^|[^A-Za-z])(?:kr|dkk|eur|euro|usd|sek|gbp|nok)$/iu;
 const PROHIBITION = /(?:never|do\s+not|don['’]?t|dont)\s+(?:send|pay|use)|aldrig\s+(?:send|betal|brug|skicka)|(?:send|betal|skicka)\s+aldrig|(?:send|betal)\s+ikke|ikke\s+send|lad\s+være\s+med\s+at|betala\s+inte/iu;
-// "don't X, just send…" and "don't pay on pickup, only via…" start a real ask.
-// A bare ", via" does not. That still belongs to the prohibition.
-const ASK_PIVOT = /,\s*(?:(?:just|only|instead|bare|kun)\s+)?(?:send|pay|betal|betala|skicka|transfer|wire|use|brug)\b|,\s*(?:just|only|instead|bare|kun)\s+via\b/iu;
+// A clause break ends the prohibited object. The next clause still belongs
+// to it when it continues the object ("never send 500 kr, via F&F").
+const PROHIBITION_BREAK = /(?<!\d),(?!\d)|;|—|–|\s-\s/u;
+// \b is ASCII-only, so "på" would not end the preposition. Use a letter boundary.
+const OBJECT_CONTINUATION = /^\s*(?:via|through|on|with|to|gennem|genom|på|paa|med|til|till)(?![\p{L}\p{N}])/iu;
 
 function sentenceBoundary(source, index) {
   const ch = source[index];
@@ -123,13 +125,24 @@ function sentenceStart(text, index) {
   return 0;
 }
 
+function prohibitionBreakEnds(afterCue) {
+  const re = new RegExp(PROHIBITION_BREAK.source, "gu");
+  for (const match of afterCue.matchAll(re)) {
+    const next = afterCue.slice((match.index ?? 0) + match[0].length);
+    if (!OBJECT_CONTINUATION.test(next)) return true;
+  }
+  return false;
+}
+
 function prohibitionCovers(text, hitStart) {
   const source = String(text ?? "");
   const before = source.slice(sentenceStart(source, hitStart), hitStart);
-  const match = before.match(PROHIBITION);
-  if (!match || match.index == null) return false;
-  const afterCue = before.slice(match.index + match[0].length);
-  return !ASK_PIVOT.test(afterCue);
+  const re = new RegExp(PROHIBITION.source, "giu");
+  for (const match of before.matchAll(re)) {
+    const afterCue = before.slice((match.index ?? 0) + match[0].length);
+    if (!prohibitionBreakEnds(afterCue)) return true;
+  }
+  return false;
 }
 
 // Checkout is pay_on_collection with gate "checkout", not the letters in the span.
@@ -263,7 +276,9 @@ async function detect(text, ctx = {}, options = {}) {
     const transferUpfront = host && host.hits.some((hit) => (
       hit.atom === "upfront_deposit" && /(?<![\p{L}\p{N}])transfer(?![\p{L}\p{N}])/iu.test(hit.text)
     ));
-    if (pay || money || transferUpfront) level = "medium";
+    // "Friends and Family only" after a refused checkout has no pay word and no amount.
+    const methodOnly = host && host.hits.some((hit) => hit.gate === "ff-dictated" && !hit.prohibited);
+    if (pay || money || transferUpfront || methodOnly) level = "medium";
   }
   if (!level) return silent("no_atom", { signals, evidence, deal });
 

@@ -195,7 +195,10 @@ test("a prohibition in the same sentence is not an ask", async () => {
     "Lad være med at sende 500 kr via Friends and Family i dag.",
     "Skicka aldrig 500 kr via Friends and Family idag tack.",
     "Betala inte 500 kr via Friends and Family idag tack.",
-    "Ikke send 500 kr via Friends and Family i dag takk."
+    "Ikke send 500 kr via Friends and Family i dag takk.",
+    "Never send 500 kr, via Friends and Family for this bike.",
+    "Don't pay, through Friends and Family for the bike today.",
+    "Don't use PayPal, never send via Friends and Family today please."
   ];
   for (const text of texts) {
     const hits = findAtoms(text);
@@ -206,6 +209,38 @@ test("a prohibition in the same sentence is not an ask", async () => {
     assert.equal(verdict.silentReason, "no_atom", text);
     assert.deepEqual(verdict.signals, [], text);
     assert.equal(state.calls, 0, text);
+  }
+});
+
+test("a clause break ends a prohibition before the next ask", async () => {
+  const cases = [
+    ["Don't use Goods and Services, Friends and Family only.", "friends_family"],
+    ["Don't pay through the app, MobilePay me 500 kr today.", "off_platform"],
+    ["Do not use the platform; MobilePay 500 kr to me now please.", "off_platform"],
+    ["Do not use the platform — MobilePay 500 kr to me now please.", "off_platform"],
+    ["Do not use the platform - MobilePay 500 kr to me now please.", "off_platform"]
+  ];
+  for (const [text, atom] of cases) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text + " " + JSON.stringify(verdict));
+    assert.ok(verdict.signals.includes(atom), text + " " + JSON.stringify(verdict.signals));
+  }
+});
+
+test("a dictated rail or MobilePay to me stays quiet without the ask", async () => {
+  const quiet = [
+    ["My friends and family only visit on Sunday afternoons together.", "no_atom"],
+    ["The price is 500 kr for friends and family only this weekend.", "no_atom"],
+    ["Don't use Friends and Family only for this bike today please.", "no_atom"],
+    ["Don't use the checkout. Friends and Family only.", "no_atom"],
+    ["Do not MobilePay 500 kr to me today please.", "no_atom"],
+    ["The 500 kr MobilePay to me was a refund last week from the shop.", "no_atom"],
+    ["The lamp is 500 kr and MobilePay is fine when you pick it up tomorrow.", "veto"]
+  ];
+  for (const [text, reason] of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text + " " + JSON.stringify(verdict));
+    assert.equal(verdict.silentReason, reason, text + " " + JSON.stringify(verdict));
   }
 });
 

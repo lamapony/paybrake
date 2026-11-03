@@ -47,6 +47,8 @@ const RULES = [
   { id: "friends_family", re: "family\\s+(?:and|&)\\s+friends", gate: "ff-phrase" },
   { id: "friends_family", re: "familie\\s+(?:og|&)\\s+venner", gate: "ff-phrase" },
   { id: "friends_family", re: "friends\\s*/\\s*family", gate: "ff-phrase" },
+  { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family\\s+only", gate: "ff-dictated" },
+  { id: "friends_family", re: "family\\s+(?:and|&)\\s+friends\\s+only", gate: "ff-dictated" },
   { id: "friends_family", re: "F\\s+&\\s+F", gate: "none" },
   { id: "friends_family", re: "send\\s+as\\s+gift", gate: "none" },
   { id: "friends_family", re: "personal\\s+(?:paypal\\s+)?payment", gate: "none" },
@@ -154,6 +156,64 @@ function hasPayWord(text) {
 function payWordNear(text, start, end, window) {
   const slice = text.slice(Math.max(0, start - window), Math.min(text.length, end + window));
   return hasPayWord(slice);
+}
+
+// Own clause after a refusal of Goods & Services or checkout.
+// "only visit" and "my friends and family only" do not qualify.
+const DICTATED_ONLY = /^(?:friends\s+(?:and|&)\s+family|family\s+(?:and|&)\s+friends)\s+only$/iu;
+const SAFE_RAIL_REFUSAL = /(?:never|do\s+not|don['’]?t|dont)\s+(?:use|pay)\b[^]{0,80}?(?<![\p{L}\p{N}])(?:goods\s*(?:&|and)\s*services|g&s|checkout)(?![\p{L}\p{N}])/iu;
+const CLAUSE_EDGE = /(?<!\d),(?!\d)|;|—|–|\s-\s|[.!?\n]/u;
+
+function breakEndBefore(text, index) {
+  const re = new RegExp(CLAUSE_EDGE.source, "gu");
+  let end = 0;
+  for (const match of text.matchAll(re)) {
+    const at = match.index ?? 0;
+    if (text[at] === "." && text[at - 1] >= "0" && text[at - 1] <= "9" && text[at + 1] >= "0" && text[at + 1] <= "9") continue;
+    const after = at + match[0].length;
+    if (after <= index) end = after;
+    else break;
+  }
+  return end;
+}
+
+function sentenceFromAt(text, index) {
+  for (let i = index - 1; i >= 0; i--) {
+    const ch = text[i];
+    if (ch === "!" || ch === "?" || ch === "\n") return i + 1;
+    if (ch !== ".") continue;
+    const prev = text[i - 1] || "";
+    const next = text[i + 1] || "";
+    if (prev >= "0" && prev <= "9" && next >= "0" && next <= "9") continue;
+    return i + 1;
+  }
+  return 0;
+}
+
+function dictatedFamilyOnly(text, start, end) {
+  const from = breakEndBefore(text, start);
+  const rest = text.slice(end);
+  const cut = rest.search(new RegExp(CLAUSE_EDGE.source, "u"));
+  const clause = text.slice(from, cut === -1 ? text.length : end + cut).trim();
+  if (!DICTATED_ONLY.test(clause)) return false;
+  return SAFE_RAIL_REFUSAL.test(text.slice(sentenceFromAt(text, start), start));
+}
+
+function mobilePayToSeller(text, start, end) {
+  const near = amountSpans(text).some((amount) => {
+    const point = amount.end <= start ? amount.end : amount.start;
+    const gap = amount.end <= start ? start - amount.end : amount.start >= end ? amount.start - end : 0;
+    if (gap > 40 || clauseBreakBetween(text, point, start)) return false;
+    return !/[—–]|\s-\s/u.test(text.slice(Math.min(point, start), Math.max(point, start)));
+  });
+  if (!near) return false;
+  const from = breakEndBefore(text, start);
+  const rest = text.slice(end);
+  const cut = rest.search(new RegExp(CLAUSE_EDGE.source, "u"));
+  const clause = text.slice(from, cut === -1 ? text.length : end + cut);
+  // "was a refund" and "yesterday" name a past payment, not an ask.
+  if (/(?<![\p{L}\p{N}])(?:was|were|yesterday|refund|refunded|already)(?![\p{L}\p{N}])/iu.test(clause)) return false;
+  return /(?<![\p{L}\p{N}])(?:to\s+me|til\s+mig)(?![\p{L}\p{N}])/iu.test(clause);
 }
 
 function localPayNear(text, start, end, window) {
@@ -514,6 +574,7 @@ function allow(rule, text, start, end) {
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
+  if (rule.gate === "ff-dictated") return dictatedFamilyOnly(text, start, end);
   if (rule.gate === "deposit-word") {
     if (depositRejected(text, start, end)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
@@ -529,7 +590,10 @@ function allow(rule, text, start, end) {
   }
   if (rule.gate === "mobilepay") {
     if (phoneNear(text, start, end)) return true;
-    return hasPayWord(text) && amountSpans(text).length > 0;
+    const money = amountSpans(text).length > 0;
+    if (hasPayWord(text) && money) return true;
+    if (negatedBefore(text, start)) return false;
+    return mobilePayToSeller(text, start, end);
   }
   if (rule.gate === "named-rail" || rule.gate === "cashtag") {
     if (railNegated(text, start)) return false;
