@@ -663,8 +663,10 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
       if (staticCard) staticCard.remove();
       document.documentElement.dataset.pbLive = "1";
       // Friendly hint when the extension is not installed (live mode needs it).
-      setTimeout(function () {
+      // A slow first load can set data-paybrake="on" after this timer. Take the note down if it does.
+      var hintTimer = setTimeout(function () {
         if (document.documentElement.dataset.paybrake === "on") return;
+        if (document.getElementById("pb-missing")) return;
         var note = document.createElement("div");
         note.id = "pb-missing";
         note.setAttribute("role", "status");
@@ -673,6 +675,18 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
           "Just looking? <a href=\"marketplace.html\">See the built-in preview</a>.";
         document.body.appendChild(note);
       }, 2500);
+      var hintWatch = new MutationObserver(function () {
+        if (document.documentElement.dataset.paybrake !== "on") return;
+        clearTimeout(hintTimer);
+        var note = document.getElementById("pb-missing");
+        if (note) note.remove();
+        hintWatch.disconnect();
+      });
+      hintWatch.observe(document.documentElement, { attributes: true, attributeFilter: ["data-paybrake"] });
+      if (document.documentElement.dataset.paybrake === "on") {
+        clearTimeout(hintTimer);
+        hintWatch.disconnect();
+      }
     }
 
     var bike = document.getElementById("thread-bike");

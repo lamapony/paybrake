@@ -136,13 +136,19 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     var button = document.getElementById("approve");
     var status = document.getElementById("status");
     tokenNode.textContent = token || "(none)";
-    // Local dev: backend on :8787 of the same host. Hosted demo: same origin.
-    var backend = "http://localhost:8787";
-    if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
-      backend = location.protocol + "//" + location.hostname + ":8787";
-    } else if (location.protocol === "https:") {
-      backend = location.origin;
+    // return-backend:start
+    function returnBackend(loc) {
+      // https (the hosted demo) shares its origin. Any plain-http host, including
+      // a LAN address used for phone testing, keeps the API on port 8787 of that host.
+      var backend = "http://localhost:8787";
+      if (loc.protocol === "https:") return loc.origin;
+      if (!loc.hostname) return backend;
+      var host = loc.hostname;
+      if (host.indexOf(":") !== -1 && host.charAt(0) !== "[") host = "[" + host + "]";
+      return loc.protocol + "//" + host + ":8787";
     }
+    // return-backend:end
+    var backend = returnBackend(location);
 
     if (!isMock) {
       document.title = "Sandbox approval";

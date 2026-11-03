@@ -7,12 +7,12 @@ import { DurableObject } from "cloudflare:workers";
 import { protectDeal } from "../../backend/src/agent.js";
 import { classifyText } from "../../backend/src/classify.js";
 import { createRestPort } from "../../backend/src/paypal-rest.js";
+import { orderCapReached, orderCountKey, staleOrderCountKeys } from "./order-cap.js";
 import "../../extension/lib/redact.js";
 
 const BODY_LIMIT = 16 * 1024;
 const NOINDEX = "noindex, nofollow, noarchive";
 const ORDER_TTL_MS = 24 * 60 * 60 * 1000;
-const MAX_ORDERS = 5000; // per day; keeps a public mock server from filling storage
 // Abuse protection for the AI check (the Typesafe key is Dima's own; it must not get burned).
 // Defaults below; vars can lower them (never raise past the hard maxima). Listed in README ("Hosted demo limits").
 const AI_TEXT_LIMIT = 2000; // characters per /api/classify call (the extension keeps the latest 1900)
@@ -145,9 +145,11 @@ export class MockOrders extends DurableObject {
       return Response.json({ ok: true, left: lim.perDay - used - 1 });
     }
     if (op === "create") {
-      const count = (await store.get("meta:count")) || 0;
-      if (count >= MAX_ORDERS) return Response.json({ error: "busy" }, { status: 429 });
-      await store.put("meta:count", count + 1);
+      // Creations this UTC day. A new key starts at 00:00 UTC, which is when
+      // "Try again tomorrow" becomes true.
+      const dayKey = orderCountKey();
+      const made = (await store.get(dayKey)) || 0;
+      if (orderCapReached(made)) return Response.json({ error: "busy" }, { status: 429 });
       const orderId = `MOCK-${crypto.randomUUID()}`;
       const record = {
         orderId,
@@ -160,7 +162,7 @@ export class MockOrders extends DurableObject {
         captureId: null,
         ts: Date.now()
       };
-      await store.put(orderId, record);
+      await store.put({ [dayKey]: made + 1, [orderId]: record });
       if (!(await store.getAlarm())) await store.setAlarm(Date.now() + ORDER_TTL_MS);
       return Response.json({ orderId, status: record.status, approveUrl: record.approveUrl });
     }
@@ -186,14 +188,16 @@ export class MockOrders extends DurableObject {
     const old = [...all].filter(([, v]) => !v || v.ts < cutoff).map(([k]) => k);
     for (let i = 0; i < old.length; i += 128) await this.ctx.storage.delete(old.slice(i, i + 128));
     const left = all.size - old.length;
-    await this.ctx.storage.put("meta:count", left);
-    // Drop AI counters from earlier days (per-IP day keys and the global day key).
-    const today = new Date().toISOString().slice(0, 10);
+    // Drop AI counters and order-cap counters from earlier UTC days.
+    const now = Date.now();
+    const today = new Date(now).toISOString().slice(0, 10);
     const counters = [];
     for (const prefix of ["aiip:", "ai:"]) {
       const rows = await this.ctx.storage.list({ prefix });
       for (const k of rows.keys()) if (k.slice(prefix.length, prefix.length + 10) !== today) counters.push(k);
     }
+    const orderDays = await this.ctx.storage.list({ prefix: "ordercount:" });
+    counters.push(...staleOrderCountKeys([...orderDays.keys()], now));
     for (let i = 0; i < counters.length; i += 128) await this.ctx.storage.delete(counters.slice(i, i + 128));
     const aiLeft = (await this.ctx.storage.list({ prefix: "aiip:" })).size;
     if (left > 0 || aiLeft > 0) await this.ctx.storage.setAlarm(Date.now() + ORDER_TTL_MS);
@@ -239,6 +243,7 @@ function ordersPort(env, origin) {
   async function call(payload) {
     const res = await stub.fetch("https://orders/", { method: "POST", body: JSON.stringify(Object.assign({ origin }, payload)) });
     const data = await res.json();
+    // 429 on this port is the UTC-day order cap, so the next UTC day clears it.
     if (res.status === 429) throw Object.assign(new Error("The demo server is busy. Try again tomorrow."), { status: 429 });
     if (res.status === 409) throw Object.assign(new Error("Order is not approved"), { status: 409, code: "not_approved" });
     return data;
