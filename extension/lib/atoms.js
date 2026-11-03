@@ -132,6 +132,8 @@ const RULES = [
   // Skrill and Interac. A bare name ("Skrill is a town") is not an ask.
   { id: "off_platform", re: "skrill", gate: "pay-or-amount" },
   { id: "off_platform", re: "interac", gate: "pay-or-amount" },
+  // "PayPal me" already contains the pay word paypal, so only a parsed amount counts.
+  { id: "off_platform", re: "paypal\\s+me", gate: "amount-near" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -909,6 +911,11 @@ function allow(rule, text, start, end) {
     if (pay && money) return true;
     if (useRailAsk(text, start)) return true;
     return scam && money;
+  }
+  // "PayPal me" includes the pay word. A nearby amount is required.
+  if (rule.gate === "amount-near") {
+    if (negatedBefore(text, start)) return false;
+    return amountNear(text, start, end, 80);
   }
   // Money or a pay word nearby. A bare name does not fire.
   if (rule.gate === "pay-or-amount") {
