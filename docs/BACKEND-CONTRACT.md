@@ -55,12 +55,12 @@ Timeout: `PAYPAL_TIMEOUT_MS` when it is a number above 0, otherwise 10000. Each 
 
 OAuth: `POST {base}/v1/oauth2/token` with `content-type: application/x-www-form-urlencoded`, body `grant_type=client_credentials`, and `authorization: Basic` of `clientId:clientSecret`. The access token is cached until `expires_in - 60` seconds when that remainder is still positive. A positive `expires_in` of 60 seconds or less is cached for the full `expires_in`. A missing, non-numeric, or non-positive `expires_in` is cached for 300 seconds. Concurrent callers share one in-flight token request. The token is kept in memory on this process.
 
-Orders calls send `authorization: Bearer …`. Create sends a `PayPal-Request-Id` UUID derived from the `reference_id` (the caller's `referenceId`, or a new UUID when that is omitted). Capture sends a UUID derived from the order id. Repeating the same reference, or capturing the same order, sends the same id, including the single 401 retry. A 401 clears the cache and retries that call once. A second 401 is 502 `paypal_auth`. A 403 does not clear the cache and is not retried; it is 502 `paypal_auth` on that response. The token endpoint itself is not retried; a 401 or 403 from it is already `paypal_auth`.
+Orders calls send `authorization: Bearer …`. Create sends a `PayPal-Request-Id` UUID derived from the raw `referenceId` (or a new UUID when the caller omits it), not from the `reference_id` string PayPal stores. Capture sends a UUID derived from the order id. Repeating the same reference, or capturing the same order, sends the same id, including the single 401 retry. A 401 clears the cache and retries that call once. A second 401 is 502 `paypal_auth`. A 403 does not clear the cache and is not retried; it is 502 `paypal_auth` on that response. The token endpoint itself is not retried; a 401 or 403 from it is already `paypal_auth`.
 
 `POST /v2/checkout/orders` with `prefer: return=representation` and this JSON:
 
 - `intent`: `"CAPTURE"`
-- `purchase_units[0].reference_id`: the given id, or a new UUID
+- `purchase_units[0].reference_id`: the caller's id when it is already 1-256 printable ASCII characters (space through `~`), otherwise the sha256 hex of that raw id (64 characters). A missing id becomes a new UUID, which is sent as itself. The extension protect seed joins the chat hash, item, amount, currency, and payee email with a unit separator, so PayPal receives the hex. The item and the email stay out of this field. `PayPal-Request-Id` still uses the raw seed, so the same seed retries the same create.
 - `purchase_units[0].description`: the item, cut at 127 characters
 - `purchase_units[0].amount`: `{ currency_code, value }` with the two-decimal string
 - `purchase_units[0].payee`: `{ email_address }` when the email is non-blank after trim. A blank email omits `payee`
@@ -323,7 +323,7 @@ Offline, no credentials, no network (`node --test backend/test/` and `npm test`)
 - CORS reflects the demo origin and any `chrome-extension://` origin, and omits the header for other origins
 - evidence quotes must be substrings; the fetch wrapper sends `temperature: 0`
 - OAuth token is cached until `expires_in - 60` seconds, for the full life when that is 60 seconds or less, and for 300 seconds when `expires_in` is missing. Concurrent creates share one token request
-- create-order body: `intent: "CAPTURE"`, payee email, 2-decimal amount, currency, experience context, `PayPal-Request-Id` derived from `referenceId`
+- create-order body: `intent: "CAPTURE"`, payee email, 2-decimal amount, currency, experience context, `PayPal-Request-Id` derived from the raw `referenceId`. A `reference_id` that is longer than 256 characters, or that is not printable ASCII, is sent as sha256 hex.
 - approve link is the `payer-action` rel, with `approve` as fallback
 - capture, `ORDER_ALREADY_CAPTURED`, and 4xx/5xx mapping (`paypal_auth`, `paypal_error`, 409 `not_approved`)
 - PayPal 404 on get and capture becomes null

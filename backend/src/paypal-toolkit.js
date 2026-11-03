@@ -116,6 +116,8 @@ export function toolkitArgsToOrder(args = {}) {
     amount,
     currency: String(args.currencyCode ?? "").trim().toUpperCase(),
     payeeEmail: args.payeeEmail ? String(args.payeeEmail).trim() : "",
+    // Raw seed. rest createOrder stores a sha256 hex when this is not already
+    // a 1-256 character printable reference_id.
     referenceId: args.referenceId ? String(args.referenceId) : undefined
   };
 }

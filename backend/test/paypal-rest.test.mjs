@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   assertSandboxBaseUrl,
   createRestPort,
@@ -252,6 +253,54 @@ test("PayPal-Request-Id repeats for the same referenceId and the same capture", 
   assert.notEqual(captureIds[0], captureIds[2]);
   assert.notEqual(captureIds[0], createIds[0]);
   assert.match(captureIds[0], UUID);
+});
+
+test("a long or non-printable referenceId is a bounded reference_id and a stable PayPal-Request-Id", async () => {
+  const item = "Vintage frame " + "x".repeat(300);
+  const payeeEmail = "seller@" + "e".repeat(40) + ".example";
+  const referenceId = ["h".repeat(64), item, "1800", "DKK", payeeEmail].join("\u001f");
+  assert.ok(referenceId.length > 256);
+  const shortRef = ["abc123", "Bike", "50", "EUR", "a@b.co"].join("\u001f");
+  assert.ok(shortRef.length <= 256);
+
+  const { calls, fetchImpl } = recorded(async (call) => {
+    if (isToken(call)) return tokenResponse();
+    return createdOrder();
+  });
+  const port = createRestPort(restEnv(), { fetchImpl });
+  const order = { item, amount: 1800, currency: "DKK", payeeEmail, referenceId };
+  await port.createOrder(order);
+  await port.createOrder(order);
+
+  const creates = calls.filter(isCreate);
+  const sent = JSON.parse(creates[0].body).purchase_units[0].reference_id;
+  const digest = createHash("sha256").update(referenceId).digest("hex");
+  assert.equal(sent, digest);
+  assert.equal(JSON.parse(creates[1].body).purchase_units[0].reference_id, sent);
+  assert.ok(sent.length <= 256);
+  assert.match(sent, /^[\x20-\x7E]+$/);
+  assert.equal(sent.includes("\u001f"), false);
+  assert.equal(sent.includes(payeeEmail), false);
+  assert.equal(sent.includes("Vintage frame"), false);
+  assert.equal(creates[0].headers["PayPal-Request-Id"], creates[1].headers["PayPal-Request-Id"]);
+  assert.match(creates[0].headers["PayPal-Request-Id"], UUID);
+
+  await port.createOrder({ item: "Bike", amount: 50, currency: "EUR", payeeEmail: "a@b.co", referenceId: shortRef });
+  const shortSent = JSON.parse(calls.filter(isCreate)[2].body).purchase_units[0].reference_id;
+  assert.equal(shortSent, createHash("sha256").update(shortRef).digest("hex"));
+  assert.equal(shortSent.includes("a@b.co"), false);
+  assert.equal(shortSent.includes("\u001f"), false);
+  assert.match(calls.filter(isCreate)[2].headers["PayPal-Request-Id"], UUID);
+
+  const capped = "r".repeat(256);
+  await port.createOrder({ ...order, referenceId: capped });
+  assert.equal(JSON.parse(calls.filter(isCreate)[3].body).purchase_units[0].reference_id, capped);
+
+  const over = "r".repeat(257);
+  await port.createOrder({ ...order, referenceId: over });
+  const overCall = calls.filter(isCreate)[4];
+  assert.equal(JSON.parse(overCall.body).purchase_units[0].reference_id, createHash("sha256").update(over).digest("hex"));
+  assert.notEqual(overCall.headers["PayPal-Request-Id"], creates[0].headers["PayPal-Request-Id"]);
 });
 
 test("approve link prefers payer-action, then approve, else null", async () => {

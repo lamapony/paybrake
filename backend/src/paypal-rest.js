@@ -4,6 +4,11 @@ import { formatAmount } from "./paypal-shared.js";
 
 const TOKEN_SKEW_S = 60;
 const TOKEN_TTL_WHEN_MISSING_S = 300;
+// PayPal reference_id is at most 256 characters. The protect seed can be longer,
+// and it joins the item and payee email with a unit separator. That raw seed
+// stays the PayPal-Request-Id input. The stored field is the seed only when it
+// is already 1-256 printable ASCII characters; otherwise it is the sha256 hex.
+const PRINTABLE_REFERENCE = /^[\x20-\x7E]{1,256}$/;
 
 const DEFAULT_BASE = "https://api-m.sandbox.paypal.com";
 const DEFAULT_RETURN = "http://localhost:8080/demo/checkout-return.html";
@@ -65,6 +70,12 @@ function tokenTtlMs(expiresIn) {
   if (!Number.isFinite(n) || n <= 0) return TOKEN_TTL_WHEN_MISSING_S * 1000;
   if (n > TOKEN_SKEW_S) return (n - TOKEN_SKEW_S) * 1000;
   return n * 1000;
+}
+
+function boundedReferenceId(seed) {
+  const raw = String(seed);
+  if (PRINTABLE_REFERENCE.test(raw)) return raw;
+  return createHash("sha256").update(raw).digest("hex");
 }
 
 function paypalRequestId(seed) {
@@ -221,7 +232,7 @@ export function createRestPort(env = {}, { fetchImpl = globalThis.fetch, now = D
     const value = formatAmount(amount);
     const reference = referenceId ? String(referenceId) : randomUUID();
     const unit = {
-      reference_id: reference,
+      reference_id: boundedReferenceId(reference),
       description: String(item ?? "").slice(0, 127),
       amount: { currency_code: code, value }
     };
