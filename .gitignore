@@ -8,3 +8,6 @@ test-results/
 playwright-report/
 eval/report.json
 dist/
+hosted/public/
+hosted/.wrangler/
+eval/real/.data/
