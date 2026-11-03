@@ -84,10 +84,28 @@ function offResult(timeoutMs) {
   };
 }
 
+const LLM_PROVIDERS = new Set(["typesafe", "openrouter", "openai-compatible"]);
+
+function openrouterBaseUrl(raw) {
+  const value = trim(raw).replace(/\/+$/, "");
+  if (!value) return OPENROUTER_BASE;
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return OPENROUTER_BASE;
+  }
+  const host = parsed.hostname.toLowerCase();
+  const onOpenRouter = host === "openrouter.ai" || host.endsWith(".openrouter.ai");
+  if (parsed.protocol !== "https:" || !onOpenRouter) return OPENROUTER_BASE;
+  return value;
+}
+
 export function resolveLlm(env = {}) {
   const timeoutMs = timeoutMsOf(env);
   const asked = trim(env.LLM_PROVIDER).toLowerCase();
   if (asked === "off") return offResult(timeoutMs);
+  if (asked && !LLM_PROVIDERS.has(asked)) throw new Error("Unknown LLM_PROVIDER");
 
   let provider = asked;
   if (!provider) {
@@ -116,7 +134,7 @@ export function resolveLlm(env = {}) {
   if (provider === "openrouter") {
     const apiKey = trim(env.OPENROUTER_API_KEY) || trim(env.LLM_API_KEY);
     if (!apiKey) return offResult(timeoutMs);
-    const baseUrl = (trim(env.LLM_BASE_URL) || OPENROUTER_BASE).replace(/\/+$/, "");
+    const baseUrl = openrouterBaseUrl(env.LLM_BASE_URL);
     const model = trim(env.LLM_MODEL) || "openai/gpt-4o-mini";
     return { configured: true, provider: "openrouter", baseUrl, apiKey, model, timeoutMs };
   }

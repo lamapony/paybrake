@@ -1,6 +1,9 @@
 // Sandbox Orders v2 port. Callers inject fetchImpl so tests stay offline.
-import { randomUUID } from "node:crypto";
-import { formatAmount } from "./paypal.js";
+import { createHash, randomUUID } from "node:crypto";
+import { formatAmount } from "./paypal-shared.js";
+
+const TOKEN_SKEW_S = 60;
+const TOKEN_TTL_WHEN_MISSING_S = 300;
 
 const DEFAULT_BASE = "https://api-m.sandbox.paypal.com";
 const DEFAULT_RETURN = "http://localhost:8080/demo/checkout-return.html";
@@ -55,6 +58,22 @@ export function paypalError(status, body) {
   error.status = 502;
   error.code = "paypal_error";
   return error;
+}
+
+function tokenTtlMs(expiresIn) {
+  const n = Number(expiresIn);
+  if (!Number.isFinite(n) || n <= 0) return TOKEN_TTL_WHEN_MISSING_S * 1000;
+  if (n > TOKEN_SKEW_S) return (n - TOKEN_SKEW_S) * 1000;
+  return n * 1000;
+}
+
+function paypalRequestId(seed) {
+  const hex = createHash("sha256").update(String(seed)).digest("hex");
+  const chars = hex.slice(0, 32).split("");
+  chars[12] = "5";
+  chars[16] = ((parseInt(chars[16], 16) & 0x3) | 0x8).toString(16);
+  const s = chars.join("");
+  return `${s.slice(0, 8)}-${s.slice(8, 12)}-${s.slice(12, 16)}-${s.slice(16, 20)}-${s.slice(20)}`;
 }
 
 function notApproved() {
@@ -140,11 +159,9 @@ export function createRestPort(env = {}, { fetchImpl = globalThis.fetch, now = D
     if (!inflight) {
       inflight = requestToken()
         .then((body) => {
-          const expiresIn = Number(body.expires_in);
-          const skew = Number.isFinite(expiresIn) ? expiresIn : 0;
           cached = {
             token: body.access_token,
-            expiresAt: now() + (skew - 60) * 1000
+            expiresAt: now() + tokenTtlMs(body.expires_in)
           };
           return cached.token;
         })
@@ -174,7 +191,7 @@ export function createRestPort(env = {}, { fetchImpl = globalThis.fetch, now = D
       } catch {
         throw paypalError(502, null);
       }
-      if ((res.status === 401 || res.status === 403) && !refreshed) {
+      if (res.status === 401 && !refreshed) {
         try { await res.text(); } catch { /* discard body */ }
         cached = null;
         refreshed = true;
@@ -202,14 +219,15 @@ export function createRestPort(env = {}, { fetchImpl = globalThis.fetch, now = D
       throw error;
     }
     const value = formatAmount(amount);
+    const reference = referenceId ? String(referenceId) : randomUUID();
     const unit = {
-      reference_id: referenceId ? String(referenceId) : randomUUID(),
+      reference_id: reference,
       description: String(item ?? "").slice(0, 127),
       amount: { currency_code: code, value }
     };
     const email = payeeEmail ? String(payeeEmail).trim() : "";
     if (email) unit.payee = { email_address: email };
-    const requestId = randomUUID();
+    const requestId = paypalRequestId("create:" + reference);
     const { status, body } = await paypalRequest("POST", "/v2/checkout/orders", {
       json: {
         intent: "CAPTURE",
@@ -250,7 +268,7 @@ export function createRestPort(env = {}, { fetchImpl = globalThis.fetch, now = D
   }
 
   async function captureOrder(id) {
-    const requestId = randomUUID();
+    const requestId = paypalRequestId("capture:" + String(id));
     const path = "/v2/checkout/orders/" + encodeURIComponent(id) + "/capture";
     const { status, body } = await paypalRequest("POST", path, { json: {}, requestId });
     if (status === 404) return null;

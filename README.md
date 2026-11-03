@@ -169,7 +169,7 @@ The bike price is DKK. Rest accepts DKK, EUR, and USD.
 
 ## Turn on the AI check
 
-Typesafe (what the hosted demo uses): in `backend/.env`, set `LLM_PROVIDER=typesafe` and `TYPESAFE_API_KEY`. OpenRouter: set `LLM_PROVIDER=openrouter` and set `OPENROUTER_API_KEY` to your OpenRouter key. Restart the backend. `/health` shows `"llm": "configured"` and `"llmProvider": "openrouter"`. A key with `LLM_PROVIDER` and `LLM_BASE_URL` both empty selects openrouter the same way. If `LLM_BASE_URL` is set, that empty provider means openai-compatible instead. In the extension options, turn on **Ask the backend for an AI check (off uses rules only)** and save. The model can confirm a rules hit or lower it. It cannot raise one. A quote that is not in the message is ignored.
+Typesafe (what the hosted demo uses): in `backend/.env`, set `LLM_PROVIDER=typesafe` and `TYPESAFE_API_KEY`. OpenRouter: set `LLM_PROVIDER=openrouter` and set `OPENROUTER_API_KEY` to your OpenRouter key. Restart the backend. `/health` shows `"llm": "configured"` and `"llmProvider": "openrouter"`. A key with `LLM_PROVIDER` and `LLM_BASE_URL` both empty selects openrouter the same way. If `LLM_BASE_URL` is set, that empty provider means openai-compatible instead. Any other `LLM_PROVIDER` value stops the process at startup (`Unknown LLM_PROVIDER`). With `LLM_PROVIDER=openrouter`, `LLM_BASE_URL` is used only when it is https on `openrouter.ai`; any other host is ignored, so the key is not sent there. In the extension options, turn on **Ask the backend for an AI check (off uses rules only)** and save. The model can confirm a rules hit or lower it. It cannot raise one. A quote that is not in the message is ignored.
 
 ## Checks
 
@@ -180,7 +180,7 @@ npm test
 npm run eval
 ```
 
-`npm test` passes 253 tests. All of them are offline. The script lists `tests/*.mjs` and `backend/test/*.mjs` in Node (`scripts/run-tests.mjs`). It does not need the shell to expand globs, so the same command works on Node 20 and on Windows `cmd`.
+`npm test` passes 259 tests. All of them are offline. The script lists `tests/*.mjs` and `backend/test/*.mjs` in Node (`scripts/run-tests.mjs`). It does not need the shell to expand globs, so the same command works on Node 20 and on Windows `cmd`.
 
 Rules eval on the synthetic set in `eval/cases/` (35 chats): precision 1, recall 1, false alarms 0 (tp 18, fp 0, fn 0, tn 17). The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
 

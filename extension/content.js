@@ -124,14 +124,22 @@
           const stored = deals.get(body.hash) || {};
           const verdict = body.verdict || stored.verdict || {};
           const deal = verdict.deal || {};
+          const item = body.item || deal.item;
+          const amount = body.amount != null ? body.amount : deal.amount;
+          const currency = body.currency || deal.currency;
+          const payeeEmail = body.payeeEmail || deal.payeeEmail || "";
+          const referenceId = body.referenceId || (body.hash
+            ? [body.hash, item || "", amount == null ? "" : String(amount), currency || "", payeeEmail].join("\u001f")
+            : undefined);
           const data = await api("/api/protect", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
-              item: body.item || deal.item,
-              amount: body.amount != null ? body.amount : deal.amount,
-              currency: body.currency || deal.currency,
-              payeeEmail: body.payeeEmail || deal.payeeEmail || "",
+              item,
+              amount,
+              currency,
+              payeeEmail,
+              referenceId,
               verdict: { level: verdict.level, signals: verdict.signals, reason: verdict.reason }
             })
           });

@@ -128,6 +128,50 @@ test("resolveLlm covers openrouter, openai-compatible, back-compat, and off", ()
   assert.equal(empty.provider, "off");
   assert.equal(empty.timeoutMs, 8000);
   assert.equal(empty.apiKey, "");
+
+  const pinned = resolveLlm({
+    LLM_PROVIDER: "openrouter",
+    OPENROUTER_API_KEY: KEY,
+    LLM_BASE_URL: "https://openrouter.ai/api/v1/"
+  });
+  assert.equal(pinned.baseUrl, "https://openrouter.ai/api/v1");
+  assert.equal(pinned.apiKey, KEY);
+
+  for (const base of ["https://evil.example/v1", "https://openrouter.ai.evil.com/api/v1", "http://openrouter.ai/api/v1", "not a url"]) {
+    const kept = resolveLlm({
+      LLM_PROVIDER: "openrouter",
+      OPENROUTER_API_KEY: KEY,
+      LLM_BASE_URL: base
+    });
+    assert.equal(kept.baseUrl, "https://openrouter.ai/api/v1");
+    assert.equal(kept.apiKey, KEY);
+  }
+});
+
+test("an unknown LLM_PROVIDER throws instead of turning the check off", () => {
+  assert.throws(
+    () => resolveLlm({ LLM_PROVIDER: "openruter", OPENROUTER_API_KEY: KEY }),
+    /Unknown LLM_PROVIDER/
+  );
+  assert.throws(
+    () => createServer({ PAYPAL_ENV: "sandbox", PAYPAL_CLIENT_ID: "", LLM_PROVIDER: "openruter" }),
+    /Unknown LLM_PROVIDER/
+  );
+});
+
+test("openrouter classify does not send the key to a custom base", async () => {
+  let seen;
+  const fetchImpl = async (url, init) => {
+    seen = { url, init };
+    return chat(verdictJson());
+  };
+  await classifyText(INPUT, {
+    LLM_PROVIDER: "openrouter",
+    OPENROUTER_API_KEY: KEY,
+    LLM_BASE_URL: "https://evil.example/v1"
+  }, fetchImpl);
+  assert.equal(seen.url, "https://openrouter.ai/api/v1/chat/completions");
+  assert.equal(seen.init.headers.authorization, `Bearer ${KEY}`);
 });
 
 test("openrouter classify sends bearer, referer, title, temperature 0, and json_object", async () => {

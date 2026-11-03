@@ -208,6 +208,9 @@ async function onProtect(message) {
   const amount = message.amount != null ? message.amount : deal.amount;
   const currency = message.currency || deal.currency || "";
   const payeeEmail = message.payeeEmail || deal.payeeEmail || context.sellerEmail || "";
+  const referenceId = hash
+    ? [hash, item, amount == null ? "" : String(amount), currency, payeeEmail].join("\u001f")
+    : undefined;
   const data = await backendFetch("/api/protect", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -216,6 +219,7 @@ async function onProtect(message) {
       amount,
       currency,
       payeeEmail,
+      referenceId,
       verdict: {
         level: verdict.level,
         signals: verdict.signals,
