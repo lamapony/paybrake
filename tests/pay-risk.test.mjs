@@ -1002,3 +1002,38 @@ test("a bare cashtag counts and a dollar amount does not", async () => {
   assert.equal(dollars.kind, "silent");
   assert.equal(dollars.signals.includes("off_platform"), false);
 });
+
+
+test("half up front and 50% now are upfront deposits", async () => {
+  const medium = [
+    "Pay half up front, 500 kr via PayPal, the bike is ready.",
+    "Pay 50% now, 500 kr via PayPal, the bike is ready."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit"], text);
+  }
+
+  const high = [
+    "Pay half up front, 500 kr via PayPal, I ship tomorrow.",
+    "Pay 50% now, 500 kr via PayPal, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit", "ship_before_meet"], text);
+  }
+
+  const halfNow = await detect("Pay half now, 500 kr via PayPal, I ship tomorrow.");
+  assert.equal(halfNow.kind, "risk");
+  assert.equal(halfNow.level, "high");
+  assert.deepEqual(halfNow.signals, ["upfront_deposit", "ship_before_meet"]);
+
+  const tyres = await detect("The cost up front for new tyres was 500 kr last year.");
+  assert.equal(tyres.kind, "silent");
+  assert.equal(tyres.silentReason, "no_atom");
+  assert.deepEqual(tyres.signals, []);
+});

@@ -62,6 +62,8 @@ const RULES = [
   { id: "upfront_deposit", re: `${UP_FRONT}${REVERSE_GAP}${PAY_CUE}`, gate: "upfront-window" },
   { id: "upfront_deposit", re: "holding\\s+fee", gate: "deposit-word", spanNegation: true },
   { id: "upfront_deposit", re: "to\\s+reserve\\s+(?:the\\s+bike|it)", gate: "reserve", spanNegation: true },
+  { id: "upfront_deposit", re: "half\\s+up\\s+front", gate: "deposit-specific" },
+  { id: "upfront_deposit", re: "50\\s*%\\s*now", gate: "deposit-specific" },
 
   { id: "off_platform", re: "mobile\\s*pay", gate: "mobilepay" },
   { id: "off_platform", re: "IBAN", gate: "iban" },
