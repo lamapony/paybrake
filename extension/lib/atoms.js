@@ -56,7 +56,7 @@ const WIRE_BANK_GAP = "(?:\\$?\\d+(?:[.,]\\d+)+|[^\\s.,;!?]+)";
 const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family", gate: "ff-phrase" },
   { id: "friends_family", re: "venner\\s+(?:og|&)\\s+familie", gate: "ff-phrase" },
-  { id: "friends_family", re: "F&F", gate: "none" },
+  { id: "friends_family", re: "F&F", gate: "ff-token" },
   { id: "friends_family", re: "FnF", gate: "none" },
   { id: "friends_family", re: "family\\s+(?:and|&)\\s+friends", gate: "ff-phrase" },
   { id: "friends_family", re: "familie\\s+(?:og|&)\\s+venner", gate: "ff-phrase" },
@@ -814,6 +814,14 @@ function linkAllowed(text, start, end) {
   return LURE.test(near);
 }
 
+// "I won't take PayPal F&F" refuses the rail. "Never send … via F&F" stays a
+// hit so the prohibition layer can quiet it; that sentence is not "take".
+function ffTokenOk(text, start) {
+  if (negatedBefore(text, start)) return false;
+  const before = text.slice(Math.max(0, start - 48), start);
+  return !/(?<![\p{L}\p{N}])(?:won['’]?t|wont|will\s+not|don['’]?t|dont|do\s+not|never|not)\s+take(?:\s+[\p{L}\p{N}]+){0,4}\s+$/iu.test(before);
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
@@ -824,6 +832,7 @@ function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
   if (rule.gate === "negation") return !negatedBefore(text, start);
+  if (rule.gate === "ff-token") return ffTokenOk(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "ff-dictated") return dictatedFamilyOnly(text, start, end);
   if (rule.gate === "ff-pivot") return familyPivot(text, start);
