@@ -1002,3 +1002,46 @@ test("a bare cashtag counts and a dollar amount does not", async () => {
   assert.equal(dollars.kind, "silent");
   assert.equal(dollars.signals.includes("off_platform"), false);
 });
+
+
+test("Paysafecard and Paysafe with a pay ask are off-platform", async () => {
+  const medium = [
+    "Please send a Paysafecard of 500 kr today, the bike is ready.",
+    "Send 500 kr via Paysafe today, the bike is ready."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+
+  const high = [
+    "Please send a Paysafecard of 500 kr, I ship tomorrow.",
+    "Send 500 kr via Paysafe today, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const gift = await detect("Buy a gift card for 500 kr and I ship tomorrow.");
+  assert.equal(gift.kind, "risk");
+  assert.equal(gift.level, "high");
+  assert.deepEqual(gift.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a town called Paysafe and a safe card stay silent", async () => {
+  const quiet = [
+    "Paysafe is a town I visited last summer with my sister.",
+    "The card was safe in my bag on Thursday afternoon."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
