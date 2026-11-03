@@ -91,6 +91,70 @@ function baseOffsets(text, messages) {
   return messages.map((message) => text.indexOf(message.text));
 }
 
+// Same sentence only. A dot between digits (500.00, 1.500) is not a break.
+// "kr." is not a break when the next word continues in lowercase ("kr. via").
+// "500 kr. Send…" is a new sentence.
+const ABBR_BEFORE_DOT = /(?:^|[^A-Za-z])(?:kr|dkk|eur|euro|usd|sek|gbp|nok)$/iu;
+const PROHIBITION = /(?:never|do\s+not|don['’]?t|dont)\s+(?:send|pay|use)|aldrig\s+(?:send|betal|brug|skicka)|(?:send|betal|skicka)\s+aldrig|(?:send|betal)\s+ikke|ikke\s+send|lad\s+være\s+med\s+at|betala\s+inte/iu;
+// A clause break ends the prohibited object. The next clause still belongs
+// to it when it continues the object ("never send 500 kr, via F&F").
+const PROHIBITION_BREAK = /(?<!\d),(?!\d)|;|—|–|\s-\s/u;
+// \b is ASCII-only, so "på" would not end the preposition. Use a letter boundary.
+const OBJECT_CONTINUATION = /^\s*(?:via|through|on|with|to|gennem|genom|på|paa|med|til|till)(?![\p{L}\p{N}])/iu;
+
+function sentenceBoundary(source, index) {
+  const ch = source[index];
+  if (ch === "!" || ch === "?" || ch === "\n") return true;
+  if (ch !== ".") return false;
+  const prev = source[index - 1] || "";
+  const next = source[index + 1] || "";
+  if (prev >= "0" && prev <= "9" && next >= "0" && next <= "9") return false;
+  if (ABBR_BEFORE_DOT.test(source.slice(Math.max(0, index - 8), index))) {
+    const letter = source.slice(index + 1).match(/^\s*(\p{L})/u);
+    if (letter && letter[1] === letter[1].toLowerCase()) return false;
+  }
+  return true;
+}
+
+function sentenceStart(text, index) {
+  const source = String(text ?? "");
+  const upto = Math.max(0, Math.min(index, source.length));
+  for (let i = upto - 1; i >= 0; i--) {
+    if (sentenceBoundary(source, i)) return i + 1;
+  }
+  return 0;
+}
+
+function prohibitionBreakEnds(afterCue) {
+  const re = new RegExp(PROHIBITION_BREAK.source, "gu");
+  for (const match of afterCue.matchAll(re)) {
+    const next = afterCue.slice((match.index ?? 0) + match[0].length);
+    if (!OBJECT_CONTINUATION.test(next)) return true;
+  }
+  return false;
+}
+
+function prohibitionCovers(text, hitStart) {
+  const source = String(text ?? "");
+  const before = source.slice(sentenceStart(source, hitStart), hitStart);
+  const re = new RegExp(PROHIBITION.source, "giu");
+  for (const match of before.matchAll(re)) {
+    const afterCue = before.slice((match.index ?? 0) + match[0].length);
+    if (!prohibitionBreakEnds(afterCue)) return true;
+  }
+  return false;
+}
+
+// Checkout is pay_on_collection with gate "checkout", not the letters in the span.
+// Every other veto atom hides the card on its own.
+function collectionOffer(hit) {
+  return !!hit && hit.role === "veto" && hit.atom === "pay_on_collection" && hit.gate !== "checkout";
+}
+
+function vetoHidesOnItsOwn(hit) {
+  return !!hit && hit.role === "veto" && !collectionOffer(hit);
+}
+
 function silent(reason, extra) {
   return {
     kind: "silent",
@@ -163,17 +227,22 @@ async function detect(text, ctx = {}, options = {}) {
   const messages = messagesOf(raw, ctx);
   const offsets = baseOffsets(raw, messages);
   const perMessage = messages.map((message, index) => {
+    const base = offsets[index];
     const hits = api.findAtoms(message.text).map((hit) => ({
       ...hit,
-      start: offsets[index] >= 0 ? offsets[index] + hit.start : hit.start,
-      end: offsets[index] >= 0 ? offsets[index] + hit.end : hit.end
+      prohibited: hit.role === "act" && prohibitionCovers(message.text, hit.start),
+      refused: collectionOffer(hit) && prohibitionCovers(message.text, hit.start),
+      start: base >= 0 ? base + hit.start : hit.start,
+      end: base >= 0 ? base + hit.end : hit.end
     }));
     return { ...message, hits, amounts: extract.parseAmounts ? extract.parseAmounts(message.text) : [] };
   });
 
   const goods = api.goodsHit(messages);
-  const vetoHit = goods || perMessage.flatMap((message) => message.hits).find((hit) => hit.role === "veto");
-  const actHits = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "act");
+  const vetoes = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "veto");
+  // A prohibited span is not an ask. It does not open a card, and it does not
+  // count as the strong ask that would stop a collection offer from hiding one.
+  const actHits = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "act" && !hit.prohibited);
   const signals = api.ATOMS.map((atom) => atom.id).filter((id) => actHits.some((hit) => hit.atom === id));
   const strong = [...new Set(actHits.filter((hit) => hit.strength === "strong").map((hit) => hit.atom))];
   const weak = [...new Set(actHits.filter((hit) => hit.strength === "weak").map((hit) => hit.atom))];
@@ -182,8 +251,14 @@ async function detect(text, ctx = {}, options = {}) {
     ? extract.extractDeal(raw, ctx, actHits.map((hit) => ({ ...hit, start: hit.start, end: hit.end, atom: hit.atom })))
     : emptyDeal();
 
-  // Known gap: "Friends & Family, or cash on pickup" stays silent.
-  // The collection hit vetoes the message and hides the Friends & Family ask.
+  // vetoHit stays a hit object. Checkout, agreed Goods & Services, and any
+  // other non-collection veto hide the card. Collection hides it only when
+  // no strong ask is live and the collection phrase itself was not refused.
+  const hardVeto = (goods && vetoHidesOnItsOwn(goods) ? goods : null) || vetoes.find((hit) => vetoHidesOnItsOwn(hit)) || null;
+  const collectionVeto = hardVeto || strong.length
+    ? null
+    : vetoes.find((hit) => collectionOffer(hit) && !hit.refused) || null;
+  const vetoHit = hardVeto || collectionVeto;
   if (vetoHit) return silent("veto", { signals, evidence, deal });
   if (!actHits.length) return silent("no_atom", { signals, evidence, deal });
   if (!strong.length) return silent("weak_only", { signals, evidence, deal });
@@ -191,7 +266,9 @@ async function detect(text, ctx = {}, options = {}) {
   let level = null;
   if (strong.length >= 2 || (strong.length >= 1 && weak.length >= 1)) level = "high";
   else if (strong.length === 1) {
-    const host = perMessage.find((message) => message.hits.some((hit) => hit.atom === strong[0] && hit.strength === "strong"));
+    const host = perMessage.find((message) => message.hits.some((hit) => (
+      hit.atom === strong[0] && hit.strength === "strong" && !hit.prohibited
+    )));
     const pay = host && api.hasPayWord(host.text);
     const money = host && host.amounts && host.amounts.length > 0;
     // "transfer" is not a pay word ("Wise transfer", "transfer the bike").
@@ -199,7 +276,9 @@ async function detect(text, ctx = {}, options = {}) {
     const transferUpfront = host && host.hits.some((hit) => (
       hit.atom === "upfront_deposit" && /(?<![\p{L}\p{N}])transfer(?![\p{L}\p{N}])/iu.test(hit.text)
     ));
-    if (pay || money || transferUpfront) level = "medium";
+    // "Friends and Family only" after a refused checkout has no pay word and no amount.
+    const methodOnly = host && host.hits.some((hit) => hit.gate === "ff-dictated" && !hit.prohibited);
+    if (pay || money || transferUpfront || methodOnly) level = "medium";
   }
   if (!level) return silent("no_atom", { signals, evidence, deal });
 

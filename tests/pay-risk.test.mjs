@@ -74,11 +74,184 @@ test("pay on collection only stays a silent veto", async () => {
   assert.deepEqual(verdict.signals, []);
 });
 
-// Known gap, kept on purpose: "cash on pickup" still vetoes this F&F ask.
-test("a veto is silent and does not ask the model", async () => {
-  const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["Friends"] }));
+test("Friends and Family still warns when cash on pickup is also offered", async () => {
   const text = "Send 500 kr via Friends & Family, or cash on pickup if you prefer to wait.";
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "medium");
+  assert.ok(verdict.signals.includes("friends_family"));
+  assert.equal(verdict.signals.includes("pay_on_collection"), false);
+  assert.equal(verdict.deal.amount, 500);
+  for (const span of verdict.evidence) assert.equal(text.slice(span.start, span.end), span.text);
+});
+
+test("a Friends and Family deposit plus pickup still warns", async () => {
+  const forward = "Send 500 kr deposit via PayPal Friends and Family today. Or you can pay when you pick it up.";
+  const reverse = "Or you can pay when you pick it up. Send 500 kr deposit via PayPal Friends and Family today.";
+  for (const text of [forward, reverse]) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.ok(verdict.signals.includes("friends_family"), text);
+    assert.ok(verdict.signals.includes("upfront_deposit"), text);
+    assert.equal(verdict.deal.amount, 500, text);
+    assert.equal(verdict.deal.depositAmount, 500, text);
+  }
+});
+
+test("a MobilePay deposit plus afhentning still warns", async () => {
+  const text = "Send 500 kr depositum på MobilePay nu. Eller betal ved afhentning.";
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "high");
+  assert.ok(verdict.signals.includes("upfront_deposit"));
+  assert.ok(verdict.signals.includes("off_platform"));
+  assert.equal(verdict.deal.amount, 500);
+  assert.equal(verdict.deal.depositAmount, 500);
+});
+
+test("a deposit ask in one message and pickup in the next still warns", async () => {
+  const messages = [
+    { from: "seller", text: "Send 500 kr deposit via PayPal Friends and Family today." },
+    { from: "seller", text: "Or you can pay when you pick it up." }
+  ];
+  const text = messages.map((message) => message.text).join("\n");
+  const verdict = await detect(text, { messages });
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "high");
+  assert.ok(verdict.signals.includes("friends_family"));
+  assert.ok(verdict.signals.includes("upfront_deposit"));
+  assert.equal(verdict.deal.amount, 500);
+});
+
+test("Friends and Family deposit without a pickup offer stays high", async () => {
+  const text = "Please send 500 kr deposit via PayPal Friends and Family now, I ship tomorrow.";
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "high");
+  assert.ok(verdict.signals.includes("friends_family"));
+  assert.ok(verdict.signals.includes("upfront_deposit"));
+  assert.ok(verdict.signals.includes("ship_before_meet"));
+  assert.equal(verdict.deal.amount, 500);
+});
+
+test("pay on collection alone is silent and does not ask the model", async () => {
+  const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["pickup"] }));
+  const text = "You can pay cash when you pick it up. No deposit needed before we meet.";
   const verdict = await detect(text, {}, { askLlm });
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "veto");
+  assert.deepEqual(verdict.signals, []);
+  assert.equal(state.calls, 0);
+});
+
+test("telling the buyer not to send Friends and Family, then pay on pickup, stays silent", async () => {
+  const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["Friends"] }));
+  const text = "Never send a deposit via PayPal Friends and Family. Pay only when you pick it up.";
+  const verdict = await detect(text, {}, { askLlm });
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "veto");
+  assert.equal(state.calls, 0);
+});
+
+test("checkout still vetoes an upfront Friends and Family ask", async () => {
+  const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["Friends"] }));
+  const text = "Send 500 kr via Friends and Family, or pay through the marketplace checkout.";
+  const verdict = await detect(text, {}, { askLlm });
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "veto");
+  assert.equal(state.calls, 0);
+});
+
+test("refusing pickup does not hide a friends and family ask", async () => {
+  const text = "Don't pay on pickup, only via Friends and Family for the bike.";
+  const hits = findAtoms(text);
+  assert.ok(hits.some((hit) => hit.atom === "pay_on_collection"), JSON.stringify(hits));
+  assert.ok(hits.some((hit) => hit.atom === "friends_family"), JSON.stringify(hits));
+  const verdict = await detect(text);
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "medium");
+  assert.ok(verdict.signals.includes("friends_family"));
+  assert.equal(verdict.signals.includes("pay_on_collection"), false);
+});
+
+test("a pivot after a prohibition is still an ask", async () => {
+  const same = "Don't pay on pickup, just send 500 kr via Friends and Family.";
+  const next = "Never pay 500 kr. Send via Friends and Family today please.";
+  for (const text of [same, next]) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.ok(verdict.signals.includes("friends_family"), text);
+  }
+});
+
+test("a prohibition in the same sentence is not an ask", async () => {
+  const texts = [
+    "Never send 500 kr. via F&F for this bike.",
+    "Never send 500.00 via Friends and Family for this bike.",
+    "Send ikke 500 kr via Friends and Family i dag tak.",
+    "Betal ikke 500 kr via Friends and Family i dag tak.",
+    "Lad være med at sende 500 kr via Friends and Family i dag.",
+    "Skicka aldrig 500 kr via Friends and Family idag tack.",
+    "Betala inte 500 kr via Friends and Family idag tack.",
+    "Ikke send 500 kr via Friends and Family i dag takk.",
+    "Never send 500 kr, via Friends and Family for this bike.",
+    "Don't pay, through Friends and Family for the bike today.",
+    "Don't use PayPal, never send via Friends and Family today please."
+  ];
+  for (const text of texts) {
+    const hits = findAtoms(text);
+    assert.ok(hits.some((hit) => hit.atom === "friends_family"), text + " " + JSON.stringify(hits));
+    const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["Friends"] }));
+    const verdict = await detect(text, {}, { askLlm });
+    assert.equal(verdict.kind, "silent", text + " " + JSON.stringify(verdict));
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+    assert.equal(state.calls, 0, text);
+  }
+});
+
+test("a clause break ends a prohibition before the next ask", async () => {
+  const cases = [
+    ["Don't use Goods and Services, Friends and Family only.", "friends_family"],
+    ["Don't pay through the app, MobilePay me 500 kr today.", "off_platform"],
+    ["Do not use the platform; MobilePay 500 kr to me now please.", "off_platform"],
+    ["Do not use the platform — MobilePay 500 kr to me now please.", "off_platform"],
+    ["Do not use the platform - MobilePay 500 kr to me now please.", "off_platform"]
+  ];
+  for (const [text, atom] of cases) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text + " " + JSON.stringify(verdict));
+    assert.ok(verdict.signals.includes(atom), text + " " + JSON.stringify(verdict.signals));
+  }
+});
+
+test("a dictated rail or MobilePay to me stays quiet without the ask", async () => {
+  const quiet = [
+    ["My friends and family only visit on Sunday afternoons together.", "no_atom"],
+    ["The price is 500 kr for friends and family only this weekend.", "no_atom"],
+    ["Don't use Friends and Family only for this bike today please.", "no_atom"],
+    ["Don't use the checkout. Friends and Family only.", "no_atom"],
+    ["Do not MobilePay 500 kr to me today please.", "no_atom"],
+    ["The 500 kr MobilePay to me was a refund last week from the shop.", "no_atom"],
+    ["The lamp is 500 kr and MobilePay is fine when you pick it up tomorrow.", "veto"]
+  ];
+  for (const [text, reason] of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text + " " + JSON.stringify(verdict));
+    assert.equal(verdict.silentReason, reason, text + " " + JSON.stringify(verdict));
+  }
+});
+
+test("agreed goods and services still hides friends and family", async () => {
+  const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["Friends"] }));
+  const messages = [
+    { from: "buyer", text: "Can we use PayPal Goods and Services for the bike?" },
+    { from: "seller", text: "Yes, Goods and Services works. You can also send 500 kr via Friends and Family." }
+  ];
+  const text = messages.map((message) => message.text).join("\n");
+  const verdict = await detect(text, { messages }, { askLlm });
   assert.equal(verdict.kind, "silent");
   assert.equal(verdict.silentReason, "veto");
   assert.equal(state.calls, 0);
@@ -1011,15 +1184,16 @@ test("a later hold or today still yields to pickup", async () => {
   }
 });
 
-test("in advance flags the deposit, and a split rest and a Swedish hold stay quiet", async () => {
+test("in advance and a hold before pickup stay risky, and a Swedish hold stays quiet", async () => {
   const advance = await detect("Pay $100 by Venmo in advance, then pay the rest when we meet.");
   assert.equal(advance.kind, "risk");
   assert.equal(advance.level, "medium");
   assert.deepEqual(advance.signals, ["upfront_deposit"]);
 
   const split = await detect("Zelle me $100 to hold it, pay the rest when you pick it up.");
-  assert.equal(split.kind, "silent");
-  assert.equal(split.silentReason, "veto");
+  assert.equal(split.kind, "risk");
+  assert.equal(split.level, "medium");
+  assert.deepEqual(split.signals, ["off_platform"]);
 
   const swedish = await detect("Swisha 500 kr nu så håller jag den, hämta på lördag.");
   assert.equal(swedish.kind, "silent");
