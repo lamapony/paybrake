@@ -67,13 +67,14 @@ const RULES = [
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "negation" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "none" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
-  { id: "off_platform", re: "western\\s+union", gate: "deposit-word" },
-  { id: "off_platform", re: "moneygram", gate: "deposit-word" },
-  { id: "off_platform", re: "venmo", gate: "deposit-word" },
-  { id: "off_platform", re: "zelle", gate: "deposit-word" },
-  { id: "off_platform", re: "cash\\s+app", gate: "deposit-word" },
-  { id: "off_platform", re: "swish", gate: "deposit-word" },
-  { id: "off_platform", re: "vipps", gate: "deposit-word" },
+  { id: "off_platform", re: "\\bwestern\\s+union\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\bmoneygram\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\bvenmo\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\bzelle\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\bcash\\s*app\\b", gate: "named-rail" },
+  { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
+  { id: "off_platform", re: "\\bswish\\b", gate: "local-rail" },
+  { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -162,6 +163,20 @@ function depositRejected(text, start, end) {
   return false;
 }
 
+function railNegated(text, start) {
+  if (negatedBefore(text, start)) return true;
+  const before = text.slice(Math.max(0, start - 48), start);
+  return /(?:no|not|never|without|won't|wont|don't|dont|do\s+not|ikke|ingen|uden|nej|aldrig)(?:\s+\w+){0,3}\s+$/iu.test(before);
+}
+
+function handoverPay(text) {
+  return /pick\s*up|(?<![\p{L}\p{N}])collect(?:ion)?(?![\p{L}\p{N}])|afhent|når\s+du\s+henter|ved\s+afhentning|on\s+delivery|ved\s+levering/iu.test(text);
+}
+
+function payFirstLanguage(text) {
+  return /pay(?:ment)?\s+first|betal\s+først|pay(?:ment)?\s+before|(?:swish|vipps)\s+first|first,?\s+then\s+i\s+(?:ship|send|post)|then\s+i\s+(?:ship|send|post)|først,?\s+så\s+send|så\s+sender\s+jeg/iu.test(text);
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "negation") return !negatedBefore(text, start);
@@ -178,6 +193,20 @@ function allow(rule, text, start, end) {
   if (rule.gate === "mobilepay") {
     if (phoneNear(text, start, end)) return true;
     return hasPayWord(text) && amountSpans(text).length > 0;
+  }
+  if (rule.gate === "named-rail" || rule.gate === "cashtag") {
+    if (railNegated(text, start)) return false;
+    if (rule.gate === "cashtag" && !/cashtag|cash\s*app/iu.test(text)) return false;
+    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
+  }
+  if (rule.gate === "local-rail") {
+    if (railNegated(text, start)) return false;
+    const pay = payWordNear(text, start, end, 80);
+    const money = amountNear(text, start, end, 80);
+    const scam = payFirstLanguage(text);
+    if (handoverPay(text) && !scam) return false;
+    if (pay && money) return true;
+    return scam && money;
   }
   if (rule.gate === "ship") {
     if (PICKUP_ALT.test(text)) return false;

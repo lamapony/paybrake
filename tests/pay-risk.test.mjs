@@ -344,3 +344,42 @@ test("bare rail names and a gift card stay in their lanes", async () => {
   assert.equal(card.level, "medium");
   assert.deepEqual(card.signals, ["off_platform"]);
 });
+
+test("bike brands, pickup Swish, and a refused rail stay quiet", async () => {
+  const quiet = [
+    "Gazelle city bike, 500 kr",
+    "I was swishing the chain on this 500 kr bike yesterday.",
+    "I accept Swish or cash at pickup",
+    "Swish on pickup is fine, the bike is 500 kr.",
+    "I accept Vipps or cash when you pick it up on Saturday.",
+    "I don't take Venmo, 500 kr cash at pickup",
+    "I don't take Venmo, the bike is 500 kr and we meet Thursday.",
+    "I never use Zelle. The price is 500 kr for the bike."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("off_platform"), false, text);
+  }
+});
+
+test("paying by Swish before the seller ships is off-platform", async () => {
+  const swish = await detect("Send 500 kr by Swish first, then I ship");
+  assert.equal(swish.kind, "risk");
+  assert.equal(swish.level, "medium");
+  assert.deepEqual(swish.signals, ["off_platform"]);
+
+  const vipps = await detect("Vipps 500 kr først, så sender jeg den i morgen.");
+  assert.equal(vipps.kind, "risk");
+  assert.equal(vipps.signals.includes("off_platform"), true);
+
+  const cashApp = await detect("Please CashApp me 500 kr, I ship tomorrow.");
+  assert.equal(cashApp.kind, "risk");
+  assert.equal(cashApp.level, "high");
+  assert.deepEqual(cashApp.signals, ["off_platform", "ship_before_meet"]);
+
+  const tag = await detect("Send 500 kr to my $bikeSeller cashtag, I ship tomorrow.");
+  assert.equal(tag.kind, "risk");
+  assert.equal(tag.level, "high");
+  assert.deepEqual(tag.signals, ["off_platform", "ship_before_meet"]);
+});
