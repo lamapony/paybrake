@@ -922,6 +922,29 @@ test("Swish as a verb plus shipping is off-platform", async () => {
   }
 });
 
+test("paying before the handover stays off-platform", async () => {
+  const asks = [
+    "Send $200 via Western Union and collect the car when it arrives.",
+    "Send the money via Zelle first and you can pick it up after.",
+    "Pay $300 by Cash App now, I will hold it until you pick it up.",
+    "Send 500 kr by Swish now to reserve, you can pick it up Saturday.",
+    "Venmo me $50 today so I hold it, pick up Sunday.",
+    "Zelle me $100 now to reserve it, then come to see it tomorrow.",
+    "Pay $50 with Venmo now and the rest when we meet."
+  ];
+  for (const text of asks) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+
+  const deposit = await detect("Send me a $100 Zelle deposit today to hold it, you can pick it up Saturday.");
+  assert.equal(deposit.kind, "risk");
+  assert.equal(deposit.level, "high");
+  assert.deepEqual(deposit.signals, ["upfront_deposit", "off_platform"]);
+});
+
 test("a bare cashtag counts and a dollar amount does not", async () => {
   const tag = await detect("Send 500 kr to $bikeseller, I ship tomorrow");
   assert.equal(tag.kind, "risk");

@@ -350,9 +350,13 @@ function pickupRefused(before, after) {
   return !/(?<![\p{L}\p{N}])no(?:t)?(?![\p{L}\p{N}])(?:\s+a)?\s+problems?\b/iu.test(match[0]);
 }
 
+// Payment at the handover ("when I pick it up", "at pickup", "when we meet").
+// "collect the car" and "pick it up Saturday" name a later handover.
+const TIED_HANDOVER = /(?:at|on)\s+pick\s*up|(?:at|on)\s+collection|when\s+you\s+collect|when\s+(?:i|you|we)\s+pick(?:\s+it)?\s*up|when\s+we\s+meet|when\s+you\s+come\s+to\s+see(?:\s+it)?|on\s+delivery|ved\s+levering|ved\s+afhentning|når\s+du\s+henter|när\s+du\s+hämtar|vid\s+upphämtning|när\s+vi\s+ses/iu;
+
 function handoverPay(text) {
   const source = String(text ?? "");
-  const re = /pick(?:\s+it)?\s*up(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])collect(?:ion)?(?![\p{L}\p{N}])|afhent|når\s+du\s+henter|ved\s+afhentning|on\s+delivery|ved\s+levering|(?<![\p{L}\p{N}])when\s+we\s+meet(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])come\s+to\s+see(?:\s+it)?(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])(?:hämtar|upphämtning)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])när\s+vi\s+ses(?![\p{L}\p{N}])/giu;
+  const re = new RegExp(`(?<![\\p{L}\\p{N}])(?:${TIED_HANDOVER.source})(?![\\p{L}\\p{N}])`, "giu");
   for (const match of source.matchAll(re)) {
     const at = match.index ?? 0;
     const before = source.slice(Math.max(0, at - 48), at);
@@ -360,6 +364,27 @@ function handoverPay(text) {
     if (!pickupRefused(before, after)) return true;
   }
   return false;
+}
+
+function paysBeforeHandover(text) {
+  const source = String(text ?? "");
+  // "when we meet today" times the meeting. The same words before it time the payment.
+  const marker = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?)(?![\p{L}\p{N}])/giu;
+  const tail = new RegExp(`(?:${TIED_HANDOVER.source})\\s*$`, "iu");
+  for (const match of source.matchAll(marker)) {
+    const at = match.index ?? 0;
+    if (negatedBefore(source, at)) continue;
+    const before = source.slice(Math.max(0, at - 64), at);
+    if (tail.test(before)) continue;
+    return true;
+  }
+  return false;
+}
+
+function handoverQuietsRail(text) {
+  if (!handoverPay(text)) return false;
+  if (payFirstLanguage(text) || paysBeforeHandover(text)) return false;
+  return true;
 }
 
 function payFirstLanguage(text) {
@@ -395,7 +420,7 @@ function allow(rule, text, start, end) {
   }
   if (rule.gate === "named-rail" || rule.gate === "cashtag") {
     if (railNegated(text, start)) return false;
-    if (handoverPay(text) && !payFirstLanguage(text)) return false;
+    if (handoverQuietsRail(text)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
   if (rule.gate === "local-rail") {
@@ -403,7 +428,7 @@ function allow(rule, text, start, end) {
     const pay = localPayNear(text, start, end, 80);
     const money = amountNear(text, start, end, 80);
     const scam = payFirstLanguage(text);
-    if (handoverPay(text) && !scam) return false;
+    if (handoverQuietsRail(text)) return false;
     if (pay && money) return true;
     return scam && money;
   }
