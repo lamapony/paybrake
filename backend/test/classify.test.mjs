@@ -87,9 +87,12 @@ test("capLevel never raises above the rules level", () => {
   assert.equal(capLevel("high", "high"), "high");
   assert.equal(capLevel("medium", ""), "medium");
   assert.equal(capLevel("high", null), "high");
+  // Rules found nothing. "none" is not a cap, so the model can still add a card.
+  assert.equal(capLevel("high", "none"), "high");
+  assert.equal(capLevel("medium", "none"), "medium");
 });
 
-test("PAYBRAKE_RULES_LEVEL caps the AI level on /api/classify", async () => {
+test("rulesLevel argument caps the AI level and none does not", async () => {
   const llmFetch = async () => ({
     ok: true,
     async text() {
@@ -102,8 +105,24 @@ test("PAYBRAKE_RULES_LEVEL caps the AI level on /api/classify", async () => {
     }
   });
   const base = { LLM_BASE_URL: "http://llm.test/v1", LLM_MODEL: "demo" };
-  const capped = await classifyText(input, { ...base, PAYBRAKE_RULES_LEVEL: "medium" }, llmFetch);
+  const capped = await classifyText(input, base, llmFetch, "medium");
   assert.equal(capped.level, "medium");
   const free = await classifyText(input, base, llmFetch);
   assert.equal(free.level, "high");
+  // A rules level stuffed into env must not cap, and "none" must not wipe the card.
+  const fromEnv = await classifyText(input, { ...base, PAYBRAKE_RULES_LEVEL: "medium" }, llmFetch);
+  assert.equal(fromEnv.level, "high");
+  const silentRules = await classifyText(input, base, llmFetch, "none");
+  assert.equal(silentRules.level, "high");
+});
+
+test("a 200 chat body that is not the expected JSON is llm shape", async () => {
+  await assert.rejects(
+    () => classifyText(input, { LLM_BASE_URL: "http://llm.test/v1" }, async () => ({
+      ok: true,
+      status: 200,
+      async text() { return "not json"; }
+    })),
+    (error) => error.status === 502 && error.message === "llm shape"
+  );
 });

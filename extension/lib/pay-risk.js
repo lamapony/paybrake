@@ -47,7 +47,9 @@ const GENERIC_SIGNALS = ["ai_other", "other"];
 // The final level is the lower of the rules level and the AI level: the AI may lower a
 // rules card or leave it as it is, but it must never raise it above the rules level.
 function clampLevel(rulesLevel, aiLevel) {
-  const rulesRank = LEVEL_RANK[rulesLevel] || 0;
+  // A missing rules card, including "none", is not a cap. The AI may add a level.
+  if (rulesLevel !== "high" && rulesLevel !== "medium") return aiLevel;
+  const rulesRank = LEVEL_RANK[rulesLevel];
   const aiRank = LEVEL_RANK[aiLevel] || 0;
   return aiRank < rulesRank ? aiLevel : rulesLevel;
 }

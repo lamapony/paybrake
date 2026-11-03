@@ -565,6 +565,14 @@ function paymentViaChat(text, start, end) {
   return amountSpans(text).some((amount) => amount.start >= start && amount.end <= gapEnd);
 }
 
+// "Venmo me" and "Western Union the money" are asks. A pay word or an amount
+// is not required. "Venmo payment protection" and a bare rail name are not.
+function railDirectAsk(text, start, end) {
+  const after = text.slice(end, Math.min(text.length, end + 48));
+  if (/^\s+me\b/iu.test(after)) return true;
+  return /^\s+(?:the|my|a)\s+(?:money|deposit|payment|funds)\b/iu.test(after);
+}
+
 function railNegated(text, start) {
   const before = text.slice(Math.max(0, start - 48), start);
   // A list stays under the negation ("don't take Venmo or Zelle").
@@ -854,7 +862,7 @@ function allow(rule, text, start, end) {
   if (rule.gate === "named-rail" || rule.gate === "cashtag") {
     if (railNegated(text, start)) return false;
     if (handoverQuietsRail(text)) return false;
-    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
+    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80) || railDirectAsk(text, start, end);
   }
   if (rule.gate === "local-rail") {
     if (railNegated(text, start)) return false;

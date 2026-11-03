@@ -281,7 +281,7 @@ test("non-JSON provider output is 502 and drops the body", async () => {
   });
   await assert.rejects(
     () => classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1", LLM_API_KEY: KEY }, fetchImpl),
-    (error) => error.status === 502 && error.code === "llm_error" && error.message === "llm 200" && !error.message.includes(KEY)
+    (error) => error.status === 502 && error.code === "llm_error" && error.message === "llm shape" && !error.message.includes(KEY)
   );
 });
 
@@ -389,6 +389,12 @@ test("POST /api/classify caps the AI level at the rulesLevel from the request", 
       body: JSON.stringify({ text: INPUT })
     })).json();
     assert.equal(free.level, "high");
+    const silentRules = await (await fetch(url + "/api/classify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: INPUT, rulesLevel: "none" })
+    })).json();
+    assert.equal(silentRules.level, "high");
   } finally {
     await close(server);
   }

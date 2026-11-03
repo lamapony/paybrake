@@ -42,7 +42,9 @@ export function evidencePasses(evidence, input) {
 const LEVEL_RANK = { none: 0, medium: 1, high: 2 };
 
 export function capLevel(level, rulesLevel) {
-  if (!rulesLevel || !(rulesLevel in LEVEL_RANK)) return level;
+  // Only a real rules card caps the model. "none", empty, and anything else
+  // mean the rules were silent, so the model may still add a card.
+  if (rulesLevel !== "medium" && rulesLevel !== "high") return level;
   const aiRank = LEVEL_RANK[level] || 0;
   return aiRank < LEVEL_RANK[rulesLevel] ? level : rulesLevel;
 }
@@ -157,7 +159,7 @@ function stripFences(content) {
   return text.trim();
 }
 
-export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch) {
+export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch, rulesLevel = "") {
   const llm = resolveLlm(env);
   if (!llm.configured) throw llmError("llm_off", 503);
   const source = String(text ?? "");
@@ -165,10 +167,11 @@ export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch)
   const verdict = llm.provider === "typesafe"
     ? await classifyTypesafeCapped(source, llm, fetchImpl)
     : await classifyChat(source, llm, fetchImpl);
-  // env.PAYBRAKE_RULES_LEVEL carries the rules level from the caller (the extension sends
-  // it on the request). The AI can lower the level but never raise it above that level.
+  // rulesLevel is the caller's rules card ("high" or "medium"), passed in as its own
+  // argument so a request field cannot hide inside the process environment.
+  // The AI can lower that level. It cannot raise it. "none" is not a cap.
   if (!verdict || verdict.level === "none") return verdict;
-  const level = capLevel(verdict.level, trim(env.PAYBRAKE_RULES_LEVEL));
+  const level = capLevel(verdict.level, trim(rulesLevel));
   return level === verdict.level ? verdict : { ...verdict, level };
 }
 
@@ -369,7 +372,7 @@ async function classifyChat(source, llm, fetchImpl) {
     parsed = typeof content === "string" ? JSON.parse(stripFences(content)) : content;
     if (!parsed || typeof parsed !== "object") throw new Error("shape");
   } catch {
-    throw llmError(`llm ${res.status}`, 502);
+    throw llmError("llm shape", 502);
   }
 
   const evidence = Array.isArray(parsed.evidence) ? parsed.evidence.filter((quote) => typeof quote === "string") : [];

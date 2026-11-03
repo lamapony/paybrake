@@ -169,8 +169,9 @@ export function createHandler(env = {}, deps = {}) {
           return;
         }
         // The caller may send its rules level; the AI may lower it but never raise it.
+        // "none" and any other value are not a cap: the model may still add a card.
         const rulesLevel = body.rulesLevel === "high" || body.rulesLevel === "medium" ? body.rulesLevel : "";
-        const verdict = await classifyText(body.text, rulesLevel ? { ...env, PAYBRAKE_RULES_LEVEL: rulesLevel } : env, fetchImpl);
+        const verdict = await classifyText(body.text, env, fetchImpl, rulesLevel);
         send(res, 200, verdict);
         return;
       }
