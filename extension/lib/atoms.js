@@ -26,8 +26,12 @@ const ATOMS = [
 
 const META = Object.fromEntries(ATOMS.map((atom) => [atom.id, atom]));
 
-// Words between "pay" and "upfront" / "in advance" stay in one sentence.
-const SPAN_GAP = "[ \\t]+(?:[^\\s.!?\\n]+[ \\t]+){0,8}";
+// Words between the pay cue and upfront / in advance. A period ends the
+// sentence, except inside a dotted amount (1.500, $12.50) or abbreviation (e.g.).
+const GAP_TOKEN = "(?:\\$?\\d+(?:[.,]\\d+)+|(?:[A-Za-z]\\.){2,}|[^\\s.!?\\n]+)";
+const SPAN_GAP = `[ \\t]+(?:${GAP_TOKEN}[ \\t]+){0,8}`;
+const UP_FRONT = "up[ \\t]*front";
+const PAY_CUE = "pay(?:ing|ment)?[:,;]?";
 
 const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family", gate: "ff-phrase" },
@@ -50,10 +54,11 @@ const RULES = [
   { id: "upfront_deposit", re: "forudbetaling", gate: "deposit-word" },
   { id: "upfront_deposit", re: "forskud", gate: "deposit-word" },
   { id: "upfront_deposit", re: "reserver(?:e|er|ing)?", gate: "reserve" },
-  { id: "upfront_deposit", re: `pay(?:ing|ment)?${SPAN_GAP}upfront`, gate: "upfront-window" },
-  { id: "upfront_deposit", re: `pay(?:ing|ment)?${SPAN_GAP}in[ \\t]+advance(?!\\s+of\\b)`, gate: "upfront-window" },
+  { id: "upfront_deposit", re: `${PAY_CUE}${SPAN_GAP}${UP_FRONT}`, gate: "upfront-window" },
+  { id: "upfront_deposit", re: `${PAY_CUE}${SPAN_GAP}in[ \\t]+advance(?!\\s+of\\b)`, gate: "upfront-window" },
+  { id: "upfront_deposit", re: `${UP_FRONT}${SPAN_GAP}${PAY_CUE}`, gate: "upfront-window" },
   { id: "upfront_deposit", re: "holding\\s+fee", gate: "deposit-word", spanNegation: true },
-  { id: "upfront_deposit", re: "to\\s+reserve\\s+the\\s+bike", gate: "reserve", spanNegation: true },
+  { id: "upfront_deposit", re: "to\\s+reserve\\s+(?:the\\s+bike|it)", gate: "reserve", spanNegation: true },
 
   { id: "off_platform", re: "mobile\\s*pay", gate: "mobilepay" },
   { id: "off_platform", re: "IBAN", gate: "iban" },
@@ -134,7 +139,16 @@ function negatedBefore(text, start) {
   return /(?:no|not|don't|dont|never|without|ingen|uden|ikke|nej)\s+$/iu.test(before);
 }
 
-// Same sentence only: "is not required", "isn't needed", and "is a scam" cancel the phrase.
+// Words that can sit between the phrase and "is not required" / "is a scam"
+// without starting a new clause. "meeting is not necessary" does not qualify.
+const TAIL_NEG = /^(?:(?:of|the|a|an|elsewhere|kr|dkk|eur|euro|usd|\d+)\s+)*(?:(?:is|are|was|were)\s+not\s+(?:required|necessary|needed|a\s+requirement)|(?:is|are|was|were)n['’]?t\s+(?:required|necessary|needed)|not\s+(?:required|necessary|needed)|is\s+a\s+scam)\b/iu;
+
+function cueNegated(span) {
+  return /(?:^|[^\p{L}\p{N}'’])(?:not|no|never|nothing|without|ikke|ingen|uden|nej|\p{L}+n['’]t)\s+(?:up[ \t]*front|in[ \t]+advance)\s*$/iu.test(span);
+}
+
+// Negation has to target this phrase ("no upfront", "don't pay", "is not required"
+// right after it). A later clause does not ("no meetup", "meeting is not necessary").
 function phraseNegated(text, start, end) {
   if (negatedBefore(text, start)) return true;
   const before = text.slice(Math.max(0, start - 48), start);
@@ -143,14 +157,13 @@ function phraseNegated(text, start, end) {
   if (/\b(?:no|ingen)\s+need\s+to\s+$/iu.test(prefix)) return true;
   if (/\b(?:do\s+not|don['’]?t|dont|does\s+not|doesn['’]?t)\s+(?:have\s+to|need\s+to)\s+$/iu.test(prefix)) return true;
   if (/\bnot\s+(?:required|necessary|needed)\s+to\s+$/iu.test(prefix)) return true;
-  const span = text.slice(start, end);
-  if (/(?:^|[^\p{L}\p{N}'’])(?:not|no|never|nothing|without|ikke|ingen|uden|nej)(?:[^\p{L}\p{N}'’]|$)|n['’]t/iu.test(span)) return true;
+  if (cueNegated(text.slice(start, end))) return true;
   const rest = text.slice(end);
   const cut = rest.search(/[.!?\n]/);
   const sentence = cut === -1 ? rest : rest.slice(0, cut);
   const tail = sentence.split(/[^\p{L}\p{N}'’]+/u).filter(Boolean).slice(0, 8).join(" ");
   if (!tail) return false;
-  return /^(?:\S+\s+){0,4}(?:(?:is|are|was|were)\s+not\s+(?:required|necessary|needed|a\s+requirement)\b|(?:is|are|was|were)n['’]?t\s+(?:required|necessary|needed)\b|not\s+(?:required|necessary|needed)\b|is\s+a\s+scam\b)/iu.test(tail);
+  return TAIL_NEG.test(tail);
 }
 
 function amountSpans(text) {

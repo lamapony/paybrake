@@ -503,3 +503,53 @@ test("an upfront ask still flags when the next sentence mentions a scam", async 
   assert.equal(verdict.level, "medium");
   assert.deepEqual(verdict.signals, ["upfront_deposit"]);
 });
+
+test("dotted amounts, pay punctuation, up front, and reserve it flag", async () => {
+  const phrases = [
+    "Please pay 1.500 kr upfront",
+    "Pay $12.50 upfront",
+    "Pay e.g. 500 kr upfront",
+    "Payment: 500 kr upfront via PayPal",
+    "Upfront payment of 500 kr via PayPal",
+    "Pay 500 kr up front",
+    "Send 500 kr to reserve it"
+  ];
+  for (const phrase of phrases) {
+    assert.ok(atoms.findAtoms(phrase).some((hit) => hit.atom === "upfront_deposit"), phrase);
+    const message = phrase.length >= 20 ? phrase : `${phrase} today.`;
+    const verdict = await detect(message);
+    assert.equal(verdict.kind, "risk", message);
+    assert.equal(verdict.level, "medium", message);
+    assert.deepEqual(verdict.signals, ["upfront_deposit"], message);
+  }
+});
+
+test("a later clause does not negate the upfront ask", async () => {
+  const medium = [
+    "Pay upfront, viewing isn't needed",
+    "Pay me 500 kr, no meetup, upfront via PayPal",
+    "Pay 500 kr upfront, the other buyer's offer is a scam"
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit"], text);
+  }
+
+  const high = await detect("Pay 500 kr upfront, meeting is not necessary, I ship tomorrow");
+  assert.equal(high.kind, "risk");
+  assert.equal(high.level, "high");
+  assert.deepEqual(high.signals, ["upfront_deposit", "ship_before_meet"]);
+});
+
+test("negating the payment itself stays silent", async () => {
+  const quiet = ["no upfront payment", "you don't pay upfront"];
+  for (const phrase of quiet) {
+    assert.equal(atoms.findAtoms(phrase).some((hit) => hit.atom === "upfront_deposit"), false, phrase);
+    const message = phrase.length >= 20 ? phrase : `There is ${phrase} for the bike.`;
+    const verdict = await detect(message);
+    assert.equal(verdict.kind, "silent", message);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, message);
+  }
+});
