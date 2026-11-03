@@ -627,10 +627,36 @@ test("send and transfer without money stay silent", async () => {
   }
 });
 
+test("payment, a share, or a bare number in the gap still flags", async () => {
+  const medium = [
+    "Please send payment upfront.",
+    "Send payment upfront and I hold it.",
+    "Send your payment in advance.",
+    "Send the payment in advance and I will ship.",
+    "Send me 50% upfront and the rest on delivery.",
+    "Please transfer the full amount upfront.",
+    "Transfer the amount in advance to my account.",
+    "Send 500 upfront.",
+    "Send half upfront today please.",
+    "send payment upfront",
+    "send the payment in advance"
+  ];
+  for (const text of medium) {
+    assert.ok(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), text);
+    const message = text.length >= 20 ? text : `${text} today.`;
+    const verdict = await detect(message);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit"], text);
+  }
+});
+
 test("paid history stays silent", async () => {
   const quiet = [
     "I paid 3000 kr for it upfront at the shop two years ago.",
-    "I paid 500 kr upfront last month at the shop."
+    "I paid 500 kr upfront last month at the shop.",
+    "I paid for it upfront when I bought it new.",
+    "I paid 3000 kr for it upfront at the shop in 2022."
   ];
   for (const text of quiet) {
     assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);

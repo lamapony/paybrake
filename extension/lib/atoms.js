@@ -196,10 +196,15 @@ function amountNear(text, start, end, window) {
 }
 
 // "send" and "transfer" count only when the gap names money ("500 kr", "$50",
-// "money", "the deposit"). "send the address in advance" does not.
-// "paid ... ago" and "paid ... last month" are history, not an ask.
-const MONEY_WORD = /(?<![\p{L}\p{N}])(?:money|cash|funds|fees?|deposits?|depositum|kroner|dollars?|euros?)(?![\p{L}\p{N}])/iu;
-const PAST_PAY = /(?<![\p{L}\p{N}])(?:ago|last[ \t]+(?:night|week|month|year))(?![\p{L}\p{N}])/iu;
+// "money", "the deposit", "50%", "half", "the amount", "500"). The match starts
+// at "send", so a later pay cue ("payment", "pay") has to count as that money
+// or "send payment upfront" is swallowed. A refused cue ("no payment", "do not
+// pay") does not count, and neither does purchase history. "send the address
+// in advance" does not. "paid ... ago", "paid ... last month", "paid ... in
+// 2022", and "paid ... when I bought" are history, not an ask.
+const MONEY_WORD = /(?<![\p{L}\p{N}])(?:money|cash|funds|fees?|deposits?|depositum|kroner|dollars?|euros?|amounts?|half)(?![\p{L}\p{N}])/iu;
+const BARE_AMOUNT = /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?(?:\s*%)?(?![\p{L}\p{N}])/iu;
+const PAST_PAY = /(?<![\p{L}\p{N}])(?:ago|last[ \t]+(?:night|week|month|year)|bought|purchased|in[ \t]+(?:19|20)\d{2})(?![\p{L}\p{N}])/iu;
 
 function upfrontCue(span) {
   const match = /^(paid|paying|payment|pay|send|transfer)(?![\p{L}\p{N}])/iu.exec(span)
@@ -207,16 +212,40 @@ function upfrontCue(span) {
   return match ? match[1].toLowerCase() : "";
 }
 
-function spanHasMoney(text, start, end) {
-  if (MONEY_WORD.test(text.slice(start, end))) return true;
-  return amountSpans(text).some((amount) => amount.start < end && amount.end > start);
+function sentenceAt(text, start) {
+  const before = text.slice(0, start);
+  const boundary = Math.max(before.lastIndexOf("."), before.lastIndexOf("!"), before.lastIndexOf("?"), before.lastIndexOf("\n"));
+  const head = boundary === -1 ? before : before.slice(boundary + 1);
+  const rest = text.slice(start);
+  const cut = rest.search(/[.!?\n]/);
+  return head + (cut === -1 ? rest : rest.slice(0, cut));
 }
 
 function paidHistory(text, start) {
-  const rest = text.slice(start);
-  const cut = rest.search(/[.!?\n]/);
-  const sentence = cut === -1 ? rest : rest.slice(0, cut);
-  return PAST_PAY.test(sentence);
+  return PAST_PAY.test(sentenceAt(text, start));
+}
+
+// The leftmost cue swallows a later one. "payment" and "pay" are pay cues,
+// so they are the money in the gap when this window is not refused.
+function gapPayCue(text, start, end) {
+  const span = text.slice(start, end);
+  const re = /(?<![\p{L}\p{N}])(paid|paying|payment|pay)(?![\p{L}\p{N}])/giu;
+  for (const match of span.matchAll(re)) {
+    if ((match.index ?? 0) === 0) continue;
+    const cueStart = start + (match.index ?? 0);
+    const word = match[1].toLowerCase();
+    if (phraseNegated(text, cueStart, end)) continue;
+    if (word === "paid" && paidHistory(text, cueStart)) continue;
+    return true;
+  }
+  return false;
+}
+
+function spanHasMoney(text, start, end) {
+  const span = text.slice(start, end);
+  if (MONEY_WORD.test(span) || BARE_AMOUNT.test(span)) return true;
+  if (amountSpans(text).some((amount) => amount.start < end && amount.end > start)) return true;
+  return gapPayCue(text, start, end);
 }
 
 function upfrontWindowOk(text, start, end) {
