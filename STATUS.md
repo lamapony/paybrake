@@ -51,9 +51,9 @@ The table above is the earlier mock-only session. This branch adds the sandbox a
 | Rest adapter (`backend/src/paypal-rest.js`, wired from `paypal.js` and `server.js`) | DONE |
 | Toolkit stub (`backend/src/paypal-toolkit.js`, executes through rest) | DONE |
 | OpenRouter classify (`resolveLlm` in `backend/src/classify.js`, `llmProvider` on `/health`) | DONE |
-| Offline tests | DONE (102 passing, mocked fetch, no network) |
-| Live sandbox `create_order` | NOT DONE (needs Christopher / credentials) |
-| Live LLM eval | NOT DONE (needs Christopher / credentials) |
-| Hosting | NOT DONE (needs Christopher / credentials). `server.js` still binds `127.0.0.1` and `::1` only |
+| Offline tests | DONE in that session (102 passing then). Current `npm test` and `npm run eval` counts are in the README Checks section. |
+| Live sandbox `create_order` | The rest adapter is in the repo. The hosted Worker uses PayPal sandbox when its secrets are set, and mock orders otherwise. A live sandbox call still needs those secrets; they are not in the repo. |
+| Live LLM eval | A fresh live model run was not repeated in this rebase. The hosted demo calls Typesafe when `TYPESAFE_API_KEY` is set. |
+| Hosting | The demo Worker lives in `hosted/` and the README documents https://paybrake-demo.spbabinov.workers.dev/ . `server.js` is the local backend and still binds `127.0.0.1` and `::1` only. |
 
 §7.3 rest is PASS offline with mocked fetch. See `docs/CHRISTOPHER-HANDOFF.md`.

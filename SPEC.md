@@ -7,7 +7,7 @@ Chrome MV3 extension that reads a marketplace chat the user has open, detects a 
 - **Switch to a PayPal order**: the backend creates a **PayPal sandbox Orders v2** order (intent `CAPTURE`, payee = seller email, item + amount from the chat), the user approves in sandbox checkout, the backend captures, and the card shows the order ID and status.
 - **Pay anyway**: dismisses the card and logs the override locally. Nothing is ever posted, typed, or clicked in the chat.
 
-Hackathon: PayPal AI Hackathon on Devpost, deadline **Thu 12 Nov 2026 12:00 PT (21:00 Copenhagen)**. Rules that shape this spec: PayPal sandbox + an AI tool must be central; judges must be able to run a working build; the repo is public with an OSS license (MIT); the video is under 3 min with no third-party trademarks (so the demo surface is our own fictional page, never a real social network).
+Hackathon: PayPal AI Hackathon on Devpost, deadline **Thu 12 Nov 2026 12:00 PT (21:00 Copenhagen)**. Rules that shape this spec: PayPal sandbox + an AI tool must be central; judges must be able to run a working build; the hackathon asks for a public repo with an OSS license (MIT); the video is under 3 min with no third-party trademarks (so the demo surface is our own fictional page, never a real social network). A private checkout does not open GitHub issue links for judges. Judge steps in `TESTING.md` use the hosted demo and do not depend on that form.
 
 ## 0. Non-negotiables
 

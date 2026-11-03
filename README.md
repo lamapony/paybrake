@@ -170,9 +170,11 @@ npm test
 npm run eval
 ```
 
-`npm test` passes 173 tests on Node 20, all offline.
+`npm test` passes 253 tests. All of them are offline.
 
-Rules eval on 30 synthetic chats (16 risky, 14 safe, fictional names): precision 1, recall 1, F1 1, false alarms 0. The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
+Rules eval on the synthetic set in `eval/cases/` (35 chats): precision 1, recall 1, false alarms 0 (tp 18, fp 0, fn 0, tn 17). The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
+
+TODO (stale assets): screenshots and GIFs under `shots/` (including `shots/tester/`, `shots/tester-v2/`, `shots/tester-v3/`, and `shots/ai-live/`) were not regenerated in this headless checkout. Do not treat them as current. Regenerate with `npm run shots` and `npm run e2e` / `npm run e2e:hosted` on a machine that can launch Chromium.
 
 Screenshots: `npm run shots`. Extension smoke: `npm run e2e` (Chromium with the unpacked extension). If the browser cannot load an extension in this environment, that script prints `SKIP` and exits 0.
 

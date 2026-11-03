@@ -147,9 +147,9 @@ With OpenRouter configured and rest selected, the same route looks like:
 
 Request: `{ "text": "Send 500 kr via Friends & Family", "rulesLevel": "medium" }`
 
-`rulesLevel` is optional. `"high"` or `"medium"` is the level the rules already gave this chat. Any other value is ignored. The model may lower that level. It cannot raise it: a model `"high"` with `rulesLevel: "medium"` comes back `"medium"`. The extension sends this field and also clamps on its own, so a server that ignores it still cannot raise the card.
+`rulesLevel` is optional. `"high"` or `"medium"` is the level the rules already gave this chat. Any other value, including `"none"` and a missing field, is not a cap: the model may still add a card when the rules were silent. The model may lower a `"high"` or `"medium"` rules level. It cannot raise it: a model `"high"` with `rulesLevel: "medium"` comes back `"medium"`. The extension sends this field only when the rules level is `"high"` or `"medium"`, and it also clamps on its own, so a server that ignores it still cannot raise the card. The level is an argument to `classifyText`, not a field copied onto the process environment.
 
-`text` must be a string. Longer than 4000 characters is **400** `{ "error": "bad_request", "message": "text is too long" }`. Fetch is not called.
+`text` must be a string. The local backend limit is 4000 characters (`TEXT_LIMIT` in `backend/src/classify.js`): longer than that is **400** `{ "error": "bad_request", "message": "text is too long" }`. Fetch is not called. The hosted Worker is stricter: 2000 characters, **413** `{ "error": "text_too_long", "max": 2000 }`. The extension sends at most the latest 1900 characters, which both accept.
 
 When `resolveLlm` is not configured, respond **503** `{ "error": "llm_off" }` and do not call a provider. That includes an empty env, `LLM_PROVIDER=off` (even if keys are set), an unknown provider name, `LLM_PROVIDER=openrouter` with no key, and `LLM_PROVIDER=openai-compatible` with no `LLM_BASE_URL`.
 
@@ -179,7 +179,7 @@ Every evidence quote must be a whitespace-normalized substring of `text`. If `ri
 }
 ```
 
-`level` is `"high"` only when the model said `"high"` and `rulesLevel` is not `"medium"`. Any other level on a passing result becomes `"medium"`. When `rulesLevel` is set, the returned level is the lower of the model level and that rules level. `reason` is replaced when it is empty, longer than 120 characters, or matches the banned-phrase check in `backend/src/classify.js`. A fenced ` ```json ` body is accepted. Provider failures, non-JSON output, and a thrown fetch are **502** `{ "error": "llm_error" }`. The provider body is discarded. Error text is `llm error` or `llm <status>` and does not include the key.
+`level` is `"high"` only when the model said `"high"` and `rulesLevel` is not `"medium"`. Any other level on a passing result becomes `"medium"`. When `rulesLevel` is `"high"` or `"medium"`, the returned level is the lower of the model level and that rules level. `rulesLevel: "none"` leaves the model level as it is. `reason` is replaced when it is empty, longer than 120 characters, or matches the banned-phrase check in `backend/src/classify.js`. A fenced ` ```json ` body is accepted. Provider failures, a chat body that is not the expected JSON (`llm shape`), and a thrown fetch are **502** `{ "error": "llm_error" }`. The provider body is discarded. Error text is `llm error`, `llm <status>` for an HTTP failure, or `llm shape` when a 200 body cannot be parsed. It does not include the key.
 
 `POST /api/protect`
 
