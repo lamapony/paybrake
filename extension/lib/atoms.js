@@ -111,6 +111,9 @@ const RULES = [
   { id: "off_platform", re: "revolut", gate: "negation" },
   { id: "off_platform", re: "(?:transferwise|wise\\.com|\\b(?:via|on|with|til|through|på)\\s+wise\\b|\\bwise\\s+transfer\\b)", gate: "negation" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
+  // Not the negation gate above: a bare "USDC" topic must not leave a signal.
+  // A number on the token ("500 USDC") counts even though USDC is not a currency code.
+  { id: "off_platform", re: "usdc", gate: "usdc" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
   // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
   { id: "off_platform", re: "(?:steam|google\\s*play|itunes|apple|amazon|ebay)\\s+(?:gift\\s+)?cards?", gate: "giftcard" },
@@ -814,6 +817,15 @@ function linkAllowed(text, start, end) {
   return LURE.test(near);
 }
 
+// A parsed amount nearby, or a bare number on the token ("500 USDC").
+// "Send the USDC whitepaper" has neither.
+function usdcAsk(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  if (amountNear(text, start, end, 32)) return true;
+  const before = text.slice(Math.max(0, start - 16), start);
+  return /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?\s*$/u.test(before);
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
@@ -840,6 +852,7 @@ function allow(rule, text, start, end) {
     if (negatedBefore(text, start)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
+  if (rule.gate === "usdc") return usdcAsk(text, start, end);
   if (rule.gate === "acct") {
     // "Your account number: XXXX" on a bill or receipt is the reader's own account, not a payee.
     // Otherwise this stays as wide as the old negation gate, so a transfer plus an amount still fires.
