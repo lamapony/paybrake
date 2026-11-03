@@ -96,10 +96,12 @@ const RULES = [
   { id: "off_platform", re: "(?:safe|secure|holding|new)\\s+(?:bank\\s+)?account", gate: "iban" },
   { id: "off_platform", re: "bank\\s+transfers?", gate: "negation" },
   { id: "off_platform", re: "wire\\s+transfers?", gate: "negation" },
-  // "wire/transfer … to my bank" or "to my bank account". Still open:
-  // "to our bank", "to the bank account", "to your account", and
-  // Danish/Swedish "overfør" / "överför … til min konto".
+  // "wire/transfer … to my bank" stays the next rule, unchanged. The two rules
+  // after it cover "our bank", "the bank account", "your account", and
+  // overfør/överför til min konto. Those require a parsed amount in the span.
   { id: "off_platform", re: `(?<![\\p{L}\\p{N}])(?:wire|transfer)(?:[ \\t]+(?!to\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+to[ \\t]+(?:my[ \\t]+)?bank(?:[ \\t]+account)?`, gate: "wire-bank", flags: "giu" },
+  { id: "off_platform", re: `(?:wire|transfer)(?:[ \\t]+(?!to\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+to[ \\t]+(?:our[ \\t]+bank|the[ \\t]+bank[ \\t]+account|your[ \\t]+account)`, gate: "wire-amount" },
+  { id: "off_platform", re: `(?:overfør(?:er)?|overfoer(?:er)?|överför(?:er)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!(?:til|till)\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+til(?:l)?[ \\t]+mi(?:n|tt)[ \\t]+konto`, gate: "wire-amount" },
   { id: "off_platform", re: "bankoverførsel", gate: "negation" },
   { id: "off_platform", re: "reg\\.?\\s*nr", gate: "negation" },
   { id: "off_platform", re: "registreringsnummer", gate: "negation" },
@@ -814,6 +816,12 @@ function linkAllowed(text, start, end) {
   return LURE.test(near);
 }
 
+// The span has to contain a parsed amount. "transfer the file …" has none.
+function wireAmountOk(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  return amountSpans(text).some((amount) => amount.start < end && amount.end > start);
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
@@ -840,6 +848,7 @@ function allow(rule, text, start, end) {
     if (negatedBefore(text, start)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
+  if (rule.gate === "wire-amount") return wireAmountOk(text, start, end);
   if (rule.gate === "acct") {
     // "Your account number: XXXX" on a bill or receipt is the reader's own account, not a payee.
     // Otherwise this stays as wide as the old negation gate, so a transfer plus an amount still fires.
