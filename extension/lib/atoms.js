@@ -36,7 +36,7 @@ const RULES = [
   { id: "friends_family", re: "friends\\s*/\\s*family", gate: "ff-phrase" },
   { id: "friends_family", re: "F\\s+&\\s+F", gate: "none" },
   { id: "friends_family", re: "send\\s+as\\s+gift", gate: "none" },
-  { id: "friends_family", re: "personal\\s+payment", gate: "none" },
+  { id: "friends_family", re: "personal\\s+(?:paypal\\s+)?payment", gate: "none" },
 
   { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific" },
   { id: "upfront_deposit", re: "holder[^\\n]{0,40}?til\\s+dig", gate: "deposit-specific" },
