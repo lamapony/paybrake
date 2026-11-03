@@ -65,8 +65,7 @@ const RULES = [
   { id: "off_platform", re: "(?:transferwise|wise\\.com|(?:via|on|with|til)\\s+wise)", gate: "negation" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "negation" },
-  { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "none" },
-  { id: "off_platform", re: "(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "amount" },
+  { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "chat-pay" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
@@ -156,9 +155,22 @@ function depositRejected(text, start, end) {
   return false;
 }
 
+// "Pay me on Telegram" is a pay ask. Words in between count only when the amount
+// is what is being paid or sent, not a price later in a contact line.
+function paymentViaChat(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  const span = text.slice(start, end);
+  const prepAt = span.search(/\b(?:on|via|på)\s+(?:whatsapp|telegram)\s*$/iu);
+  if (prepAt < 0) return false;
+  const gap = span.slice(0, prepAt);
+  if (/^(?:pay|send|betal)\s+(?:me\s+)?$/iu.test(gap)) return true;
+  const gapEnd = start + prepAt;
+  return amountSpans(text).some((amount) => amount.start >= start && amount.end <= gapEnd);
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
-  if (rule.gate === "amount") return amountNear(text, start, end, 80) && !negatedBefore(text, start);
+  if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "deposit-word") {

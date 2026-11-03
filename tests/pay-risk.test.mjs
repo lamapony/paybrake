@@ -341,3 +341,18 @@ test("chat without an amount stays off the rail", async () => {
   assert.equal(address.kind, "silent");
   assert.equal(address.silentReason, "veto");
 });
+
+test("a price beside WhatsApp or Telegram is not a pay ask", async () => {
+  const listings = [
+    "Message me on WhatsApp, 500 kr, pickup only",
+    "Contact me on WhatsApp, price 500 kr, pickup Thursday",
+    "Pay upon Telegram, 500 kr today please.",
+    "See the listing anon WhatsApp, price 500 kr today."
+  ];
+  for (const text of listings) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("off_platform"), false, text);
+  }
+});
