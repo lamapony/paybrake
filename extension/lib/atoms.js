@@ -116,10 +116,14 @@ const RULES = [
   { id: "ship_before_meet", re: "kan\\s+kun\\s+sende", gate: "ship" },
   { id: "ship_before_meet", re: "kun\\s+forsendelse", gate: "ship" },
 
-  { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?:\\s+it\\s+up)?", gate: "none" },
-  { id: "pay_on_collection", re: "when\\s+you\\s+pick(?:\\s+it\\s+up)?", gate: "none" },
+  // "a time" is a schedule. Bare "pay when you pick" is still the handover.
+  { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?!\\s+a\\s+time\\b)(?:\\s+it\\s+up)?", gate: "none" },
+  // "it", "them", or one word ("the lamp") may sit between pick and up.
+  // "when you pick a time" has no "up", so it does not match.
+  // "when you pick up the phone" still matches "when you pick up".
+  { id: "pay_on_collection", re: "when\\s+you\\s+pick(?:\\s+(?:it|them|(?:the|a|an|your|this|that|my|our|his|her|their)\\s+[\\p{L}\\p{N}]+))?\\s+up", gate: "none" },
   { id: "pay_on_collection", re: "cash\\s+on\\s+(?:pick\\s*up|collection)", gate: "none" },
-  { id: "pay_on_collection", re: "cash\\s+when\\s+you\\s+pick", gate: "none" },
+  { id: "pay_on_collection", re: "cash\\s+when\\s+you\\s+pick(?!\\s+a\\s+time\\b)", gate: "none" },
   { id: "pay_on_collection", re: "pay\\s+on\\s+(?:pick\\s*up|collection)", gate: "none" },
   { id: "pay_on_collection", re: "on\\s+pick\\s*up", gate: "none" },
   { id: "pay_on_collection", re: "at\\s+pick\\s*up", gate: "none" },

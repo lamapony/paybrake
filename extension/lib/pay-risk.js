@@ -182,6 +182,8 @@ async function detect(text, ctx = {}, options = {}) {
     ? extract.extractDeal(raw, ctx, actHits.map((hit) => ({ ...hit, start: hit.start, end: hit.end, atom: hit.atom })))
     : emptyDeal();
 
+  // Known gap: "Friends & Family, or cash on pickup" stays silent.
+  // The collection hit vetoes the message and hides the Friends & Family ask.
   if (vetoHit) return silent("veto", { signals, evidence, deal });
   if (!actHits.length) return silent("no_atom", { signals, evidence, deal });
   if (!strong.length) return silent("weak_only", { signals, evidence, deal });
