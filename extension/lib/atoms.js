@@ -90,6 +90,8 @@ const RULES = [
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
   { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
+  { id: "off_platform", re: "amazon\\s+cards?", gate: "deposit-word" },
+  { id: "off_platform", re: "steam\\s+cards?", gate: "deposit-word" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },

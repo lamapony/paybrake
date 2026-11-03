@@ -1002,3 +1002,46 @@ test("a bare cashtag counts and a dollar amount does not", async () => {
   assert.equal(dollars.kind, "silent");
   assert.equal(dollars.signals.includes("off_platform"), false);
 });
+
+
+test("Amazon card and Steam card without the word gift are off-platform", async () => {
+  const medium = [
+    "Send an Amazon card of 500 kr today, the bike is ready.",
+    "Pay with a Steam card, 500 kr, the bike is ready."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+
+  const high = [
+    "Send an Amazon card of 500 kr, I ship tomorrow.",
+    "Pay with a Steam card, 500 kr, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const apple = await detect("Send an Apple gift card of 500 kr, I ship tomorrow.");
+  assert.equal(apple.kind, "risk");
+  assert.equal(apple.level, "high");
+  assert.deepEqual(apple.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a loyalty card and an engine steam card stay silent", async () => {
+  const quiet = [
+    "The Amazon card in my wallet is just a loyalty card from the store.",
+    "The steam card for the old engine is in the garage today."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
