@@ -62,6 +62,10 @@ const RULES = [
   { id: "upfront_deposit", re: `${UP_FRONT}${REVERSE_GAP}${PAY_CUE}`, gate: "upfront-window" },
   { id: "upfront_deposit", re: "holding\\s+fee", gate: "deposit-word", spanNegation: true },
   { id: "upfront_deposit", re: "to\\s+reserve\\s+(?:the\\s+bike|it)", gate: "reserve", spanNegation: true },
+  { id: "upfront_deposit", re: "down\\s+payments?", gate: "deposit-ask" },
+  { id: "upfront_deposit", re: "downpayments?", gate: "deposit-ask" },
+  { id: "upfront_deposit", re: "booking\\s+fees?", gate: "deposit-ask" },
+  { id: "upfront_deposit", re: "earnest\\s+money", gate: "deposit-ask" },
 
   { id: "off_platform", re: "mobile\\s*pay", gate: "mobilepay" },
   { id: "off_platform", re: "IBAN", gate: "iban" },
@@ -212,6 +216,12 @@ function amountNear(text, start, end, window) {
     const gap = amount.end <= start ? start - amount.end : amount.start >= end ? amount.start - end : 0;
     return gap <= window;
   });
+}
+
+function payWordOutside(text, start, end, window) {
+  const before = text.slice(Math.max(0, start - window), start);
+  const after = text.slice(end, Math.min(text.length, end + window));
+  return hasPayWord(before) || hasPayWord(after);
 }
 
 // "send" and "transfer" count only when the gap names money ("500 kr", "$50",
@@ -431,6 +441,10 @@ function allow(rule, text, start, end) {
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
+  if (rule.gate === "deposit-ask") {
+    if (negatedBefore(text, start) || depositRejected(text, start, end)) return false;
+    return payWordOutside(text, start, end, 80);
+  }
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "deposit-word") {
