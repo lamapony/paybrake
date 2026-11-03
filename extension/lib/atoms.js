@@ -26,6 +26,16 @@ const ATOMS = [
 
 const META = Object.fromEntries(ATOMS.map((atom) => [atom.id, atom]));
 
+// Words between the pay cue and upfront / in advance. A period ends the
+// sentence, except inside a dotted amount (1.500, $12.50) or abbreviation (e.g.).
+const GAP_TOKEN = "(?:\\$?\\d+(?:[.,]\\d+)+|(?:[A-Za-z]\\.){2,}|[^\\s.!?\\n]+)";
+const SPAN_GAP = `[ \\t]+(?:${GAP_TOKEN}[ \\t]+){0,8}`;
+const UP_FRONT = "up[ \\t]*front";
+const PAY_CUE = "(?:paid|pay(?:ing|ment)?|send|transfer)[:,;]?";
+// Reversed "upfront payment" only. A wide gap treats "to be upfront" and
+// "the light up front" as a deposit when "pay" shows up later in the line.
+const REVERSE_GAP = "[ \\t]+";
+
 const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family", gate: "ff-phrase" },
   { id: "friends_family", re: "venner\\s+(?:og|&)\\s+familie", gate: "ff-phrase" },
@@ -47,6 +57,11 @@ const RULES = [
   { id: "upfront_deposit", re: "forudbetaling", gate: "deposit-word" },
   { id: "upfront_deposit", re: "forskud", gate: "deposit-word" },
   { id: "upfront_deposit", re: "reserver(?:e|er|ing)?", gate: "reserve" },
+  { id: "upfront_deposit", re: `${PAY_CUE}${SPAN_GAP}${UP_FRONT}`, gate: "upfront-window" },
+  { id: "upfront_deposit", re: `${PAY_CUE}${SPAN_GAP}in[ \\t]+advance(?!\\s+of\\b)`, gate: "upfront-window" },
+  { id: "upfront_deposit", re: `${UP_FRONT}${REVERSE_GAP}${PAY_CUE}`, gate: "upfront-window" },
+  { id: "upfront_deposit", re: "holding\\s+fee", gate: "deposit-word", spanNegation: true },
+  { id: "upfront_deposit", re: "to\\s+reserve\\s+(?:the\\s+bike|it)", gate: "reserve", spanNegation: true },
 
   { id: "off_platform", re: "mobile\\s*pay", gate: "mobilepay" },
   { id: "off_platform", re: "IBAN", gate: "iban" },
@@ -127,6 +142,46 @@ function negatedBefore(text, start) {
   return /(?:no|not|don't|dont|never|without|ingen|uden|ikke|nej)\s+$/iu.test(before);
 }
 
+// Words that can sit between the phrase and "is not required" / "is a scam"
+// without starting a new clause. "meeting is not necessary" does not qualify.
+const TAIL_NEG = /^(?:(?:of|the|a|an|elsewhere|kr|dkk|eur|euro|usd|\d+)\s+)*(?:(?:is|are|was|were)\s+not\s+(?:required|necessary|needed|a\s+requirement)|(?:is|are|was|were)n['’]?t\s+(?:required|necessary|needed)|not\s+(?:required|necessary|needed)|is\s+a\s+scam)\b/iu;
+
+function cueNegated(span) {
+  return /(?:^|[^\p{L}\p{N}'’])(?:not|no|never|nothing|without|ikke|ingen|uden|nej|\p{L}+n['’]t)\s+(?:up[ \t]*front|in[ \t]+advance)\s*$/iu.test(span);
+}
+
+// "shouldn't pay", "won't have to pay", "cannot pay". "can pay" does not match.
+const MODAL_NEG = "(?:(?:should|would|could|must|shall|can)(?:\\s+not|n['’]?t)|will\\s+not|won['’]?t|cannot|shan['’]?t)";
+const MODAL_NEG_BEFORE = new RegExp(`\\b${MODAL_NEG}\\s+(?:(?:have|need)\\s+to\\s+)?$`, "iu");
+
+// "Pay in advance? No, cash when we meet is fine." The question mark ends the
+// ask, and the answer refuses it. "No problem" does not.
+function refusedAfterQuestion(rest) {
+  return /^\s*\?\s*(?:no|nope|nah)\b(?!\s+(?:problem|worries|issues?|rush)\b)/iu.test(rest);
+}
+
+// Negation has to target this phrase ("no upfront", "don't pay", "don't need
+// payment", "shouldn't pay", "is not required" right after it, or a "No"
+// answer). A later clause does not ("no meetup", "meeting is not necessary").
+function phraseNegated(text, start, end) {
+  if (negatedBefore(text, start)) return true;
+  const before = text.slice(Math.max(0, start - 48), start);
+  const boundary = Math.max(before.lastIndexOf("."), before.lastIndexOf("!"), before.lastIndexOf("?"), before.lastIndexOf("\n"));
+  const prefix = boundary === -1 ? before : before.slice(boundary + 1);
+  if (/\b(?:no|ingen)\s+need\s+to\s+$/iu.test(prefix)) return true;
+  if (/\b(?:do\s+not|don['’]?t|dont|does\s+not|doesn['’]?t)\s+(?:have\s+to|need(?:\s+to)?)\s+$/iu.test(prefix)) return true;
+  if (/\bnot\s+(?:required|necessary|needed)\s+to\s+$/iu.test(prefix)) return true;
+  if (MODAL_NEG_BEFORE.test(prefix)) return true;
+  if (cueNegated(text.slice(start, end))) return true;
+  const rest = text.slice(end);
+  if (refusedAfterQuestion(rest)) return true;
+  const cut = rest.search(/[.!?\n]/);
+  const sentence = cut === -1 ? rest : rest.slice(0, cut);
+  const tail = sentence.split(/[^\p{L}\p{N}'’]+/u).filter(Boolean).slice(0, 8).join(" ");
+  if (!tail) return false;
+  return TAIL_NEG.test(tail);
+}
+
 function amountSpans(text) {
   const extract = globalThis.pbExtract;
   if (extract && typeof extract.parseAmounts === "function") return extract.parseAmounts(text);
@@ -138,6 +193,98 @@ function amountNear(text, start, end, window) {
     const gap = amount.end <= start ? start - amount.end : amount.start >= end ? amount.start - end : 0;
     return gap <= window;
   });
+}
+
+// "send" and "transfer" count only when the gap names money ("500 kr", "$50",
+// "money", "the deposit", "50%", "half", "the amount", "500"). The match starts
+// at "send", so a later pay cue ("payment", "pay") has to count as that money
+// or "send payment upfront" is swallowed. A refused cue ("no payment", "don't
+// need payment", "do not pay") does not count, and neither does purchase
+// history. "send the address in advance" does not. A bare number counts only
+// when no noun follows it: it sits right before upfront / in advance, or before
+// now / today / the end of the sentence. "2 photos" and "10 more photos" do not.
+// "payment details" and "payment link" name a thing, not the money. "paid ...
+// ago", "paid ... last month", "paid ... in 2022", "paid ... when I bought",
+// and "I paid for the service" are history, not an ask.
+const MONEY_WORD = /(?<![\p{L}\p{N}])(?:money|cash|funds|fees?|deposits?|depositum|kroner|dollars?|euros?|amounts?|half)(?![\p{L}\p{N}])/iu;
+const BARE_AMOUNT = /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?(?:\s*%)?(?![\p{L}\p{N}])/iu;
+const PAST_PAY = /(?<![\p{L}\p{N}])(?:ago|last[ \t]+(?:night|week|month|year)|bought|purchased|in[ \t]+(?:19|20)\d{2})(?![\p{L}\p{N}])/iu;
+// Words that can follow "payment" while it still means the money. Anything else
+// ("details", "link", "info") is the thing being sent.
+const PAYMENT_MONEY_NEXT = String.raw`up[ \t]*front|in[ \t]+advance|now|today|tonight|to|for|of|via|by|on|with|through|into|from|before|after|over|up|in|please|asap|immediately|directly|just|only|and|or|half|money|cash|funds|fees?|deposits?|amounts?|kr|kroner|dollars?|euros?|me|you`;
+const PAYMENT_THING = new RegExp(
+  String.raw`^payment[:,;]?[ \t]+(?!(?:${PAYMENT_MONEY_NEXT})(?![\p{L}\p{N}]))[\p{L}]`,
+  "iu"
+);
+
+function upfrontCue(span) {
+  const match = /^(paid|paying|payment|pay|send|transfer)(?![\p{L}\p{N}])/iu.exec(span)
+    || /(?<![\p{L}\p{N}])(paid|paying|payment|pay|send|transfer)(?![\p{L}\p{N}])\s*$/iu.exec(span);
+  return match ? match[1].toLowerCase() : "";
+}
+
+function sentenceAt(text, start) {
+  const before = text.slice(0, start);
+  const boundary = Math.max(before.lastIndexOf("."), before.lastIndexOf("!"), before.lastIndexOf("?"), before.lastIndexOf("\n"));
+  const head = boundary === -1 ? before : before.slice(boundary + 1);
+  const rest = text.slice(start);
+  const cut = rest.search(/[.!?\n]/);
+  return head + (cut === -1 ? rest : rest.slice(0, cut));
+}
+
+function bareAmountCounts(span) {
+  const re = new RegExp(BARE_AMOUNT.source, "giu");
+  for (const match of span.matchAll(re)) {
+    const after = span.slice((match.index ?? 0) + match[0].length);
+    if (/^[ \t]*[,:]?[ \t]*(?:(?:up[ \t]*front|in[ \t]+advance|now|today)\b|[.!?]?$)/iu.test(after)) return true;
+  }
+  return false;
+}
+
+function paymentNamesThing(text, wordStart) {
+  return PAYMENT_THING.test(text.slice(wordStart));
+}
+
+function paidHistory(text, start) {
+  const sentence = sentenceAt(text, start);
+  if (PAST_PAY.test(sentence)) return true;
+  // "I paid for the service upfront." A past purchase with no amount.
+  if (/^\s*I\s+paid\s+for\b/iu.test(sentence) && !amountSpans(sentence).length && !bareAmountCounts(sentence)) return true;
+  return false;
+}
+
+// The leftmost cue swallows a later one. "payment" and "pay" are pay cues,
+// so they are the money in the gap when this window is not refused.
+function gapPayCue(text, start, end) {
+  const span = text.slice(start, end);
+  const re = /(?<![\p{L}\p{N}])(paid|paying|payment|pay)(?![\p{L}\p{N}])/giu;
+  for (const match of span.matchAll(re)) {
+    if ((match.index ?? 0) === 0) continue;
+    const cueStart = start + (match.index ?? 0);
+    const word = match[1].toLowerCase();
+    if (phraseNegated(text, cueStart, end)) continue;
+    if (word === "paid" && paidHistory(text, cueStart)) continue;
+    if (word === "payment" && paymentNamesThing(text, cueStart)) continue;
+    return true;
+  }
+  return false;
+}
+
+function spanHasMoney(text, start, end) {
+  const span = text.slice(start, end);
+  if (MONEY_WORD.test(span) || bareAmountCounts(span)) return true;
+  if (amountSpans(text).some((amount) => amount.start < end && amount.end > start)) return true;
+  return gapPayCue(text, start, end);
+}
+
+function upfrontWindowOk(text, start, end) {
+  if (phraseNegated(text, start, end)) return false;
+  const span = text.slice(start, end);
+  const cue = upfrontCue(span);
+  if (cue === "payment" && paymentNamesThing(text, start)) return false;
+  if ((cue === "send" || cue === "transfer") && !spanHasMoney(text, start, end)) return false;
+  if (cue === "paid" && paidHistory(text, start)) return false;
+  return true;
 }
 
 function phoneNear(text, start, end) {
@@ -169,6 +316,8 @@ function paymentViaChat(text, start, end) {
 }
 
 function allow(rule, text, start, end) {
+  if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
+  if (rule.spanNegation && phraseNegated(text, start, end)) return false;
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
   if (rule.gate === "negation") return !negatedBefore(text, start);

@@ -192,7 +192,12 @@ async function detect(text, ctx = {}, options = {}) {
     const host = perMessage.find((message) => message.hits.some((hit) => hit.atom === strong[0] && hit.strength === "strong"));
     const pay = host && api.hasPayWord(host.text);
     const money = host && host.amounts && host.amounts.length > 0;
-    if (pay || money) level = "medium";
+    // "transfer" is not a pay word ("Wise transfer", "transfer the bike").
+    // An upfront hit that uses it already required money in the gap.
+    const transferUpfront = host && host.hits.some((hit) => (
+      hit.atom === "upfront_deposit" && /(?<![\p{L}\p{N}])transfer(?![\p{L}\p{N}])/iu.test(hit.text)
+    ));
+    if (pay || money || transferUpfront) level = "medium";
   }
   if (!level) return silent("no_atom", { signals, evidence, deal });
 

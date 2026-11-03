@@ -417,3 +417,285 @@ test("a price beside WhatsApp or Telegram is not a pay ask", async () => {
     assert.equal(verdict.signals.includes("off_platform"), false, text);
   }
 });
+
+test("upfront, in advance, holding fee, and reserve the bike", async () => {
+  const pairs = [
+    ["Please pay 500 kr upfront via PayPal today.", "Please pay 500 kr upfront via PayPal today. I ship tomorrow."],
+    ["Please pay 500 kr in advance via PayPal today.", "Please pay 500 kr in advance via PayPal today. I ship tomorrow."],
+    ["Please pay a holding fee of 500 kr via PayPal today.", "Please pay a holding fee of 500 kr via PayPal today. I ship tomorrow."],
+    ["Send 500 kr to reserve the bike via PayPal today.", "Send 500 kr to reserve the bike via PayPal today. I ship tomorrow."]
+  ];
+  for (const [mediumText, highText] of pairs) {
+    const medium = await detect(mediumText);
+    assert.equal(medium.kind, "risk", mediumText);
+    assert.equal(medium.level, "medium", mediumText);
+    assert.deepEqual(medium.signals, ["upfront_deposit"], mediumText);
+
+    const high = await detect(highText);
+    assert.equal(high.kind, "risk", highText);
+    assert.equal(high.level, "high", highText);
+    assert.deepEqual(high.signals, ["upfront_deposit", "ship_before_meet"], highText);
+  }
+});
+
+test("half now and Danish reservere stay high", async () => {
+  const stay = [
+    "Pay half now, 500 kr via PayPal, I ship tomorrow.",
+    "Send 500 kr for at reservere cyklen via PayPal, jeg kan kun sende varen."
+  ];
+  for (const text of stay) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.ok(verdict.signals.includes("upfront_deposit"), text);
+    assert.ok(verdict.signals.includes("ship_before_meet"), text);
+  }
+});
+
+test("bare upfront and everyday reserve wording stay silent", async () => {
+  const quiet = [
+    "The upfront cost of new tyres was 500 kr last year.",
+    "I will write in advance of our meeting on Thursday.",
+    "I reserve the right to cancel the viewing on Thursday.",
+    "We walked through the nature reserve and saw a deer.",
+    "Please reserve a table for four at the cafe tonight.",
+    "I am holding the bike in the garage until Thursday.",
+    "The museum has a holding fee for coats, not for this bike."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+
+  const pickup = await detect("You can pay cash when you pick it up. No deposit needed before we meet.");
+  assert.equal(pickup.kind, "silent");
+  assert.equal(pickup.silentReason, "veto");
+});
+
+test("negation after upfront wording and cross-sentence joins stay silent", async () => {
+  const quiet = [
+    "Payment upfront is not required",
+    "No deposit in advance needed",
+    "No need to pay in advance for the bike today.",
+    "You do not have to pay upfront for the bike today.",
+    "Pickup in Aarhus. Pay upfront elsewhere is a scam.",
+    "I'll pay for fuel. Upfront I should say the tank was full.",
+    "Payment in advance isn't needed before we meet on Thursday.",
+    "The holding fee of 500 kr is not required before we meet.",
+    "Send 500 kr to reserve the bike is not required today.",
+    "I don't need payment upfront."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+
+  const nothing = await detect("You can pay at pickup, nothing upfront is due before Thursday.");
+  assert.equal(nothing.kind, "silent");
+  assert.equal(nothing.signals.includes("upfront_deposit"), false);
+});
+
+test("an upfront ask still flags when the next sentence mentions a scam", async () => {
+  const verdict = await detect("Please pay 500 kr upfront. The other offer is a scam.");
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.level, "medium");
+  assert.deepEqual(verdict.signals, ["upfront_deposit"]);
+});
+
+test("dotted amounts, pay punctuation, up front, and reserve it flag", async () => {
+  const phrases = [
+    "Please pay 1.500 kr upfront",
+    "Pay $12.50 upfront",
+    "Pay e.g. 500 kr upfront",
+    "Payment: 500 kr upfront via PayPal",
+    "Upfront payment of 500 kr via PayPal",
+    "Pay 500 kr up front",
+    "Send 500 kr to reserve it"
+  ];
+  for (const phrase of phrases) {
+    assert.ok(atoms.findAtoms(phrase).some((hit) => hit.atom === "upfront_deposit"), phrase);
+    const message = phrase.length >= 20 ? phrase : `${phrase} today.`;
+    const verdict = await detect(message);
+    assert.equal(verdict.kind, "risk", message);
+    assert.equal(verdict.level, "medium", message);
+    assert.deepEqual(verdict.signals, ["upfront_deposit"], message);
+  }
+});
+
+test("a later clause does not negate the upfront ask", async () => {
+  const medium = [
+    "Pay upfront, viewing isn't needed",
+    "Pay me 500 kr, no meetup, upfront via PayPal",
+    "Pay 500 kr upfront, the other buyer's offer is a scam"
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit"], text);
+  }
+
+  const high = await detect("Pay 500 kr upfront, meeting is not necessary, I ship tomorrow");
+  assert.equal(high.kind, "risk");
+  assert.equal(high.level, "high");
+  assert.deepEqual(high.signals, ["upfront_deposit", "ship_before_meet"]);
+});
+
+test("negating the payment itself stays silent", async () => {
+  const quiet = ["no upfront payment", "you don't pay upfront"];
+  for (const phrase of quiet) {
+    assert.equal(atoms.findAtoms(phrase).some((hit) => hit.atom === "upfront_deposit"), false, phrase);
+    const message = phrase.length >= 20 ? phrase : `There is ${phrase} for the bike.`;
+    const verdict = await detect(message);
+    assert.equal(verdict.kind, "silent", message);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, message);
+  }
+});
+
+test("upfront as a figure of speech or a place on the bike stays silent", async () => {
+  const quiet = [
+    "To be upfront with you, I can only pay 400 kr.",
+    "The light up front is new, you can pay by cash Thursday."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
+test("modal negation and a question answered no stay silent", async () => {
+  const quiet = [
+    "You shouldn't pay upfront for a used bike.",
+    "You won't have to pay upfront, we meet Thursday.",
+    "Pay in advance? No, cash when we meet is fine."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
+test("send, transfer, and paid still count as an upfront ask", async () => {
+  const high = [
+    "Send 500 kr upfront via PayPal, I ship tomorrow",
+    "500 kr paid upfront, I ship tomorrow"
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit", "ship_before_meet"], text);
+  }
+
+  const medium = [
+    "Transfer 500 kr in advance",
+    "Send $50 upfront today please.",
+    "Please send the money in advance today.",
+    "Send the deposit upfront today please.",
+    "Please transfer the money in advance today.",
+    "Transfer the deposit upfront today please.",
+    "Pay in advance? No problem, send 500 kr now."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit"], text);
+  }
+});
+
+test("send and transfer without money stay silent", async () => {
+  const quiet = [
+    "Can you send the address in advance?",
+    "Send me your number in advance and I will call.",
+    "I will send you the pickup address in advance.",
+    "I will send you the exact location in advance.",
+    "Can I send you a message in advance before I come?",
+    "Please send your questions upfront, I reply fast."
+  ];
+  for (const text of quiet) {
+    assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
+test("a count of things sent upfront stays silent", async () => {
+  const quiet = [
+    "Send me 2 photos in advance please.",
+    "Send me 3 pictures upfront.",
+    "Can you send 10 more photos in advance?",
+    "I will send you the 2 keys in advance.",
+    "Send me 4 more pics upfront, thanks."
+  ];
+  for (const text of quiet) {
+    assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
+test("payment that names a thing stays silent", async () => {
+  const quiet = [
+    "Send me your payment details in advance.",
+    "Send me the payment link in advance."
+  ];
+  for (const text of quiet) {
+    assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
+test("payment, a share, or a bare number in the gap still flags", async () => {
+  const medium = [
+    "Please send payment upfront.",
+    "Send payment upfront and I hold it.",
+    "Send your payment in advance.",
+    "Send the payment in advance and I will ship.",
+    "Send me 50% upfront and the rest on delivery.",
+    "Please transfer the full amount upfront.",
+    "Transfer the amount in advance to my account.",
+    "Send 500 upfront.",
+    "Send half upfront today please.",
+    "send payment upfront",
+    "send the payment in advance"
+  ];
+  for (const text of medium) {
+    assert.ok(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), text);
+    const message = text.length >= 20 ? text : `${text} today.`;
+    const verdict = await detect(message);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["upfront_deposit"], text);
+  }
+});
+
+test("paid history stays silent", async () => {
+  const quiet = [
+    "I paid 3000 kr for it upfront at the shop two years ago.",
+    "I paid 500 kr upfront last month at the shop.",
+    "I paid for it upfront when I bought it new.",
+    "I paid 3000 kr for it upfront at the shop in 2022.",
+    "I paid for the service upfront."
+  ];
+  for (const text of quiet) {
+    assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
