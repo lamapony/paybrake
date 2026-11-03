@@ -484,7 +484,8 @@ test("negation after upfront wording and cross-sentence joins stay silent", asyn
     "I'll pay for fuel. Upfront I should say the tank was full.",
     "Payment in advance isn't needed before we meet on Thursday.",
     "The holding fee of 500 kr is not required before we meet.",
-    "Send 500 kr to reserve the bike is not required today."
+    "Send 500 kr to reserve the bike is not required today.",
+    "I don't need payment upfront."
   ];
   for (const text of quiet) {
     const verdict = await detect(text);
@@ -627,6 +628,37 @@ test("send and transfer without money stay silent", async () => {
   }
 });
 
+test("a count of things sent upfront stays silent", async () => {
+  const quiet = [
+    "Send me 2 photos in advance please.",
+    "Send me 3 pictures upfront.",
+    "Can you send 10 more photos in advance?",
+    "I will send you the 2 keys in advance.",
+    "Send me 4 more pics upfront, thanks."
+  ];
+  for (const text of quiet) {
+    assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
+test("payment that names a thing stays silent", async () => {
+  const quiet = [
+    "Send me your payment details in advance.",
+    "Send me the payment link in advance."
+  ];
+  for (const text of quiet) {
+    assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.equal(verdict.signals.includes("upfront_deposit"), false, text);
+  }
+});
+
 test("payment, a share, or a bare number in the gap still flags", async () => {
   const medium = [
     "Please send payment upfront.",
@@ -656,7 +688,8 @@ test("paid history stays silent", async () => {
     "I paid 3000 kr for it upfront at the shop two years ago.",
     "I paid 500 kr upfront last month at the shop.",
     "I paid for it upfront when I bought it new.",
-    "I paid 3000 kr for it upfront at the shop in 2022."
+    "I paid 3000 kr for it upfront at the shop in 2022.",
+    "I paid for the service upfront."
   ];
   for (const text of quiet) {
     assert.equal(atoms.findAtoms(text).some((hit) => hit.atom === "upfront_deposit"), false, text);
