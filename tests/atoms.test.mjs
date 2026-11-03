@@ -94,6 +94,29 @@ test("when you pick up the phone still counts as pay on collection", () => {
   );
 });
 
+test("pay or cash when you pick a time is not pay on collection", () => {
+  for (const text of ["Pay when you pick a time.", "Cash when you pick a time."]) {
+    const hits = findAtoms(text);
+    assert.equal(hits.some((hit) => hit.atom === "pay_on_collection"), false, JSON.stringify(hits));
+  }
+});
+
+test("pay or cash when you pick still counts as pay on collection", () => {
+  const phrases = [
+    ["You can pay when you pick.", "pay when you pick"],
+    ["You can pay when you pick it up.", "pay when you pick it up"],
+    ["Cash when you pick tomorrow.", "cash when you pick"],
+    ["You can pay cash when you pick it up.", "cash when you pick"]
+  ];
+  for (const [text, span] of phrases) {
+    const hits = findAtoms(text);
+    assert.ok(
+      hits.some((hit) => hit.atom === "pay_on_collection" && hit.text.toLowerCase() === span),
+      JSON.stringify(hits)
+    );
+  }
+});
+
 test("evidence spans are slices of the input", () => {
   const text = "Send a 500 kr deposit via PayPal Friends & Family today";
   for (const hit of findAtoms(text)) {

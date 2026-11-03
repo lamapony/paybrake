@@ -50,6 +50,21 @@ test("when you pick a time does not veto a Friends and Family deposit", async ()
   for (const span of verdict.evidence) assert.equal(text.slice(span.start, span.end), span.text);
 });
 
+test("pay or cash when you pick a time does not veto a Friends and Family deposit", async () => {
+  const texts = [
+    "Send 500 kr deposit via PayPal Friends and Family now. Pay when you pick a time.",
+    "Send 500 kr deposit via PayPal Friends and Family now. Cash when you pick a time."
+  ];
+  for (const text of texts) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["friends_family", "upfront_deposit"], text);
+    assert.equal(verdict.deal.amount, 500, text);
+    for (const span of verdict.evidence) assert.equal(text.slice(span.start, span.end), span.text);
+  }
+});
+
 test("pay on collection only stays a silent veto", async () => {
   const text = "You can pay cash when you pick it up. No deposit needed before we meet.";
   const verdict = await detect(text);
