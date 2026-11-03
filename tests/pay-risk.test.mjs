@@ -296,3 +296,48 @@ test("personal PayPal without the word payment stays silent", async () => {
   assert.equal(card.level, "medium");
   assert.deepEqual(card.signals, ["off_platform"]);
 });
+
+test("an amount next to Telegram or WhatsApp is off-platform", async () => {
+  const medium = await detect("Send 500 kr via Telegram today please.");
+  assert.equal(medium.kind, "risk");
+  assert.equal(medium.level, "medium");
+  assert.deepEqual(medium.signals, ["off_platform"]);
+
+  const high = [
+    "Send 500 kr via Telegram today, I ship tomorrow.",
+    "Send 500 kr via WhatsApp today, I ship tomorrow.",
+    "Betal 500 kr via Telegram i dag, jeg kan kun sende varen."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const payMe = await detect("Pay me on Telegram, 500 kr, I ship tomorrow.");
+  assert.equal(payMe.kind, "risk");
+  assert.equal(payMe.level, "high");
+  assert.deepEqual(payMe.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("chat without an amount stays off the rail", async () => {
+  const chat = await detect("We can chat on Telegram about the bike on Thursday.");
+  assert.equal(chat.kind, "silent");
+  assert.equal(chat.silentReason, "no_atom");
+  assert.deepEqual(chat.signals, []);
+
+  const photo = await detect("Send a photo on Telegram of the bike. You can pick it up Thursday.");
+  assert.equal(photo.kind, "silent");
+  assert.equal(photo.silentReason, "no_atom");
+  assert.deepEqual(photo.signals, []);
+
+  const photoShip = await detect("Send a photo on Telegram of the bike, I ship tomorrow.");
+  assert.equal(photoShip.kind, "silent");
+  assert.equal(photoShip.silentReason, "weak_only");
+  assert.deepEqual(photoShip.signals, ["ship_before_meet"]);
+
+  const address = await detect("Send the address via WhatsApp when you pick it up.");
+  assert.equal(address.kind, "silent");
+  assert.equal(address.silentReason, "veto");
+});

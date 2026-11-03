@@ -66,6 +66,7 @@ const RULES = [
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "negation" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "none" },
+  { id: "off_platform", re: "(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "amount" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
@@ -157,6 +158,7 @@ function depositRejected(text, start, end) {
 
 function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
+  if (rule.gate === "amount") return amountNear(text, start, end, 80) && !negatedBefore(text, start);
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "deposit-word") {
