@@ -708,7 +708,7 @@ function pickupRefused(before, after) {
 
 // Payment at the handover ("when I pick it up", "at pickup", "when we meet").
 // "collect the car" and "pick it up Saturday" name a later handover.
-const TIED_HANDOVER = /(?:at|on)\s+pick\s*up|(?:at|on)\s+collection|when\s+you\s+collect|when\s+(?:i|you|we)\s+pick(?:\s+it)?\s*up|when\s+we\s+meet|when\s+you\s+come\s+to\s+see(?:\s+it)?|on\s+delivery|ved\s+levering|ved\s+afhentning|når\s+du\s+henter|när\s+du\s+hämtar|vid\s+upphämtning|när\s+vi\s+ses|når\s+vi\s+mødes|on\s+the\s+spot|på\s+stedet/iu;
+const TIED_HANDOVER = /(?:at|on)\s+pick\s*up|(?:at|on)\s+collection|when\s+you\s+collect|when\s+(?:i|you|we)\s+pick(?:\s+it)?\s*up|when\s+we\s+meet|when\s+you\s+come\s+to\s+see(?:\s+it)?|on\s+delivery|ved\s+levering|ved\s+afhentning|når\s+du\s+henter|när\s+du\s+hämtar|vid\s+upphämtning|när\s+vi\s+ses|når\s+vi\s+mødes|on\s+the\s+spot|på\s+stedet|(?:or|eller)\s+(?:in\s+)?(?:cash|kontant(?:er|t)?)|(?:cash|kontant(?:er|t)?)\s+(?:or|eller)/iu;
 
 function handoverPay(text) {
   const source = String(text ?? "");

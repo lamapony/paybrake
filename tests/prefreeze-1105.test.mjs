@@ -220,3 +220,18 @@ test("rules version is bumped past v4 for the pre-freeze fixes", async () => {
   const verdict = await seller("I won't ask for a deposit, pay when you pick it up.");
   assert.ok(verdict.rulesVersion >= 5, JSON.stringify(verdict));
 });
+
+// 14. "MobilePay or cash" is an in-person payment: cash cannot be sent ahead.
+test("a rail offered next to cash stays quiet", async () => {
+  const quiet = [
+    "Vil du betale med MobilePay eller kontant? Pris 450 kr.",
+    "Pay 450 kr by MobilePay or cash, whatever suits you.",
+    "Kontant eller MobilePay, 450 kr."
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+  const risky = [
+    "Send a 200 kr deposit on MobilePay or cash, today, so I hold it.",
+    "Send 450 kr on MobilePay now, or cash if you come today. I ship tomorrow otherwise."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text);
+});
