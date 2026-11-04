@@ -1632,3 +1632,45 @@ test("a town called Paysafe and a safe card stay silent", async () => {
     assert.deepEqual(verdict.signals, [], text);
   }
 });
+
+
+test("down payment, booking fee, downpayment, and earnest money", async () => {
+  const pairs = [
+    ["Please send a down payment of 500 kr via PayPal today.", "Please send a down payment of 500 kr via PayPal today, I ship tomorrow."],
+    ["Please pay a booking fee of 500 kr via PayPal today.", "Please pay a booking fee of 500 kr via PayPal today, I ship tomorrow."],
+    ["Send 500 kr as a downpayment via PayPal today.", "Send 500 kr as a downpayment via PayPal, I ship tomorrow."],
+    ["Please send 500 kr as earnest money via PayPal today.", "Please send 500 kr as earnest money via PayPal today, I ship tomorrow."]
+  ];
+  for (const [mediumText, highText] of pairs) {
+    const medium = await detect(mediumText);
+    assert.equal(medium.kind, "risk", mediumText);
+    assert.equal(medium.level, "medium", mediumText);
+    assert.deepEqual(medium.signals, ["upfront_deposit"], mediumText);
+    const high = await detect(highText);
+    assert.equal(high.kind, "risk", highText);
+    assert.equal(high.level, "high", highText);
+    assert.deepEqual(high.signals, ["upfront_deposit", "ship_before_meet"], highText);
+  }
+});
+
+test("half now stays high, and a past down payment stays silent", async () => {
+  const half = await detect("Pay half now, 500 kr via PayPal, I ship tomorrow.");
+  assert.equal(half.kind, "risk");
+  assert.equal(half.level, "high");
+  assert.deepEqual(half.signals, ["upfront_deposit", "ship_before_meet"]);
+
+  const quiet = [
+    "The down payment on the tyres was 500 kr last year.",
+    "I am booking a table for four at the cafe tonight."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+
+  const pickup = await detect("You can pay cash when you pick it up. No deposit needed before we meet.");
+  assert.equal(pickup.kind, "silent");
+  assert.equal(pickup.silentReason, "veto");
+});
