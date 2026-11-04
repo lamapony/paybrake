@@ -120,6 +120,9 @@ const RULES = [
   // "to my Wise account". send is a pay word, so a nearby amount is required.
   { id: "off_platform", re: "to\\s+my\\s+wise\\s+account", gate: "amount-near" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
+  // Not the negation gate above: a bare "USDC" topic must not leave a signal.
+  // A number on the token ("500 USDC") counts even though USDC is not a currency code.
+  { id: "off_platform", re: "usdc", gate: "usdc" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
   // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
   { id: "off_platform", re: "(?:steam|google\\s*play|itunes|apple|amazon|ebay)\\s+(?:gift\\s+)?cards?", gate: "giftcard" },
@@ -858,6 +861,15 @@ function linkAllowed(text, start, end) {
   return LURE.test(near);
 }
 
+// A parsed amount nearby, or a bare number on the token ("500 USDC").
+// "Send the USDC whitepaper" has neither.
+function usdcAsk(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  if (amountNear(text, start, end, 32)) return true;
+  const before = text.slice(Math.max(0, start - 16), start);
+  return /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?\s*$/u.test(before);
+}
+
 // The span has to contain a parsed amount. "transfer the file …" has none.
 function wireAmountOk(text, start, end) {
   if (negatedBefore(text, start)) return false;
@@ -913,6 +925,7 @@ function allow(rule, text, start, end) {
     if (negatedBefore(text, start)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
+  if (rule.gate === "usdc") return usdcAsk(text, start, end);
   if (rule.gate === "wire-amount") return wireAmountOk(text, start, end);
   if (rule.gate === "acct") {
     // "Your account number: XXXX" on a bill or receipt is the reader's own account, not a payee.
