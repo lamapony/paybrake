@@ -133,3 +133,20 @@ test("holding an item until pickup is not a deposit ask", async () => {
   await assertSilent(seller("Jeg holder den til dig til lørdag, betal 900 kr ved afhentning."), "holder til dig + afhentning");
   await assertRisk(seller("Send 500 kr deposit on MobilePay now and I hold it for you, pay the rest when you pick it up."), "deposit now + hold", "upfront_deposit");
 });
+
+// 8. A bank transfer or Revolut at the handover is not off-platform pressure.
+test("bank transfer or Revolut at the handover stays quiet", async () => {
+  const quiet = [
+    "Revolut or cash at pickup, 900 kr.",
+    "Cash or bank transfer when you pick it up, 900 kr",
+    "Kontant eller bankoverførsel ved afhentning, 900 kr.",
+    "You can pay via Wise when we meet, 90 EUR."
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+  const risky = [
+    "Send 900 kr by bank transfer today, I ship tomorrow.",
+    "Pay 900 kr on Revolut now and you can pick it up later.",
+    "Send the 300 kr deposit by bank transfer today, pay the rest when you pick it up."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text, "off_platform");
+});

@@ -941,8 +941,13 @@ function holdUntilHandover(text, start, end) {
   return /(?<![\p{L}\p{N}])(?:no|without|ingen|uden)\s+(?:payment|money|deposit|betaling|depositum)(?![\p{L}\p{N}])/iu.test(sentence);
 }
 
+// Bank transfer, Revolut and Wise paid at the handover are a normal pickup payment,
+// like MobilePay, Swish and Venmo. Pay-first or "now"/"deposit" in the pay clause keeps them.
+const HANDOVER_TRANSFER = /^(?:(?:bank|wire)\s+transfers?|bankoverførsel|revolut|(?:.*\s)?wise)$/iu;
+
 function allow(rule, text, start, end) {
   if (rule.hold && holdUntilHandover(text, start, end)) return false;
+  if (rule.id === "off_platform" && rule.gate === "negation" && HANDOVER_TRANSFER.test(text.slice(start, end)) && handoverQuietsRail(text)) return false;
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
