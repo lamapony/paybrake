@@ -1,5 +1,5 @@
-// Protect agent: verdict + deal in, OrdersPort createOrder out.
-// The real toolkit tool-call loop is not in this build. See docs/BACKEND-CONTRACT.md.
+// Protect agent: verdict + deal in, order out.
+// Toolkit mode calls runTool("create_order") with the validated deal. No model tool loop.
 import { randomUUID } from "node:crypto";
 
 function bad(message) {
@@ -18,13 +18,27 @@ export async function protectDeal(input, orders) {
   if (!Number.isFinite(amount) || amount <= 0) bad("amount must be a positive number");
   if (!/^[A-Z]{3}$/.test(currency)) bad("currency must be a 3-letter code");
   if (payeeEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payeeEmail)) bad("payeeEmail is not an email");
-  const created = await orders.createOrder({
+  const deal = {
     item,
     amount,
     currency,
     payeeEmail,
     referenceId: input?.referenceId || randomUUID()
-  });
+  };
+  const created = orders.mode === "toolkit"
+    ? await orders.runTool("create_order", {
+      currencyCode: currency,
+      items: [{
+        name: item,
+        quantity: 1,
+        itemCost: amount,
+        taxPercent: 0,
+        itemTotal: amount
+      }],
+      ...(payeeEmail ? { payeeEmail } : {}),
+      referenceId: deal.referenceId
+    })
+    : await orders.createOrder(deal);
   return {
     orderId: created.orderId,
     status: created.status,
