@@ -307,6 +307,55 @@
       "messages": [
         { "from": "seller", "text": "Ja, den er der stadig. Stellet er aluminium og dækkene er næsten nye." }
       ]
+    },
+    {
+      "id": "en-send-as-gift",
+      "lang": "en",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["friends_family", "ship_before_meet"],
+      "context": { "listingTitle": "Wool coat", "listingPrice": "500 kr" },
+      "messages": [
+        { "from": "seller", "text": "Please send 500 kr as a gift via PayPal today, I ship tomorrow." }
+      ]
+    },
+    {
+      "id": "da-som-gave",
+      "lang": "da",
+      "expect": "risk",
+      "level": "high",
+      "signals": ["friends_family", "ship_before_meet"],
+      "context": { "listingTitle": "Jakke", "listingPrice": "500 kr" },
+      "messages": [
+        { "from": "seller", "text": "Send 500 kr som gave via PayPal nu. Jeg kan kun sende varen." }
+      ]
+    },
+    {
+      "id": "hn-gift-photos",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Desk lamp", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "buyer", "text": "Can you send me photos? I bought it as a gift for my mom." }
+      ]
+    },
+    {
+      "id": "hn-gift-address",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Desk lamp", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "buyer", "text": "Can you send it as a gift to my sister's address?" }
+      ]
+    },
+    {
+      "id": "hn-sender-som-gave",
+      "lang": "da",
+      "expect": "silent",
+      "context": { "listingTitle": "Lampe", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "buyer", "text": "Jeg sender den som gave til min mor." }
+      ]
     }
   ]
 }

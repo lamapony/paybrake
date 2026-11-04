@@ -4,10 +4,10 @@
 
 Chrome MV3 extension that reads a marketplace chat the user has open, detects a **risky payment request** (Friends & Family for goods, upfront deposit or "hold" fee, off-platform payment such as MobilePay / IBAN / bank transfer / crypto / gift card, pressure and urgency, ship-before-pay), and shows a small in-page risk card with two actions:
 
-- **Move to protected PayPal order**: the backend creates a **PayPal sandbox Orders v2** order (intent `CAPTURE`, payee = seller email, item + amount from the chat), the user approves in sandbox checkout, the backend captures, and the card shows the order ID and status.
+- **Switch to a PayPal order**: the backend creates a **PayPal sandbox Orders v2** order (intent `CAPTURE`, payee = seller email, item + amount from the chat), the user approves in sandbox checkout, the backend captures, and the card shows the order ID and status.
 - **Pay anyway**: dismisses the card and logs the override locally. Nothing is ever posted, typed, or clicked in the chat.
 
-Hackathon: PayPal AI Hackathon on Devpost, deadline **Thu 12 Nov 2026 12:00 PT (21:00 Copenhagen)**. Rules that shape this spec: PayPal sandbox + an AI tool must be central; judges must be able to run a working build; the repo is public with an OSS license (MIT); the video is under 3 min with no third-party trademarks (so the demo surface is our own fictional page, never a real social network).
+Hackathon: PayPal AI Hackathon on Devpost, deadline **Thu 12 Nov 2026 12:00 PT (21:00 Copenhagen)**. Rules that shape this spec: PayPal sandbox + an AI tool must be central; judges must be able to run a working build; the hackathon asks for a public repo with an OSS license (MIT); the video is under 3 min with no third-party trademarks (so the demo surface is our own fictional page, never a real social network). A private checkout does not open GitHub issue links for judges. Judge steps in `TESTING.md` use the hosted demo and do not depend on that form.
 
 ## 0. Non-negotiables
 
@@ -188,7 +188,7 @@ At least 15 risky: F&F + deposit, IBAN transfer, MobilePay to a number before vi
 
 ## 8. UI and copy
 
-- Card: Shadow DOM root, `.pb-*` classes. Badge "High risk payment request" or "Possible payment risk", one-line reason, evidence chips, primary "Move to protected PayPal order", secondary "Pay anyway", footer "PayBrake · AI check · only you can see this". Highlight evidence spans inside the message bubble by wrapping text nodes; never touch the site's input box.
+- Card: Shadow DOM root, `.pb-*` classes. Badge "High risk payment request" or "Possible payment risk", one-line reason, evidence chips, primary "Switch to a PayPal order", secondary "Pay anyway", footer "PayBrake · AI check · only you can see this". Highlight evidence spans inside the message bubble by wrapping text nodes; never touch the site's input box.
 - After order creation: "Sandbox order created · ID … · awaiting approval" + "Open approval". After capture: "Paid with PayPal Goods & Services (sandbox). Buyer Protection may be eligible; see PayPal terms."
 - Fallback reason templates when the LLM is off, e.g. F&F + deposit: "Friends & Family + upfront deposit: if the item never arrives, you may have no way to get your money back."
 - Visual reference: `demo/marketplace.html` in this repo (built from the concept mockup). PayPal appears only as a text wordmark; no PayPal logo files.

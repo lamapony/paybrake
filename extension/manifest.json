@@ -1,10 +1,20 @@
 {
   "manifest_version": 3,
   "name": "PayBrake",
-  "version": "0.1.0",
+  "version": "0.2.0.4",
+  "version_name": "0.2.0-test.4",
   "description": "Brakes before you pay. Flags risky payment asks in a chat and can open a sandbox order.",
-  "permissions": ["storage"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
   "host_permissions": [
+    "https://paybrake-demo.spbabinov.workers.dev/*",
     "http://localhost:8787/*",
     "http://127.0.0.1:8787/*"
   ],
@@ -12,7 +22,13 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "PayBrake"
+    "default_title": "PayBrake: open the welcome page",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "options_ui": {
     "page": "options.html",
@@ -20,14 +36,21 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://localhost/*", "http://127.0.0.1/*", "file:///*"],
+      "matches": [
+        "https://paybrake-demo.spbabinov.workers.dev/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "file:///*"
+      ],
       "js": [
         "lib/brand.js",
         "lib/tidy.js",
         "lib/atoms.js",
         "lib/extract.js",
+        "lib/redact.js",
         "lib/pay-risk.js",
         "lib/ask-llm.js",
+        "lib/chat-state.js",
         "content.js"
       ],
       "run_at": "document_idle"
@@ -35,8 +58,15 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["card.css"],
-      "matches": ["http://localhost/*", "http://127.0.0.1/*", "file:///*"]
+      "resources": [
+        "card.css"
+      ],
+      "matches": [
+        "https://paybrake-demo.spbabinov.workers.dev/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "file:///*"
+      ]
     }
   ]
 }
