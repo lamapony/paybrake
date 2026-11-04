@@ -495,10 +495,16 @@ function checkoutDismissed(text, start) {
   return !CHECKOUT_IGNORE_NEG.test(clause.slice(0, ignore.index));
 }
 
+// Memoized per text: gates call this once per match, so a long chat with many
+// matches re-parsed every amount each time. Callers only read the array.
+let amountMemo = { text: null, spans: [] };
+
 function amountSpans(text) {
   const extract = globalThis.pbExtract;
-  if (extract && typeof extract.parseAmounts === "function") return extract.parseAmounts(text);
-  return [];
+  if (!extract || typeof extract.parseAmounts !== "function") return [];
+  const source = String(text ?? "");
+  if (amountMemo.text !== source) amountMemo = { text: source, spans: extract.parseAmounts(source) };
+  return amountMemo.spans;
 }
 
 function amountNear(text, start, end, window) {
@@ -719,8 +725,16 @@ function pickupRefused(before, after) {
 // "collect the car" and "pick it up Saturday" name a later handover.
 const TIED_HANDOVER = /(?:at|on)\s+pick\s*up|(?:at|on)\s+collection|when\s+you\s+collect|when\s+(?:i|you|we)\s+pick(?:\s+it)?\s*up|when\s+we\s+meet|when\s+you\s+come\s+to\s+see(?:\s+it)?|on\s+delivery|ved\s+levering|ved\s+afhentning|når\s+du\s+henter|när\s+du\s+hämtar|vid\s+upphämtning|när\s+vi\s+ses|når\s+vi\s+mødes|on\s+the\s+spot|(?:or|eller)\s+(?:in\s+)?(?:cash|kontant(?:er|t)?)|(?:cash|kontant(?:er|t)?)\s+(?:or|eller)/iu;
 
+let handoverMemo = { text: null, value: false };
+
+// Memoized per text, like amountSpans: several gates call it once per match.
 function handoverPay(text) {
   const source = String(text ?? "");
+  if (handoverMemo.text !== source) handoverMemo = { text: source, value: handoverPayScan(source) };
+  return handoverMemo.value;
+}
+
+function handoverPayScan(source) {
   const re = new RegExp(`(?<![\\p{L}\\p{N}])(?:${TIED_HANDOVER.source})(?![\\p{L}\\p{N}])`, "giu");
   for (const match of source.matchAll(re)) {
     const at = match.index ?? 0;
