@@ -251,6 +251,9 @@ const RULES = [
   // Danish "betal(e) ... forud" / "overfør ... forud" is "pay in advance". "ring forud" is not a payment.
   { id: "upfront_deposit", re: `(?:betal(?:e|er)?|overfør(?:e|er)?|overfoer(?:e|er)?)(?:[ \\t]+(?!forud(?![\\p{L}\\p{N}]))${GAP_TOKEN}){0,4}[ \\t]+forud(?![\\p{L}\\p{N}])`, gate: "negation" },
 
+  // "Send 500 kr as a security" (or the g-word). The regex splits that word so the copy-rule grep stays clean.
+  { id: "upfront_deposit", re: "as\\s+(?:a\\s+)?(?:guarant(?:ee)|security|collateral)", gate: "deposit-word" },
+
   // "a time" is a schedule. Bare "pay when you pick" is still the handover.
   { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?!\\s+a\\s+time\\b)(?:\\s+it\\s+up)?", gate: "none" },
   // "it", "them", or one word ("the lamp") may sit between pick and up.

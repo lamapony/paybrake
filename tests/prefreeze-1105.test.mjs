@@ -206,3 +206,10 @@ test("a courier or insurance fee after a fake payment warns", async () => {
   await assertSilent(seller("The courier fee is 60 kr, you can also pick it up for free."), "courier fee price");
   await assertSilent(seller("I've already paid the shipping fee, you pay 900 kr at pickup."), "seller paid shipping");
 });
+
+// 13. "Send 500 kr as a guarantee" is a deposit by another name.
+test("money as a guarantee or security warns", async () => {
+  await assertRisk(seller("Send 500 kr as a guarantee and I keep it for you."), "as guarantee", "upfront_deposit");
+  await assertRisk(seller("I need 500 kr first as a guarantee that you'll come."), "need as guarantee", "upfront_deposit");
+  await assertSilent(seller("The bike comes with the receipt as a guarantee it's not stolen."), "receipt");
+});
