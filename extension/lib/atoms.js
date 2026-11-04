@@ -77,6 +77,8 @@ const RULES = [
   // no amount, and "overførte" does not match the verb.
   { id: "friends_family", re: `(?:overfør(?:er)?|overfoer(?:er)?|mobile\\s*pay)(?![\\p{L}\\p{N}])[ \\t]+\\d+(?:[.,]\\d+)?[ \\t]+(?:kr\\.?|kroner)[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   { id: "friends_family", re: "personal\\s+(?:paypal\\s+)?payment", gate: "none" },
+  // "I only accept Friends and Family", "we take only PayPal F&F". No pay word needed.
+  { id: "friends_family", re: "(?:only\\s+(?:accept|take|do|use)|(?:accept|take)s?\\s+only)\\s+(?:paypal\\s+)?(?:friends\\s+(?:and|&)\\s+family|F&F|FnF)", gate: "ff-only" },
 
   { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific" },
   { id: "upfront_deposit", re: "hold\\s+the\\s+\\p{L}+\\s+for\\s+you", gate: "deposit-word" },
@@ -281,7 +283,7 @@ function payWordNear(text, start, end, window) {
 // Own clause after a refusal of Goods & Services or checkout.
 // "only visit" and "my friends and family only" do not qualify.
 const DICTATED_ONLY = /^(?:friends\s+(?:and|&)\s+family|family\s+(?:and|&)\s+friends)\s+only$/iu;
-const SAFE_RAIL_REFUSAL = /(?:never|do\s+not|don['’]?t|dont)\s+(?:use|pay)\b[^]{0,80}?(?<![\p{L}\p{N}])(?:goods\s*(?:&|and)\s*services|g&s|checkout)(?![\p{L}\p{N}])/iu;
+const SAFE_RAIL_REFUSAL = /(?:never|do\s+not|don['’]?t|dont)\s+(?:use|pay|do|accept|take)\b[^]{0,80}?(?<![\p{L}\p{N}])(?:goods\s*(?:&|and)\s*services|g&s|checkout)(?![\p{L}\p{N}])/iu;
 const CLAUSE_EDGE = /(?<!\d),(?!\d)|;|—|–|\s-\s|[.!?\n]/u;
 
 function breakEndBefore(text, index) {
@@ -949,6 +951,7 @@ function allow(rule, text, start, end) {
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "ff-dictated") return dictatedFamilyOnly(text, start, end);
   if (rule.gate === "ff-pivot") return familyPivot(text, start);
+  if (rule.gate === "ff-only") return !negatedBefore(text, start);
   if (rule.gate === "deposit-word") {
     if (depositRejected(text, start, end)) return false;
     if (amountNear(text, start, end, 80)) return true;

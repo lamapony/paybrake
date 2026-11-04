@@ -112,3 +112,15 @@ test("a refused pay-first question stays quiet", async () => {
   await assertRisk(seller("Payment first, 900 kr, then I ship."), "pay first ask", "pay_before_see");
   await assertRisk(seller("Payment first? Yes, 900 kr and then I ship."), "yes pay first", "pay_before_see");
 });
+
+// 6. "I don't do G&S, only F&F" dictates the rail without a pay word.
+test("refusing Goods & Services and dictating F&F only warns", async () => {
+  await assertRisk(seller("I don't do Goods & Services, Friends & Family only."), "don't do", "friends_family");
+  await assertRisk(seller("We don't accept G&S, Friends and Family only."), "don't accept", "friends_family");
+  await assertRisk(seller("I only accept Friends and Family, 900 kr."), "only accept", "friends_family");
+  await assertRisk(seller("Sorry, we take only PayPal F&F for this one."), "take only", "friends_family");
+  // Unchanged: a separate sentence, or a refusal of F&F, stays quiet.
+  await assertSilent(seller("Don't use the checkout. Friends and Family only."), "separate sentence");
+  await assertSilent(seller("I don't only accept Friends and Family, Goods & Services is fine too."), "negated");
+  await assertSilent(seller("I never accept Friends and Family payments, only Goods and Services."), "refused F&F");
+});

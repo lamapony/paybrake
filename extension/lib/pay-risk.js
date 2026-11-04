@@ -377,7 +377,7 @@ function rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak
     ));
     // "Friends and Family only", or "is fine" after a refused method, can lack a pay word.
     const methodOnly = host && host.hits.some((hit) => (
-      (hit.gate === "ff-dictated" || hit.gate === "ff-pivot") && !hit.prohibited
+      (hit.gate === "ff-dictated" || hit.gate === "ff-pivot" || hit.gate === "ff-only") && !hit.prohibited
     ));
     const standalone = meta[strong[0]] && meta[strong[0]].standalone;
     // "Venmo me" has no pay word and no amount. The hit is already a direct ask.
