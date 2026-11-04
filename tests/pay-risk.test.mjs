@@ -1539,6 +1539,101 @@ test("verification-code advice says never share the code", async () => {
 });
 
 
+test("F and F and Friends n Family need a pay word", async () => {
+  const high = [
+    "Please send 500 kr via PayPal F and F now, I ship tomorrow.",
+    "Please send 500 kr via PayPal Friends n Family, I ship tomorrow.",
+    "Please send 500 kr via PayPal Friends n' Family, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["friends_family", "ship_before_meet"], text);
+  }
+
+  const medium = [
+    "Please send 500 kr via PayPal F and F now.",
+    "Please send 500 kr via PayPal Friends n Family today.",
+    "Please send 500 kr via PayPal Friends n' Family today."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["friends_family"], text);
+  }
+});
+
+test("exact Friends and Family, F&F, and FnF stay high beside the new phrases", async () => {
+  const exact = [
+    "Please send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Please send 500 kr via F&F now, I ship tomorrow.",
+    "Please send 500 kr via FnF now, I ship tomorrow."
+  ];
+  for (const text of exact) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["friends_family", "ship_before_meet"], text);
+  }
+
+  const quiet = [
+    "F and F is a furniture store I visited on Thursday.",
+    "My friends and family loved this lamp."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+
+test("Paysafecard and Paysafe with a pay ask are off-platform", async () => {
+  const medium = [
+    "Please send a Paysafecard of 500 kr today, the bike is ready.",
+    "Send 500 kr via Paysafe today, the bike is ready."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+
+  const high = [
+    "Please send a Paysafecard of 500 kr, I ship tomorrow.",
+    "Send 500 kr via Paysafe today, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const gift = await detect("Buy a gift card for 500 kr and I ship tomorrow.");
+  assert.equal(gift.kind, "risk");
+  assert.equal(gift.level, "high");
+  assert.deepEqual(gift.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a town called Paysafe and a safe card stay silent", async () => {
+  const quiet = [
+    "Paysafe is a town I visited last summer with my sister.",
+    "The card was safe in my bag on Thursday afternoon."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+
 test("down payment, booking fee, downpayment, and earnest money", async () => {
   const pairs = [
     ["Please send a down payment of 500 kr via PayPal today.", "Please send a down payment of 500 kr via PayPal today, I ship tomorrow."],

@@ -66,11 +66,16 @@ const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family\\s+is\\s+fine", gate: "ff-pivot" },
   { id: "friends_family", re: "family\\s+(?:and|&)\\s+friends\\s+is\\s+fine", gate: "ff-pivot" },
   { id: "friends_family", re: "F\\s+&\\s+F", gate: "none" },
+  { id: "friends_family", re: "F\\s+and\\s+F", gate: "ff-phrase" },
+  { id: "friends_family", re: "friends\\s+n['’]?\\s+family", gate: "ff-phrase" },
   // Whole words only (sender/sende are listed; resend and gifted are not).
   // The gap cannot cross . ! ? or a newline, and it cannot swallow as/som.
   // "gift card" / "gavekort" stay off-platform.
   { id: "friends_family", re: `send(?:er|e)?(?![\\p{L}\\p{N}])(?:[ \\t]+(?!as(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+as[ \\t]+(?:a[ \\t]+)?gift(?![\\p{L}\\p{N}])(?![ \\t]*cards?(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   { id: "friends_family", re: `(?:send(?:er|e)?|betal(?:e|ing)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!som(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
+  // Amount between the verb and "som gave". "overfør billederne som gave" has
+  // no amount, and "overførte" does not match the verb.
+  { id: "friends_family", re: `(?:overfør(?:er)?|overfoer(?:er)?|mobile\\s*pay)(?![\\p{L}\\p{N}])[ \\t]+\\d+(?:[.,]\\d+)?[ \\t]+(?:kr\\.?|kroner)[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   { id: "friends_family", re: "personal\\s+(?:paypal\\s+)?payment", gate: "none" },
 
   { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific" },
@@ -100,10 +105,12 @@ const RULES = [
   { id: "off_platform", re: "(?:safe|secure|holding|new)\\s+(?:bank\\s+)?account", gate: "iban" },
   { id: "off_platform", re: "bank\\s+transfers?", gate: "negation" },
   { id: "off_platform", re: "wire\\s+transfers?", gate: "negation" },
-  // "wire/transfer … to my bank" or "to my bank account". Still open:
-  // "to our bank", "to the bank account", "to your account", and
-  // Danish/Swedish "overfør" / "överför … til min konto".
+  // "wire/transfer … to my bank" stays the next rule, unchanged. The two rules
+  // after it cover "our bank", "the bank account", "your account", and
+  // overfør/överför til min konto. Those require a parsed amount in the span.
   { id: "off_platform", re: `(?<![\\p{L}\\p{N}])(?:wire|transfer)(?:[ \\t]+(?!to\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+to[ \\t]+(?:my[ \\t]+)?bank(?:[ \\t]+account)?`, gate: "wire-bank", flags: "giu" },
+  { id: "off_platform", re: `(?:wire|transfer)(?:[ \\t]+(?!to\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+to[ \\t]+(?:our[ \\t]+bank|the[ \\t]+bank[ \\t]+account|your[ \\t]+account)`, gate: "wire-amount" },
+  { id: "off_platform", re: `(?:overfør(?:er)?|overfoer(?:er)?|överför(?:er)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!(?:til|till)\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+til(?:l)?[ \\t]+mi(?:n|tt)[ \\t]+konto`, gate: "wire-amount" },
   { id: "off_platform", re: "bankoverførsel", gate: "negation" },
   { id: "off_platform", re: "reg\\.?\\s*nr", gate: "negation" },
   { id: "off_platform", re: "registreringsnummer", gate: "negation" },
@@ -116,7 +123,12 @@ const RULES = [
   { id: "off_platform", re: "(?:transferwise|wise\\.com|\\b(?:via|on|with|til|through|på)\\s+wise\\b|\\bwise\\s+transfer\\b)", gate: "negation" },
   // "using Wise" and "by Wise". The Wise line above is unchanged.
   { id: "off_platform", re: "(?:using|by)\\s+wise", gate: "negation" },
+  // "to my Wise account". send is a pay word, so a nearby amount is required.
+  { id: "off_platform", re: "to\\s+my\\s+wise\\s+account", gate: "amount-near" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
+  // Not the negation gate above: a bare "USDC" topic must not leave a signal.
+  // A number on the token ("500 USDC") counts even though USDC is not a currency code.
+  { id: "off_platform", re: "usdc", gate: "usdc" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
   // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
   { id: "off_platform", re: "(?:steam|google\\s*play|itunes|apple|amazon|ebay)\\s+(?:gift\\s+)?cards?", gate: "giftcard" },
@@ -133,11 +145,16 @@ const RULES = [
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
   { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
+  { id: "off_platform", re: "paysafecards?", gate: "deposit-word" },
+  { id: "off_platform", re: "paysafe", gate: "deposit-word" },
   // Skrill and Interac. A bare name ("Skrill is a town") is not an ask.
   { id: "off_platform", re: "skrill", gate: "pay-or-amount" },
   { id: "off_platform", re: "interac", gate: "pay-or-amount" },
   // "PayPal me" already contains the pay word paypal, so only a parsed amount counts.
   { id: "off_platform", re: "paypal\\s+me", gate: "amount-near" },
+  // Apple Pay and Google Pay. pay-or-amount would fire "I paid with Apple Pay" with no sum.
+  { id: "off_platform", re: "apple\\s+pay", gate: "amount-near" },
+  { id: "off_platform", re: "google\\s+pay", gate: "amount-near" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -167,9 +184,9 @@ const RULES = [
   // v3: card details, one-time codes, passwords and ID numbers (gate "cred": a request verb
   // in the same sentence, not "never share this code").
   { id: "credential_request", re: "(?:card\\s+(?:number|details|info(?:rmation)?|no\\.?)|(?:credit|debit)\\s+card(?:\\s+(?:number|details|info(?:rmation)?))?|cvv2?|cvc2?|security\\s+code\\s+on\\s+the\\s+back|expiry\\s+date|expiration\\s+date|kortnummer|kortoplysninger|kontrolcifre)", gate: "cred" },
-  { id: "credential_request", re: "(?:one[-\\s]?time\\s+(?:pass(?:word|code)|code|pin)|otp|verification\\s+code|security\\s+code|confirmation\\s+code|login\\s+code|sms\\s+code|text\\s+code|\\d[-\\s]?digit\\s+code|(?:the\\s+)?code\\s+(?:i|we|you)(?:\\s+just)?\\s+(?:sent|got|received)|engangskode(?:n)?|sikkerhedskode|kode(?:n)?)", gate: "cred" },
+  { id: "credential_request", re: "(?:one[-\\s]?time\\s+(?:pass(?:word|code)|code|pin)|otp|verification\\s+code|security\\s+code|confirmation\\s+code|login\\s+code|sms\\s+code|text\\s+code|\\d[-\\s]?digit\\s+code|(?:the\\s+)?code\\s+(?:i|we|you)(?:\\s+just)?\\s+(?:sent|got|received)|bekræftelseskode(?:n)?|engangskode(?:n)?|sikkerhedskode|kode(?:n)?)", gate: "cred" },
   { id: "credential_request", re: "(?:mit\\s*id|nem\\s*id|bank\\s*id)(?:[-\\s]?(?:kode(?:n)?|code|app|login|nøgleviser))?", gate: "cred-id" },
-  { id: "credential_request", re: "(?:pass(?:word|code)(?!\\s+(?:manager|management|reset))|pin[-\\s]?(?:code|number|kode)|(?:your|the|card|bank)\\s+pin|login\\s+(?:details|credentials|info(?:rmation)?)|log-?in\\s+details|username\\s+and\\s+password|(?:your|login|log-?in|account|bank(?:ing)?)\\s+credentials|adgangskode)", gate: "cred" },
+  { id: "credential_request", re: "(?:pass(?:word|code)(?!\\s+(?:manager|management|reset))|pinkode(?:n)?|pin[-\\s]?(?:code|number|kode)|(?:your|the|card|bank)\\s+pin|login\\s+(?:details|credentials|info(?:rmation)?)|log-?in\\s+details|username\\s+and\\s+password|(?:your|login|log-?in|account|bank(?:ing)?)\\s+credentials|adgangskode)", gate: "cred" },
   { id: "credential_request", re: "(?:social\\s+security\\s+(?:number|no\\.?)|ssn|cpr(?:[-\\s]?(?:nummer|number|nr\\.?))?|personnummer)", gate: "cred" },
 
   { id: "credential_request", re: "(?:bank\\s+)?account\\s+(?:number|details|info(?:rmation)?)(?:\\s+and\\s+(?:the\\s+)?(?:routing|sort)\\s+(?:number|code))?|routing\\s+number|bank(?:ing)?\\s+(?:details|info(?:rmation)?|login)", gate: "cred" },
@@ -472,7 +489,8 @@ function payWordOutside(text, start, end, window) {
 // now / today / the end of the sentence. "2 photos" and "10 more photos" do not.
 // "payment details" and "payment link" name a thing, not the money. "paid ...
 // ago", "paid ... last month", "paid ... in 2022", "paid ... when I bought",
-// and "I paid for the service" are history, not an ask.
+// "I paid for the service", "I paid upfront", and "we paid ... upfront"
+// with no amount are history, not an ask.
 const MONEY_WORD = /(?<![\p{L}\p{N}])(?:money|cash|funds|fees?|deposits?|depositum|kroner|dollars?|euros?|amounts?|half)(?![\p{L}\p{N}])/iu;
 const BARE_AMOUNT = /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?(?:\s*%)?(?![\p{L}\p{N}])/iu;
 const PAST_PAY = /(?<![\p{L}\p{N}])(?:ago|last[ \t]+(?:night|week|month|year)|bought|purchased|in[ \t]+(?:19|20)\d{2})(?![\p{L}\p{N}])/iu;
@@ -515,8 +533,24 @@ function paymentNamesThing(text, wordStart) {
 function paidHistory(text, start) {
   const sentence = sentenceAt(text, start);
   if (PAST_PAY.test(sentence)) return true;
-  // "I paid for the service upfront." A past purchase with no amount.
-  if (/^\s*I\s+paid\s+for\b/iu.test(sentence) && !amountSpans(sentence).length && !bareAmountCounts(sentence)) return true;
+  // A past purchase with no amount: "I paid for the service upfront.",
+  // "I paid upfront for the service.", "We paid for the repair upfront.",
+  // "I already paid the deposit". Naming an amount keeps it an ask.
+  if (amountSpans(sentence).length || bareAmountCounts(sentence)) return false;
+  return /^\s*(?:i|we)\s+(?:already\s+)?paid\b/iu.test(sentence);
+}
+
+// "paid" in a past sentence is not the pay word that unlocks "deposit".
+// send/pay/via still count. An amount is handled by the caller.
+function payWordNearLive(text, start, end, window) {
+  const from = Math.max(0, start - window);
+  const to = Math.min(text.length, end + window);
+  const re = new RegExp(PAY_WORD.source, "giu");
+  for (const match of text.slice(from, to).matchAll(re)) {
+    const at = from + (match.index ?? 0);
+    if (/^paid$/iu.test(match[0]) && paidHistory(text, at)) continue;
+    return true;
+  }
   return false;
 }
 
@@ -841,6 +875,21 @@ function linkAllowed(text, start, end) {
   return LURE.test(near);
 }
 
+// A parsed amount nearby, or a bare number on the token ("500 USDC").
+// "Send the USDC whitepaper" has neither.
+function usdcAsk(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  if (amountNear(text, start, end, 32)) return true;
+  const before = text.slice(Math.max(0, start - 16), start);
+  return /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?\s*$/u.test(before);
+}
+
+// The span has to contain a parsed amount. "transfer the file …" has none.
+function wireAmountOk(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  return amountSpans(text).some((amount) => amount.start < end && amount.end > start);
+}
+
 // "Do not install AnyDesk" refuses. The verb may sit between the negation and the brand.
 // "Don't worry, install AnyDesk" stays an ask. "The quick support I got" is not a tool.
 const REMOTE_BRAND_GAP = "(?:installer|install|download|open|use|run|hent|åbn|the|an|a)";
@@ -882,7 +931,8 @@ function allow(rule, text, start, end) {
   if (rule.gate === "ff-pivot") return familyPivot(text, start);
   if (rule.gate === "deposit-word") {
     if (depositRejected(text, start, end)) return false;
-    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
+    if (amountNear(text, start, end, 80)) return true;
+    return payWordNearLive(text, start, end, 80);
   }
   if (rule.gate === "reserve") {
     if (depositRejected(text, start, end)) return false;
@@ -893,6 +943,8 @@ function allow(rule, text, start, end) {
     if (negatedBefore(text, start)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
+  if (rule.gate === "usdc") return usdcAsk(text, start, end);
+  if (rule.gate === "wire-amount") return wireAmountOk(text, start, end);
   if (rule.gate === "acct") {
     // "Your account number: XXXX" on a bill or receipt is the reader's own account, not a payee.
     // Otherwise this stays as wide as the old negation gate, so a transfer plus an amount still fires.
