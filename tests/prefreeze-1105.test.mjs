@@ -124,3 +124,12 @@ test("refusing Goods & Services and dictating F&F only warns", async () => {
   await assertSilent(seller("I don't only accept Friends and Family, Goods & Services is fine too."), "negated");
   await assertSilent(seller("I never accept Friends and Family payments, only Goods and Services."), "refused F&F");
 });
+
+// 7. Holding the item until the handover, paid at the handover, is not a deposit.
+test("holding an item until pickup is not a deposit ask", async () => {
+  await assertSilent(seller("I can hold it for you until Saturday, pay 900 kr when you pick it up."), "hold + pickup");
+  await assertRisk(seller("Send 200 kr and I'll hold it for you until Saturday."), "hold for money", "upfront_deposit");
+  await assertSilent(seller("I'll hold it for you until Saturday, no payment until you've seen it."), "hold, no payment");
+  await assertSilent(seller("Jeg holder den til dig til lørdag, betal 900 kr ved afhentning."), "holder til dig + afhentning");
+  await assertRisk(seller("Send 500 kr deposit on MobilePay now and I hold it for you, pay the rest when you pick it up."), "deposit now + hold", "upfront_deposit");
+});

@@ -80,9 +80,9 @@ const RULES = [
   // "I only accept Friends and Family", "we take only PayPal F&F". No pay word needed.
   { id: "friends_family", re: "(?:only\\s+(?:accept|take|do|use)|(?:accept|take)s?\\s+only)\\s+(?:paypal\\s+)?(?:friends\\s+(?:and|&)\\s+family|F&F|FnF)", gate: "ff-only" },
 
-  { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific" },
-  { id: "upfront_deposit", re: "hold\\s+the\\s+\\p{L}+\\s+for\\s+you", gate: "deposit-word" },
-  { id: "upfront_deposit", re: "holder[^\\n]{0,40}?til\\s+dig", gate: "deposit-specific" },
+  { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific", hold: true },
+  { id: "upfront_deposit", re: "hold\\s+the\\s+\\p{L}+\\s+for\\s+you", gate: "deposit-word", hold: true },
+  { id: "upfront_deposit", re: "holder[^\\n]{0,40}?til\\s+dig", gate: "deposit-specific", hold: true },
   { id: "upfront_deposit", re: "reservation\\s+fee", gate: "deposit-specific" },
   { id: "upfront_deposit", re: "pay\\s+half\\s+now", gate: "deposit-specific" },
   { id: "upfront_deposit", re: "deposits?", gate: "deposit-word" },
@@ -933,7 +933,16 @@ function remoteBrandOk(text, start, end) {
   return !(named || received);
 }
 
+// "I can hold it for you until Saturday, pay when you pick it up" keeps the item
+// for a paid-at-handover visit. "Send 200 kr and I'll hold it" is still a deposit.
+function holdUntilHandover(text, start, end) {
+  if (handoverQuietsRail(text)) return true;
+  const sentence = sentenceAround(text, start, end).whole;
+  return /(?<![\p{L}\p{N}])(?:no|without|ingen|uden)\s+(?:payment|money|deposit|betaling|depositum)(?![\p{L}\p{N}])/iu.test(sentence);
+}
+
 function allow(rule, text, start, end) {
+  if (rule.hold && holdUntilHandover(text, start, end)) return false;
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
