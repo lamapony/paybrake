@@ -112,10 +112,15 @@ const RULES = [
   { id: "off_platform", re: "sort\\s+codes?", gate: "acct" },
   { id: "off_platform", re: "revolut", gate: "negation" },
   { id: "off_platform", re: "(?:transferwise|wise\\.com|\\b(?:via|on|with|til|through|på)\\s+wise\\b|\\bwise\\s+transfer\\b)", gate: "negation" },
+  // "using Wise" and "by Wise". The Wise line above is unchanged.
+  { id: "off_platform", re: "(?:using|by)\\s+wise", gate: "negation" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
   // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
   { id: "off_platform", re: "(?:steam|google\\s*play|itunes|apple|amazon|ebay)\\s+(?:gift\\s+)?cards?", gate: "giftcard" },
+  // PlayStation, Xbox, Nintendo, and Netflix cards. The store-card line above stays.
+  // A console or the show has no "card", so it does not match.
+  { id: "off_platform", re: "(?:playstation|xbox|nintendo|netflix)\\s+(?:gift\\s+)?cards?", gate: "pay-or-amount" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "chat-pay" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
   { id: "off_platform", re: "\\bwestern\\s+union\\b", gate: "named-rail" },
@@ -126,6 +131,11 @@ const RULES = [
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
   { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
+  // Skrill and Interac. A bare name ("Skrill is a town") is not an ask.
+  { id: "off_platform", re: "skrill", gate: "pay-or-amount" },
+  { id: "off_platform", re: "interac", gate: "pay-or-amount" },
+  // "PayPal me" already contains the pay word paypal, so only a parsed amount counts.
+  { id: "off_platform", re: "paypal\\s+me", gate: "amount-near" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
@@ -155,7 +165,7 @@ const RULES = [
   // v3: card details, one-time codes, passwords and ID numbers (gate "cred": a request verb
   // in the same sentence, not "never share this code").
   { id: "credential_request", re: "(?:card\\s+(?:number|details|info(?:rmation)?|no\\.?)|(?:credit|debit)\\s+card(?:\\s+(?:number|details|info(?:rmation)?))?|cvv2?|cvc2?|security\\s+code\\s+on\\s+the\\s+back|expiry\\s+date|expiration\\s+date|kortnummer|kortoplysninger|kontrolcifre)", gate: "cred" },
-  { id: "credential_request", re: "(?:one[-\\s]?time\\s+(?:pass(?:word|code)|code|pin)|otp|verification\\s+code|security\\s+code|confirmation\\s+code|login\\s+code|sms\\s+code|text\\s+code|\\d[-\\s]?digit\\s+code|(?:the\\s+)?code\\s+(?:i|we|you)(?:\\s+just)?\\s+(?:sent|got|received)|engangskode|sikkerhedskode|kode(?:n)?)", gate: "cred" },
+  { id: "credential_request", re: "(?:one[-\\s]?time\\s+(?:pass(?:word|code)|code|pin)|otp|verification\\s+code|security\\s+code|confirmation\\s+code|login\\s+code|sms\\s+code|text\\s+code|\\d[-\\s]?digit\\s+code|(?:the\\s+)?code\\s+(?:i|we|you)(?:\\s+just)?\\s+(?:sent|got|received)|engangskode(?:n)?|sikkerhedskode|kode(?:n)?)", gate: "cred" },
   { id: "credential_request", re: "(?:mit\\s*id|nem\\s*id|bank\\s*id)(?:[-\\s]?(?:kode(?:n)?|code|app|login|nøgleviser))?", gate: "cred-id" },
   { id: "credential_request", re: "(?:pass(?:word|code)(?!\\s+(?:manager|management|reset))|pin[-\\s]?(?:code|number|kode)|(?:your|the|card|bank)\\s+pin|login\\s+(?:details|credentials|info(?:rmation)?)|log-?in\\s+details|username\\s+and\\s+password|(?:your|login|log-?in|account|bank(?:ing)?)\\s+credentials|adgangskode)", gate: "cred" },
   { id: "credential_request", re: "(?:social\\s+security\\s+(?:number|no\\.?)|ssn|cpr(?:[-\\s]?(?:nummer|number|nr\\.?))?|personnummer)", gate: "cred" },
@@ -164,7 +174,7 @@ const RULES = [
   { id: "credential_request", re: "(?:send|give|tell|provide|read|share|forward|text)\\s+(?!you\\b)(?:me\\s+|us\\s+)?(?:\\w+\\s+){0,4}?(?:the\\s+|your\\s+|that\\s+|this\\s+)?(?:code|codes)", gate: "cred-inline" },
 
   // v3: remote-access apps. Brand names fire on their own; the generic phrase needs an install verb.
-  { id: "remote_access", re: "any\\s*desk|team\\s*viewer|quick\\s*support|quick\\s*assist|rust\\s*desk|ultra\\s*viewer|ammyy(?:\\s+admin)?|logmein|splashtop|supremo|screenconnect", gate: "negation" },
+  { id: "remote_access", re: "any\\s*desk|team\\s*viewer|quick\\s*support|quick\\s*assist|rust\\s*desk|ultra\\s*viewer|ammyy(?:\\s+admin)?|logmein|splashtop|supremo|screenconnect", gate: "remote-brand" },
   { id: "remote_access", re: "remote[-\\s](?:access|desktop|control|support)(?:\\s+(?:tool|app|software|program))?|screen[-\\s]?shar(?:e|ing)", gate: "remote" },
   { id: "remote_access", re: "remote\\s+in(?:\\s*to)?\\s+(?:your|the)\\s+(?:computer|pc|laptop|device|phone|machine)", gate: "negation" },
 
@@ -594,6 +604,13 @@ function railDirectAsk(text, start, end) {
   return /^\s+(?:the|my|a)\s+(?:money|deposit|payment|funds)\b/iu.test(after);
 }
 
+// "payment protection" and "a payment app" name the product. "send" and "via" still count.
+function namedRailPayNear(text, start, end) {
+  const slice = text.slice(Math.max(0, start - 80), Math.min(text.length, end + 80));
+  const stripped = slice.replace(/(?<![\p{L}\p{N}])payment\s+(?:protection|apps?)(?![\p{L}\p{N}])/giu, " ");
+  return hasPayWord(stripped);
+}
+
 function railNegated(text, start) {
   const before = text.slice(Math.max(0, start - 48), start);
   // A list stays under the negation ("don't take Venmo or Zelle").
@@ -822,6 +839,27 @@ function wireAmountOk(text, start, end) {
   return amountSpans(text).some((amount) => amount.start < end && amount.end > start);
 }
 
+// "Do not install AnyDesk" refuses. The verb may sit between the negation and the brand.
+// "Don't worry, install AnyDesk" stays an ask. "The quick support I got" is not a tool.
+const REMOTE_BRAND_GAP = "(?:installer|install|download|open|use|run|hent|åbn|the|an|a)";
+const REMOTE_BRAND_REFUSAL = new RegExp(
+  `(?<![\\p{L}\\p{N}])(?:won['’]?t|wont|don['’]?t|dont|do\\s+not|never|not|no|without|ikke|ingen|uden|nej|aldrig)(?![\\p{L}\\p{N}])(?:\\s+${REMOTE_BRAND_GAP}){0,4}\\s+$`,
+  "iu"
+);
+
+function remoteBrandOk(text, start, end) {
+  const before = text.slice(Math.max(0, start - 48), start);
+  if (REMOTE_BRAND_REFUSAL.test(before)) return false;
+  const span = text.slice(start, end);
+  if (!/^quick\s+(?:support|assist)$/iu.test(span)) return true;
+  const sentence = sentenceAround(text, start, end);
+  if (REMOTE_VERB.test(sentence.whole)) return true;
+  if (/(?<![\p{L}\p{N}])(?:any\s*desk|team\s*viewer|rust\s*desk)(?![\p{L}\p{N}])/iu.test(sentence.whole)) return true;
+  const named = /(?:the|some|that|this|your|our|their|an|a)\s+$/iu.test(sentence.before);
+  const received = /^\s+i\s+got\b/iu.test(sentence.after) || /(?:got|received|had)\s+$/iu.test(sentence.before);
+  return !(named || received);
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
@@ -832,6 +870,7 @@ function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
   if (rule.gate === "negation") return !negatedBefore(text, start);
+  if (rule.gate === "remote-brand") return remoteBrandOk(text, start, end);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "ff-dictated") return dictatedFamilyOnly(text, start, end);
   if (rule.gate === "ff-pivot") return familyPivot(text, start);
@@ -866,7 +905,7 @@ function allow(rule, text, start, end) {
   if (rule.gate === "cred") return credAllowed(text, start, end, null);
   if (rule.gate === "cred-inline") {
     const sentence = sentenceAround(text, start, end);
-    return !SENTENCE_NEG.test(sentence.before) && !OFFICIAL.test(sentence.whole) && !/(?:promo|discount|coupon|rabat|dress|zip|post(?:al)?|qr|source)\s+codes?$/iu.test(text.slice(start, end));
+    return !SENTENCE_NEG.test(sentence.before) && !OFFICIAL.test(sentence.whole) && !/(?:promo|discount|coupon|rabat|dress|zip|post(?:al)?|qr|source|tracking|wifi)\s+codes?$/iu.test(text.slice(start, end));
   }
   if (rule.gate === "cred-id") return credAllowed(text, start, end, LOGIN_VERB);
   if (rule.gate === "remote") {
@@ -891,7 +930,8 @@ function allow(rule, text, start, end) {
   if (rule.gate === "named-rail" || rule.gate === "cashtag") {
     if (railNegated(text, start)) return false;
     if (handoverQuietsRail(text)) return false;
-    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80) || railDirectAsk(text, start, end);
+    const pay = rule.gate === "named-rail" ? namedRailPayNear(text, start, end) : payWordNear(text, start, end, 80);
+    return pay || amountNear(text, start, end, 80) || railDirectAsk(text, start, end);
   }
   if (rule.gate === "local-rail") {
     if (railNegated(text, start)) return false;
@@ -902,6 +942,16 @@ function allow(rule, text, start, end) {
     if (pay && money) return true;
     if (useRailAsk(text, start)) return true;
     return scam && money;
+  }
+  // "PayPal me" includes the pay word. A nearby amount is required.
+  if (rule.gate === "amount-near") {
+    if (negatedBefore(text, start)) return false;
+    return amountNear(text, start, end, 80);
+  }
+  // Money or a pay word nearby. A bare name does not fire.
+  if (rule.gate === "pay-or-amount") {
+    if (negatedBefore(text, start)) return false;
+    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
   if (rule.gate === "ship") {
     if (PICKUP_ALT.test(text)) return false;
@@ -1047,7 +1097,7 @@ function findAtoms(text) {
       const end = start + match[0].length;
       if (!allow(rule, source, start, end)) continue;
       const meta = META[rule.id];
-      found.push({
+      const hit = {
         atom: rule.id,
         text: match[0],
         start,
@@ -1056,7 +1106,9 @@ function findAtoms(text) {
         strength: meta.strength,
         receipt: meta.receipt,
         gate: rule.gate
-      });
+      };
+      if (rule.gate === "named-rail" && railDirectAsk(source, start, end)) hit.directAsk = true;
+      found.push(hit);
     }
   }
   found.push(...findTypoAtoms(source));
