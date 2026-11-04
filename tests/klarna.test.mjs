@@ -46,9 +46,9 @@ test("Klarna with an amount is off-platform, and a mention without a sum is not"
   assert.equal(mobile.deal.amount, 500);
 
   const afterpay = await detect("Please send 500 kr via Afterpay today, I ship tomorrow.");
-  assert.equal(afterpay.kind, "silent");
-  assert.equal(afterpay.silentReason, "weak_only");
-  assert.deepEqual(afterpay.signals, ["ship_before_meet"]);
+  assert.equal(afterpay.kind, "risk");
+  assert.equal(afterpay.level, "high");
+  assert.deepEqual(afterpay.signals, ["off_platform", "ship_before_meet"]);
 
   const wechat = await detect("Please send 500 kr via WeChat today, I ship tomorrow.");
   assert.equal(wechat.kind, "silent");
