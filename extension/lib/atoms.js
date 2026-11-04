@@ -874,7 +874,7 @@ function allow(rule, text, start, end) {
   if (rule.gate === "cred") return credAllowed(text, start, end, null);
   if (rule.gate === "cred-inline") {
     const sentence = sentenceAround(text, start, end);
-    return !SENTENCE_NEG.test(sentence.before) && !OFFICIAL.test(sentence.whole) && !/(?:promo|discount|coupon|rabat|dress|zip|post(?:al)?|qr|source)\s+codes?$/iu.test(text.slice(start, end));
+    return !SENTENCE_NEG.test(sentence.before) && !OFFICIAL.test(sentence.whole) && !/(?:promo|discount|coupon|rabat|dress|zip|post(?:al)?|qr|source|tracking|wifi)\s+codes?$/iu.test(text.slice(start, end));
   }
   if (rule.gate === "cred-id") return credAllowed(text, start, end, LOGIN_VERB);
   if (rule.gate === "remote") {
