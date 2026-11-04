@@ -296,3 +296,48 @@ test("review: hold rules stay fast on a long repetitive chat", async () => {
   await seller(text);
   assert.ok(performance.now() - t0 < 2000, "took " + Math.round(performance.now() - t0) + " ms");
 });
+
+// 17. Second independent review: more cases main got right.
+test("review 2: 'or cash' does not quiet a rail when the seller ships or refuses cash", async () => {
+  const risky = [
+    "MobilePay or cash, I ship after payment, 400 kr + fragt",
+    "Zelle or cash app only, $400, I'll ship it UPS once received",
+    "Venmo or cash, but I'm out of town so Venmo $250 and I'll mail it",
+    "Send the money by Western Union or cash in an envelope by post",
+    "Revolut me 200 EUR, I'll post it, or cash if you come to Aarhus",
+    "Send 400 kr on MobilePay right away, cash or card not possible",
+    "Swish eller kontant går bra, men jag skickar först när pengarna kommit, 600 kr",
+    "Kontant eller MobilePay går ikke, kun bankoverførsel forud: 2000 kr",
+    "Zelle or cash, I can also ship if you Zelle first $500"
+  ];
+  for (const text of risky) await assertRisk(seller(text), text);
+});
+
+test("review 2: 'I have paid you' plus an ordinary fee mention stays quiet", async () => {
+  const quiet = [
+    "Thanks, I have paid you 450 kr incl. the delivery fee",
+    "I've paid you now, 300 kr + 50 kr shipping fee, please send tracking",
+    "We've paid you 1200 kr. Shipping fee is on us, we'll arrange the courier",
+    "I've already paid you, did the shipping cost come through too?"
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+  await assertRisk(seller("I have already paid you, check your email. Now please pay the courier fee of 50 euro to my agent."), "pay the courier fee", "fee_via_link");
+});
+
+test("review 2: 'Pay first? No, ...' followed by a real ask still warns", async () => {
+  const risky = [
+    "Pay first? No, I'm not a scammer, transfer the money and I'll ship",
+    "Pay first? No, I don't do pickups, send the money and I'll post it",
+    "Payment first? No, it's not a scam, Vipps me and I'll ship",
+    "Payment first? No, half now via MobilePay and half when it arrives",
+    "Pay first? No, send half now and half when it arrives",
+    "Payment first? Nope, only the shipping cost first, then the rest"
+  ];
+  for (const text of risky) await assertRisk(seller(text), text);
+  await assertSilent(seller("Pay first? No, come and look first."), "come and look first");
+});
+
+test("review 2: purchase history followed by an ask still warns", async () => {
+  await assertRisk(seller("We paid with Wise when we bought it, pay with Wise too: 300 EUR now"), "wise history + ask", "off_platform");
+  await assertRisk(seller("We paid with bank transfer last week, so you must pay the same way: transfer 1500 kr now"), "transfer history + ask", "off_platform");
+});
