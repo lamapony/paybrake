@@ -168,3 +168,21 @@ test("an amount sent or paid first warns", async () => {
   ];
   for (const text of quiet) await assertSilent(seller(text), text);
 });
+
+// 10. PayPal F&F under other names.
+test("PayPal FF, PayPal friends, mark as gift and personal-not-business warn", async () => {
+  const risky = [
+    "Pay 900 kr PayPal FF",
+    "Can you pay with PayPal friends? 900 kr",
+    "Mark it as a gift on PayPal so there's no fee, 900 kr.",
+    "Just send it as personal, not as business, 900 kr on PayPal."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text, "friends_family");
+  const quiet = [
+    "My PayPal friends list is a mess, haha. 900 kr at pickup.",
+    "I bought it as a gift for my son, 900 kr.",
+    "It was for personal use only, never used for business. 900 kr.",
+    "Sure, I'll mark it as a gift and wrap it, 900 kr at pickup."
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+});

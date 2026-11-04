@@ -242,6 +242,12 @@ const RULES = [
   // "Wire 500 USD first", "betal 500 kr først": an amount sent first. The span must name the amount.
   { id: "pay_before_see", re: `(?:send|transfer|wire|pay|betal|overfør)(?:[ \\t]+(?!(?:first|først)(?![\\p{L}\\p{N}]))${GAP_TOKEN}){1,5}[ \\t]+(?:first|først)(?![\\p{L}\\p{N}])(?![ \\t]+thing)`, gate: "first-amount" },
 
+  // Friends & Family under other names: "PayPal FF", "PayPal friends", "mark it as a gift",
+  // "send it as personal, not business". Needs an amount or a send/pay verb nearby.
+  { id: "friends_family", re: "paypal\\s+(?:ff|friends)(?![\\p{L}\\p{N}])(?!\\s+(?:and|&|n['’]?|og|lists?)(?![\\p{L}\\p{N}]))", gate: "ff-alias" },
+  { id: "friends_family", re: "mark(?:ed)?\\s+(?:it\\s+)?as\\s+(?:a\\s+)?gift(?![ \\t]*cards?)", gate: "ff-alias" },
+  { id: "friends_family", re: "as\\s+personal,?\\s+not\\s+(?:as\\s+)?(?:a\\s+)?business", gate: "ff-alias" },
+
   // "a time" is a schedule. Bare "pay when you pick" is still the handover.
   { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?!\\s+a\\s+time\\b)(?:\\s+it\\s+up)?", gate: "none" },
   // "it", "them", or one word ("the lamp") may sit between pick and up.
@@ -1062,6 +1068,15 @@ function allow(rule, text, start, end) {
     if (/(?<!\d)[,;](?!\d)/u.test(span)) return false;
     if (/(?<![\p{L}\p{N}])(?:via|by|on|with|through|på|med|gennem)(?![\p{L}\p{N}])/iu.test(span)) return false;
     return wireAmountOk(text, start, end);
+  }
+  if (rule.gate === "ff-alias") {
+    if (negatedBefore(text, start)) return false;
+    // "mark it as a gift" is gift-wrapping unless PayPal is named nearby.
+    const around = text.slice(Math.max(0, start - 80), Math.min(text.length, end + 80));
+    if (!/^paypal/iu.test(text.slice(start, end)) && !/paypal/iu.test(around)) return false;
+    if (amountNear(text, start, end, 80)) return true;
+    const near = text.slice(Math.max(0, start - 60), Math.min(text.length, end + 60));
+    return /(?<![\p{L}\p{N}])(?:send|pay|paying|betal|betale|overfør)(?![\p{L}\p{N}])/iu.test(near);
   }
   if (rule.gate === "ship") {
     if (PICKUP_ALT.test(text)) return false;
