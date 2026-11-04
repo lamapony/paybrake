@@ -467,7 +467,8 @@ function amountNear(text, start, end, window) {
 // now / today / the end of the sentence. "2 photos" and "10 more photos" do not.
 // "payment details" and "payment link" name a thing, not the money. "paid ...
 // ago", "paid ... last month", "paid ... in 2022", "paid ... when I bought",
-// and "I paid for the service" are history, not an ask.
+// "I paid for the service", "I paid upfront", and "we paid ... upfront"
+// with no amount are history, not an ask.
 const MONEY_WORD = /(?<![\p{L}\p{N}])(?:money|cash|funds|fees?|deposits?|depositum|kroner|dollars?|euros?|amounts?|half)(?![\p{L}\p{N}])/iu;
 const BARE_AMOUNT = /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?(?:\s*%)?(?![\p{L}\p{N}])/iu;
 const PAST_PAY = /(?<![\p{L}\p{N}])(?:ago|last[ \t]+(?:night|week|month|year)|bought|purchased|in[ \t]+(?:19|20)\d{2})(?![\p{L}\p{N}])/iu;
@@ -510,8 +511,24 @@ function paymentNamesThing(text, wordStart) {
 function paidHistory(text, start) {
   const sentence = sentenceAt(text, start);
   if (PAST_PAY.test(sentence)) return true;
-  // "I paid for the service upfront." A past purchase with no amount.
-  if (/^\s*I\s+paid\s+for\b/iu.test(sentence) && !amountSpans(sentence).length && !bareAmountCounts(sentence)) return true;
+  // A past purchase with no amount: "I paid for the service upfront.",
+  // "I paid upfront for the service.", "We paid for the repair upfront.",
+  // "I already paid the deposit". Naming an amount keeps it an ask.
+  if (amountSpans(sentence).length || bareAmountCounts(sentence)) return false;
+  return /^\s*(?:i|we)\s+(?:already\s+)?paid\b/iu.test(sentence);
+}
+
+// "paid" in a past sentence is not the pay word that unlocks "deposit".
+// send/pay/via still count. An amount is handled by the caller.
+function payWordNearLive(text, start, end, window) {
+  const from = Math.max(0, start - window);
+  const to = Math.min(text.length, end + window);
+  const re = new RegExp(PAY_WORD.source, "giu");
+  for (const match of text.slice(from, to).matchAll(re)) {
+    const at = from + (match.index ?? 0);
+    if (/^paid$/iu.test(match[0]) && paidHistory(text, at)) continue;
+    return true;
+  }
   return false;
 }
 
@@ -873,7 +890,8 @@ function allow(rule, text, start, end) {
   if (rule.gate === "ff-pivot") return familyPivot(text, start);
   if (rule.gate === "deposit-word") {
     if (depositRejected(text, start, end)) return false;
-    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
+    if (amountNear(text, start, end, 80)) return true;
+    return payWordNearLive(text, start, end, 80);
   }
   if (rule.gate === "reserve") {
     if (depositRejected(text, start, end)) return false;
