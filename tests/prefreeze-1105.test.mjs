@@ -194,3 +194,15 @@ test("Danish betal forud warns", async () => {
   await assertSilent(seller("Du skal ikke betale noget forud, betal ved afhentning."), "ikke forud");
   await assertSilent(seller("Ring gerne forud, så er jeg hjemme. 1500 kr ved afhentning."), "ring forud");
 });
+
+// 12. Seller-side scam: "I paid you, now pay the courier fee".
+test("a courier or insurance fee after a fake payment warns", async () => {
+  const risky = [
+    "I have paid you via PayPal, check your email for the confirmation and send the 300 kr courier fee.",
+    "Send me your email so I can pay with PayPal, my courier will pick it up. Please pay the 200 kr insurance fee first."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text, "fee_via_link");
+  await assertSilent(seller("The courier fee is 60 kr, it's included in the checkout price."), "courier fee in checkout");
+  await assertSilent(seller("The courier fee is 60 kr, you can also pick it up for free."), "courier fee price");
+  await assertSilent(seller("I've already paid the shipping fee, you pay 900 kr at pickup."), "seller paid shipping");
+});

@@ -216,7 +216,7 @@ const RULES = [
   { id: "phishing_link", re: "(?:confirm|verify)\\s+(?:your\\s+)?(?:ownership|identity|account|details)\\s+(?:via|through|using|at|on)\\s+(?:this|the)\\s+(?:link|site|page)", gate: "negation" },
 
   // v3: "pay the fee via this link" and fees to release a parcel, prize or refund.
-  { id: "fee_via_link", re: "(?:customs|delivery|shipping|handling|processing|release|clearance|redelivery|activation|verification|unlock(?:ing)?|transfer|insurance|admin(?:istration)?|tax|toll|told|gebyr|fragt)\\s*(?:fee|charge|duty|payment|cost|gebyr|afgift)s?", gate: "fee" },
+  { id: "fee_via_link", re: "(?:customs|courier|delivery|shipping|handling|processing|release|clearance|redelivery|activation|verification|unlock(?:ing)?|transfer|insurance|admin(?:istration)?|tax|toll|told|gebyr|fragt)\\s*(?:fee|charge|duty|payment|cost|gebyr|afgift)s?", gate: "fee" },
   { id: "fee_via_link", re: "(?:pay|cover|settle|betal)\\s+(?:a\\s+|the\\s+|this\\s+|small\\s+|a\\s+small\\s+)?(?:fee|charge|gebyr)", gate: "fee" },
 
   // v3: impersonation (weak alone; with a link, code or fee ask it becomes high).
@@ -833,7 +833,7 @@ const OFFICIAL = /official\s+(?:\w+\s+)?(?:app|website|site|number)|the\s+number
 const LOGIN_VERB = /(?:log\s*(?:ind|in|on)|login|sign\s*in|confirm|bekræft|godkend|approve|verify|identify|identificer)\s+(?:dig\s+|yourself\s+)?(?:med|with|via|using|in|i|på)\s+(?:your\s+|din\s+)?$/iu;
 const REMOTE_VERB = /(?:download|install|open|use|run|give|grant|allow|let\s+(?:me|us)|access|connect|hent|installer|åbn)/iu;
 const LURE = /(?:verify|verification|confirm|log\s*in|login|sign\s*in|claim|pay|unlock|update|free|click|enter|gift|nitro|account|password|prize|won|reward|bonus|airdrop|refund|customs|parcel|package|suspend|limited|bekræft|log\s+ind|betal|modtag|gratis)/iu;
-const FEE_CONTEXT = /(?:https?:\/\/|www\.|\blink\b|linket|click|tap\s+(?:here|the)|klik|claim|prize|won|winner|release|unlock|customs|held|refund|gift\s*card|reward|inheritance|redeliver|toll|told)/iu;
+const FEE_CONTEXT = /(?:https?:\/\/|www\.|\blink\b|linket|click|tap\s+(?:here|the)|klik|claim|prize|won|winner|release|unlock|customs|held|refund|gift\s*card|reward|inheritance|redeliver|toll|told|(?:have|has|['’]ve)\s+(?:already\s+)?paid\s+you|check\s+your\s+(?:e-?mail|inbox|paypal)|my\s+(?:courier|agent|shipping\s+agent))/iu;
 const SHORTENERS = /^(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|is\.gd|cutt\.ly|rb\.gy|sc\.link|ow\.ly|shorturl\.at|tiny\.cc|s\.id|t\.ly|bl\.ink|rebrand\.ly)$/iu;
 const ODD_TLD = /\.(?:xyz|top|click|live|icu|ru|tk|ml|ga|cf|gq|zip|mov|cam|rest|monster|info|online|site|shop|support|link|gift)$/iu;
 const BENIGN_SUB = /^(?:www|support|help|helpcenter|billing|account|accounts|my|app|mail|portal|customer|service|status|docs)$/iu;
