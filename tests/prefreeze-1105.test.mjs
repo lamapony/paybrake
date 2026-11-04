@@ -73,3 +73,24 @@ test("MobilePay before the handover still warns", async () => {
   assert.equal(reserve.level, "high", JSON.stringify(reserve));
   assert.ok(reserve.signals.includes("off_platform"), JSON.stringify(reserve.signals));
 });
+
+// 3. "G&S fees are too high, use F&F" is the classic dodge. Naming G&S to
+//    avoid it is not agreeing to it.
+test("dodging Goods & Services fees is not a Goods & Services veto", async () => {
+  const risky = [
+    "Goods and Services fees are too high, send 900 kr via Friends & Family please.",
+    "PayPal G&S adds fees so please send as F&F, 900 kr",
+    "Send via F&F instead of G&S please, 900 kr",
+    "G&S takes 5%, so pay 900 kr Friends and Family."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text, "friends_family");
+});
+
+test("Goods & Services offered or agreed still hides the card", async () => {
+  const quiet = [
+    "Price is 900 kr. Pay with PayPal Goods and Services and I ship tomorrow.",
+    "Pay with Goods & Services, not Friends and Family. 900 kr.",
+    "Goods & Services is fine, I'll cover the fee. Not Friends and Family. 900 kr."
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+});

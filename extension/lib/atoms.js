@@ -258,6 +258,15 @@ const RULES = [
 const GS = wordBound("goods\\s*(?:&|and)\\s*services|varer\\s+og\\s+tjenester|G&S", "iu");
 const PICKUP_ALT = /or\s+you\s+can\s+pick|or\s+pick\s*up|ship\s+or\s+(?:you\s+can\s+)?pick|eller\s+(?:du\s+kan\s+)?(?:hente|afhent)/iu;
 const REFUSAL = /(?:(?:no|not|don't|dont|do\s+not|won't|wont|ikke|nej)\s+(?:\w+\s+){0,4}|avoid\s+(?:using|sending|paying)\s+(?:\w+\s+){0,3})(?:goods(?:\s*(?:&|and)\s*services)?|g&s|varer\s+og\s+tjenester)/iu;
+// "G&S fees are too high", "G&S takes 5%", "instead of G&S": naming Goods &
+// Services to steer away from it is not agreeing to it.
+const GS_NAME = "goods\\s*(?:&|and)\\s*services|g&s|varer\\s+og\\s+tjenester";
+const GS_DODGE = new RegExp(
+  `(?:instead\\s+of|rather\\s+than)\\s+(?:paypal\\s+)?(?:${GS_NAME})` +
+    `|(?:${GS_NAME})[^.!?\\n]{0,24}?(?<![\\p{L}\\p{N}])(?:adds?|charges?|takes?|costs?|eats?)(?![\\p{L}\\p{N}])[^.!?\\n]{0,20}?(?:fees?|\\d+\\s*%|too\\s+much)` +
+    `|(?:${GS_NAME})\\s+fees?\\s+(?:is|are)\\s+(?:too|so|really|way)\\s+(?:high|much|expensive)`,
+  "iu"
+);
 
 function hasPayWord(text) {
   PAY_WORD.lastIndex = 0;
@@ -1200,7 +1209,7 @@ function goodsHit(messages) {
     GS.lastIndex = 0;
     const offers = GS.test(body);
     GS.lastIndex = 0;
-    if (offers && !REFUSAL.test(body)) {
+    if (offers && !REFUSAL.test(body) && !GS_DODGE.test(body)) {
       const match = body.match(wordBound("goods\\s*(?:&|and)\\s*services|varer\\s+og\\s+tjenester|G&S", "iu"));
       const start = match ? match.index : 0;
       const phrase = match ? match[0] : "Goods & Services";
