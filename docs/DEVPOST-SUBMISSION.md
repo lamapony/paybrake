@@ -51,7 +51,7 @@ Most marketplace scams end the same way. The "seller" (or a fake buyer) moves th
 - An end-to-end path a judge can run in about two minutes with nothing installed but the unzipped extension: risky chat → explained card → PayPal order → approve → capture.
 - On the 35-case synthetic regression set: precision 1, recall 1, zero false alarms. That set is our own writing, so we treat it as a regression gate, not a field accuracy number.
 - On public third-party data (rules v4, 3 Nov, test split of 1,573 messages): precision 0.976 and a false-alarm rate of 0.9%. Recall was 0.456 overall, because most SMS and Discord spam never asks for a payment. On ScamGuardBench's money-asking scams the rules caught 53 of 55. Details and caveats are in `eval/real/RESULTS.md`. These datasets are not marketplace chats.
-- A pre-freeze bug hunt (5 Nov) fixed 15 detection false positives and false negatives, each with a test. Three independent adversarial reviews then compared about 1,100 inputs against the previous build, and every regression they found is now a test. Examples: MobilePay at pickup no longer warns, and a buyer asking "Can I pay through checkout?" no longer hides the seller's F&F demand.
+- A pre-freeze bug hunt (5 Nov) fixed 15 detection false positives and false negatives, each with a test. Four independent adversarial reviews then compared about 1,500 inputs against the previous build, and every regression they found is now a test. Examples: MobilePay at pickup no longer warns, and a buyer asking "Can I pay through checkout?" no longer hides the seller's F&F demand.
 
 ## What we learned
 
@@ -122,7 +122,7 @@ If you see a yellow **PayBrake is not running in this browser** box, the extensi
 
 ## Checks behind this text (5 Nov, branch `claude/pb-prefreeze-1105-lr6yf8`)
 
-- `npm test`: 332 pass, 0 fail with `CHROME_PATH` unset, on Node 20 and Node 22 (the browser flow test skips, as in CI). With `CHROME_PATH` set, the browser flow test also passes. `npm run e2e` (extension smoke) passes.
+- `npm test`: 334 pass, 0 fail with `CHROME_PATH` unset, on Node 20 and Node 22 (the browser flow test skips, as in CI). With `CHROME_PATH` set, the browser flow test also passes. `npm run e2e` (extension smoke) passes.
 - `npm run eval`: precision 1, recall 1, f1 1, false alarms 0 (tp 18, fp 0, fn 0, tn 17).
 - `eval/real` was **not** re-run for rules v5, because Hugging Face is not reachable from the environment that made these fixes. The v4 numbers above are from `eval/real/RESULTS.md` (3 Nov).
 - `npm run e2e:hosted` was not run. The hosted Worker was not redeployed from this branch.
