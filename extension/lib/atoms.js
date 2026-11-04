@@ -66,6 +66,8 @@ const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family\\s+is\\s+fine", gate: "ff-pivot" },
   { id: "friends_family", re: "family\\s+(?:and|&)\\s+friends\\s+is\\s+fine", gate: "ff-pivot" },
   { id: "friends_family", re: "F\\s+&\\s+F", gate: "none" },
+  { id: "friends_family", re: "F\\s+and\\s+F", gate: "ff-phrase" },
+  { id: "friends_family", re: "friends\\s+n['’]?\\s+family", gate: "ff-phrase" },
   // Whole words only (sender/sende are listed; resend and gifted are not).
   // The gap cannot cross . ! ? or a newline, and it cannot swallow as/som.
   // "gift card" / "gavekort" stay off-platform.
