@@ -159,6 +159,9 @@ const RULES = [
   // Apple Pay and Google Pay. pay-or-amount would fire "I paid with Apple Pay" with no sum.
   { id: "off_platform", re: "apple\\s+pay", gate: "amount-near" },
   { id: "off_platform", re: "google\\s+pay", gate: "amount-near" },
+  // Klarna. paid and via are already pay words, so pay-or-amount would fire
+  // with no sum. afterpay and wechat do not match.
+  { id: "off_platform", re: "klarna", gate: "amount-near" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
