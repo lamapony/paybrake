@@ -172,7 +172,7 @@ const RULES = [
   { id: "credential_request", re: "(?:send|give|tell|provide|read|share|forward|text)\\s+(?!you\\b)(?:me\\s+|us\\s+)?(?:\\w+\\s+){0,4}?(?:the\\s+|your\\s+|that\\s+|this\\s+)?(?:code|codes)", gate: "cred-inline" },
 
   // v3: remote-access apps. Brand names fire on their own; the generic phrase needs an install verb.
-  { id: "remote_access", re: "any\\s*desk|team\\s*viewer|quick\\s*support|quick\\s*assist|rust\\s*desk|ultra\\s*viewer|ammyy(?:\\s+admin)?|logmein|splashtop|supremo|screenconnect", gate: "negation" },
+  { id: "remote_access", re: "any\\s*desk|team\\s*viewer|quick\\s*support|quick\\s*assist|rust\\s*desk|ultra\\s*viewer|ammyy(?:\\s+admin)?|logmein|splashtop|supremo|screenconnect", gate: "remote-brand" },
   { id: "remote_access", re: "remote[-\\s](?:access|desktop|control|support)(?:\\s+(?:tool|app|software|program))?|screen[-\\s]?shar(?:e|ing)", gate: "remote" },
   { id: "remote_access", re: "remote\\s+in(?:\\s*to)?\\s+(?:your|the)\\s+(?:computer|pc|laptop|device|phone|machine)", gate: "negation" },
 
@@ -831,6 +831,27 @@ function linkAllowed(text, start, end) {
   return LURE.test(near);
 }
 
+// "Do not install AnyDesk" refuses. The verb may sit between the negation and the brand.
+// "Don't worry, install AnyDesk" stays an ask. "The quick support I got" is not a tool.
+const REMOTE_BRAND_GAP = "(?:installer|install|download|open|use|run|hent|åbn|the|an|a)";
+const REMOTE_BRAND_REFUSAL = new RegExp(
+  `(?<![\\p{L}\\p{N}])(?:won['’]?t|wont|don['’]?t|dont|do\\s+not|never|not|no|without|ikke|ingen|uden|nej|aldrig)(?![\\p{L}\\p{N}])(?:\\s+${REMOTE_BRAND_GAP}){0,4}\\s+$`,
+  "iu"
+);
+
+function remoteBrandOk(text, start, end) {
+  const before = text.slice(Math.max(0, start - 48), start);
+  if (REMOTE_BRAND_REFUSAL.test(before)) return false;
+  const span = text.slice(start, end);
+  if (!/^quick\s+(?:support|assist)$/iu.test(span)) return true;
+  const sentence = sentenceAround(text, start, end);
+  if (REMOTE_VERB.test(sentence.whole)) return true;
+  if (/(?<![\p{L}\p{N}])(?:any\s*desk|team\s*viewer|rust\s*desk)(?![\p{L}\p{N}])/iu.test(sentence.whole)) return true;
+  const named = /(?:the|some|that|this|your|our|their|an|a)\s+$/iu.test(sentence.before);
+  const received = /^\s+i\s+got\b/iu.test(sentence.after) || /(?:got|received|had)\s+$/iu.test(sentence.before);
+  return !(named || received);
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
@@ -841,6 +862,7 @@ function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
   if (rule.gate === "negation") return !negatedBefore(text, start);
+  if (rule.gate === "remote-brand") return remoteBrandOk(text, start, end);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "ff-dictated") return dictatedFamilyOnly(text, start, end);
   if (rule.gate === "ff-pivot") return familyPivot(text, start);
