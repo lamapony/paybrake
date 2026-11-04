@@ -235,3 +235,10 @@ test("a rail offered next to cash stays quiet", async () => {
   ];
   for (const text of risky) await assertRisk(seller(text), text);
 });
+
+// 15. "I paid by bank transfer when I bought it" is purchase history.
+test("a past purchase paid by bank transfer stays quiet", async () => {
+  await assertSilent(seller("I paid by bank transfer when I bought it, here is the receipt photo."), "history");
+  await assertSilent(seller("We paid 900 kr via Revolut for it last year, now 450 kr."), "history revolut");
+  await assertRisk(seller("Pay 450 kr by bank transfer today, I bought a new one so I ship tomorrow."), "ask + bought", "off_platform");
+});

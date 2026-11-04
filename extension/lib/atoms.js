@@ -964,6 +964,11 @@ const HANDOVER_TRANSFER = /^(?:(?:bank|wire)\s+transfers?|bankoverførsel|revolu
 function allow(rule, text, start, end) {
   if (rule.hold && holdUntilHandover(text, start, end)) return false;
   if (rule.id === "off_platform" && rule.gate === "negation" && HANDOVER_TRANSFER.test(text.slice(start, end)) && handoverQuietsRail(text)) return false;
+  // "I paid by bank transfer when I bought it" is purchase history, not an ask.
+  if (rule.id === "off_platform" && rule.gate === "negation" && HANDOVER_TRANSFER.test(text.slice(start, end))) {
+    const sentence = sentenceAt(text, start);
+    if (/(?<![\p{L}\p{N}])(?:i|we)\s+(?:already\s+)?paid(?![\p{L}\p{N}])/iu.test(sentence) && PAST_PAY.test(sentence)) return false;
+  }
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
   if (rule.spanNegation && phraseNegated(text, start, end)) return false;
