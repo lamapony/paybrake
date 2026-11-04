@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createOrdersPort } from "./paypal.js";
 import { protectDeal } from "./agent.js";
-import { classifyText } from "./classify.js";
+import { classifyText, resolveLlm } from "./classify.js";
 import { NAME } from "./brand.js";
 
 export const BODY_LIMIT = 16 * 1024;
@@ -109,23 +109,35 @@ function logStatus(id, status) {
   console.log(`order ${id} ${status}`);
 }
 
+function publicMessage(error) {
+  const message = String((error && error.message) || "");
+  if (!message) return "bad_request";
+  if (/authorization|bearer |access_token|client_secret/i.test(message)) return "bad_request";
+  return message;
+}
+
 function fail(res, error) {
   if (error && error.status === 413) return send(res, 413, { error: "payload_too_large" });
-  if (error && error.status === 400) return send(res, 400, { error: "bad_request", message: error.message });
+  if (error && error.status === 404) return send(res, 404, { error: "not_found" });
+  if (error && error.status === 400) return send(res, 400, { error: "bad_request", message: publicMessage(error) });
   if (error && error.status === 409) return send(res, 409, { error: error.code || "conflict" });
   if (error && (error.code === "llm_off" || error.status === 503)) return send(res, 503, { error: "llm_off" });
-  if (error && error.status === 502) return send(res, 502, { error: "llm_error" });
+  if (error && error.status === 502) {
+    const code = error.code === "paypal_error" || error.code === "paypal_auth" ? error.code : "llm_error";
+    return send(res, 502, { error: code });
+  }
   return send(res, 500, { error: "internal" });
 }
 
-function createHandler(env = {}, deps = {}) {
+export function createHandler(env = {}, deps = {}) {
   if (!env.ALLOWED_ORIGINS) {
     env = Object.assign({}, env, {
       ALLOWED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"
     });
   }
-  const orders = deps.orders || createOrdersPort(env);
+  const orders = deps.orders || createOrdersPort(env, { fetchImpl: deps.fetchImpl, now: deps.now });
   const fetchImpl = deps.fetchImpl || globalThis.fetch;
+  const llm = resolveLlm(env);
 
   return async (req, res) => {
     applyCors(req, res, env);
@@ -143,7 +155,8 @@ function createHandler(env = {}, deps = {}) {
           name: NAME,
           env: "sandbox",
           paypal: orders.mode,
-          llm: String(env.LLM_BASE_URL || "").trim() ? "configured" : "off"
+          llm: llm.configured ? "configured" : "off",
+          llmProvider: llm.configured ? llm.provider : "off"
         });
         return;
       }
@@ -151,11 +164,14 @@ function createHandler(env = {}, deps = {}) {
       if (req.method === "POST" && pathname === "/api/classify") {
         const body = await readJson(req);
         if (typeof body.text !== "string") bad("text is required");
-        if (!String(env.LLM_BASE_URL || "").trim()) {
+        if (!llm.configured) {
           send(res, 503, { error: "llm_off" });
           return;
         }
-        const verdict = await classifyText(body.text, env, fetchImpl);
+        // The caller may send its rules level; the AI may lower it but never raise it.
+        // "none" and any other value are not a cap: the model may still add a card.
+        const rulesLevel = body.rulesLevel === "high" || body.rulesLevel === "medium" ? body.rulesLevel : "";
+        const verdict = await classifyText(body.text, env, fetchImpl, rulesLevel);
         send(res, 200, verdict);
         return;
       }
@@ -211,13 +227,13 @@ function createHandler(env = {}, deps = {}) {
 
       if (req.method === "GET" && (pathname === "/return" || pathname === "/cancel")) {
         const token = url.searchParams.get("token") || "";
-        if (pathname === "/return" && token && typeof orders.approve === "function") {
+        if (pathname === "/return" && token && orders.mode === "mock" && typeof orders.approve === "function") {
           const approved = await orders.approve(token);
           if (approved) logStatus(approved.orderId, approved.status);
         }
         const dest = new URL(DEMO_RETURN);
         if (token) dest.searchParams.set("token", token);
-        dest.searchParams.set("mock", "1");
+        if (orders.mode === "mock") dest.searchParams.set("mock", "1");
         if (pathname === "/cancel") dest.searchParams.set("cancel", "1");
         res.writeHead(302, { location: dest.toString() });
         res.end();
