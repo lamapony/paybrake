@@ -1,6 +1,6 @@
 # Backend contract
 
-This is the handoff for the real PayPal adapter. The extension and the mock server already speak this HTTP API. `backend/src/paypal.js` returns the mock adapter when `PAYPAL_CLIENT_ID` is empty. If a client id is set and `PAYPAL_ADAPTER` is `rest` or `toolkit`, `createOrdersPort` throws `not implemented yet: see docs/BACKEND-CONTRACT.md`.
+The extension and the server speak this HTTP API. `backend/src/paypal.js` picks the adapter. An empty `PAYPAL_CLIENT_ID` always selects mock, including when `PAYPAL_ADAPTER=rest`. With a client id, `rest` (or an empty adapter) uses `backend/src/paypal-rest.js`, and `toolkit` uses `backend/src/paypal-toolkit.js`, which executes through rest.
 
 Do not log tokens, secrets, or request bodies. Log `order <id> <status>` only.
 
@@ -19,18 +19,22 @@ captureOrder(id)
   -> { orderId, status, captureId }
 ```
 
-`amount` is a positive number. Format it as a string with two decimals (`1800` becomes `"1800.00"`) before it leaves for PayPal. `currency` is a 3-letter code, stored upper-case. `payeeEmail` may be empty. `referenceId` is a UUID when the caller omits it.
+`amount` is a positive number. `formatAmount` writes two decimals (`1800` becomes `"1800.00"`) before it leaves for PayPal. `currency` is a 3-letter code, stored upper-case. `payeeEmail` may be empty. `referenceId` is a UUID when the caller omits it. `protectDeal` in `backend/src/agent.js` always passes one.
 
 The object also has `mode`: `"mock"`, `"rest"`, or `"toolkit"`.
 
-Adapter choice:
+Adapter choice when `PAYPAL_ENV=sandbox`:
 
 | Condition | Adapter |
 |---|---|
 | `PAYPAL_CLIENT_ID` missing or blank, or `PAYPAL_ADAPTER=mock` | mock, even if the example env says `rest` |
-| client id set and adapter is `rest`, `toolkit`, or empty | throw the not-implemented error until those adapters exist |
+| client id set and adapter is `toolkit` | toolkit (needs `PAYPAL_CLIENT_SECRET`; calls rest) |
+| client id set and adapter is `rest` or empty | rest (needs `PAYPAL_CLIENT_SECRET`) |
+| client id set and adapter is anything else | throw `Unknown PAYPAL_ADAPTER` |
 
-### Mock behaviour (already implemented)
+A missing secret throws `PAYPAL_CLIENT_SECRET is required for the rest adapter` at startup. The message does not include the secret.
+
+### Mock behaviour
 
 - Ids look like `MOCK-<uuid>`. Capture ids look like `MOCK-CAP-<uuid>`.
 - `approveUrl` is `http://localhost:8080/demo/checkout-return.html?token=<id>&mock=1`.
@@ -39,10 +43,68 @@ Adapter choice:
 - Capture of a `CREATED` order throws status 409, code `not_approved`.
 - A second capture returns the same `captureId`.
 - The store is in memory and dies with the process.
+- Any 3-letter currency is accepted. The rest currency list applies only to rest and toolkit.
+
+### Rest behaviour
+
+`createRestPort` talks to the sandbox Orders v2 API. Tests inject `fetch`. Nothing in this repo calls the network.
+
+Base URL: `PAYPAL_BASE_URL` with trailing slashes removed, or `https://api-m.sandbox.paypal.com`. The host must be `api-m.sandbox.paypal.com` or `api.sandbox.paypal.com`, and the scheme must be `https`. Anything else throws `Refusing non-sandbox PayPal base URL`.
+
+Timeout: `PAYPAL_TIMEOUT_MS` when it is a number above 0, otherwise 10000. Each call uses `AbortSignal.timeout`. A thrown fetch becomes 502 `paypal_error`. The error text does not include the transport message.
+
+OAuth: `POST {base}/v1/oauth2/token` with `content-type: application/x-www-form-urlencoded`, body `grant_type=client_credentials`, and `authorization: Basic` of `clientId:clientSecret`. The access token is cached until `expires_in - 60` seconds when that remainder is still positive. A positive `expires_in` of 60 seconds or less is cached for the full `expires_in`. A missing, non-numeric, or non-positive `expires_in` is cached for 300 seconds. Concurrent callers share one in-flight token request. The token is kept in memory on this process.
+
+Orders calls send `authorization: Bearer …`. Create sends a `PayPal-Request-Id` UUID derived from the raw `referenceId` (or a new UUID when the caller omits it), not from the `reference_id` string PayPal stores. Capture sends a UUID derived from the order id. Repeating the same reference, or capturing the same order, sends the same id, including the single 401 retry. A 401 clears the cache and retries that call once. A second 401 is 502 `paypal_auth`. A 403 does not clear the cache and is not retried; it is 502 `paypal_auth` on that response. The token endpoint itself is not retried; a 401 or 403 from it is already `paypal_auth`.
+
+`POST /v2/checkout/orders` with `prefer: return=representation` and this JSON:
+
+- `intent`: `"CAPTURE"`
+- `purchase_units[0].reference_id`: the caller's id when it is already 1-256 printable ASCII characters (space through `~`), otherwise the sha256 hex of that raw id (64 characters). A missing id becomes a new UUID, which is sent as itself. The extension protect seed joins the chat hash, item, amount, currency, and payee email with a unit separator, so PayPal receives the hex. The item and the email stay out of this field. `PayPal-Request-Id` still uses the raw seed, so the same seed retries the same create.
+- `purchase_units[0].description`: the item, cut at 127 characters
+- `purchase_units[0].amount`: `{ currency_code, value }` with the two-decimal string
+- `purchase_units[0].payee`: `{ email_address }` when the email is non-blank after trim. A blank email omits `payee`
+- `payment_source.paypal.experience_context`: `return_url`, `cancel_url`, `user_action: "PAY_NOW"`, `shipping_preference: "NO_SHIPPING"`, `brand_name: "PayBrake demo"`
+
+`return_url` is `PAYPAL_RETURN_URL` or `http://localhost:8080/demo/checkout-return.html`. `cancel_url` is `PAYPAL_CANCEL_URL` or that page plus `?cancel=1`.
+
+Currency must be `DKK`, `EUR`, or `USD` after upper-case. Anything else is 400 `bad_request` with message `currency must be DKK, EUR, or USD`, and fetch is not called.
+
+The approve URL is the link with `rel` `payer-action`. If that href is missing, the link with `rel` `approve`. If neither exists, `approveUrl` is null. `orderId` and `status` are copied from the PayPal JSON (`id` and `status`).
+
+`GET /v2/checkout/orders/{id}` returns null on PayPal 404. The id is URL-encoded. A 2xx body maps to `{ orderId, status, captureId, approveUrl }`. `captureId` is `purchase_units[0].payments.captures[0].id` when that string is non-empty, otherwise null.
+
+`POST /v2/checkout/orders/{id}/capture` sends a JSON object `{}` and a `PayPal-Request-Id` derived from the order id. PayPal 404 returns null. A 422 whose `details[].issue` is `ORDER_NOT_APPROVED` or `PAYER_ACTION_REQUIRED` throws 409 `not_approved`. A 422 `ORDER_ALREADY_CAPTURED` loads the order with GET and returns `{ orderId, status, captureId }`. Other failures use the map below.
+
+PayPal error mapping (`paypalError` plus the 422 cases above):
+
+| PayPal | This server |
+|---|---|
+| 404 on get or capture | `null`, which the route sends as 404 `not_found` |
+| 422 `ORDER_NOT_APPROVED` or `PAYER_ACTION_REQUIRED` | 409 `not_approved` |
+| 422 `ORDER_ALREADY_CAPTURED` on capture | the existing capture from GET |
+| other 400 or 422 | 400 `bad_request`. Message is `PayPal rejected the order` or `PayPal rejected the order: ISSUE`. `ISSUE` is the first `details[].issue` that matches `^[A-Z][A-Z0-9_]*$`, otherwise `name` if it matches. PayPal's `message` and `description` are dropped |
+| 401 | one refresh, then 502 `paypal_auth` |
+| 403 | 502 `paypal_auth`, no token refresh |
+| anything else, including 5xx, 429, a thrown fetch, or a token body with no `access_token` | 502 `paypal_error` |
+
+HTTP bodies for 502 are `{ "error": "paypal_auth" }` or `{ "error": "paypal_error" }`. They do not include the token, the secret, or the PayPal body.
+
+### Toolkit behaviour
+
+Finding, checked against `@paypal/agent-toolkit` 1.11.0: `create_order` has no payee field, and `currencyCode` is USD only. The package depends on `ai`, `openai`, `langchain`, `axios`, and the PayPal server SDK. It is not installed. The comment at the top of `backend/src/paypal-toolkit.js` records that.
+
+The stub still exposes `tools` named `create_order`, `get_order`, and `pay_order`. `create_order` adds PayBrake fields the published schema does not have: `payeeEmail`, and `currencyCode` of `DKK`, `EUR`, or `USD`. `runTool` maps those arguments onto a rest order:
+
+- item name is `items[0].name`
+- amount is the sum of each line (`itemTotal`, or `itemCost * quantity` when `itemTotal` is empty; quantity defaults to 1), plus `shippingCost`, minus `discount`, rounded to cents
+- then `rest.createOrder`, `rest.getOrder`, or `rest.captureOrder`
+
+`createOrder` / `getOrder` / `captureOrder` on the toolkit port are the rest methods. In toolkit mode, `POST /api/protect` calls `runTool("create_order", …)` with one line item (`quantity` 1, `taxPercent` 0, `itemTotal` equal to the amount). There is no model in that path. The response `mode` is `"toolkit"`.
 
 ## HTTP
 
-Listen on `127.0.0.1` and `::1` so both `localhost` (often `::1` first) and `127.0.0.1` work. Default port `8787`.
+Listen on `127.0.0.1` and `::1` so both `localhost` (often `::1` first) and `127.0.0.1` work. Default port `8787` from `PORT`. There is no host setting. See `docs/CHRISTOPHER-HANDOFF.md` before a public deploy.
 
 JSON bodies. Reject a body over 16 kB with 413 before parsing. Empty body counts as `{}`.
 
@@ -57,18 +119,54 @@ If `ALLOWED_ORIGINS` is unset, the server allows `http://localhost:8080` and `ht
 `GET /health`
 
 ```json
-{ "ok": true, "name": "PayBrake", "env": "sandbox", "paypal": "mock", "llm": "off" }
+{
+  "ok": true,
+  "name": "PayBrake",
+  "env": "sandbox",
+  "paypal": "mock",
+  "llm": "off",
+  "llmProvider": "off"
+}
 ```
 
-`paypal` is the adapter mode. `llm` is `"configured"` when `LLM_BASE_URL` is non-empty, otherwise `"off"`.
+`paypal` is the adapter mode (`mock`, `rest`, or `toolkit`). `llm` is `"configured"` when `resolveLlm` has a provider, otherwise `"off"`. `llmProvider` is `"typesafe"`, `"openrouter"`, `"openai-compatible"`, or `"off"`. The body never includes the API key or the model name.
+
+With OpenRouter configured and rest selected, the same route looks like:
+
+```json
+{
+  "ok": true,
+  "name": "PayBrake",
+  "env": "sandbox",
+  "paypal": "rest",
+  "llm": "configured",
+  "llmProvider": "openrouter"
+}
+```
 
 `POST /api/classify`
 
-Request: `{ "text": "Send 500 kr via Friends & Family" }`
+Request: `{ "text": "Send 500 kr via Friends & Family", "rulesLevel": "medium" }`
 
-When `LLM_BASE_URL` is empty, respond **503** `{ "error": "llm_off" }` and do not call a provider.
+`rulesLevel` is optional. `"high"` or `"medium"` is the level the rules already gave this chat. Any other value, including `"none"` and a missing field, is not a cap: the model may still add a card when the rules were silent. The model may lower a `"high"` or `"medium"` rules level. It cannot raise it: a model `"high"` with `rulesLevel: "medium"` comes back `"medium"`. The extension sends this field only when the rules level is `"high"` or `"medium"`, and it also clamps on its own, so a server that ignores it still cannot raise the card. The level is an argument to `classifyText`, not a field copied onto the process environment.
 
-When it is set, `classifyText` POSTs to `{LLM_BASE_URL}/chat/completions` with `temperature: 0`, `response_format: { "type": "json_object" }`, model `LLM_MODEL` or `gpt-4o-mini`, and `Authorization: Bearer …` only if `LLM_API_KEY` is set. Every evidence quote must be a whitespace-normalized substring of `text`. If any quote fails, the result is `{ "risky": false, "evidence": [], "level": "none", "reason": "" }`. A usable result looks like:
+`text` must be a string. The local backend limit is 4000 characters (`TEXT_LIMIT` in `backend/src/classify.js`): longer than that is **400** `{ "error": "bad_request", "message": "text is too long" }`. Fetch is not called. The hosted Worker is stricter: 2000 characters, **413** `{ "error": "text_too_long", "max": 2000 }`. The extension sends at most the latest 1900 characters, which both accept.
+
+When `resolveLlm` is not configured, respond **503** `{ "error": "llm_off" }` and do not call a provider. That includes an empty env, `LLM_PROVIDER=off` (even if keys are set), `LLM_PROVIDER=openrouter` with no key, and `LLM_PROVIDER=openai-compatible` with no `LLM_BASE_URL`. A value other than `typesafe`, `openrouter`, `openai-compatible`, or `off` throws `Unknown LLM_PROVIDER` from `resolveLlm`. `createHandler` calls that at startup, so the process does not listen.
+
+When it is configured, `classifyText` POSTs to `{baseUrl}/chat/completions` with `temperature: 0`, `response_format: { "type": "json_object" }`, and the system prompt in `backend/src/classify.js`.
+
+| Provider | How it is chosen | Base URL | Model when `LLM_MODEL` is empty | Authorization |
+|---|---|---|---|---|
+| `openrouter` | `LLM_PROVIDER=openrouter`, or provider empty and `OPENROUTER_API_KEY` is set (and `LLM_BASE_URL` is empty) | `https://openrouter.ai/api/v1`. `LLM_BASE_URL` is used only when it is `https` and the host is `openrouter.ai` or a subdomain of it. Any other value is ignored | `openai/gpt-4o-mini` | Bearer of `OPENROUTER_API_KEY`, or `LLM_API_KEY` if the OpenRouter key is empty. Also sends `HTTP-Referer: https://github.com/lamapony/paybrake` and `X-Title: PayBrake` |
+| `openai-compatible` | `LLM_PROVIDER=openai-compatible`, or provider empty and `LLM_BASE_URL` is set | `LLM_BASE_URL` (required) | `gpt-4o-mini` | Bearer of `LLM_API_KEY` only when that value is non-empty |
+| `typesafe` | `LLM_PROVIDER=typesafe`, or provider empty, `LLM_BASE_URL` empty, no `OPENROUTER_API_KEY`, and `TYPESAFE_API_KEY` (or a var whose name starts with `TYPESAFE_`) is set. OpenRouter wins when both keys are set and the provider is empty | `TYPESAFE_BASE_URL` or `https://api.typesafe.ai`; requests go to `/v1/systemone` | `TYPESAFE_MODEL` or `jev-1.14.0` | Bearer of the Typesafe key |
+
+Typesafe is a decision model, not a chat model. `classifyText` sends the redacted chat as `state` with three questions: `risky` (yes/no probability), `signal` (choice of the signal ids) and, for chats with more than one Them message, `evidence` (choice of one Them message). Lines after a `Them:` label that do not start with `Them:` or `Me:` are part of that message, so a multi-line ask stays one evidence choice. The evidence is that message verbatim, `reason` is empty (the extension uses its own card text), `confidence` is p(risky) for a risky verdict and 1 − p for a safe one, and the response carries `addConfidence` (`TYPESAFE_ADD_CONFIDENCE`, default 0.5) which the extension uses as its add bar. `TYPESAFE_API_KEY_NAME` is used only when it starts with `TYPESAFE_`; any other name is ignored and the key is read from `TYPESAFE_API_KEY`. `LLM_FALLBACK=openrouter` retries a Typesafe call on OpenRouter after a network error, a 5xx, or a bad response shape. A 4xx is not retried, so a bad key does not send the chat to OpenRouter.
+
+Provider empty and both `LLM_BASE_URL` and `OPENROUTER_API_KEY` set: openai-compatible wins, and the bearer is `LLM_API_KEY`. Trailing slashes on the base URL are removed. `LLM_TIMEOUT_MS` defaults to 8000 when empty, not a number, or not above 0.
+
+Every evidence quote must be a whitespace-normalized substring of `text`. If `risky` is not true, or any quote fails, the result is `{ "risky": false, "evidence": [], "level": "none", "reason": "" }`. A usable result looks like:
 
 ```json
 {
@@ -82,7 +180,7 @@ When it is set, `classifyText` POSTs to `{LLM_BASE_URL}/chat/completions` with `
 }
 ```
 
-`reason` is dropped when it is empty, longer than 120 characters, or matches the banned-phrase check in `backend/src/classify.js`. Provider failures are **502** `{ "error": "llm_error" }`.
+`level` is `"high"` only when the model said `"high"` and `rulesLevel` is not `"medium"`. Any other level on a passing result becomes `"medium"`. When `rulesLevel` is `"high"` or `"medium"`, the returned level is the lower of the model level and that rules level. `rulesLevel: "none"` leaves the model level as it is. `reason` is replaced when it is empty, longer than 120 characters, or matches the banned-phrase check in `backend/src/classify.js`. A fenced ` ```json ` body is accepted. Provider failures, a chat body that is not the expected JSON (`llm shape`), and a thrown fetch are **502** `{ "error": "llm_error" }`. The provider body is discarded. Error text is `llm error`, `llm <status>` for an HTTP failure, or `llm shape` when a 200 body cannot be parsed. It does not include the key.
 
 `POST /api/protect`
 
@@ -96,9 +194,9 @@ When it is set, `classifyText` POSTs to `{LLM_BASE_URL}/chat/completions` with `
 }
 ```
 
-`item` is required. `amount` must be a positive number. `currency` must match `^[A-Z]{3}$` after upper-casing. `payeeEmail` is optional; if present it must look like an email. The `verdict` object is stored by the extension and ignored by the mock port.
+`item` is required. `amount` must be a positive number. `currency` must match `^[A-Z]{3}$` after upper-casing. On rest and toolkit, a code outside DKK, EUR, and USD is then **400** `currency must be DKK, EUR, or USD`. `payeeEmail` is optional; if present it must look like an email. The `verdict` object is not sent to PayPal. The extension keeps it.
 
-Response:
+Mock response:
 
 ```json
 {
@@ -109,27 +207,49 @@ Response:
 }
 ```
 
-`GET /api/orders/:id` returns `{ "orderId", "status" }` only. Unknown id is **404** `{ "error": "not_found" }`.
+Rest and toolkit return the same four fields. `orderId`, `status`, and `approveUrl` come from PayPal. `mode` is `"rest"` or `"toolkit"`. Offline tests fixture `status: "CREATED"` and a `payer-action` href. The adapter does not rename `status`.
 
-`POST /api/orders/:id/capture` returns `{ "orderId", "status": "COMPLETED", "captureId" }`. Not approved yet is **409** `{ "error": "not_approved" }`.
+`GET /api/orders/:id` returns `{ "orderId", "status" }` only. Unknown id, and a PayPal 404, are **404** `{ "error": "not_found" }`.
 
-`POST /api/orders/:id/approve-mock` is the mock-only helper the demo approval page calls. It returns the same shape as get, with `status: "APPROVED"`. A real adapter does not need this route if `GET /return` approves the order before redirecting.
+`POST /api/orders/:id/capture` returns `{ "orderId", "status", "captureId" }`. Not approved yet is **409** `{ "error": "not_approved" }`. PayPal 404 is **404** `{ "error": "not_found" }`.
 
-`GET /return?token=` approves a mock order, then **302** to `http://localhost:8080/demo/checkout-return.html?token=<id>&mock=1`.
+`POST /api/orders/:id/approve-mock` exists for the mock approval page. On mock it returns `{ "orderId", "status": "APPROVED" }`. Rest and toolkit have no `approve` function, so this route is **404** `{ "error": "not_found" }`.
 
-`GET /cancel?token=` redirects to that page with `cancel=1` and does not approve.
+`GET /return?token=` in mock mode approves the order, then **302** to `http://localhost:8080/demo/checkout-return.html?token=<id>&mock=1`.
+
+In rest or toolkit mode, `GET /return` does not approve anything. PayPal is where approval happens. The handler **302**s to `http://localhost:8080/demo/checkout-return.html?token=<id>` with no `mock=1`. That redirect target is hardcoded in `backend/src/server.js`. It is not `PAYPAL_RETURN_URL`. The usual sandbox path never hits this route: PayPal sends the browser to `return_url` directly.
+
+`GET /cancel?token=` never approves. It redirects to the same demo page with `cancel=1`. `mock=1` is added only when `mode` is `mock`.
+
+`demo/checkout-return.html` shows **Approve (mock)** only when the query has `mock=1`. Without it, the button is hidden and the page tells the buyer to go back to the chat and press **I approved it, capture**.
 
 ### Error shapes
 
 | Status | Body | When |
 |---|---|---|
-| 400 | `{ "error": "bad_request", "message": "..." }` | invalid JSON, missing item, bad amount, bad currency, bad email |
-| 404 | `{ "error": "not_found" }` | unknown order |
-| 409 | `{ "error": "not_approved" }` | capture before approval |
+| 400 | `{ "error": "bad_request", "message": "..." }` | invalid JSON, missing item, bad amount, bad currency, bad email, text over 4000 characters, PayPal 400/422 that is not an approval issue |
+| 404 | `{ "error": "not_found" }` | unknown order, PayPal 404, `approve-mock` on rest or toolkit, any other path |
+| 409 | `{ "error": "not_approved" }` | capture before approval, including PayPal issues `ORDER_NOT_APPROVED` and `PAYER_ACTION_REQUIRED` |
 | 413 | `{ "error": "payload_too_large" }` | body over 16 kB |
-| 502 | `{ "error": "llm_error" }` | provider failure |
-| 503 | `{ "error": "llm_off" }` | classify while `LLM_BASE_URL` is empty |
+| 502 | `{ "error": "paypal_error" }` | PayPal transport failure, 5xx, 429, or other non-auth PayPal failure |
+| 502 | `{ "error": "paypal_auth" }` | PayPal 401 after one token refresh, or PayPal 403 with no refresh |
+| 502 | `{ "error": "llm_error" }` | classify provider failure. Also the fallback when a 502 code is neither `paypal_error` nor `paypal_auth` |
+| 503 | `{ "error": "llm_off" }` | classify while `resolveLlm` is not configured |
 | 500 | `{ "error": "internal" }` | anything else. No stack in the body |
+
+A 400 `message` that matches `authorization`, `bearer `, `access_token`, or `client_secret` is replaced with `bad_request`.
+
+### PayPal statuses the extension may see
+
+The card polls `GET /api/orders/:id` every 2 seconds (`extension/content.js`). It only branches on two values:
+
+| Status | What the card does |
+|---|---|
+| `PAYER_ACTION_REQUIRED` | Stays on "awaiting approval". This is a PayPal order status from before the buyer finishes. A capture in that state is 409 `not_approved` when PayPal's issue is `PAYER_ACTION_REQUIRED` |
+| `APPROVED` | Shows "Approval received." Capture is the next step |
+| `COMPLETED` | Marks the order paid and stops polling |
+
+`CREATED` is what the offline create fixture returns. The card treats it like any status other than `APPROVED` and `COMPLETED`: still awaiting approval. Live create can differ. The adapter returns PayPal's string as-is.
 
 ## What the extension reads
 
@@ -137,90 +257,105 @@ Default backend URL in options: `http://localhost:8787`. The service worker neve
 
 | Call | Fields the card uses |
 |---|---|
-| `GET /health` | `paypal` (`"mock"` shows the mock mode tag), `llm` |
+| `GET /health` | `paypal` (`"mock"` shows the mock mode tag). `llm` and `llmProvider` are for operators and for `npm run eval` live mode. The extension does not read them |
 | `POST /api/protect` | `orderId`, `status`, `approveUrl`, `mode` |
-| `GET /api/orders/:id` | `status` (`APPROVED` unlocks capture, `COMPLETED` is paid) |
+| `GET /api/orders/:id` | `status` (`APPROVED` unlocks the approval line, `COMPLETED` is paid) |
 | `POST /api/orders/:id/capture` | `status` |
 | `POST /api/classify` | `risky`, `level`, `reason`, `evidence[]`, optional `item`, `amount`, `currency`. 503 `llm_off` keeps the rules level |
 
 The model may confirm or lower a rules hit. It must not be able to raise one. Evidence that is not a substring silences the card.
 
+Payee email, in order: an email written in the chat, otherwise `data-pb-seller-email` on the thread (`extension/lib/extract.js` and `extension/content.js`). The card input **Seller email for this order** is rendered only when both are missing.
+
 Paid copy, owned by the extension: `Paid with PayPal Goods & Services (sandbox). Buyer Protection may be eligible; see PayPal terms.`
 
 ## Env
 
-See `backend/.env.example`.
+See `backend/.env.example`. `backend/src/server.js` loads `backend/.env` with a tiny parser. It fills only unset or empty keys and never prints values. A value already set in the process environment wins. Restart after editing the file.
 
 | Name | Role |
 |---|---|
 | `PAYPAL_ENV` | must be `sandbox` or the process refuses to start |
-| `PAYPAL_ADAPTER` | `mock`, `rest`, or `toolkit` |
+| `PAYPAL_ADAPTER` | `mock`, `rest`, or `toolkit`. Empty with a client id means rest |
 | `PAYPAL_CLIENT_ID` | empty selects mock |
-| `PAYPAL_CLIENT_SECRET` | OAuth client secret for `rest`. Never commit a value |
-| `LLM_BASE_URL` | OpenAI-compatible origin. Empty means classify returns 503 |
-| `LLM_API_KEY` | bearer token, omitted from the request when empty |
-| `LLM_MODEL` | defaults to `gpt-4o-mini` |
-| `PORT` | default 8787 |
+| `PAYPAL_CLIENT_SECRET` | required for rest and toolkit once the client id is set. Never commit a value |
+| `PAYPAL_BASE_URL` | empty uses `https://api-m.sandbox.paypal.com`. Only the two sandbox hosts over https are accepted |
+| `PAYPAL_RETURN_URL` | PayPal `return_url`. Empty uses the local demo return page |
+| `PAYPAL_CANCEL_URL` | PayPal `cancel_url`. Empty uses the demo return page with `?cancel=1`. Set this too if you change the return URL |
+| `PAYPAL_TIMEOUT_MS` | milliseconds. Empty, zero, or not a number uses 10000 |
+| `LLM_PROVIDER` | `typesafe`, `openrouter`, `openai-compatible`, or `off`. Empty auto-selects as in the classify section |
+| `TYPESAFE_API_KEY` | Typesafe key. Never commit a value. `TYPESAFE_API_KEY_NAME`, `TYPESAFE_BASE_URL`, `TYPESAFE_MODEL`, `TYPESAFE_ADD_CONFIDENCE` and `LLM_FALLBACK` are described in `backend/.env.example` |
+| `OPENROUTER_API_KEY` | OpenRouter key. A key alone counts as configured. Never commit a value |
+| `LLM_BASE_URL` | base for openai-compatible. For openrouter, used only on `https` `openrouter.ai`; any other host is ignored. Empty, with no Typesafe key and no OpenRouter key, means 503 |
+| `LLM_API_KEY` | bearer for openai-compatible. Fallback OpenRouter key when `OPENROUTER_API_KEY` is empty. Omitted from the request when empty |
+| `LLM_MODEL` | overrides the provider default |
+| `LLM_TIMEOUT_MS` | milliseconds. Empty, zero, or not a number uses 8000 |
+| `PORT` | default 8787. Bind address is still `127.0.0.1` and `::1` |
 | `ALLOWED_ORIGINS` | comma-separated page origins |
-
-`backend/src/server.js` loads `backend/.env` with a tiny parser. It fills only unset or empty keys and never prints values.
 
 ## Return and cancel URLs
 
-Send these on the real create-order call:
+On the create-order call the rest adapter sends:
 
-- return: `http://localhost:8080/demo/checkout-return.html` (the server also accepts the token query on `GET /return` and redirects)
-- cancel: the same page with `cancel=1`, via `GET /cancel`
+- `return_url`: `PAYPAL_RETURN_URL` or `http://localhost:8080/demo/checkout-return.html`
+- `cancel_url`: `PAYPAL_CANCEL_URL` or that page with `?cancel=1`
 
-For a real order the approve URL is PayPal's `payer-action` link (fallback `approve`), not the demo page. The demo page is where PayPal sends the browser afterwards. It is clearly marked mock and has no PayPal logo. A real return should still land on a page that tells the buyer to go back to the chat and capture.
+PayPal's approve link (`payer-action`, else `approve`) is what **Open approval** opens. The demo page is where PayPal sends the browser afterwards. It has no PayPal logo. Without `mock=1` it tells the buyer to go back to the chat and capture.
 
-## Tests the real adapter must keep passing
+`GET /return` and `GET /cancel` on this server always redirect to the hardcoded localhost demo page. They are the mock flow. In rest mode, `/return` does not change the PayPal order.
 
-Already green with no credentials (`node --test backend/test/`):
+## Tests the adapters keep passing
+
+Offline, no credentials, no network (`node --test backend/test/` and `npm test`):
 
 - `formatAmount` uses two decimals
 - `assertSandbox` throws for `PAYPAL_ENV=live`
 - empty client id selects mock even when `PAYPAL_ADAPTER=rest`
-- `rest` and `toolkit` throw the not-implemented string
+- rest and toolkit build a port when the client id and secret are set; a live base URL throws `Refusing non-sandbox PayPal base URL`; an unknown adapter throws `Unknown PAYPAL_ADAPTER`
 - mock create, approve, capture, idempotent recapture, and the demo `approveUrl`
-- `GET /health` reports `paypal: "mock"` and `llm: "off"`
-- `POST /api/protect` returns a `MOCK-` id and `approveUrl`
+- `GET /health` reports `paypal: "mock"`, `llm: "off"`, and, when only `OPENROUTER_API_KEY` is set, `llm: "configured"` and `llmProvider: "openrouter"` with the key absent from the body
+- `POST /api/protect` returns a `MOCK-` id and `approveUrl` in mock mode
 - capture before approval is 409, then approve-mock and capture return `MOCK-CAP-`
-- `GET /return` marks the order `APPROVED` and redirects
+- `GET /return` marks a mock order `APPROVED` and redirects with `mock=1`
+- in rest mode, `GET /return` redirects with the token and without `mock=1`, and does not approve
 - bad JSON and `{}` are 400, a ~20 kB body is 413
-- classify is 503 `{ "error": "llm_off" }` when the base URL is empty
+- classify is 503 `{ "error": "llm_off" }` when no provider is configured
 - CORS reflects the demo origin and any `chrome-extension://` origin, and omits the header for other origins
 - evidence quotes must be substrings; the fetch wrapper sends `temperature: 0`
-
-Add these when `rest` exists, with `fetch` mocked and no network:
-
-- OAuth token is cached until `expires_in - 60` seconds
-- create-order body: `intent: "CAPTURE"`, payee email, 2-decimal amount, currency, `PayPal-Request-Id`
+- OAuth token is cached until `expires_in - 60` seconds, for the full life when that is 60 seconds or less, and for 300 seconds when `expires_in` is missing. Concurrent creates share one token request
+- create-order body: `intent: "CAPTURE"`, payee email, 2-decimal amount, currency, experience context, `PayPal-Request-Id` derived from the raw `referenceId`. A `reference_id` that is longer than 256 characters, or that is not printable ASCII, is sent as sha256 hex.
 - approve link is the `payer-action` rel, with `approve` as fallback
-- capture and 4xx/5xx mapping
-- sandbox guard still refuses a live base URL
+- capture, `ORDER_ALREADY_CAPTURED`, and 4xx/5xx mapping (`paypal_auth`, `paypal_error`, 409 `not_approved`)
+- PayPal 404 on get and capture becomes null
+- GBP never calls fetch
+- toolkit `runTool("create_order")` posts the same Orders v2 body, and `POST /api/protect` returns `mode: "toolkit"`
+- classify provider failures are 502 `llm_error` and do not echo the key
 
 ## TODO for the rest adapter
 
-- [ ] OAuth `POST /v1/oauth2/token` (client credentials) and cache the token until `expires_in - 60s`
-- [ ] `POST /v2/checkout/orders` with `intent: "CAPTURE"`
-- [ ] `purchase_units[0]`: `reference_id`, `description` = item, `amount.currency_code`, `amount.value` with two decimals, `payee.email_address`
-- [ ] `payment_source.paypal.experience_context`: `return_url`, `cancel_url`, `user_action: "PAY_NOW"`
-- [ ] Send a new `PayPal-Request-Id` UUID on POSTs
-- [ ] Approve URL = link `rel` `payer-action`, else `approve`
-- [ ] `GET /v2/checkout/orders/{id}` and `POST /v2/checkout/orders/{id}/capture`
-- [ ] Support DKK, EUR, and USD
-- [ ] Map PayPal errors onto the status codes above. Never put a token or stack in the JSON
+- [x] OAuth `POST /v1/oauth2/token` (client credentials) and cache the token until `expires_in - 60s`, or for its full life / 300s when that window would be empty
+- [x] `POST /v2/checkout/orders` with `intent: "CAPTURE"`
+- [x] `purchase_units[0]`: `reference_id`, `description` = item, `amount.currency_code`, `amount.value` with two decimals, `payee.email_address`
+- [x] `payment_source.paypal.experience_context`: `return_url`, `cancel_url`, `user_action: "PAY_NOW"` (also `shipping_preference: "NO_SHIPPING"` and `brand_name: "PayBrake demo"`)
+- [x] Send a `PayPal-Request-Id` UUID on POSTs, derived from the reference id on create and the order id on capture
+- [x] Approve URL = link `rel` `payer-action`, else `approve`
+- [x] `GET /v2/checkout/orders/{id}` and `POST /v2/checkout/orders/{id}/capture`
+- [x] Support DKK, EUR, and USD
+- [x] Map PayPal errors onto the status codes above. Never put a token or stack in the JSON
+
+Live sandbox responses are still unverified. That is Christopher's step in `docs/CHRISTOPHER-HANDOFF.md`.
 
 ## TODO for classify on a real provider
 
-- [ ] Keep the evidence-substring guard and the reason sanitizer in `backend/src/classify.js`
-- [ ] Keep temperature 0 and JSON object output
-- [ ] Treat transport failures as 502 `llm_error`. The extension then caps a high rules hit at medium and sets `llm: "error"`
-- [ ] A 503 `llm_off` must not lower the rules level
+- [x] Keep the evidence-substring guard and the reason sanitizer in `backend/src/classify.js`
+- [x] Keep temperature 0 and JSON object output
+- [x] Treat transport failures as 502 `llm_error`. The extension then caps a high rules hit at medium and sets `llm: "error"`
+- [x] A 503 `llm_off` must not lower the rules level
+
+OpenRouter is wired through `resolveLlm`. A live model call has not been made.
 
 ## TODO for toolkit
 
-- [ ] Confirm whether `@paypal/agent-toolkit` `create_order` accepts `payee.email_address`
-- [ ] If it does not, the agent may still choose the arguments, but execution goes through the `rest` adapter
-- [ ] Do not add the package until that path is real. This build has no runtime dependencies
+- [x] Confirm whether `@paypal/agent-toolkit` `create_order` accepts `payee.email_address`. It does not. `currencyCode` on 1.11.0 is USD only
+- [x] Execution goes through the `rest` adapter. The tool list is still `create_order`, `get_order`, `pay_order`
+- [x] Do not add the package until a payee is accepted, or until USD-only is an explicit choice. `package.json` has no `dependencies` entry (`playwright-core` is an optionalDependency for screenshots)

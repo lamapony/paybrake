@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Try PayBrake in 2 minutes · PayPal + AI scam brake</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<style>
+  body { margin: 0; font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; background: #eef1f5; color: #1c2530; }
+  main { max-width: 680px; margin: 40px auto; padding: 0 20px 40px; }
+  .panel { background: #fff; border: 1px solid #dde3ea; border-radius: 14px; padding: 26px 28px; margin-bottom: 16px; }
+  h1 { margin: 0; font-size: 28px; }
+  h2 { margin: 0 0 8px; font-size: 20px; }
+  .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+  .lead { font-size: 17px; }
+  .btn { display: inline-block; background: #1f5fbf; color: #fff; text-decoration: none; font-weight: 700; padding: 13px 20px; border-radius: 10px; font-size: 16px; margin: 4px 8px 4px 0; }
+  .btn.alt { background: #fff; color: #1f5fbf; border: 2px solid #1f5fbf; padding: 11px 18px; }
+  .note { color: #4a5666; font-size: 14px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+  .tags li { background: #eef4ff; color: #1f3f7a; border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; }
+  ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  code { background: #f2f4f7; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <section class="panel">
+    <div class="brand"><img src="/logo.svg" width="56" height="56" alt="PayBrake logo"><h1>Try PayBrake in 2 minutes</h1></div>
+    <p class="lead"><b>PayBrake</b> is a Chrome extension that brakes before you pay a scammer. It reads a marketplace chat with on-device rules plus an <b>AI check</b>. When a seller pushes a risky payment (PayPal Friends &amp; Family, a bank transfer, gift cards, codes), PayBrake quotes the line that worried it and offers a <b>PayPal</b> Goods &amp; Services order (<b>sandbox</b>) instead.</p>
+    <ul class="tags"><li>PayPal Orders v2 (sandbox / mock)</li><li>AI scam check (Typesafe)</li><li>Chrome extension, MV3</li></ul>
+    <p class="note">Two steps: load the extension, then open the demo store. Fictional marketplace and names, not affiliated with PayPal. Test orders only: no real money moves, and nothing runs on your machine except the extension.</p>
+  </section>
+
+  <section class="panel">
+    <h2>1. Get the extension (one zip)</h2>
+    <p><a class="btn" id="zip" href="/paybrake-extension.zip" download>Download paybrake-extension.zip</a></p>
+    <ol>
+      <li>Unzip it. You get a folder <code>paybrake-extension</code> with <code>manifest.json</code> inside.</li>
+      <li>Open <code>chrome://extensions</code> (Chrome, Edge or Brave) and switch on <b>Developer mode</b> (top right).</li>
+      <li>Click <b>Load unpacked</b> and pick the <code>paybrake-extension</code> folder (the one with <code>manifest.json</code>).</li>
+    </ol>
+    <p class="note">A <b>Welcome to PayBrake</b> tab opens. If Chrome says "Manifest file is missing", go one folder deeper.</p>
+  </section>
+
+  <section class="panel">
+    <h2>2. Try the demo store</h2>
+    <p><a class="btn" href="/demo/marketplace.html?live=1">Open the demo store</a><a class="btn alt" href="/demo/safe-chats.html?live=1">Safe chats (stay quiet)</a></p>
+    <ol>
+      <li>In the <b>bike</b> chat a PayBrake card says <b>High risk</b> and lists what it noticed. The <b>AI checked</b> tag shows the AI verdict came back.</li>
+      <li>Click <b>Switch to a PayPal order</b>, then <b>Open approval</b> and <b>Approve (mock)</b>. If this server runs on PayPal sandbox, <b>Open approval</b> goes to PayPal's sandbox approval page instead.</li>
+      <li>Back in the chat click <b>I approved it, capture</b>: <b>Paid with PayPal Goods &amp; Services (sandbox)</b>.</li>
+      <li>The <b>desk lamp</b> chat is a normal chat and stays quiet. Bonus: open the <b>camera</b> chat and press <b>Pay anyway</b>. PayBrake steps aside and logs the override on this device only.</li>
+    </ol>
+  </section>
+
+  <section class="panel note">
+    <b>About the AI check.</b> Chats are masked in the browser (emails, phones, card numbers, IBANs, codes) before the AI check sees them. The key stays on this server. The demo AI check has a per-visitor rate limit and a daily cap; when it is reached, PayBrake keeps working with its on-device rules. Server status, including whether orders run on PayPal sandbox or the mock: <a href="/health">/health</a>.
+  </section>
+</main>
+</body>
+</html>
