@@ -141,6 +141,8 @@ const RULES = [
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
   { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
+  { id: "off_platform", re: "paysafecards?", gate: "deposit-word" },
+  { id: "off_platform", re: "paysafe", gate: "deposit-word" },
   // Skrill and Interac. A bare name ("Skrill is a town") is not an ask.
   { id: "off_platform", re: "skrill", gate: "pay-or-amount" },
   { id: "off_platform", re: "interac", gate: "pay-or-amount" },
