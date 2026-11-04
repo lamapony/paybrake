@@ -79,6 +79,7 @@ const RULES = [
   { id: "friends_family", re: "personal\\s+(?:paypal\\s+)?payment", gate: "none" },
 
   { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific" },
+  { id: "upfront_deposit", re: "hold\\s+the\\s+\\p{L}+\\s+for\\s+you", gate: "deposit-word" },
   { id: "upfront_deposit", re: "holder[^\\n]{0,40}?til\\s+dig", gate: "deposit-specific" },
   { id: "upfront_deposit", re: "reservation\\s+fee", gate: "deposit-specific" },
   { id: "upfront_deposit", re: "pay\\s+half\\s+now", gate: "deposit-specific" },

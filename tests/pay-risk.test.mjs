@@ -1674,3 +1674,26 @@ test("half now stays high, and a past down payment stays silent", async () => {
   assert.equal(pickup.kind, "silent");
   assert.equal(pickup.silentReason, "veto");
 });
+
+
+test("hold the bike for you needs a pay ask or an amount", async () => {
+  const medium = await detect("I can hold the bike for you if you send 500 kr via PayPal today.");
+  assert.equal(medium.kind, "risk");
+  assert.equal(medium.level, "medium");
+  assert.deepEqual(medium.signals, ["upfront_deposit"]);
+
+  const high = await detect("I can hold the bike for you if you send 500 kr via PayPal today, I ship tomorrow.");
+  assert.equal(high.kind, "risk");
+  assert.equal(high.level, "high");
+  assert.deepEqual(high.signals, ["upfront_deposit", "ship_before_meet"]);
+
+  const exact = await detect("I can only hold it for you if you send a 300 kr deposit via PayPal Friends & Family today.");
+  assert.equal(exact.kind, "risk");
+  assert.equal(exact.level, "high");
+  assert.deepEqual(exact.signals, ["friends_family", "upfront_deposit"]);
+
+  const door = await detect("I can hold the door for you on Thursday.");
+  assert.equal(door.kind, "silent");
+  assert.equal(door.silentReason, "no_atom");
+  assert.deepEqual(door.signals, []);
+});
