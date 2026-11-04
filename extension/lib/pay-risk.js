@@ -233,6 +233,15 @@ function vetoHidesOnItsOwn(hit) {
   return !!hit && hit.role === "veto" && !collectionOffer(hit);
 }
 
+const ACCEPT = /^(?:yes|yeah|yep|sure|ok|okay|fine|agreed|deal|sounds\s+good|of\s+course|no\s+problem|ja|jo|gerne|fint|det\s+er\s+fint|det\s+kan\s+vi)(?![\p{L}\p{N}])/iu;
+
+// The next line from the other person accepts the buyer's proposal and raises no ask of its own.
+function sellerAccepts(perMessage, index) {
+  const next = perMessage.slice(index + 1).find((message) => message.from !== "buyer");
+  if (!next || !ACCEPT.test(next.text.trim())) return false;
+  return !next.hits.some((hit) => hit.role === "act" && !hit.prohibited);
+}
+
 function silent(reason, extra) {
   return {
     kind: "silent",
@@ -315,11 +324,12 @@ async function detect(text, ctx = {}, options = {}) {
   });
 
   const goods = api.goodsHit(messages);
-  // The buyer's own line does not veto either: "Can I pay through the checkout?"
-  // is not the seller agreeing to it. Buyer-proposed Goods & Services that the
-  // seller accepts is handled by goodsHit.
+  // The buyer's own line does not veto on its own: "Can I pay through the checkout?"
+  // is not the seller agreeing to it. It does when the seller's next line accepts it
+  // ("Sure thing.", "Ja, brug checkout.") and asks for nothing itself. Buyer-proposed
+  // Goods & Services that the seller accepts is handled by goodsHit.
   const vetoes = perMessage
-    .filter((message) => message.from !== "buyer")
+    .filter((message, index) => message.from !== "buyer" || sellerAccepts(perMessage, index))
     .flatMap((message) => message.hits)
     .filter((hit) => hit.role === "veto");
   // A prohibited span is not an ask. The user's own line ("buyer") never raises one.

@@ -398,3 +398,37 @@ test("review 3: ordinary chats stay quiet", async () => {
   ];
   for (const text of quiet) await assertSilent(seller(text), text);
 });
+
+// 19. Final independent review.
+test("review 4: a seller who accepts the buyer's checkout or G&S request hides the card", async () => {
+  const accepted = [
+    [{ from: "seller", text: "Venmo $300 and I'll ship it." }, { from: "buyer", text: "Could we go through the marketplace checkout instead?" }, { from: "seller", text: "Sure thing." }],
+    [{ from: "seller", text: "Pay first and I ship, 600 kr." }, { from: "buyer", text: "Can we use the platform checkout?" }, { from: "seller", text: "Ja, brug checkout." }],
+    [{ from: "seller", text: "Deposit of 300 kr by MobilePay to hold it." }, { from: "buyer", text: "I'd rather pay through the marketplace checkout." }, { from: "seller", text: "Okay, that works." }],
+    [{ from: "seller", text: "PayPal F&F $90 shipped." }, { from: "buyer", text: "G&S?" }, { from: "seller", text: "Happy to do G&S, it adds about $3 in fees, so $93." }]
+  ];
+  for (const messages of accepted) await assertSilent(thread(messages), JSON.stringify(messages));
+  // Not accepted: the seller insists.
+  await assertRisk(thread([
+    { from: "buyer", text: "Can I pay through the marketplace checkout?" },
+    { from: "seller", text: "Ok but send 500 kr deposit via Friends & Family first." }
+  ]), "ok but insists", "friends_family");
+});
+
+test("review 4: scams main catches still warn", async () => {
+  const risky = [
+    "MobilePay eller kontant. Jeg er ikke hjemme, så overfør 800 kr og hent den hos naboen.",
+    "Bank transfer or cash, I'm not home so transfer 3000 kr and grab it from the porch.",
+    "Revolut eller kontant, overfør 200 euro og min bror giver dig den.",
+    "Payment first? No other choice, I travel a lot.",
+    "Pay first? No meetups, it's company policy.",
+    "Payment first? No viewing possible, the car is at my brother's place.",
+    "Betal først? Nej, det er sådan jeg gør det. Jeg er i Jylland.",
+    "Pay first? Nope. Only shipping, I live 300 km away.",
+    "We don't require a deposit, but please pay in full before I post it.",
+    "I don't need a deposit, just pay in full and I'll post it tomorrow.",
+    "MobilePay 600 kr når du henter, men send dem gerne inden.",
+    "Pay by Revolut when we meet, I need the 300 euro this morning though."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text);
+});

@@ -667,8 +667,8 @@ function depositRejected(text, start, end) {
     const tail = text.slice(end);
     if (handoverPayV5(tail)) return true;
     const asks = /(?<![\p{L}\p{N}])(?:send|pay|transfer|wire|betal|overfør|mobile\s*pay)(?![\p{L}\p{N}])/iu.test(tail);
-    const money = amountSpans(tail).length > 0 || /(?<![\p{L}\p{N}])(?:the\s+money|the\s+full|the\s+whole|up\s*front|in\s+advance|pengene|beløbet)(?![\p{L}\p{N}])/iu.test(tail);
-    return !(asks && money) && !/(?<![\p{L}\p{N}])(?:up\s*front|in\s+advance|full\s+payment|before\s+(?:shipping|i\s+ship|sending|i\s+send))(?![\p{L}\p{N}])/iu.test(tail);
+    const money = amountSpans(tail).length > 0 || /(?<![\p{L}\p{N}])(?:the\s+money|the\s+full|the\s+whole|in\s+full|up\s*front|in\s+advance|pengene|beløbet)(?![\p{L}\p{N}])/iu.test(tail);
+    return !(asks && money) && !/(?<![\p{L}\p{N}])(?:up\s*front|in\s+advance|full\s+payment|before\s+(?:shipping|i\s+ship|sending|i\s+send|i\s+post|i\s+mail)|i['’]ll\s+(?:post|ship|mail))(?![\p{L}\p{N}])/iu.test(tail);
   }
   if (/bottle\s+$/iu.test(before)) return true;
   if (/^\s+on\s+(?:the\s+)?(?:bottles?|cans?|crates?)(?![\p{L}\p{N}])/iu.test(after)) return true;
@@ -781,9 +781,12 @@ function paysBeforeHandoverWith(source, cfg) {
     const length = match[0].length;
     if (negatedBefore(source, at)) continue;
     const clause = sliceAround(source, at, length, cfg.clause);
-    if (!hasPayWord(clause.text) && !cfg.rail.test(clause.text)) continue;
+    if (!hasPayWord(clause.text) && !cfg.rail.test(clause.text) && !(cfg.extraClause && cfg.extraClause(clause.text))) continue;
     const sentence = sliceAround(source, at, length, SENTENCE_BREAK);
-    if (handovers.some((start) => start >= sentence.start && start < at)) continue;
+    // v5: "Wire transfer first? No, pay when you pick it up." answers the timing with a refusal.
+    if (cfg.extraClause && payFirstRefused(source.slice(clause.end))) continue;
+    const sendsHere = cfg.extraClause && cfg.extraClause(clause.text);
+    if (!sendsHere && handovers.some((start) => start >= sentence.start && start < at)) continue;
     if (cfg.sameClauseHandover && handovers.some((start) => start >= clause.start && start < clause.end)) continue;
     return true;
   }
@@ -812,27 +815,31 @@ const TIED_HANDOVER_V5 = new RegExp(TIED_HANDOVER.source + "|når\\s+vi\\s+møde
 // Danish og/men/så end a clause too ("hent den nu og betal ved afhentning").
 const CLAUSE_BREAK_V5 = /[.!?;\n]|(?<!\d),(?!\d)|\s(?:and|but|so|then|og|men|så)\s/giu;
 // Danish nu (now), først (first), depositum, forskud (advance), i aften, inden, i dag.
-const TIMING_WORD_V5 = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?|nu|først|depositum|forskud|tonight|aften|inden|i\s+dag)(?![\p{L}\p{N}])/giu;
+const TIMING_WORD_V5 = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?|nu|først|depositum|forskud|tonight|aften|inden|i\s+dag|this\s+(?:morning|evening|afternoon))(?![\p{L}\p{N}])/giu;
 const RAIL_WORD_V5 = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swisha?|vipps|mobile\s*pay|bank\s*transfers?|bankoverførsel|revolut|(?:via|on|with|by|using|through|på)\s+wise|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
 // A split payment ("the rest when you pick it up", "the balance", "resten") or a payment
 // to reserve the item ("to secure it", "keep it aside", "i forvejen for at holde den").
 const SPLIT_PAY = /(?<![\p{L}\p{N}])(?:the\s+rest|resten|remaining|remainder|the\s+balance|the\s+difference|the\s+other\s+\$?\d|rest(?=\s+(?:when|on|at|in|ved|når|på)(?![\p{L}\p{N}])))(?![\p{L}\p{N}])/iu;
 const RESERVE_CUE = /(?<![\p{L}\p{N}])(?:secure\s+it|keep\s+it\s+aside|put\s+it\s+aside|lock\s+it\s+in|hold\s+it|holder\s+(?:den|det)|holde\s+(?:den|det)|i\s+forvejen|reserve|reservere|reservation)(?![\p{L}\p{N}])/iu;
-const SEND_OR_RAIL = /(?<![\p{L}\p{N}])(?:send|sender|sende|transfer|wire|pay|betal|betale|overfør|venmo|zelle|cash\s*app|vipps|swish|swisha|mobile\s*pay|revolut)(?![\p{L}\p{N}])/iu;
+const SEND_OR_RAIL = /(?<![\p{L}\p{N}])(?:send|sender|sende|transfer|wire|pay|betal|betale|overfør|venmo|zelle|cash\s*app|vipps|swish|swisha|mobile\s*pay|revolut|wise)(?![\p{L}\p{N}])/iu;
 
 function handoverPayV5(source) {
   return handoverPayWith(source, TIED_HANDOVER_V5);
 }
 
 function paysBeforeHandoverV5(source) {
-  return paysBeforeHandoverWith(source, { tied: TIED_HANDOVER_V5, timing: TIMING_WORD_V5, clause: CLAUSE_BREAK_V5, rail: RAIL_WORD_V5, sameClauseHandover: true });
+  // "send dem gerne inden", "I need the 300 euro this morning" also pay before the handover.
+  const extraClause = (clause) => SEND_OR_RAIL.test(clause)
+    || (/(?<![\p{L}\p{N}])need(?![\p{L}\p{N}])/iu.test(clause) && amountSpans(clause).length > 0);
+  return paysBeforeHandoverWith(source, { tied: TIED_HANDOVER_V5, timing: TIMING_WORD_V5, clause: CLAUSE_BREAK_V5, rail: RAIL_WORD_V5, sameClauseHandover: true, extraClause });
 }
 
 // "Send 200 kr and I'll hold it, the other 700 kr when you pick it up": a clause with a
 // send/rail word and money, and no handover of its own, pays before the handover.
-function moneyClauseBeforeHandover(source) {
+function moneyClauseBeforeHandover(source, { skipCashOffer = false } = {}) {
   const handoverRe = new RegExp(`(?<![\\p{L}\\p{N}])(?:${TIED_HANDOVER_V5.source})(?![\\p{L}\\p{N}])`, "iu");
   return source.split(new RegExp(CLAUSE_BREAK_V5.source, "iu")).some((clause) => (
+    !(skipCashOffer && CASH_ALT.test(clause)) &&
     // A bare number counts here ("send 25 dollars to confirm"): this only decides whether
     // to keep main's verdict, never raises a card on its own. So does a fee to hold it.
     (SEND_OR_RAIL.test(clause) || /(?<![\p{L}\p{N}])(?:fee|gebyr)(?![\p{L}\p{N}])/iu.test(clause))
@@ -865,7 +872,7 @@ function cashAltQuiets(text) {
   const source = String(text ?? "");
   if (!CASH_ALT.test(source) || SHIP_CUE.test(source) || CASH_REFUSED.test(source)) return false;
   if (payFirstLanguage(source) || paysBeforeHandoverV5(source) || SPLIT_PAY.test(source) || RESERVE_CUE.test(source)) return false;
-  return true;
+  return !moneyClauseBeforeHandover(source, { skipCashOffer: true });
 }
 
 function payFirstLanguage(text) {
@@ -1068,6 +1075,8 @@ function payFirstRefused(rest) {
   if (/^\s*\?\s*(?:no|nope|nah|nej)\s+(?:exceptions?|refunds?|offers?|returns?|haggling|negotiation|discounts?)(?![\p{L}\p{N}])/iu.test(rest)) return false;
   const asks = /(?<![\p{L}\p{N}])(?:send|transfer|wire|pay|betal|overfør)(?![\p{L}\p{N}])/iu.test(rest);
   if (asks && amountSpans(rest).length > 0) return false;
+  // "Pay first? No other choice / No meetups" insists. A refusal must point to paying later.
+  if (!/(?:pay\w*|betal\w*)\s+(?:\S+\s+){0,3}?(?:when|at|on|ved|når|after|efter)(?![\p{L}\p{N}])|cash|kontant|come\s+(?:and\s+|to\s+)?(?:see|look)|see\s+it|look\s+first|in\s+person|ved\s+afhentning|når\s+du\s+henter|at\s+pick\s*up|on\s+pick\s*up|when\s+you\s+(?:see|pick|collect|come)|not\s+needed|not\s+necessary|no\s+need|ikke\s+nødvendigt|det\s+gør\s+jeg\s+ikke/iu.test(rest)) return false;
   // "No, half now", "transfer the money and I'll ship", "Vipps me", "the rest" are still asks.
   return !/(?<![\p{L}\p{N}])(?:half|halvdelen|deposit|depositum|up\s*front|now|nu|the\s+money|pengene|the\s+rest|resten|transfer|wire|overfør|(?:vipps|mobile\s*pay|venmo|zelle|swish)\s+me|i['’]?ll\s+(?:ship|post|send|mail)|så\s+sender\s+jeg|jeg\s+sender|på\s+(?:min\s+)?konto)(?![\p{L}\p{N}])/iu.test(rest);
 }
@@ -1417,7 +1426,8 @@ function goodsHit(messages) {
     GS.lastIndex = 0;
     const offers = GS.test(body);
     GS.lastIndex = 0;
-    if (offers && !REFUSAL.test(body) && !GS_DODGE.test(body)) {
+    const dodges = GS_DODGE.test(body) && /(?<![\p{L}\p{N}])(?:friends|f&f|fnf|ff|personal|venner)(?![\p{L}\p{N}])/iu.test(body);
+    if (offers && !REFUSAL.test(body) && !dodges) {
       const match = body.match(wordBound("goods\\s*(?:&|and)\\s*services|varer\\s+og\\s+tjenester|G&S", "iu"));
       const start = match ? match.index : 0;
       const phrase = match ? match[0] : "Goods & Services";
