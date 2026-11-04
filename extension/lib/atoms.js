@@ -248,6 +248,9 @@ const RULES = [
   { id: "friends_family", re: "mark(?:ed)?\\s+(?:it\\s+)?as\\s+(?:a\\s+)?gift(?![ \\t]*cards?)", gate: "ff-alias" },
   { id: "friends_family", re: "as\\s+personal,?\\s+not\\s+(?:as\\s+)?(?:a\\s+)?business", gate: "ff-alias" },
 
+  // Danish "betal(e) ... forud" / "overfør ... forud" is "pay in advance". "ring forud" is not a payment.
+  { id: "upfront_deposit", re: `(?:betal(?:e|er)?|overfør(?:e|er)?|overfoer(?:e|er)?)(?:[ \\t]+(?!forud(?![\\p{L}\\p{N}]))${GAP_TOKEN}){0,4}[ \\t]+forud(?![\\p{L}\\p{N}])`, gate: "negation" },
+
   // "a time" is a schedule. Bare "pay when you pick" is still the handover.
   { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?!\\s+a\\s+time\\b)(?:\\s+it\\s+up)?", gate: "none" },
   // "it", "them", or one word ("the lamp") may sit between pick and up.

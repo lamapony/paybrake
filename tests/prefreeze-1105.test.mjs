@@ -186,3 +186,11 @@ test("PayPal FF, PayPal friends, mark as gift and personal-not-business warn", a
   ];
   for (const text of quiet) await assertSilent(seller(text), text);
 });
+
+// 11. Danish "betale forud" is "pay in advance".
+test("Danish betal forud warns", async () => {
+  await assertRisk(seller("Du skal betale 1500 kr forud, så sender jeg cyklen med PostNord."), "betale forud", "upfront_deposit");
+  await assertRisk(seller("Overfør 1500 kr forud til min konto."), "overfør forud", "upfront_deposit");
+  await assertSilent(seller("Du skal ikke betale noget forud, betal ved afhentning."), "ikke forud");
+  await assertSilent(seller("Ring gerne forud, så er jeg hjemme. 1500 kr ved afhentning."), "ring forud");
+});
