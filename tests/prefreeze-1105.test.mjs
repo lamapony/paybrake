@@ -94,3 +94,14 @@ test("Goods & Services offered or agreed still hides the card", async () => {
   ];
   for (const text of quiet) await assertSilent(seller(text), text);
 });
+
+// 4. A refused deposit and a bottle deposit are not an upfront ask.
+test("a refused or bottle deposit stays quiet", async () => {
+  const quiet = [
+    "I won't ask for a deposit, pay when you pick it up.",
+    "I don't need a deposit, just pay 900 kr when you pick it up.",
+    "The deposit on the bottles is included. 20 kr."
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+  await assertRisk(seller("I need a deposit of 500 kr before I hold it."), "need a deposit", "upfront_deposit");
+});

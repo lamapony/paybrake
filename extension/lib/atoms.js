@@ -635,7 +635,10 @@ function depositRejected(text, start, end) {
   const before = text.slice(Math.max(0, start - 48), start);
   const after = text.slice(end, Math.min(text.length, end + 40));
   if (/(?:no|ingen|uden|without)\s+$/iu.test(before)) return true;
+  // "I won't ask for a deposit", "I don't need any deposit".
+  if (/(?<![\p{L}\p{N}])(?:won['’]?t|will\s+not|don['’]?t|dont|do\s+not|doesn['’]?t|does\s+not|never|not)\s+(?:ask\s+(?:you\s+)?for|need|want|require|take|charge(?:\s+you)?)\s+(?:a\s+|any\s+|the\s+|an\s+)?$/iu.test(before)) return true;
   if (/bottle\s+$/iu.test(before)) return true;
+  if (/^\s+(?:on|for)\s+(?:the\s+)?(?:bottles?|cans?|crates?)(?![\p{L}\p{N}])/iu.test(after)) return true;
   if (/return\s+them\s+for\s+(?:the\s+)?$/iu.test(before)) return true;
   if (/^\s*(?:on\s+collection|when\s+you\s+(?:pick|collect)|ved\s+afhentning)/iu.test(after)) return true;
   return false;
