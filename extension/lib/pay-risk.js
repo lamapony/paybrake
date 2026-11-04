@@ -374,7 +374,11 @@ function rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak
       (hit.gate === "ff-dictated" || hit.gate === "ff-pivot") && !hit.prohibited
     ));
     const standalone = meta[strong[0]] && meta[strong[0]].standalone;
-    if (pay || money || transferUpfront || methodOnly || standalone) level = "medium";
+    // "Venmo me" has no pay word and no amount. The hit is already a direct ask.
+    const directRail = host && host.hits.some((hit) => (
+      hit.atom === strong[0] && hit.strength === "strong" && !hit.prohibited && hit.directAsk
+    ));
+    if (pay || money || transferUpfront || methodOnly || standalone || directRail) level = "medium";
   } else if (impersonationCombo) level = "medium";
   if (!level) return silent("no_atom", { signals, evidence, deal });
 
