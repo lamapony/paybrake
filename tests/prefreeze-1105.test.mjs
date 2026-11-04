@@ -105,3 +105,10 @@ test("a refused or bottle deposit stays quiet", async () => {
   for (const text of quiet) await assertSilent(seller(text), text);
   await assertRisk(seller("I need a deposit of 500 kr before I hold it."), "need a deposit", "upfront_deposit");
 });
+
+// 5. "Payment first? No, ..." answers the question with a refusal.
+test("a refused pay-first question stays quiet", async () => {
+  await assertSilent(seller("Payment first? No, you can pay when you see it."), "refused question");
+  await assertRisk(seller("Payment first, 900 kr, then I ship."), "pay first ask", "pay_before_see");
+  await assertRisk(seller("Payment first? Yes, 900 kr and then I ship."), "yes pay first", "pay_before_see");
+});

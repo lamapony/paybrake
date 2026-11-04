@@ -163,10 +163,10 @@ const RULES = [
   // with no sum. afterpay and wechat do not match.
   { id: "off_platform", re: "klarna", gate: "amount-near" },
 
-  { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
-  { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
-  { id: "pay_before_see", re: "payment\\s+before\\s+(?:viewing|seeing|you\\s+see)", gate: "none" },
-  { id: "pay_before_see", re: "pay\\s+before\\s+(?:you\\s+)?(?:see|view|viewing|meeting)", gate: "none" },
+  { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "pay-first" },
+  { id: "pay_before_see", re: "betal\\s+først", gate: "pay-first" },
+  { id: "pay_before_see", re: "payment\\s+before\\s+(?:viewing|seeing|you\\s+see)", gate: "pay-first" },
+  { id: "pay_before_see", re: "pay\\s+before\\s+(?:you\\s+)?(?:see|view|viewing|meeting)", gate: "pay-first" },
 
   { id: "urgency_pressure", re: "several\\s+people(?:\\s+are)?\\s+asking", gate: "none" },
   { id: "urgency_pressure", re: "others?\\s+are\\s+interested", gate: "none" },
@@ -1033,6 +1033,8 @@ function allow(rule, text, start, end) {
     if (negatedBefore(text, start)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
+  // "Payment first? No, you pay when you see it." answers the question with a refusal.
+  if (rule.gate === "pay-first") return !negatedBefore(text, start) && !refusedAfterQuestion(text.slice(end));
   if (rule.gate === "ship") {
     if (PICKUP_ALT.test(text)) return false;
     return true;
