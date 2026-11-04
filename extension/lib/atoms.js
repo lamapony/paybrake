@@ -134,6 +134,9 @@ const RULES = [
   { id: "off_platform", re: "interac", gate: "pay-or-amount" },
   // "PayPal me" already contains the pay word paypal, so only a parsed amount counts.
   { id: "off_platform", re: "paypal\\s+me", gate: "amount-near" },
+  // Apple Pay and Google Pay. pay-or-amount would fire "I paid with Apple Pay" with no sum.
+  { id: "off_platform", re: "apple\\s+pay", gate: "amount-near" },
+  { id: "off_platform", re: "google\\s+pay", gate: "amount-near" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
