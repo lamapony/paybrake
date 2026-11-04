@@ -315,7 +315,13 @@ async function detect(text, ctx = {}, options = {}) {
   });
 
   const goods = api.goodsHit(messages);
-  const vetoes = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "veto");
+  // The buyer's own line does not veto either: "Can I pay through the checkout?"
+  // is not the seller agreeing to it. Buyer-proposed Goods & Services that the
+  // seller accepts is handled by goodsHit.
+  const vetoes = perMessage
+    .filter((message) => message.from !== "buyer")
+    .flatMap((message) => message.hits)
+    .filter((hit) => hit.role === "veto");
   // A prohibited span is not an ask. The user's own line ("buyer") never raises one.
   const actHits = perMessage
     .filter((message) => message.from !== "buyer")
