@@ -678,7 +678,7 @@ function pickupRefused(before, after) {
 
 // Payment at the handover ("when I pick it up", "at pickup", "when we meet").
 // "collect the car" and "pick it up Saturday" name a later handover.
-const TIED_HANDOVER = /(?:at|on)\s+pick\s*up|(?:at|on)\s+collection|when\s+you\s+collect|when\s+(?:i|you|we)\s+pick(?:\s+it)?\s*up|when\s+we\s+meet|when\s+you\s+come\s+to\s+see(?:\s+it)?|on\s+delivery|ved\s+levering|ved\s+afhentning|når\s+du\s+henter|när\s+du\s+hämtar|vid\s+upphämtning|när\s+vi\s+ses/iu;
+const TIED_HANDOVER = /(?:at|on)\s+pick\s*up|(?:at|on)\s+collection|when\s+you\s+collect|when\s+(?:i|you|we)\s+pick(?:\s+it)?\s*up|when\s+we\s+meet|when\s+you\s+come\s+to\s+see(?:\s+it)?|on\s+delivery|ved\s+levering|ved\s+afhentning|når\s+du\s+henter|när\s+du\s+hämtar|vid\s+upphämtning|när\s+vi\s+ses|når\s+vi\s+mødes|on\s+the\s+spot|på\s+stedet/iu;
 
 function handoverPay(text) {
   const source = String(text ?? "");
@@ -695,8 +695,9 @@ function handoverPay(text) {
 // Clause breaks keep "available now" away from "pay with Zelle". "and"/"but"/"so"/"then" start one too.
 const CLAUSE_BREAK = /[.!?;\n]|(?<!\d),(?!\d)|\s(?:and|but|so|then)\s/giu;
 const SENTENCE_BREAK = /[.!?\n]/gu;
-const TIMING_WORD = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?)(?![\p{L}\p{N}])/giu;
-const RAIL_WORD = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swisha?|vipps|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
+// Danish: nu (now), først (first), depositum, forskud (advance).
+const TIMING_WORD = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?|nu|først|depositum|forskud)(?![\p{L}\p{N}])/giu;
+const RAIL_WORD = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swisha?|vipps|mobile\s*pay|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
 
 function sliceAround(text, at, length, breaks) {
   const re = new RegExp(breaks.source, breaks.flags);
@@ -985,6 +986,9 @@ function allow(rule, text, start, end) {
     return FEE_CONTEXT.test(near) && (hasPayWord(near) || amountNear(text, start, end, 120) || /(?:https?:\/\/|www\.|click|klik)/iu.test(near));
   }
   if (rule.gate === "mobilepay") {
+    // "pay by MobilePay when you pick it up" is the normal Danish handover, like
+    // Swish/Vipps/Venmo below. Pay-first or "now"/"deposit" in the pay clause keeps it.
+    if (handoverQuietsRail(text)) return false;
     if (phoneNear(text, start, end)) return true;
     const money = amountSpans(text).length > 0;
     if (hasPayWord(text) && money) return true;

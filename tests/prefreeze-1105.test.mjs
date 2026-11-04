@@ -47,3 +47,29 @@ test("a seller who offers checkout still hides the card", async () => {
     { from: "seller", text: "Pay through the marketplace checkout, 900 kr. I ship tomorrow." }
   ]), "seller checkout + ship");
 });
+
+// 2. MobilePay at the handover is the normal Danish pickup payment.
+test("MobilePay at pickup stays quiet", async () => {
+  const quiet = [
+    "Hi! The bike is 1500 kr. You can come see it tomorrow and pay by MobilePay when you pick it up.",
+    "You can pay with MobilePay when we meet, 1500 kr.",
+    "Pris 1500 kr. Betaling med MobilePay ved afhentning.",
+    "Det koster 1500 kr, du kan betale med MobilePay når du henter den.",
+    "1500 kr, betal med MobilePay når vi mødes.",
+    "Price 1500 kr. Pickup in Valby, pay with MobilePay on the spot."
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+});
+
+test("MobilePay before the handover still warns", async () => {
+  const risky = [
+    "Pay 500 kr deposit on MobilePay to 22334455 and I ship tomorrow.",
+    "Send 1500 kr on MobilePay now, then you can pick it up.",
+    "MobilePay 1500 kr to 22334455 first, I ship tomorrow.",
+    "Send 500 kr depositum på MobilePay nu. Eller betal ved afhentning."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text);
+  const reserve = await seller("MobilePay 500 kr now to reserve it, pay the rest when you pick it up.");
+  assert.equal(reserve.level, "high", JSON.stringify(reserve));
+  assert.ok(reserve.signals.includes("off_platform"), JSON.stringify(reserve.signals));
+});
