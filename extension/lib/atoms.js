@@ -112,6 +112,8 @@ const RULES = [
   { id: "off_platform", re: "(?:transferwise|wise\\.com|\\b(?:via|on|with|til|through|på)\\s+wise\\b|\\bwise\\s+transfer\\b)", gate: "negation" },
   // "using Wise" and "by Wise". The Wise line above is unchanged.
   { id: "off_platform", re: "(?:using|by)\\s+wise", gate: "negation" },
+  // "to my Wise account". send is a pay word, so a nearby amount is required.
+  { id: "off_platform", re: "to\\s+my\\s+wise\\s+account", gate: "amount-near" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
   // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
