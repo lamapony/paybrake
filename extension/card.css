@@ -77,6 +77,12 @@
   color: #5d6a7c;
   margin-left: auto;
 }
+
+/* Compact-mode parts. Hidden on desktop; the narrow-viewport block below turns them on. */
+.pb-headline-short,
+.pb-level,
+.pb-toggle { display: none; }
+.pb-details { display: block; }
 .pb-tag.mock {
   font-weight: 700;
   letter-spacing: .04em;
@@ -253,11 +259,62 @@
 
 @media (max-width: 520px) {
   :host { margin-left: 0; margin-right: 0; }
-  .pb-body { padding: 14px 14px 12px 18px; }
+  /* Compact card: a short headline, a level pill, one line of advice and the actions.
+     The chips and the seller-email field move behind a Details toggle so the card stays
+     small (well under 40% of a phone viewport) instead of covering the chat. */
+  .pb-body { padding: 12px 14px 12px 18px; }
+  .pb-top { gap: 8px; margin-bottom: 8px; align-items: center; }
+  .risk-badge { font-size: 12px; padding: 4px 10px 4px 8px; }
+  .pb-headline-long { display: none; }
+  .pb-headline-short { display: inline; }
+  .pb-level {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #7a271a;
+    background: #fef3f2;
+    border: 1px solid #fecdca;
+    border-radius: 999px;
+    padding: 3px 9px;
+  }
   .pb-tag { margin-left: 0; }
+  /* The generic "Checked just now" tag is redundant with the footer; drop it in compact mode
+     to keep the top row to one line (the mock-mode and AI-state tags stay). */
+  .pb-tag:not(.mock):not(.ai):not(.ai-off) { display: none; }
+  .pb-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    padding: 6px 10px;
+    min-height: 32px;
+    font-size: 12px;
+    font-weight: 650;
+    color: #4a5666;
+    background: #f6f8fb;
+    border: 1px solid #c3ccd7;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .pb-toggle::after { content: "▾"; font-size: 10px; line-height: 1; }
+  .pb-open .pb-toggle::after { content: "▴"; }
+  /* One line of advice; the full reason comes back when the card is expanded. */
+  .pb-explain {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .pb-details { display: none; }
+  .pb-open .pb-explain { display: block; -webkit-line-clamp: unset; overflow: visible; }
+  .pb-open .pb-details { display: block; }
   .actions { flex-direction: column; }
   .actions .btn { width: 100%; }
-  .pb-foot { padding: 9px 14px 9px 18px; }
+  .pb-foot { padding: 8px 14px 8px 18px; font-size: 11px; }
   .pb-collapsed { padding: 11px 14px 11px 18px; }
 }
 
@@ -270,3 +327,13 @@
   }
   .btn:active { transform: none; }
 }
+
+.pb-tag.ai-off,
+.pb-tag.ai {
+  margin-left: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 650;
+}
+.pb-tag.ai-off { color: #7a4b00; background: #fff8eb; border: 1px solid #f3c46b; }
+.pb-tag.ai { color: #1e3a8a; background: #eef4ff; border: 1px solid #c7d7fe; }

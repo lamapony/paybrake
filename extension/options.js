@@ -1,4 +1,4 @@
-const DEFAULT_BACKEND = "http://localhost:8787";
+const DEFAULT_BACKEND = globalThis.pbConfig.DEFAULT_BACKEND;
 
 function $(id) {
   return document.getElementById(id);
@@ -37,9 +37,31 @@ async function load() {
   const stored = await chrome.storage.local.get("pb_opts");
   const opts = stored.pb_opts || {};
   $("backend").value = opts.backendUrl || DEFAULT_BACKEND;
-  $("llm").checked = Boolean(opts.llm);
+  // Demo build: the AI check on all chats is ON unless the user turned it off.
+  $("aiAll").checked = typeof opts.aiAll === "boolean" ? opts.aiAll : true;
   $("debug").checked = Boolean(opts.debug);
   renderLog(await readLog());
+  showAiStatus($("backend").value);
+}
+
+async function showAiStatus(backendUrl) {
+  const out = $("ai-status");
+  const base = String(backendUrl || DEFAULT_BACKEND).replace(/\/$/, "");
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 3000);
+  try {
+    const res = await fetch(base + "/health", { signal: ctrl.signal });
+    const info = await res.json();
+    if (info && info.llm === "configured") {
+      out.textContent = "This server: AI check ready (" + String(info.llmProvider || "AI provider") + ").";
+    } else {
+      out.textContent = "This server has no AI provider (mock mode): the AI check is off here and only the rules run. Nothing is sent.";
+    }
+  } catch {
+    out.textContent = "Could not reach this server. Cards will say \"AI check unavailable\" and use rules only.";
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 $("opts").addEventListener("submit", async (event) => {
@@ -48,12 +70,20 @@ $("opts").addEventListener("submit", async (event) => {
   await chrome.storage.local.set({
     pb_opts: {
       backendUrl,
-      llm: $("llm").checked,
+      aiAll: $("aiAll").checked,
       debug: $("debug").checked
     }
   });
   $("saved").textContent = "Saved";
+  showAiStatus(backendUrl);
 });
+
+function pick(url) {
+  $("backend").value = url;
+  $("saved").textContent = "Press Save to keep this";
+}
+$("use-hosted").addEventListener("click", () => pick(globalThis.pbConfig.HOSTED_BACKEND));
+$("use-local").addEventListener("click", () => pick(globalThis.pbConfig.LOCAL_BACKEND));
 
 $("download").addEventListener("click", async () => {
   const entries = await readLog();

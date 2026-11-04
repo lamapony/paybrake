@@ -1,0 +1,45 @@
+{
+  "note": "Pinned Hugging Face sources for the real-message eval. Files are downloaded by download.mjs into eval/real/.data/ (gitignored); no raw rows are committed.",
+  "datasets": [
+    {
+      "key": "sms_spam",
+      "hf": "codesignal/sms-spam-collection",
+      "url": "https://huggingface.co/datasets/codesignal/sms-spam-collection",
+      "revision": "93ffab6fa47849295146c709e341d169746582f3",
+      "license": "CC-BY-4.0",
+      "origin": "real SMS (UCI SMS Spam Collection v.1, Almeida & Gomez Hidalgo 2011)",
+      "language": "en",
+      "files": ["sms-spam-collection.csv"]
+    },
+    {
+      "key": "discord",
+      "hf": "wangyuancheng/discord-phishing-scam",
+      "url": "https://huggingface.co/datasets/wangyuancheng/discord-phishing-scam",
+      "revision": "dd5f71eeec6d12c665c8ddd64ff9e06d660dd79f",
+      "license": "MIT",
+      "origin": "real Discord chat messages, hand-labelled by the dataset author",
+      "language": "en (some hi)",
+      "files": ["discord-message-phishing - Sheet1.csv"]
+    },
+    {
+      "key": "scam_dialogue",
+      "hf": "BothBosu/scam-dialogue",
+      "url": "https://huggingface.co/datasets/BothBosu/scam-dialogue",
+      "revision": "321b961b5ae353e19ed479b960658dcd223d5e06",
+      "license": "Apache-2.0",
+      "origin": "synthetic (LLM-generated) multi-turn phone dialogues, third-party",
+      "language": "en",
+      "files": ["scam-dialogue_all.csv"]
+    },
+    {
+      "key": "scamguardbench",
+      "hf": "flowxai/scamguardbench",
+      "url": "https://huggingface.co/datasets/flowxai/scamguardbench",
+      "revision": "bc6eca851de4f9d440310f1dbe4dde3dc8413201",
+      "license": "Apache-2.0",
+      "origin": "mostly synthetic SMS/email/chat (324 synthetic + 46 'public' in EN standard), third-party, with hard-legit confusables",
+      "language": "en (ro rows dropped)",
+      "files": ["v0.2/standard.jsonl"]
+    }
+  ]
+}
