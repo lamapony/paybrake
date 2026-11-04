@@ -1,0 +1,4 @@
+PR #7: Submission prep: judge README, demo GIF, Devpost draft, release gate
+mergeable=MERGEABLE state=CLEAN
+checks=
+Night 01.11 prep for 5.11 early submission. See docs/SUBMISSION-GAPS.md (ranked gaps + before-public checklist: pilot/ targets Facebook/Messenger, decide before making repo public), docs/DEVPOST-DRAFT.md, docs/DEMO-VIDEO-SCRIPT.md, shots/demo.gif. npm test 62/62, eval 30 synthetic cases. No other branches merged.

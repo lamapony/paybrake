@@ -1,0 +1,242 @@
+diff --git a/README.md b/README.md
+index 1ee9920..260a9b8 100644
+--- a/README.md
++++ b/README.md
+@@ -4,6 +4,26 @@
+ 
+ Fictional names only. Not affiliated with PayPal or any marketplace. No real money moves in this build.
+ 
++## Try the demo
++
++PayBrake spots evidence of risky payment requests in marketplace chats and offers a way to start a mock PayPal order for the listed item. The extension runs rules on the chat locally; it stays quiet when it lacks evidence. This is a hackathon prototype, not proof of safety or buyer protection.
++
++![PayBrake intervention in the demo marketplace chat](shots/ext-live-1280.png)
++
++The same bike thread with the extension injected: the card appears, **Move to protected PayPal order** runs, and the footer shows a local `MOCK-` order. No PayPal account is used.
++
++![Card appears, then Protect creates a MOCK order](shots/demo.gif)
++
++**Judge path:** allow about five minutes for the first setup; the interaction itself takes about 60 seconds. No account, credentials, or real payment is needed. Use Chrome or a Chromium browser that supports unpacked extensions and Node.js 20 or newer.
++
++1. In a terminal, run `npm install`, then `npm run dev:backend`.
++2. In a second terminal, run `npm run serve:demo`.
++3. Open `chrome://extensions`, enable Developer mode, choose **Load unpacked**, and select this repo's `extension/` folder.
++4. Open [the local marketplace demo](http://localhost:8080/demo/marketplace.html?live=1). In the bike chat, choose **Move to protected PayPal order**, then **Open approval** and **Approve (mock)**. Return to the chat and choose **I approved it, capture**.
++5. Open [safe chats](http://localhost:8080/demo/safe-chats.html): the extension should stay silent.
++
++The order and approval are simulated locally. See [the video script](docs/DEMO-VIDEO-SCRIPT.md) and [submission gaps](docs/SUBMISSION-GAPS.md) for the remaining work.
++
+ ## Run in 5 minutes
+ 
+ From a clean clone, Node 20:
+@@ -76,7 +96,7 @@ npm run eval
+ 
+ Rules eval on 30 synthetic chats (16 risky, 14 safe, fictional names): precision 1, recall 1, F1 1, false alarms 0. The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
+ 
+-Screenshots: `npm run shots`. Extension smoke: `npm run e2e` (Chromium with the unpacked extension). If the browser cannot load an extension in this environment, that script prints `SKIP` and exits 0.
++Screenshots: `npm run shots`. `shots/demo.gif` is the injected card, Protect, and a `MOCK-` order, encoded from Playwright frames. Extension smoke: `npm run e2e` (Chromium with the unpacked extension). If the browser cannot load an extension in this environment, that script prints `SKIP` and exits 0.
+ 
+ ## Limits
+ 
+diff --git a/docs/DEMO-VIDEO-SCRIPT.md b/docs/DEMO-VIDEO-SCRIPT.md
+new file mode 100644
+index 0000000..e030c74
+--- /dev/null
++++ b/docs/DEMO-VIDEO-SCRIPT.md
+@@ -0,0 +1,13 @@
++# Demo video script (about 2 minutes)
++
++Record the local mock flow with Chrome, the extension loaded, and both servers running as described in the [README](../README.md). Use fictional demo chats; do not record personal conversations or credentials.
++
++| Time | Screen and narration |
++| --- | --- |
++| 0:00–0:20 | Show the marketplace chat. “A payment request can arrive in the middle of an ordinary conversation. PayBrake pauses at the point where someone is asked to pay.” |
++| 0:20–0:45 | Show the bike thread and the extension card. Point to its evidence. “The extension checks the chat on the device for concrete payment-risk signals. It explains what it found instead of interrupting every conversation.” |
++| 0:45–1:20 | Select **Move to protected PayPal order**, open approval, approve the mock, return and capture. “Here we can start an order for the item. This entire approval and capture is a local simulation: no PayPal account or money is involved. Eligibility for Buyer Protection depends on PayPal's terms.” |
++| 1:20–1:40 | Open the safe chats page. “Ordinary conversations stay quiet in these examples. Detection is limited to the patterns and languages implemented, and can miss scams.” |
++| 1:40–2:00 | Return to the card and README. “PayBrake is a prototype by Dima, Christopher and David. Judges can run this same credential-free mock using the README.” |
++
++Before submission: record the actual flow, check that the labels match the final build, add captions, and link the finished video from the submission.
+diff --git a/docs/DEVPOST-DRAFT.md b/docs/DEVPOST-DRAFT.md
+new file mode 100644
+index 0000000..355c8bd
+--- /dev/null
++++ b/docs/DEVPOST-DRAFT.md
+@@ -0,0 +1,33 @@
++# PayBrake — Devpost draft
++
++**Team:** Dima, Christopher, David
++
++**Video:** [TODO video link]
++
++**Hosted demo:** [TODO hosted demo]
++
++Judges can run the credential-free local mock from the README today. This branch has no public hosted demo and no recorded video. Do not replace the placeholders until those exist.
++
++## Inspiration
++
++A marketplace conversation can look ordinary until a seller asks for a payment method that leaves the buyer with fewer options. We wanted to give someone a moment to reconsider while the request is still in context.
++
++## What it does
++
++PayBrake is a browser extension that looks for evidence of risky payment requests in a supported chat and shows a card explaining the signals. In the included local marketplace demo, the user can start a mock PayPal order for the item, approve it on a mock page and simulate capture. The demo needs no credentials or real payment. PayPal Buyer Protection eligibility depends on its terms; the prototype cannot determine coverage.
++
++## How we built it
++
++A Chrome extension extracts messages from our demo page and applies English and Danish rules on device. A Node.js backend supplies an in-memory mock order flow. An optional model integration can review rule hits when configured. The included pages and fictional chats let judges try the interaction locally.
++
++## Challenges we ran into
++
++Payment language is contextual: an ordinary mention of a payment method is not always a request to pay. We designed the detector to require evidence and included safe conversations to check that it remains quiet. The prototype's patterns can still miss scams or make mistakes.
++
++## Accomplishments that we're proud of
++
++We connected an evidence-based intervention to a complete mock order and approval flow. The offline evaluation is 30 synthetic cases in [eval/cases/pay-risk.json](../eval/cases/pay-risk.json): fictional chats written for this prototype. Run `npm run eval` to reproduce it. That run is a regression check on those 30 cases. It is not a measure of real-world accuracy, and this draft does not quote its scores as field performance.
++
++## What's next
++
++Make the credential-free judge path easier to access ([TODO hosted demo]), validate detection on independently sourced data, and review privacy and site permissions before any real-world pilot. A PayPal sandbox adapter is being developed separately; this branch uses mock orders. The demo video is not recorded yet ([TODO video link]). Record it from [the video script](DEMO-VIDEO-SCRIPT.md) against the local mock, then add captions.
+diff --git a/docs/SUBMISSION-GAPS.md b/docs/SUBMISSION-GAPS.md
+new file mode 100644
+index 0000000..7981bcb
+--- /dev/null
++++ b/docs/SUBMISSION-GAPS.md
+@@ -0,0 +1,71 @@
++# Submission gaps
++
++Early submission: 5 November, 21:00 CET. Final: 12 November. This is a local assessment of `night/1101-submission` against the available `origin/*` refs; no branches were merged or pushed.
++
++## Before going public
++
++Dima decides. Nothing in this section was run on this branch. The pilot is still in the tree on purpose. A top-level notice with the same warning is in [pilot/README.md](../pilot/README.md).
++
++`pilot/extension/manifest.json` injects on Facebook and Messenger, and `pilot/INSTALL-RU.md` directs testers to real chats. That folder is not the judge path. The judge path is the local mock in the repository README.
++
++1. Read `pilot/README.md`, `pilot/INSTALL-RU.md`, `pilot/extension/manifest.json`, and `PILOT-TASK.md`.
++2. Check history for the pilot path. An empty result is not proof the blobs are gone from every clone; this is the check to run:
++
++```sh
++git log --all -- pilot
++```
++
++Also check the task file and the pilot screenshots, which sit outside `pilot/`:
++
++```sh
++git log --all -- PILOT-TASK.md
++git log --all -- shots/pilot-1280.png shots/pilot-390.png shots/pilot-anyway-1280.png shots/pilot-order-1280.png shots/pilot-order-created-1280.png shots/pilot-safe-1280.png
++```
++
++If a later deletion makes that log look shorter than expected, repeat the pilot check without history simplification:
++
++```sh
++git log --all --full-history -- pilot
++```
++
++3. Decide one of: keep the pilot in a private remote only, move it to a reviewed private location, or drop it from the tree that will be published. To drop it from the next commit (this does not rewrite history):
++
++```sh
++git rm -r pilot PILOT-TASK.md
++```
++
++The six `shots/pilot-*.png` files are not inside `pilot/`. Include them only as part of the same decision:
++
++```sh
++git rm -- shots/pilot-1280.png shots/pilot-390.png shots/pilot-anyway-1280.png shots/pilot-order-1280.png shots/pilot-order-created-1280.png shots/pilot-safe-1280.png
++```
++
++4. Review `git status` and `git diff --cached` before committing. Look through `pilot/fixtures/`, the pilot screenshots, documentation, and `eval/` for personal information and for anything the team does not have the rights to publish. `.gitignore` does not untrack a file and does not erase history.
++5. After any removal commit, run `git log --all -- pilot` again. If those commits must not be public, rewriting history is a separate decision. Do not treat `git rm` as a history wipe.
++6. Confirm the published README, Devpost draft, and demo video point at the local mock (and later a hosted mock only after it is reviewed), not at this pilot.
++
++## Gaps
++
++1. **Public release gate — pilot and data.** `pilot/extension/manifest.json` injects on Facebook and Messenger, and `pilot/INSTALL-RU.md` directs testers to real chats. Before making the repo public, remove or move the third-party-targeting pilot and related instructions (`PILOT-TASK.md`) to an appropriately reviewed private location, or replace them with a local-only fixture. Do not present it as the judge path. Inspect `pilot/fixtures/`, screenshots in `shots/`, documentation, git history, and any evaluation data for personal information and rights to publish. This requires a human review; `.gitignore` alone does not remove tracked files or history. The pilot remains here pending that decision. The commands are in **Before going public** above. They were not run.
++2. **Credential-free judge path.** The README now explains the local mock, but first-time judges still install Node and load an unpacked extension. Review #3 `tester-friendly` (`TESTING.md`, `hosted/`, `extension/welcome.html`, `scripts/pack-extension.mjs`) for a maintained hosted mock and zip; verify the actual public URL, build, privacy, availability and end-to-end flow before advertising it. #5 adds a judge start page and zip hosting. No deployment was made here.
++3. **Integrate in dependency order, with review.** #1 `backend-rest` is Christopher's sandbox adapter (`backend/src/paypal-rest.js`, `backend/src/paypal-toolkit.js`); review and land it first if sandbox functionality is wanted. #3 includes #1 and adds the tester path; land its reviewed incremental changes next. #4 `eval-real-scams` includes #3 and adds detection changes and `eval/real/`; audit source licenses, personal data, methodology and large checked-in result files before landing. #5 `fix/terra-detection-1027` builds on #4, adding detection fixes and the judge path; review and test those changes after #4. #2 `promo-page` is independent and draft (`site/`); align its claims and links to the final shipped version, then consider it after the working demo. Avoid treating these stacked diffs as independent PRs. No cherry-picks were made: the useful changes are coupled to larger branch histories.
++4. **Evidence and presentation.** `npm run shots` and `npm run e2e` were re-run on this branch (see QA). `shots/ext-live-1280.png` matches the current extension card, and `shots/demo.gif` (card, Protect, `MOCK-` order) is embedded in the README. Still open: record and caption the [video script](DEMO-VIDEO-SCRIPT.md), then replace [TODO video link] and [TODO hosted demo] in the [Devpost draft](DEVPOST-DRAFT.md). No hosted demo was deployed. The draft says the evaluation is 30 synthetic cases and does not quote scores as field performance.
++5. **Claims and evaluation.** `eval/cases/pay-risk.json` contains 30 synthetic cases; its scores are not evidence of real-world accuracy. Review #4's `eval/real/RESULTS.md` and data provenance before citing its numbers, including split methodology and limitations. Retest the final integrated commit and keep README and promo claims consistent with its actual features.
++6. **Repository hygiene.** `LICENSE` already contains MIT terms; confirm copyright and contributor attribution with the team. `.gitignore` excludes environment files, but inspect tracked files and history for secrets, personal data, and third-party assets before publication. The tracked-file grep below is a limited check, not a history or image audit. Rotate any actual credential if discovered.
++
++## QA on this branch
++
++
++- 2026-11-01: `npm install` with Node 24.22.1 succeeded; npm reported 0 vulnerabilities.
++- `npm test`: 62 passed, 0 failed after changing the test command to enumerate test files (Node 24 does not resolve the original directory arguments). The default `/workspace/bin/node` could not load `libnode.so.115`; checks used `/usr/local/bin` first in PATH.
++- `npm run eval`: passed; synthetic rules cases: 16 true positives, 0 false positives, 0 false negatives, 14 true negatives; precision, recall and F1 each 1. These are not real-world performance estimates.
++- `git grep` on tracked text for credential-related terms, private-key headers, and common token shapes found empty example variables, documentation, test patterns and code referring to environment variables; no populated credential was identified. The automated `tests/secrets.test.mjs` also passed. This does not cover all secret formats, binary files, or git history.
++- Browser interaction and screenshots were not re-verified in this environment; verify the final integrated demo before submission.
++
++- 2026-11-01 (second pass): `PATH=/usr/local/bin:$PATH`, Node v24.22.1 at `/usr/local/bin/node`. `/workspace/bin/node` was not used.
++- `npm test`: 62 passed, 0 failed, 0 skipped, 0 cancelled. Exit 0. A second run after the README edit also passed, 62/62.
++- `npm run eval`: exit 0. 30 synthetic rules cases: 16 true positives, 0 false positives, 0 false negatives, 14 true negatives; precision 1, recall 1, f1 1, false alarms 0. Wrote gitignored `eval/report.json`. These figures are not real-world performance estimates.
++- `npm run shots`: the script's fallback binary `chromium-1248` is not installed here. Re-ran with `CHROME_PATH=/home/box/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome`. All checks passed (static card, safe page with no card, live High risk card, `MOCK-` order id, 44px targets at 390, no horizontal overflow). Regenerated `shots/demo-1280.png`, `shots/demo-390.png`, `shots/demo-1280-protect.png`, `shots/safe-1280.png`, `shots/live-1280.png`, `shots/live-1280-order.png`, and `shots/live-390.png`. Pixel hashes differ from the previous commit; the pages match this build (static card says "Checked just now", injected card says "MOCK MODE" and "rules check").
++- `npm run e2e`: same `CHROME_PATH`. "extension smoke passed". Regenerated `shots/ext-live-1280.png` and `shots/ext-live-390.png`. The 1280 image is the README still: High risk card, four signals, Protect and Pay anyway, lamp thread silent. The 390 image stacks those buttons inside the column.
++- `shots/demo.gif`: Playwright frames of `#thread-bike` on `demo/marketplace.html?live=1` (no card, then the injected card, then Protect). ffmpeg 7.1.5 padded the frames onto one canvas and encoded a 768×706, 4.76s, 8 fps GIF (about 61 KB). The order frame shows "Sandbox order created" and `MOCK-7cd411c3-953f-4da9-a4e7-280fe25701d1` from that run; the next run will mint a different id. Embedded in the README.
++- The **Before going public** commands were not run. `pilot/` and `PILOT-TASK.md` are still in the tree.
+diff --git a/package.json b/package.json
+index fd1f595..32f1608 100644
+--- a/package.json
++++ b/package.json
+@@ -12,7 +12,7 @@
+     "backend"
+   ],
+   "scripts": {
+-    "test": "node --test tests/ backend/test/",
++    "test": "node --test tests/*.test.mjs backend/test/*.test.mjs",
+     "eval": "node eval/run-eval.mjs --mode=rules",
+     "dev:backend": "node backend/src/server.js",
+     "serve:demo": "node scripts/serve.mjs",
+diff --git a/pilot/README.md b/pilot/README.md
+new file mode 100644
+index 0000000..93dc9e7
+--- /dev/null
++++ b/pilot/README.md
+@@ -0,0 +1,17 @@
++# PayBrake pilot — do not publish this folder as the demo
++
++**Before going public.** This directory is a private rehearsal build, not the hackathon judge path. `extension/manifest.json` injects on `facebook.com` messages, `facebook.com` marketplace, and `messenger.com`, and a second content script matches all of `facebook.com` so the scan can follow that site's in-app navigation. `INSTALL-RU.md` tells a tester to open those live chats. The judge demo is the local mock in the repository [README](../README.md): `demo/marketplace.html` on localhost, with mock orders and no third-party site.
++
++Dima decides whether this tree stays, moves to a private repo, or is removed before any public remote. The commands for that decision are in [docs/SUBMISSION-GAPS.md](../docs/SUBMISSION-GAPS.md) under **Before going public**. They were not run on this branch. Deleting the files from the next commit does not erase them from history. `.gitignore` does not untrack them either.
++
++Do not link this pilot, `PILOT-TASK.md`, or `shots/pilot-*.png` from the Devpost submission.
++
++## What is in here
++
++- `extension/` — unpacked Manifest V3 pilot. Permissions are `storage` only. Host matches include Facebook messages, Facebook Marketplace, and messenger.com.
++- `fixtures/messenger-thread.html` — local DOM fixture. The Playwright script can serve it in place of those hosts. It is still a third-party-shaped target and is part of the same decision.
++- `INSTALL-RU.md` — install notes that send a tester to live chats.
++- `tests/` — detector cases and the pilot smoke test.
++- `scripts/` — zip packaging and debug helpers.
++
++`shots/pilot-1280.png`, `shots/pilot-390.png`, `shots/pilot-anyway-1280.png`, `shots/pilot-order-1280.png`, `shots/pilot-order-created-1280.png`, and `shots/pilot-safe-1280.png` live outside this directory. Removing `pilot/` leaves those images in the tree until they are removed too.
+diff --git a/shots/demo-1280-protect.png b/shots/demo-1280-protect.png
+index 3467ff8..0be4690 100644
+Binary files a/shots/demo-1280-protect.png and b/shots/demo-1280-protect.png differ
+diff --git a/shots/demo-1280.png b/shots/demo-1280.png
+index 02f3170..5c67f06 100644
+Binary files a/shots/demo-1280.png and b/shots/demo-1280.png differ
+diff --git a/shots/demo-390.png b/shots/demo-390.png
+index 9dd7328..22d7efb 100644
+Binary files a/shots/demo-390.png and b/shots/demo-390.png differ
+diff --git a/shots/demo.gif b/shots/demo.gif
+new file mode 100644
+index 0000000..39aab20
+Binary files /dev/null and b/shots/demo.gif differ
+diff --git a/shots/ext-live-1280.png b/shots/ext-live-1280.png
+index 2f4d5c4..4cc372d 100644
+Binary files a/shots/ext-live-1280.png and b/shots/ext-live-1280.png differ
+diff --git a/shots/ext-live-390.png b/shots/ext-live-390.png
+index 88bbfed..69b51a2 100644
+Binary files a/shots/ext-live-390.png and b/shots/ext-live-390.png differ
+diff --git a/shots/live-1280-order.png b/shots/live-1280-order.png
+index 76b5b66..b1c4efe 100644
+Binary files a/shots/live-1280-order.png and b/shots/live-1280-order.png differ
+diff --git a/shots/live-1280.png b/shots/live-1280.png
+index 2d8982c..bbb24ac 100644
+Binary files a/shots/live-1280.png and b/shots/live-1280.png differ
+diff --git a/shots/live-390.png b/shots/live-390.png
+index 5afc1cf..c41c327 100644
+Binary files a/shots/live-390.png and b/shots/live-390.png differ
+diff --git a/shots/safe-1280.png b/shots/safe-1280.png
+index c2a2869..6bbb3d0 100644
+Binary files a/shots/safe-1280.png and b/shots/safe-1280.png differ

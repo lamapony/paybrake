@@ -1,0 +1,11 @@
+Claude review:
+
+VERDICT: APPROVE
+REASON: None of the detector PRs merged since (#15–#20) touch `package.json`, so the Node 24 `npm test` failure is still present on main and this one-line fix is still needed. The change is small, doesn't remove any tests, and GitHub reports it as mergeable with no conflicts.
+
+- **The test count in the PR description is out of date.** "62 pass" was measured before #15–#20 landed, and those PRs added roughly 900 lines to `tests/pay-risk.test.mjs`. Re-run `npm test` on current main before merging and update the count in the description. The new tests are in a `.mjs` file, so the glob still picks them up.
+- **Glob coverage is narrower than the old directory form.** `tests/*.mjs` only matches files directly in `tests/`. It skips subdirectories and any `*.test.js` or `*.cjs` files. Nothing like that exists today, but a nested test added later would be skipped without any warning. Consider `tests/**/*.test.mjs`.
+- **Who expands the glob.** Without quotes, `sh` expands it on POSIX systems, while on Windows `cmd` passes it through as text and Node 22+ `--test` expands it. Both work. Quoting the pattern (`"node --test \"tests/**/*.mjs\" ..."`) would make Node do the expansion everywhere.
+- **No CI ran (`checks=` is empty).** The only evidence that this works is the author's run on Node v24.22.1. A one-line check on Node 20 or 22 would confirm nothing broke on older versions.
+- **The eval and demo checks are unaffected.** `npm run eval` and the demo don't use the changed script, so those results carry over. No action needed.
+- **Optional follow-up:** the repo has no GitHub Actions. A small workflow running `npm test` would have caught this break and would give later detector PRs a real check.

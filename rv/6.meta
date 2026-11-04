@@ -1,0 +1,4 @@
+PR #6: Night 01.11: audit, roleplay detection fixes, SUBMISSION draft, 9 message shots
+mergeable=CONFLICTING state=DIRTY
+checks=
+Audit (night/AUDIT.md): main matched 6/9 roleplay messages; fixes make all 9 match in rules-only mode (msg 9 silent). 69 tests + rules eval + extension smoke pass. Adds SUBMISSION.md, night/CHECKLIST-5-11.md, shots/msg-1..9 (1280/390), scripts/shot-messages.cjs. Do not merge before Grok Build review + Dima.

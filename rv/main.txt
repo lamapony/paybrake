@@ -1,0 +1,47 @@
+Catch Western Union, Venmo, Swish, and the other named rails (#20)
+
+ extension/lib/atoms.js  | 127 +++++++++++++++++++-
+ tests/pay-risk.test.mjs | 303 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 429 insertions(+), 1 deletion(-)
+Catch upfront, in advance, holding fee, and reserve (#17)
+
+ extension/lib/atoms.js    | 149 ++++++++++++++++++++++++
+ extension/lib/pay-risk.js |   7 +-
+ tests/pay-risk.test.mjs   | 282 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 437 insertions(+), 1 deletion(-)
+fix: catch money asked via Telegram or WhatsApp (rebased on main with Wise detector) (#18)
+
+ extension/lib/atoms.js  | 16 ++++++++++++-
+ tests/pay-risk.test.mjs | 60 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 75 insertions(+), 1 deletion(-)
+Catch through Wise, på Wise, and Wise transfer (#16)
+
+ extension/lib/atoms.js  |  2 +-
+ tests/pay-risk.test.mjs | 63 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 63 insertions(+), 2 deletions(-)
+Catch a personal PayPal payment (#19)
+
+ extension/lib/atoms.js  |  2 +-
+ tests/pay-risk.test.mjs | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 1 deletion(-)
+fix: catch reversed Friends and Family phrasing (#15)
+
+ extension/lib/atoms.js  |  4 ++++
+ tests/pay-risk.test.mjs | 57 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 61 insertions(+)
+chore: update shots, ignore dist
+
+ .gitignore                         |   1 +
+ shots/live-1280-order.png          | Bin 232466 -> 232427 bytes
+ shots/pilot-1280.png               | Bin 0 -> 95231 bytes
+ shots/pilot-390.png                | Bin 0 -> 62659 bytes
+ shots/pilot-anyway-1280.png        | Bin 0 -> 59425 bytes
+ shots/pilot-order-1280.png         | Bin 0 -> 58518 bytes
+ shots/pilot-order-created-1280.png | Bin 0 -> 64484 bytes
+ shots/pilot-safe-1280.png          | Bin 0 -> 48129 bytes
+ 8 files changed, 1 insertion(+)
+docs: mark the clean-clone check passed
+
+ PROGRESS.md | 1 +
+ STATUS.md   | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)

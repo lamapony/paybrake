@@ -1,0 +1,18 @@
+PR #2: Draft: promo landing page (site/)
+mergeable=MERGEABLE state=CLEAN
+checks=
+Draft promo landing page for the PayPal AI Hackathon submission. **Do not merge yet.**
+
+- `site/index.html`: one static page, inline CSS, no JS, no external fonts/CDNs. `noindex, nofollow` meta + `_headers` X-Robots-Tag + `robots.txt`.
+- Copy describes the `backend-rest` build (d6f4004, PR #1): rules on-device, optional AI check via `/api/classify`, PayPal Orders v2 sandbox create/approve/capture, mock mode. Copy rule respected ("may be eligible; see PayPal terms"; no guarantee language, no social-network names).
+- `site/img/*.webp` screenshots: real Playwright captures of the unpacked extension on `demo/marketplace.html?live=1`, backend in mock mode. `hero.webp`, `og.jpg`, `favicon.svg` were made for this page.
+- Design and copy: Claude (CLI). Fixes and deploy: Grok Bot.
+
+Preview (non-indexed): https://preview.paybrake-preview.pages.dev
+
+Placeholders to fill before going public:
+- [ ] Demo video URL
+- [ ] Devpost entry URL
+- [ ] Team roles / bios (from LICENSE + STATUS.md ownership for now)
+- [ ] GitHub link works only once the repo is public; the README sandbox section is on `backend-rest` until PR #1 lands
+

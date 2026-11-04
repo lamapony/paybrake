@@ -1,0 +1,16 @@
+PR #12: Catch gift wording that skips Friends & Family
+mergeable=CONFLICTING state=DIRTY
+checks=
+## Summary
+- `send as gift` only matched those three words in a row. An amount, `it`, or `a` in between (`send 500 kr as a gift`, `send it as a gift`, `send 500 kroner as a gift`) was silent, and Danish `som gave` never matched.
+- Those asks are now `friends_family`. With `I ship tomorrow` or `kan kun sende` the level is high and `ship_before_meet` stays. One strong hit on its own stays medium.
+- `Please send as gift via PayPal, 500 kr, I ship tomorrow.` stays high. `My friends and family loved this lamp.` and `Det er en gave til min søster…` stay silent `no_atom`. `Send a gift card for 500 kr via email.` stays `off_platform` only.
+- `pay-risk.js` and the pickup regex are unchanged.
+
+## Checks
+- `node --test tests/*.mjs backend/test/*.mjs` on Node 24: 65 pass. (`npm test` is still the old directory script; the fix for that is PR #9 and is not in this branch.)
+- `npm run eval`: precision 1, recall 1, false alarms 0 (16 risk, 14 silent).
+- No build script in this repo.
+
+This repo has no GitHub Actions. Not merged.
+

@@ -1,0 +1,20 @@
+PR #5: Hosted demo + judge README: PayPal sandbox (mock fallback), AI check, realistic demo
+mergeable=CONFLICTING state=DIRTY
+checks=
+Fixes from Terra's test chats (2026-10-27).
+
+**What changes**
+- **AI never raises the level.** Final level = lower of rules level and AI level. Enforced in the extension (`clampLevel` in `pay-risk.js`, again at render in `content.js`), in backend `/api/classify` (`capLevel`, new optional `rulesLevel` request field, documented in `docs/BACKEND-CONTRACT.md`) and in the hosted worker. The AI can still lower a level or add a card when rules are silent.
+- **Overpayment (chat 6):** new strong atom `overpayment_refund`, own reason + "Overpay-and-refund trick" chip.
+- **Verification code (chat 5):** account-safety card, single "Got it, hide this" action; no PayPal order / Pay anyway, and AI chips can't bring them back.
+- **Gift card (chat 8):** dedicated gift-card reason; a gift card offered as a prize still is not a payment.
+- **Compact card ≤520px:** short headline, level pill, one-line advice, actions; signals/email behind a Details toggle. Desktop unchanged. Collapsed card is 25–32% of a 390×844 screen.
+
+**Checks (Node 20)**
+- `npm test`: 173/173 pass
+- `npm run eval`: precision 1, recall 1, **false alarms 0** (tp 16, fp 0, fn 0, tn 14)
+
+
+**Hosted demo for judges (52938f9, deployed 2026-10-28 17:27 CET)**
+- Start page https://paybrake-demo.spbabinov.workers.dev/ ("Try PayBrake in 2 minutes"), extension zip served at `/paybrake-extension.zip` (repo is private, so no GitHub release link for judges). Extension 0.2.0-test.4.
+- `/api/classify` caps: 2000 chars (extension sends latest 

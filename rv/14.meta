@@ -1,0 +1,15 @@
+PR #14: Catch wire and transfer asks that name a bank or IBAN
+mergeable=CONFLICTING state=DIRTY
+checks=
+## Summary
+- IBAN only counted with a pay word within 80 characters. `transfer` and `wire` are not pay words, so `Please transfer/wire 500 kr to IBAN … I ship tomorrow` was silent `weak_only`. `wire 500 kr to my bank` and `transfer 500 kr to my bank account` missed `off_platform` the same way.
+- Those four are now level high with `off_platform` and `ship_before_meet`. `transfer` is not added to `PAY_WORD`. Pay, send, `wire transfer`, and `account number` stay high.
+- `I can transfer the bike to you on Thursday.` stays silent `no_atom`. `I can transfer the bike when you pick it up.` stays a silent veto. The pickup regex and `pay-risk.js` are unchanged.
+
+## Checks
+- `node --test tests/*.mjs backend/test/*.mjs` on Node 24: 65 pass. (`npm test` is still the old directory script; the fix for that is PR #9 and is not in this branch.)
+- `npm run eval`: precision 1, recall 1, false alarms 0 (16 risk, 14 silent). The frame-serial IBAN case stays silent.
+- No build script in this repo.
+
+This repo has no GitHub Actions. Not merged.
+

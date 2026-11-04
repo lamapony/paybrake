@@ -1,0 +1,15 @@
+PR #10: Warn when pickup is offered next to an upfront ask
+mergeable=MERGEABLE state=CLEAN
+checks=
+## Summary
+- A real pay-on-collection phrase no longer hides a Friends & Family, MobilePay, or other strong upfront ask in the same thread. The old test that locked "Send 500 kr via Friends & Family, or cash on pickup" as a silent veto now expects a warning.
+- Pickup with no upfront ask stays silent. Checkout and an agreed Goods & Services payment still hide the card. "Never send a deposit via PayPal Friends and Family. Pay only when you pick it up." stays silent. That advice case is not reworked here.
+- `atoms.js` is unchanged, so "when you pick a time" still matches collection and still vetoes. That false match is a separate fix.
+- ADR 0001 now says collection does not hide an upfront ask.
+
+## Checks
+- `node --test tests/*.mjs backend/test/*.mjs` (the `npm test` command from #9; this branch is still on the old script): 69 pass
+- `npm run eval`: precision 1, recall 1, false alarms 0
+- In the local demo page, the same scripts in the browser: Friends & Family plus pickup is risk high, amount 500, either order; MobilePay plus afhentning is risk high with `upfront_deposit` and `off_platform`; pickup only is silent veto; the "never send" sentence stays silent; "when you pick a time" stays silent.
+
+Draft. Not merged.

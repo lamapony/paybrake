@@ -1,0 +1,13 @@
+PR #1: Backend: PayPal sandbox rest adapter, toolkit stub, OpenRouter classify
+mergeable=MERGEABLE state=CLEAN
+checks=
+Real PayPal **sandbox** backend paths for PayBrake, built with Grok Build. Head start for Christopher; see `docs/CHRISTOPHER-HANDOFF.md`.
+
+## What's in
+- **rest adapter** (`backend/src/paypal-rest.js`): OAuth client-credentials token cached until `expires_in - 60s` (shared in-flight request, one retry on 401), Orders v2 create (`intent: CAPTURE`, payee email, 2-decimal amount, DKK/EUR/USD, `PayPal-Request-Id`, `payer-action` → `approve` link), get, capture (409 `not_approved`, idempotent `ORDER_ALREADY_CAPTURED`), error mapping (400 / 404 / 409 / 502 `paypal_error` / `paypal_auth`), sandbox-only base URL guard (refuses `api-m.paypal.com`, non-https).
+- **toolkit adapter** (`backend/src/paypal-toolkit.js`): documented stub. The published `@paypal/agent-toolkit@1.11.0` `create_order` has no payee field and is USD-only, with heavy deps, so tool calls (`create_order`/`get_order`/`pay_order`) execute through rest. No new dependency.
+- **LLM classify** (`backend/src/classify.js`): `LLM_PROVIDER=openrouter|openai-compatible|off`, key from `OPENROUTER_API_KEY`, 503 `llm_off` with no key (no fetch), evidence-substring guard kept, provider body/key never echoed, timeout, 4000-char cap. `/health` adds `llmProvider`.
+- Server: `/return` approves only in mock mode; return page hides the mock button for real sandbox returns.
+- Docs: `.env.example` (empty secrets), README "Switch from mock to PayPal sandbox" + "Turn on the AI check", contract, STATUS, handoff.
+
+## Checks (offline, mocked fe

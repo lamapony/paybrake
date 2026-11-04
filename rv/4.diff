@@ -1,0 +1,827 @@
+diff --git a/.gitignore b/.gitignore
+index 773c34e..c8add98 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -10,3 +10,4 @@ eval/report.json
+ dist/
+ hosted/public/
+ hosted/.wrangler/
++eval/real/.data/
+diff --git a/TESTING.md b/TESTING.md
+index 2975380..daf31ca 100644
+--- a/TESTING.md
++++ b/TESTING.md
+@@ -6,8 +6,8 @@ The demo store and its test server are online. Everything there is pretend: fict
+ 
+ ## 1. Download and unzip
+ 
+-1. Open the test build: **https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.2** (you need to be signed in to GitHub with access to the repo).
+-2. Download **`paybrake-extension.zip`** ([direct link](https://github.com/lamapony/paybrake/releases/download/v0.2.0-test.2/paybrake-extension.zip)) and unzip it (double-click it).
++1. Open the test build: **https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3** (you need to be signed in to GitHub with access to the repo).
++2. Download **`paybrake-extension.zip`** ([direct link](https://github.com/lamapony/paybrake/releases/download/v0.2.0-test.3/paybrake-extension.zip)) and unzip it (double-click it).
+ 3. You now have a folder called **`paybrake-extension`**. Inside it you should see `manifest.json`.
+ 
+ > On Windows, "Extract All" sometimes makes a folder inside a folder: `paybrake-extension\paybrake-extension\`. Use the inner one, the one where you can see `manifest.json`.
+@@ -52,5 +52,5 @@ Download the new zip, unzip it over the old folder (or into a new one), then on
+ 
+ - The extension talks to the hosted mock server by default (`https://paybrake-demo.spbabinov.workers.dev`). To use a local backend, open the extension's **Settings** (right-click the icon > Options), click **Use localhost:8787**, then **Save**. Run `npm run dev:backend` and `npm run serve:demo`, and open `http://localhost:8080/demo/marketplace.html?live=1`.
+ - Build the zip: `npm run pack:extension` (writes `dist/paybrake-extension.zip`).
+-- Hosted demo and mock backend: one Cloudflare Worker in `hosted/` (static demo pages plus the mock API, orders kept in a Durable Object for 24 hours). Mock mode only: no PayPal keys, no AI key, nothing to configure. `npm run hosted:deploy` builds and deploys it (needs `npx wrangler login`). Pages and API send `X-Robots-Tag: noindex`, and `robots.txt` disallows everything.
++- Hosted demo and mock backend: one Cloudflare Worker in `hosted/` (static demo pages plus the mock API, orders kept in a Durable Object for 24 hours). PayPal in mock mode (no PayPal keys). The AI check runs on Typesafe (key stored as the Worker secret `TYPESAFE_API_KEY`), with a size cap and a per-IP rate limit. `npm run hosted:deploy` builds and deploys it (needs `npx wrangler login`). Pages and API send `X-Robots-Tag: noindex`, and `robots.txt` disallows everything.
+ - Tester end-to-end check (unzips the zip, loads it in Chromium, runs the steps above against the hosted URL, saves screenshots to `shots/tester/`): `npm run pack:extension && npm run e2e:hosted`.
+diff --git a/backend/.env.example b/backend/.env.example
+index 3531e0d..651a280 100644
+--- a/backend/.env.example
++++ b/backend/.env.example
+@@ -14,8 +14,22 @@ PAYPAL_RETURN_URL=
+ PAYPAL_CANCEL_URL=
+ # PayPal HTTP timeout in milliseconds. Empty, zero, or not a number uses 10000.
+ PAYPAL_TIMEOUT_MS=
+-# off, openrouter, or openai-compatible. Empty picks openrouter when OPENROUTER_API_KEY is set, otherwise openai-compatible when LLM_BASE_URL is set, otherwise off.
++# off, typesafe, openrouter, or openai-compatible. Empty picks openai-compatible when LLM_BASE_URL is set, otherwise typesafe when the Typesafe key is set, otherwise openrouter when OPENROUTER_API_KEY is set, otherwise off.
+ LLM_PROVIDER=
++# Typesafe key (https://docs.typesafe.ai). Never commit a value.
++TYPESAFE_API_KEY=
++# Name of the env var that holds the Typesafe key. Empty uses TYPESAFE_API_KEY.
++TYPESAFE_API_KEY_NAME=
++# Typesafe API root (before /v1/systemone). Empty uses https://api.typesafe.ai.
++TYPESAFE_BASE_URL=
++# Typesafe model. Empty uses jev-1.14.0 (pinned; the add threshold was tuned on it).
++TYPESAFE_MODEL=
++# Confidence at which a Typesafe "risky" answer adds a card when rules are silent. Empty uses 0.5 (picked on dev). Never below 0.5.
++TYPESAFE_ADD_CONFIDENCE=
++# openrouter: retry a failed Typesafe call on OpenRouter (needs OPENROUTER_API_KEY). Empty means no fallback.
++LLM_FALLBACK=
++# OpenRouter model for the fallback. Empty uses openai/gpt-4o-mini.
++OPENROUTER_MODEL=
+ # OpenRouter key. A key alone, with LLM_PROVIDER empty, turns classify on as openrouter. Never commit a value.
+ OPENROUTER_API_KEY=
+ # OpenAI-compatible base. Requests go to {LLM_BASE_URL}/chat/completions. Empty, and no OpenRouter key, makes classify return 503.
+diff --git a/backend/src/classify.js b/backend/src/classify.js
+index 6a7f45a..3af8e98 100644
+--- a/backend/src/classify.js
++++ b/backend/src/classify.js
+@@ -7,7 +7,19 @@ const FALLBACK = "Risky payment request: a direct transfer may be hard to get ba
+ const TEXT_LIMIT = 4000;
+ const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
+ const OPENROUTER_REFERER = "https://github.com/lamapony/paybrake";
+-const SYSTEM = "You judge whether a marketplace chat asks for a risky payment. Reply with JSON only: {risky:boolean, level:\"high\"|\"medium\"|\"none\", reason:string<=120, evidence:string[], item:string|null, amount:number|null, currency:string|null}. Every evidence string must be a verbatim substring of the user text. Do not promise a refund.";
++const TYPESAFE_BASE = "https://api.typesafe.ai";
++// Pinned, not the jev-latest alias: the add / clear thresholds were tuned on this version.
++const TYPESAFE_MODEL = "jev-1.14.0";
++const MAX_CHOICES = 255;
++export const SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access", "phishing_link", "fee_via_link", "impersonation", "account_threat", "urgency_pressure", "prize_bait", "free_bait", "other"];
++export const SYSTEM = [
++  "You are PayBrake's scam check for one chat or message.",
++  "Lines may start with \"Them:\" (the other person: seller, caller or sender) or \"Me:\" (the PayBrake user). Judge only what Them asks for or pushes. A Me line never makes a chat risky.",
++  "Risky means Them pushes the user toward losing money or account access: paying outside a protected checkout (bank transfer, IBAN, Friends and Family, gift cards, crypto, Zelle, Venmo, Western Union, MobilePay to a stranger), a deposit or fee before the user gets something (delivery, customs, prize, refund, job, loan), sharing card numbers, CVV, one-time or SMS codes, MitID, NemID or BankID codes or logins, passwords or ID numbers, installing remote-access apps (AnyDesk, TeamViewer), opening a login or payment link from an unknown or lookalike site, or posing as a bank, authority, platform or support team.",
++  "Not risky: normal buying and selling, pay on pickup, platform checkout, delivery or bank notices without a link or fee ask, messages that tell the user never to share a code, plain marketing.",
++  "Reply with JSON only: {risky:boolean, level:\"high\"|\"medium\"|\"none\", confidence:number from 0 to 1 (how sure you are of your verdict), signal: one of " + SIGNALS.join("|") + ", reason:string of at most 120 characters in plain words for the user, evidence:string[], item:string|null, amount:number|null, currency:string|null}.",
++  "Every evidence string must be a short verbatim substring of a Them line. Do not promise a refund or that the user is safe."
++].join(" ");
+ 
+ export function normalizeWs(value) {
+   return String(value ?? "").replace(/\s+/g, " ").trim();
+@@ -42,6 +54,12 @@ function timeoutMsOf(env) {
+   return n;
+ }
+ 
++// The env var that holds the Typesafe key. Configurable so a deployment can name its secret.
++function typesafeKeyName(env) {
++  const name = trim(env.TYPESAFE_API_KEY_NAME);
++  return /^[A-Z_][A-Z0-9_]*$/i.test(name) ? name : "TYPESAFE_API_KEY";
++}
++
+ function offResult(timeoutMs) {
+   return {
+     configured: false,
+@@ -61,10 +79,27 @@ export function resolveLlm(env = {}) {
+   let provider = asked;
+   if (!provider) {
+     if (trim(env.LLM_BASE_URL)) provider = "openai-compatible";
++    else if (trim(env[typesafeKeyName(env)])) provider = "typesafe";
+     else if (trim(env.OPENROUTER_API_KEY)) provider = "openrouter";
+     else return offResult(timeoutMs);
+   }
+ 
++  if (provider === "typesafe") {
++    const apiKey = trim(env[typesafeKeyName(env)]);
++    if (!apiKey) return offResult(timeoutMs);
++    const baseUrl = (trim(env.TYPESAFE_BASE_URL) || TYPESAFE_BASE).replace(/\/+$/, "");
++    const model = trim(env.TYPESAFE_MODEL) || TYPESAFE_MODEL;
++    // Optional: LLM_FALLBACK=openrouter retries a failed Typesafe call on OpenRouter.
++    let fallback = null;
++    if (trim(env.LLM_FALLBACK).toLowerCase() === "openrouter") {
++      const alt = resolveLlm({ ...env, LLM_PROVIDER: "openrouter", LLM_FALLBACK: "", LLM_BASE_URL: "", LLM_MODEL: trim(env.OPENROUTER_MODEL) });
++      if (alt.configured) fallback = alt;
++    }
++    const add = Number(trim(env.TYPESAFE_ADD_CONFIDENCE) || "0.5");
++    const addConfidence = Number.isFinite(add) ? Math.max(0.5, Math.min(1, add)) : 0.5;
++    return { configured: true, provider: "typesafe", baseUrl, apiKey, model, timeoutMs, addConfidence, fallback };
++  }
++
+   if (provider === "openrouter") {
+     const apiKey = trim(env.OPENROUTER_API_KEY) || trim(env.LLM_API_KEY);
+     if (!apiKey) return offResult(timeoutMs);
+@@ -116,6 +151,158 @@ export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch)
+   if (!llm.configured) throw llmError("llm_off", 503);
+   const source = String(text ?? "");
+   if (source.length > TEXT_LIMIT) throw badRequest("text is too long");
++  if (llm.provider === "typesafe") {
++    try {
++      return await classifyTypesafe(source, llm, fetchImpl);
++    } catch (error) {
++      if (!llm.fallback) throw error;
++      return classifyChat(source, llm.fallback, fetchImpl);
++    }
++  }
++  return classifyChat(source, llm, fetchImpl);
++}
++
++// Typesafe (https://docs.typesafe.ai/api) is a decision model, not a chat model: POST
++// /v1/systemone takes the chat as `state` plus typed questions and returns probabilities.
++// It writes no text, so it cannot invent a quote: the evidence is the Them line it picks
++// from a closed list, and the card text comes from PayBrake's own templates.
++export const TYPESAFE_RISKY = {
++  type: "noul",
++  instructions: "This is one chat or message. Lines start with \"Them:\" (the other person: seller, caller or sender) or \"Me:\" (the PayBrake user). Judge only what Them asks for or pushes; a Me line never makes the chat risky. Is Them pushing the user toward losing money or account access?",
++  criteria: {
++    true: "Them asks the user to pay outside a protected checkout (bank transfer, IBAN, Friends and Family, gift cards, crypto, Zelle, Venmo, Western Union, MobilePay to a stranger), to pay a deposit or fee before getting something (delivery, customs, prize, refund, job, loan), to share card numbers, CVV, one-time or SMS codes, MitID, NemID or BankID codes or logins, passwords or ID numbers, to install a remote-access app (AnyDesk, TeamViewer), or to open a login or payment link from an unknown or lookalike site; or Them poses as a bank, authority, platform or support team to get one of these.",
++    false: "Normal buying and selling, pay on pickup, platform checkout, delivery, bank or service notices without a link or fee ask, messages that tell the user never to share a code, friends chatting, plain marketing."
++  }
++};
++
++export const SIGNAL_CRITERIA = {
++  friends_family: "Asks to pay with PayPal Friends and Family for goods",
++  upfront_deposit: "Asks for a deposit or advance payment before the deal",
++  off_platform: "Asks to pay by bank transfer, IBAN, gift card, crypto, Zelle, Venmo, Western Union, MobilePay or another channel outside a protected checkout",
++  pay_before_see: "Asks to pay before the user can see or get the item",
++  credential_request: "Asks for card details, CVV, one-time or SMS codes, MitID, NemID or BankID, passwords, PINs or ID numbers",
++  remote_access: "Asks to install or allow a remote-access or screen-sharing app",
++  phishing_link: "Pushes a link to log in, verify, claim or pay on an unknown or lookalike site",
++  fee_via_link: "Asks for a customs, delivery, release or processing fee, often through a link",
++  impersonation: "Poses as a bank, authority, platform or support team",
++  account_threat: "Threatens that an account will be locked, suspended or hacked",
++  urgency_pressure: "Pushes the user to act right now",
++  other: "Another kind of scam, or none of these"
++};
++
++// Extra yes/no questions for spam the "risky" question scores as plain marketing: premium-rate prize SMS
++// and Discord free-bait lures. Each one can only raise p(risky), and only at or above its own bar.
++// Wording and bars picked on the dev split only (eval/real/exp-typesafe-questions.mjs, RESULTS.md).
++const MONEY_ASKS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "credential_request", "remote_access"];
++const TS_ONE = "This is one chat or message. ";
++export const TYPESAFE_EXTRA = {
++  premium: {
++    at: 0.5,
++    signal: "prize_bait",
++    question: { type: "noul", instructions: TS_ONE + "Does Them push the user to call or text a premium-rate number or short code (for example 09..., 087..., 0871..., or a 5-digit short code), or to sign up for a paid text service (ringtones, chat lines, adult content, quizzes) charged to the phone bill?",
++      criteria: { true: "Them asks the user to call or text a premium-rate number or short code, or to subscribe to a paid text service.", false: "No premium-rate number, short code or paid text service is pushed; normal phone numbers between people." } }
++  },
++  prize: {
++    at: 0.7,
++    signal: "prize_bait",
++    question: { type: "noul", instructions: TS_ONE + "Does Them tell the user they have won, been chosen for, or can claim a prize, cash, voucher, holiday, free phone or other reward, or invite them into a paid quiz or draw, and tell them to call, text or reply to a number or short code, or open a link, to get it?",
++      criteria: { true: "Them announces a win, award, selection, free gift or prize draw and tells the user to call, text, reply or click to claim it.", false: "No prize or reward is claimed, or it is a friend talking about a real win, or a normal shop offer with no claim step." } }
++  },
++  lure: {
++    at: 0.7,
++    signal: "free_bait",
++    question: { type: "noul", instructions: TS_ONE + "Does Them use free bait (free Nitro, a giveaway, an airdrop, free crypto or game items, a game, cheat or file to test, hidden or private channels) to get the user to click an unknown, shortened or lookalike link, join an invite, scan a QR code or download and run a file? Links to the official site of a well-known company (for example its blog or help pages) do not count.",
++      criteria: { true: "Free or exclusive bait pushed through an unknown or lookalike link, invite, QR code or file.", false: "Normal chat, an official company page, a link shared for a clear reason, server rules or moderation, no free bait." } }
++  }
++};
++
++function themLines(source) {
++  const lines = source.split(/\n+/).map((line) => line.trim()).filter(Boolean);
++  const them = lines.filter((line) => /^Them:/.test(line)).map((line) => normalizeWs(line.slice(5)));
++  // Raw text without speaker labels (a single message): every non-Me line is the sender's.
++  const out = (them.length ? them : lines.filter((line) => !/^Me:/.test(line)).map(normalizeWs)).filter(Boolean);
++  return out.slice(-MAX_CHOICES);
++}
++
++export function typesafeQuestions(source) {
++  const lines = themLines(source);
++  const questions = {
++    risky: TYPESAFE_RISKY,
++    ...Object.fromEntries(Object.entries(TYPESAFE_EXTRA).map(([id, x]) => [id, x.question])),
++    signal: { type: "choice", instructions: "Which kind of ask from Them is the main risk in this chat?", criteria: SIGNAL_CRITERIA }
++  };
++  if (lines.length > 1) {
++    questions.evidence = {
++      type: "choice",
++      instructions: "Which line from Them carries the riskiest ask?",
++      criteria: Object.fromEntries(lines.map((line, i) => ["l" + i, line]))
++    };
++  }
++  return { questions, lines };
++}
++
++async function classifyTypesafe(source, llm, fetchImpl) {
++  const { questions, lines } = typesafeQuestions(source);
++  let res;
++  try {
++    res = await fetchImpl(llm.baseUrl + "/v1/systemone", {
++      method: "POST",
++      headers: { "content-type": "application/json", authorization: `Bearer ${llm.apiKey}` },
++      body: JSON.stringify({ model: llm.model, state: source, questions }),
++      signal: AbortSignal.timeout(llm.timeoutMs)
++    });
++  } catch {
++    throw llmError("llm error", 502);
++  }
++  if (!res.ok) {
++    try { await res.text(); } catch { /* discard provider body */ }
++    throw llmError(`llm ${res.status}`, 502);
++  }
++  let body;
++  try {
++    body = JSON.parse(await res.text());
++  } catch {
++    throw llmError("llm error", 502);
++  }
++  const answers = body && body.answers;
++  const p = Number(answers?.risky?.noul);
++  if (!Number.isFinite(p)) throw llmError("llm shape", 502);
++  const base = Math.max(0, Math.min(1, p));
++  let prob = base;
++  let bait = null; // the strongest extra question at or above its bar
++  for (const [id, x] of Object.entries(TYPESAFE_EXTRA)) {
++    const q = Number(answers?.[id]?.noul);
++    if (!Number.isFinite(q) || q < x.at) continue;
++    prob = Math.max(prob, Math.min(1, q));
++    if (!bait || q > bait.q) bait = { q, signal: x.signal };
++  }
++  const risky = prob >= 0.5;
++  const picked = answers?.evidence?.choice;
++  const quote = lines.length === 1 ? lines[0] : (typeof picked === "string" && /^l\d+$/.test(picked) ? lines[Number(picked.slice(1))] : null);
++  const evidence = risky && quote ? [quote] : [];
++  const ok = risky && evidencePasses(evidence, source);
++  let signal = SIGNALS.includes(answers?.signal?.choice) ? answers.signal.choice : (ok ? "other" : null);
++  // An extra question fired: name its bait signal so the card explains a prize or free-bait scam,
++  // unless the main signal is a concrete money or account ask, which says more.
++  if (ok && bait && !MONEY_ASKS.includes(signal)) signal = bait.signal;
++  return {
++    risky: ok,
++    level: ok ? (prob >= 0.9 ? "high" : "medium") : "none",
++    // Confidence in the verdict given: p(risky) for "risky", 1 - p(risky) for "not risky".
++    confidence: risky && !ok ? null : (risky ? prob : 1 - prob),
++    signal,
++    reason: "",
++    evidence,
++    item: null,
++    amount: null,
++    currency: null,
++    // Picked on the dev split (eval/real/results/llm-all-v3-dev-all-typesafe-*.json sweep).
++    addConfidence: llm.addConfidence,
++    usage: body.usage && Number.isFinite(body.usage.input_tokens) ? { inputTokens: body.usage.input_tokens } : null
++  };
++}
++
++async function classifyChat(source, llm, fetchImpl) {
+ 
+   const headers = { "content-type": "application/json" };
+   if (llm.apiKey) headers.authorization = `Bearer ${llm.apiKey}`;
+@@ -168,9 +355,15 @@ export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch)
+ 
+   const evidence = Array.isArray(parsed.evidence) ? parsed.evidence.filter((quote) => typeof quote === "string") : [];
+   const ok = parsed.risky === true && evidencePasses(evidence, source);
++  const conf = Number(parsed.confidence);
++  // A "risky" answer with bad evidence is dropped; its confidence must not count as a confident "safe".
++  const confidence = Number.isFinite(conf) && !(parsed.risky === true && !ok) ? Math.max(0, Math.min(1, conf)) : null;
++  const signal = SIGNALS.includes(parsed.signal) ? parsed.signal : (ok ? "other" : null);
+   return {
+     risky: ok,
+     level: ok ? (parsed.level === "high" ? "high" : "medium") : "none",
++    confidence,
++    signal,
+     reason: ok ? sanitizeReason(parsed.reason) : "",
+     evidence: ok ? evidence : [],
+     item: typeof parsed.item === "string" ? parsed.item : null,
+diff --git a/backend/test/classify-provider.test.mjs b/backend/test/classify-provider.test.mjs
+index a85cda3..e989632 100644
+--- a/backend/test/classify-provider.test.mjs
++++ b/backend/test/classify-provider.test.mjs
+@@ -1,11 +1,10 @@
+ import test from "node:test";
+ import assert from "node:assert/strict";
+-import { classifyText, resolveLlm } from "../src/classify.js";
++import { classifyText, resolveLlm, SYSTEM } from "../src/classify.js";
+ import { createServer } from "../src/server.js";
+ 
+ const KEY = "test-openrouter-key-not-real";
+ const INPUT = "Send 500 kr deposit via PayPal Friends & Family";
+-const SYSTEM = "You judge whether a marketplace chat asks for a risky payment. Reply with JSON only: {risky:boolean, level:\"high\"|\"medium\"|\"none\", reason:string<=120, evidence:string[], item:string|null, amount:number|null, currency:string|null}. Every evidence string must be a verbatim substring of the user text. Do not promise a refund.";
+ 
+ function chat(content) {
+   return {
+@@ -357,3 +356,12 @@ test("POST /api/classify is 503 when no provider key is configured", async () =>
+     await close(server);
+   }
+ });
++
++test("confidence and signal pass through; unknown signal becomes other", async () => {
++  const ok = await classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1" }, async () => chat(verdictJson({ confidence: 0.92, signal: "off_platform_payment" })));
++  assert.equal(ok.confidence, 0.92);
++  assert.ok(typeof ok.signal === "string" && ok.signal.length > 0);
++  const odd = await classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1" }, async () => chat(verdictJson({ confidence: 7, signal: "made_up" })));
++  assert.ok(odd.confidence === null || (odd.confidence >= 0 && odd.confidence <= 1));
++  assert.equal(odd.signal, "other");
++});
+diff --git a/backend/test/classify-typesafe.test.mjs b/backend/test/classify-typesafe.test.mjs
+new file mode 100644
+index 0000000..b1f3cec
+--- /dev/null
++++ b/backend/test/classify-typesafe.test.mjs
+@@ -0,0 +1,110 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import { classifyText, resolveLlm, typesafeQuestions } from "../src/classify.js";
++
++const KEY = "test-typesafe-key-not-real";
++const CHAT = "Them: Hi, is the bike still for sale?\nMe: Yes\nThem: Great, send the 500 kr deposit via Friends & Family and I will ship it";
++
++function answer(answers, status = 200) {
++  return { ok: status < 400, status, async text() { return JSON.stringify({ model: "jev-1.14.0", answers, usage: { input_tokens: 300, output_tokens: 20 } }); } };
++}
++
++test("resolveLlm: typesafe by key, explicit, custom key name, base URL and model", () => {
++  const auto = resolveLlm({ TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or" });
++  assert.equal(auto.provider, "typesafe");
++  assert.equal(auto.baseUrl, "https://api.typesafe.ai");
++  assert.equal(auto.model, "jev-1.14.0");
++  assert.equal(auto.addConfidence, 0.5);
++  assert.equal(auto.fallback, null);
++  const custom = resolveLlm({ LLM_PROVIDER: "typesafe", TYPESAFE_API_KEY_NAME: "MY_TS", MY_TS: KEY, TYPESAFE_BASE_URL: "https://ts.example/", TYPESAFE_MODEL: "jev-1.13.0" });
++  assert.equal(custom.apiKey, KEY);
++  assert.equal(custom.baseUrl, "https://ts.example");
++  assert.equal(custom.model, "jev-1.13.0");
++  assert.equal(resolveLlm({ LLM_PROVIDER: "typesafe" }).configured, false);
++  // OpenRouter still works when asked for, and as an opt-in fallback.
++  assert.equal(resolveLlm({ LLM_PROVIDER: "openrouter", TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or" }).provider, "openrouter");
++  const fb = resolveLlm({ TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or", LLM_FALLBACK: "openrouter" });
++  assert.equal(fb.fallback.provider, "openrouter");
++});
++
++test("typesafe request: bearer, /v1/systemone, chat as state, Them lines as evidence choices", async () => {
++  let seen;
++  const out = await classifyText(CHAT, { TYPESAFE_API_KEY: KEY }, async (url, init) => {
++    seen = { url, init, body: JSON.parse(init.body) };
++    return answer({ risky: { type: "noul", noul: 0.97 }, signal: { type: "choice", choice: "friends_family" }, evidence: { type: "choice", choice: "l1" } });
++  });
++  assert.equal(seen.url, "https://api.typesafe.ai/v1/systemone");
++  assert.equal(seen.init.headers.authorization, "Bearer " + KEY);
++  assert.equal(seen.body.state, CHAT);
++  assert.deepEqual(Object.keys(seen.body.questions.evidence.criteria), ["l0", "l1"]);
++  assert.equal(out.risky, true);
++  assert.equal(out.level, "high");
++  assert.equal(out.confidence, 0.97);
++  assert.equal(out.signal, "friends_family");
++  assert.deepEqual(out.evidence, ["Great, send the 500 kr deposit via Friends & Family and I will ship it"]);
++  assert.equal(out.reason, "");
++});
++
++test("typesafe not risky: confidence is 1 - p, no evidence", async () => {
++  const out = await classifyText(CHAT, { TYPESAFE_API_KEY: KEY }, async () => answer({ risky: { type: "noul", noul: 0.1 }, signal: { type: "choice", choice: "other" }, evidence: { type: "choice", choice: "l0" } }));
++  assert.equal(out.risky, false);
++  assert.equal(out.level, "none");
++  assert.equal(Math.round(out.confidence * 100), 90);
++  assert.deepEqual(out.evidence, []);
++});
++
++test("typesafe single message: the whole line is the evidence, no evidence question", async () => {
++  const { questions, lines } = typesafeQuestions("Pay the customs fee here: https://x.top/pay");
++  assert.equal(questions.evidence, undefined);
++  assert.equal(lines.length, 1);
++});
++
++test("typesafe error is 502 without the key or body; fallback to OpenRouter when enabled", async () => {
++  const bad = async () => ({ ok: false, status: 401, async text() { return "bad key " + KEY; } });
++  await assert.rejects(classifyText(CHAT, { TYPESAFE_API_KEY: KEY }, bad), (e) => e.status === 502 && !String(e.message).includes(KEY));
++  const calls = [];
++  const out = await classifyText(CHAT, { TYPESAFE_API_KEY: KEY, OPENROUTER_API_KEY: "or-key", LLM_FALLBACK: "openrouter" }, async (url) => {
++    calls.push(url);
++    if (url.includes("typesafe")) return bad();
++    return { ok: true, status: 200, async text() { return JSON.stringify({ choices: [{ message: { content: JSON.stringify({ risky: true, level: "high", confidence: 0.9, signal: "friends_family", reason: "F&F deposit.", evidence: ["Friends & Family"] }) } }] }); } };
++  });
++  assert.equal(calls.length, 2);
++  assert.ok(calls[1].startsWith("https://openrouter.ai/api/v1"));
++  assert.equal(out.risky, true);
++});
++
++test("typesafe extra questions: lift p(risky) only at their own bar, and name the signal", async () => {
++  const SMS = "Them: You have won a 1000 pound prize! Call 09061701461 now to claim.";
++  const ask = (extra) => classifyText(SMS, { TYPESAFE_API_KEY: KEY }, async (url, init) => {
++    const q = JSON.parse(init.body).questions;
++    assert.deepEqual(["premium", "prize", "lure"].filter((k) => q[k] && q[k].type === "noul"), ["premium", "prize", "lure"]);
++    return answer({ risky: { type: "noul", noul: 0.2 }, signal: { type: "choice", choice: "other" }, ...extra });
++  });
++  const lifted = await ask({ premium: { noul: 0.3 }, prize: { noul: 0.92 }, lure: { noul: 0.1 } });
++  assert.equal(lifted.risky, true);
++  assert.equal(lifted.level, "high");
++  assert.equal(lifted.confidence, 0.92);
++  assert.equal(lifted.signal, "prize_bait");
++  assert.deepEqual(lifted.evidence, ["You have won a 1000 pound prize! Call 09061701461 now to claim."]);
++  // Below its bar (prize 0.7) an extra does nothing: still "not risky" at 1 - 0.2.
++  const under = await ask({ premium: { noul: 0.4 }, prize: { noul: 0.69 }, lure: { noul: 0.6 } });
++  assert.equal(under.risky, false);
++  assert.equal(under.confidence, 0.8);
++});
++
++test("typesafe bait signal: a fired extra names its signal unless the main signal is a concrete money ask", async () => {
++  const SMS = "Them: Claim your free Nitro here before it expires: https://dlscord-gift.example/nitro";
++  const ask = (signal, extra) => classifyText(SMS, { TYPESAFE_API_KEY: KEY }, async () =>
++    answer({ risky: { noul: 0.93 }, signal: { type: "choice", choice: signal }, premium: { noul: 0.01 }, prize: { noul: 0.2 }, ...extra }));
++  // Main question already says risky (0.93) with a vague signal: the fired lure question still names the card.
++  assert.equal((await ask("urgency_pressure", { lure: { noul: 0.88 } })).signal, "free_bait");
++  assert.equal((await ask("phishing_link", { lure: { noul: 0.88 } })).signal, "free_bait");
++  // A concrete money ask wins.
++  assert.equal((await ask("off_platform", { lure: { noul: 0.88 } })).signal, "off_platform");
++  // Under its bar (0.7) the lure question changes nothing.
++  assert.equal((await ask("urgency_pressure", { lure: { noul: 0.6 } })).signal, "urgency_pressure");
++  // Two fired extras: the stronger one names the signal.
++  const both = await ask("other", { premium: { noul: 0.97 }, lure: { noul: 0.75 } });
++  assert.equal(both.signal, "prize_bait");
++  assert.equal(both.confidence, 0.97);
++});
+diff --git a/docs/BACKEND-CONTRACT.md b/docs/BACKEND-CONTRACT.md
+index faa59ad..50f6578 100644
+--- a/docs/BACKEND-CONTRACT.md
++++ b/docs/BACKEND-CONTRACT.md
+@@ -128,7 +128,7 @@ If `ALLOWED_ORIGINS` is unset, the server allows `http://localhost:8080` and `ht
+ }
+ ```
+ 
+-`paypal` is the adapter mode (`mock`, `rest`, or `toolkit`). `llm` is `"configured"` when `resolveLlm` has a provider, otherwise `"off"`. `llmProvider` is `"openrouter"`, `"openai-compatible"`, or `"off"`. The body never includes the API key or the model name.
++`paypal` is the adapter mode (`mock`, `rest`, or `toolkit`). `llm` is `"configured"` when `resolveLlm` has a provider, otherwise `"off"`. `llmProvider` is `"typesafe"`, `"openrouter"`, `"openai-compatible"`, or `"off"`. The body never includes the API key or the model name.
+ 
+ With OpenRouter configured and rest selected, the same route looks like:
+ 
+@@ -157,6 +157,9 @@ When it is configured, `classifyText` POSTs to `{baseUrl}/chat/completions` with
+ |---|---|---|---|---|
+ | `openrouter` | `LLM_PROVIDER=openrouter`, or provider empty and `OPENROUTER_API_KEY` is set (and `LLM_BASE_URL` is empty) | `LLM_BASE_URL` or `https://openrouter.ai/api/v1` | `openai/gpt-4o-mini` | Bearer of `OPENROUTER_API_KEY`, or `LLM_API_KEY` if the OpenRouter key is empty. Also sends `HTTP-Referer: https://github.com/lamapony/paybrake` and `X-Title: PayBrake` |
+ | `openai-compatible` | `LLM_PROVIDER=openai-compatible`, or provider empty and `LLM_BASE_URL` is set | `LLM_BASE_URL` (required) | `gpt-4o-mini` | Bearer of `LLM_API_KEY` only when that value is non-empty |
++| `typesafe` | `LLM_PROVIDER=typesafe`, or provider empty, `LLM_BASE_URL` empty and `TYPESAFE_API_KEY` (or the var named by `TYPESAFE_API_KEY_NAME`) is set. Wins over OpenRouter | `TYPESAFE_BASE_URL` or `https://api.typesafe.ai`; requests go to `/v1/systemone` | `TYPESAFE_MODEL` or `jev-1.14.0` | Bearer of the Typesafe key |
++
++Typesafe is a decision model, not a chat model. `classifyText` sends the redacted chat as `state` with three questions: `risky` (yes/no probability), `signal` (choice of the signal ids) and, for chats with more than one Them line, `evidence` (choice of one Them line). The evidence is that line verbatim, `reason` is empty (the extension uses its own card text), `confidence` is p(risky) for a risky verdict and 1 − p for a safe one, and the response carries `addConfidence` (`TYPESAFE_ADD_CONFIDENCE`, default 0.5) which the extension uses as its add bar. `LLM_FALLBACK=openrouter` retries a failed Typesafe call on OpenRouter.
+ 
+ Provider empty and both `LLM_BASE_URL` and `OPENROUTER_API_KEY` set: openai-compatible wins, and the bearer is `LLM_API_KEY`. Trailing slashes on the base URL are removed. `LLM_TIMEOUT_MS` defaults to 8000 when empty, not a number, or not above 0.
+ 
+@@ -277,7 +280,8 @@ See `backend/.env.example`. `backend/src/server.js` loads `backend/.env` with a
+ | `PAYPAL_RETURN_URL` | PayPal `return_url`. Empty uses the local demo return page |
+ | `PAYPAL_CANCEL_URL` | PayPal `cancel_url`. Empty uses the demo return page with `?cancel=1`. Set this too if you change the return URL |
+ | `PAYPAL_TIMEOUT_MS` | milliseconds. Empty, zero, or not a number uses 10000 |
+-| `LLM_PROVIDER` | `openrouter`, `openai-compatible`, or `off`. Empty auto-selects as in the classify section |
++| `LLM_PROVIDER` | `typesafe`, `openrouter`, `openai-compatible`, or `off`. Empty auto-selects as in the classify section |
++| `TYPESAFE_API_KEY` | Typesafe key. Never commit a value. `TYPESAFE_API_KEY_NAME`, `TYPESAFE_BASE_URL`, `TYPESAFE_MODEL`, `TYPESAFE_ADD_CONFIDENCE` and `LLM_FALLBACK` are described in `backend/.env.example` |
+ | `OPENROUTER_API_KEY` | OpenRouter key. A key alone counts as configured. Never commit a value |
+ | `LLM_BASE_URL` | base for openai-compatible, or an override of the OpenRouter base. Empty and no OpenRouter key means 503 |
+ | `LLM_API_KEY` | bearer for openai-compatible. Fallback OpenRouter key when `OPENROUTER_API_KEY` is empty. Omitted from the request when empty |
+diff --git a/eval/real/README.md b/eval/real/README.md
+new file mode 100644
+index 0000000..cfc179f
+--- /dev/null
++++ b/eval/real/README.md
+@@ -0,0 +1,61 @@
++# Real-message eval (Hugging Face scam / ham datasets)
++
++The 30-chat synthetic eval in `eval/cases/` was written by us and scores 1.0 / 1.0.
++This harness runs the same detector (`extension/lib`) on third-party public data.
++
++```
++npm run eval:real:download     # pinned HF revisions -> eval/real/.data/ (gitignored)
++npm run eval:real              # rules only -> eval/real/results/rules-v<RULES_VERSION>.json
++OPENROUTER_API_KEY=... node eval/real/run-real.mjs --llm --llm-n=200   # v1/v2: rules+LLM (confirm only) and LLM-alone
++node eval/real/run-real.mjs --report                                    # print the test split too (dev only by default)
++OPENROUTER_API_KEY=... node eval/real/run-llm-all.mjs --split=dev --n=all --sweep   # v3: AI check on all chats, threshold sweep
++OPENROUTER_API_KEY=... node eval/real/run-llm-all.mjs --split=test --n=200          # same 200 as v1/v2
++OPENROUTER_API_KEY=... node eval/real/run-llm-all.mjs --split=test --n=all
++```
++
++`run-llm-all.mjs` caches model answers in `.data/llm-cache.json` (gitignored), keyed by model + prompt + the
++redacted transcript, so reruns with changed thresholds or rules cost nothing. Failed calls are not cached.
++
++## Datasets (pinned in `sources.json`)
++
++| key | HF dataset | license | origin | used (scam / legit) |
++|---|---|---|---|---|
++| sms_spam | [codesignal/sms-spam-collection](https://huggingface.co/datasets/codesignal/sms-spam-collection) | CC-BY-4.0 | real SMS (UCI SMS Spam Collection) | 500 / 500 of 747 / 4825 |
++| discord | [wangyuancheng/discord-phishing-scam](https://huggingface.co/datasets/wangyuancheng/discord-phishing-scam) | MIT | real Discord messages | 277 / 500 of 278 / 1722 |
++| scam_dialogue | [BothBosu/scam-dialogue](https://huggingface.co/datasets/BothBosu/scam-dialogue) | Apache-2.0 | synthetic phone dialogues (third party) | 500 / 500 of 800 / 800 |
++| scamguardbench | [flowxai/scamguardbench](https://huggingface.co/datasets/flowxai/scamguardbench) v0.2 `standard`, EN only | Apache-2.0 | mostly synthetic SMS/email/chat, incl. hard legit confusables | 150 / 220 (all EN) |
++
++All four allow redistribution, but we still commit only the download script, pinned revisions, and
++per-row predictions (ids, labels, signals, short evidence spans). No message bodies are committed.
++
++## Mapping into PayBrake's input (what is lost or invented)
++
++PayBrake's detector takes `detect(text, { messages:[{from,text}], listingTitle?, listingPrice? })`.
++
++- **No listing context.** None of the datasets has a listing title or price, so `context` is empty.
++  Nothing is invented; this only affects the deal card, not the risk verdict.
++- **Single messages** (SMS, Discord, ScamGuardBench) become one message from the counterparty (`from: "seller"`).
++- **Phone dialogues** are split on `caller:` / `receiver:`; caller -> counterparty (`seller`), receiver -> user (`buyer`).
++  Since v3 the speaker matters: only counterparty lines raise signals, and the AI must quote a counterparty line.
++- **Not a marketplace.** None of these are marketplace buyer/seller chats; there is no public HF dataset of those
++  that we could find. PayBrake only targets *how a payment is asked for* (F&F, deposits, off-platform rails, pay-first).
++  Prize spam, Nitro phishing, credential phishing and tech-support scams are mostly out of its scope by design.
++- **"Pay-ask" subset.** For ScamGuardBench only, the dataset's own tactic labels let us mark scams where the victim is
++  asked to move money (`payment_redirect`, `refund_overpayment`, `courier_customs_fee`, `romance_advance_fee`,
++  `family_emergency_impersonation`, `investment_too_good`). That subset is the closest thing to PayBrake's scope.
++- **Labels are the datasets' labels.** Some are debatable: ScamGuardBench labels "Hi, it's me, lost my phone, send 150 to my IBAN"
++  as a *legit* family money request; PayBrake flags it. We count that as a false positive anyway.
++
++## Sampling and splits
++
++Per dataset: exact-duplicate texts removed, then up to 500 scam + 500 legit rows drawn with seed `20261026`
++(mulberry32 shuffle). Every picked row is assigned `dev` or `test` alternately after the shuffle (50/50 per class).
++Rule changes in RULES_VERSION 2 and 3 and the v3 AI thresholds were designed by looking at **dev** rows only;
++report **test** numbers. `run-real.mjs` prints only dev unless `--report` is given.
++
++## LLM run
++
++`--llm` takes a stratified subsample of the **test** split (25 per dataset x label = 200) and runs:
++1. **rules + LLM** exactly as the product does: the model is only asked when rules fire and can only confirm or lower.
++2. **LLM alone**: the backend's classify prompt on every message (not how the product works today; shows headroom).
++The key is read from the environment and never printed.
+diff --git a/eval/real/RESULTS.md b/eval/real/RESULTS.md
+new file mode 100644
+index 0000000..024dcaa
+--- /dev/null
++++ b/eval/real/RESULTS.md
+@@ -0,0 +1,439 @@
++# PayBrake on real scam messages: results
++
++Date: 26 Oct 2026. Branch `eval-real-scams` (from `tester-friendly`). Harness: `eval/real/`.
++
++**Latest (headline): rules v3 + Typesafe AI (jev-1.14.0) with the extra prize/premium/lure questions: test precision 0.977, recall 0.846,
++F1 0.907, false alarms 14 of 860 (1.6%) as labelled, of which 2 are spam that the dataset mislabeled as legit (see
++[the headline section](#headline-rules-v3--typesafe-with-extra-questions-adopted-26-oct)).** Before that: Typesafe with the risky question only
++(P 0.975, R 0.698, FA 1.5%, [Typesafe section](#v3--typesafe-ai-replaces-openrouter-as-the-ai-provider)), and rules v3 + OpenRouter
++([v3 section](#v3-new-rules-and-the-ai-check-on-all-chats)). The v1/v2 sections are kept as the baseline.
++
++## What we tested
++
++PayBrake's own eval is 30 chats we wrote ourselves, where it scores precision 1.0 and recall 1.0. That only shows
++the rules match the chats they were written for. So we ran the same detector, with no changes, on four public
++Hugging Face datasets that other people built and labelled:
++
++| dataset | license | what it is | lang | sampled scam / legit |
++|---|---|---|---|---|
++| [codesignal/sms-spam-collection](https://huggingface.co/datasets/codesignal/sms-spam-collection) | CC-BY-4.0 | **real** SMS (UCI SMS Spam Collection, 5,574 msgs) | EN | 500 / 500 |
++| [wangyuancheng/discord-phishing-scam](https://huggingface.co/datasets/wangyuancheng/discord-phishing-scam) | MIT | **real** Discord chat, hand-labelled (2,000 msgs) | EN (few HI) | 277 / 500 |
++| [BothBosu/scam-dialogue](https://huggingface.co/datasets/BothBosu/scam-dialogue) | Apache-2.0 | synthetic multi-turn phone dialogues (1,600) | EN | 500 / 500 |
++| [flowxai/scamguardbench](https://huggingface.co/datasets/flowxai/scamguardbench) v0.2 standard | Apache-2.0 | mostly synthetic SMS/email/chat with hard "looks scary but legit" cases (370 EN) | EN (RO dropped) | 150 / 220 |
++
++We sampled 3,147 messages with a fixed seed (20261026), then split each dataset 50/50 into dev and test.
++Revisions are pinned. We commit the download script and the per-message predictions, not the raw text.
++
++**Most important caveat: none of these are marketplace buyer/seller chats.** We found no public dataset of those.
++PayBrake only looks at *how a payment is being requested*: Friends & Family, upfront deposits, off-platform rails
++(bank transfer, IBAN, gift cards, crypto), and paying before seeing the item. Most SMS spam (premium-rate prizes),
++Discord scams (fake Nitro links) and phone scams (tech support, SSN) never ask for a payment that way, so they are
++outside what PayBrake is built to catch. Low recall on them is expected. The useful questions are:
++(a) does PayBrake raise false alarms on real, ordinary messages, and (b) does it catch the scams that *do* ask for money?
++
++## Headline numbers (rules only, unchanged rules v1, all 3,147 sampled messages)
++
++| dataset | TP | FP | FN | TN | precision | recall | F1 | false-positive rate |
++|---|---|---|---|---|---|---|---|---|
++| SMS spam (real) | 0 | 0 | 500 | 500 | n/a | 0.00 | 0.00 | 0.000 |
++| Discord (real) | 11 | 0 | 266 | 500 | 1.00 | 0.04 | 0.08 | 0.000 |
++| Scam dialogues | 135 | 0 | 365 | 500 | 1.00 | 0.27 | 0.43 | 0.000 |
++| ScamGuardBench | 14 | 6 | 136 | 214 | 0.70 | 0.09 | 0.17 | 0.027 |
++| **pooled** | **160** | **6** | **1267** | **1714** | **0.96** | **0.11** | **0.20** | **0.003** |
++
++- **False alarms are rare.** 6 of 1,714 legit messages were flagged (0.35%). Across 1,000 real SMS and 500 real Discord
++  messages there were none. 4 of the 6 are ScamGuardBench "family money request" texts ("Hi it's me, lost my phone,
++  send 150 to my IBAN"). The dataset calls these legit, though in practice they look exactly like the "Hi Mum" scam.
++- **Recall is low (11%) and should be read that way.** It is not a general scam filter.
++- **Part of the v1 recall was luck.** 123/123 "reward" phone scams were flagged because the text contains "gift card".
++  In most of them the gift card is the *prize* ("you've been selected to receive a $500 gift card"), not the payment
++  method. That is the right label for the wrong reason, and the same rule would fire on an honest seller offering a gift card.
++- **On scams that do ask for money** (ScamGuardBench's own tactic labels: payment redirect, advance fee, customs fee,
++  family emergency, overpayment, investment), v1 caught only **12 of 55 (22%)**. The main reason was a bug: IBANs written
++  in the usual groups of four ("RO00 XXXX 0000 …") were not recognised, and "transfer" did not count as a payment word.
++
++## Rule changes (RULES_VERSION 2), designed on dev only, reported on test
++
++Changes in `extension/lib/atoms.js` and `extract.js`, all aimed at the payment request itself:
++1. Match IBANs written with spaces, plus "to our secure / safe / new account".
++2. Treat "transfer" and "transferred" as payment words (the Danish list already had "overfør").
++3. A gift card *offered as a prize* ("receive / win / free / claim … gift card") no longer counts as a payment method.
++   Store cards (Steam, Google Play, iTunes, Apple, Amazon, eBay) used as payment do count.
++4. "Your account number: XXXX" on a bill or receipt is the reader's own account, not a payee, so it does not fire.
++5. Added Zelle, Cash App, Venmo, Western Union, MoneyGram and money orders as off-platform rails. These are chosen
++   from the domain, not from the data: they occur almost nowhere in these datasets and changed nothing measurable.
++6. £ / GBP / "pounds" are parsed as amounts.
++
++The 30 synthetic chats still score 1.0 / 1.0 with 0 false alarms, and the unit tests pass (108, including 6 new tests for v2).
++
++**Test split only (1,573 messages the rule changes were not designed on):**
++
++| dataset | rules | TP | FP | FN | TN | precision | recall | F1 | FPR |
++|---|---|---|---|---|---|---|---|---|---|
++| SMS spam | v1 | 0 | 0 | 250 | 250 | n/a | 0.00 | 0.00 | 0.000 |
++|  | v2 | 0 | 0 | 250 | 250 | n/a | 0.00 | 0.00 | 0.000 |
++| Discord | v1 | 5 | 0 | 133 | 250 | 1.00 | 0.04 | 0.07 | 0.000 |
++|  | v2 | 5 | 0 | 133 | 250 | 1.00 | 0.04 | 0.07 | 0.000 |
++| Scam dialogues | v1 | 67 | 0 | 183 | 250 | 1.00 | 0.27 | 0.42 | 0.000 |
++|  | v2 | 22 | 0 | 228 | 250 | 1.00 | 0.09 | 0.16 | 0.000 |
++| ScamGuardBench | v1 | 6 | 4 | 69 | 106 | 0.60 | 0.08 | 0.14 | 0.036 |
++|  | v2 | 11 | 2 | 64 | 108 | 0.85 | 0.15 | 0.25 | 0.018 |
++| **pooled** | v1 | 78 | 4 | 635 | 856 | 0.95 | 0.11 | 0.20 | 0.005 |
++|  | **v2** | **38** | **2** | **675** | **858** | **0.95** | **0.05** | **0.10** | **0.002** |
++
++Money-asking scams in the ScamGuardBench test split: v1 **5/31 (16%)**, v2 **11/31 (35%)**. Over all 55: 12 → 27 (49%).
++
++On pooled test, recall drops (0.11 → 0.05). That drop is entirely the "gift card as prize" matches going away, and
++we think it is the honest number. On the scams that ask for a payment, recall roughly doubles, and false alarms
++are halved.
++
++Test-set honesty note: when we first listed false positives, the printout included all 6 FPs, 4 of them from test,
++before we designed change 4. Change 4 was written for the dev receipt FP; it also removes one test FP (a water-bill
++reminder). The other changes come from dev false negatives only.
++
++## Rules + LLM (gpt-4o-mini via OpenRouter, 200-message stratified test subsample, v2 rules)
++
++| on the same 200 test messages | TP | FP | FN | TN | precision | recall | F1 | FPR |
++|---|---|---|---|---|---|---|---|---|
++| rules only | 11 | 1 | 89 | 99 | 0.92 | 0.11 | 0.20 | 0.01 |
++| rules + LLM (as shipped: LLM only asked when rules fire, can only confirm/lower) | 10 | 1 | 90 | 99 | 0.91 | 0.10 | 0.18 | 0.01 |
++| LLM alone on every message (not how the product works) | 85 | 3 | 15 | 97 | 0.97 | 0.85 | 0.90 | 0.03 |
++
++- As shipped, the LLM cannot add recall: it only sees messages the rules already flagged. Here it vetoed 1 true scam
++  (a refund-scam dialogue) and kept the one FP (a "family money request" with an IBAN).
++- Asked on every message, the same prompt catches 85% of scams with 3 false alarms out of 100. Two of the three are the same
++  disputed "family money request" texts; the third is a real SMS with a link. That is the headroom, but it costs an API
++  call per message and sends every chat to a model provider, which is a privacy and cost trade-off.
++- Cost: about $0.03 for both LLM runs together (≈425 calls). 1 call errored out of 212 in the v2 run.
++
++## v3: new rules and the AI check on all chats
++
++### What changed
++
++**Rules (RULES_VERSION 3, `extension/lib/atoms.js`).** Six new signals, designed on dev only:
++- `credential_request` (strong, enough alone): asks for card number / CVV / expiry, one-time / SMS / verification codes,
++  MitID / NemID / BankID codes or logins, passwords, PINs, CPR / SSN, bank login or account details. Needs a request verb in the
++  same sentence. "Never share this code", "use the official app", "the number on the back of your card" do not fire.
++- `remote_access` (strong, alone): AnyDesk, TeamViewer, QuickSupport, Quick Assist, RustDesk and similar, or "remote access /
++  screen share" with an install/give/allow verb.
++- `phishing_link` (strong, alone): a link whose host is a shortener, raw IP, punycode, a lookalike of a brand (`paypa1`, `dlscord`,
++  edit distance 1–2), a brand name inside a stranger's domain, an odd TLD (`.xyz`, `.top`, `.gift` …) or a lure word in the site
++  name (`prize-verify.`, `secure-pay-check.`), with a lure word nearby (verify, log in, claim, pay …). Official domains are
++  exempt; plain service subdomains (`support.`, `help.`, `billing.`) are not lures. Also "click here to verify / pay" and
++  "receive the payment via this link".
++- `fee_via_link` (strong, alone): customs / delivery / release / processing fee, or "pay a small fee", together with a link,
++  prize, parcel-held or refund context.
++- `impersonation` and `account_threat` (weak): "this is your bank / fraud department / Skattestyrelsen / support team",
++  "your account will be suspended", "unusual login", "virus detected". They raise a card only together with another signal.
++- **Speaker gate:** only the other person's lines raise signals. The user's own line ("can I pay with my card number?") never does.
++
++**AI check on all chats** (`extension/lib/pay-risk.js` `combineAll`, `extension/background.js`, `extension/content.js`).
++- Before: the model was asked only after the rules fired and could only confirm or lower a card.
++- Now: rules run first and show a card at once. About 0.8 s after the chat stops changing, the chat is sent to the AI check.
++  Each chat text (hash) is checked once and the answer is cached.
++- Show a card if either one says risky:
++  - Rules risky + AI risky: the higher level, AI signal added.
++  - Rules risky + AI not risky: the card goes away only if the AI's confidence is at least 0.85. Otherwise it stays, marked "AI check unsure".
++  - Rules silent + AI risky with confidence at least 0.8: the AI adds a card (signal from the AI, receipt "Flagged by the AI check").
++    One exception: a code notice that tells the user never to share the code, and does not ask for it, stays silent.
++  - A Goods & Services veto is overridden only by a high-risk verdict with confidence at least 0.9.
++- The AI's evidence must be a verbatim quote from the other person's lines, or it is ignored.
++- **Redaction before sending:** emails, phone numbers (8+ digits), IBANs (all but the last 4 characters), Luhn-valid card numbers,
++  CPR / SSN, and codes after "code / kode / OTP / PIN / password" are masked. Lines are labelled `Them:` / `Me:`.
++- **Timeout:** 6 s. On timeout or error the rules verdict stands and the card says **AI check unavailable**. Those answers are not cached.
++- **Server without AI (the hosted test server):** the extension reads `/health`. If the server has no AI provider, no chat text is sent,
++  and the card says **AI check off (mock server)**. No key was added to the Worker.
++- **Setting:** "AI check on all chats" in Settings, ON by default in this demo build. Settings and the welcome tab explain what is
++  sent and where, and Settings shows whether the current server has AI. Off means rules only, and no chat text leaves the browser.
++
++Thresholds were picked on dev (sweep in `results/llm-all-v3-dev-all.json`): downgrade confidence made no difference at any value from
++0.7 to 1.01 (the model almost never says "not risky" with high confidence when rules fire). Add confidence 0.8 gave the same F1
++as 0.5 with slightly fewer false alarms; 0.9 cost 14 points of recall.
++
++### Before / after, test split (1,573 messages none of the changes were designed on)
++
++| pooled test | TP | FP | FN | TN | precision | recall | F1 | FPR |
++|---|---|---|---|---|---|---|---|---|
++| rules v1 | 78 | 4 | 635 | 856 | 0.95 | 0.11 | 0.20 | 0.005 |
++| rules v2 | 38 | 2 | 675 | 858 | 0.95 | 0.05 | 0.10 | 0.002 |
++| **rules v3** | **325** | **7** | **388** | **853** | **0.98** | **0.46** | **0.62** | **0.008** |
++| **rules v3 + AI check on all chats** ¹ | **606** | **39** | **107** | **821** | **0.94** | **0.85** | **0.89** | **0.045** |
++
++¹ The OpenRouter account ran out of credit (HTTP 402) during the test run. 305 of 1,573 rows (198 phone dialogues,
++106 ScamGuardBench, 1 Discord) got no AI answer and fell back to rules only, exactly as the product does on a timeout.
++On the 1,268 rows that did get an AI answer:
++
++| test rows with an AI answer (1,268) | TP | FP | FN | TN | precision | recall | F1 | FPR |
++|---|---|---|---|---|---|---|---|---|
++| rules v3 | 236 | 6 | 379 | 647 | 0.98 | 0.38 | 0.55 | 0.009 |
++| rules v3 + AI check on all chats | 517 | 38 | 98 | 615 | 0.93 | 0.84 | 0.88 | 0.058 |
++| AI alone (v3 prompt) | 445 | 41 | 170 | 612 | 0.92 | 0.72 | 0.81 | 0.063 |
++
++Per dataset, test split:
++
++| dataset | rules v3 P / R / FPR | rules v3 + AI P / R / FPR |
++|---|---|---|
++| SMS spam (real) | n/a / 0.00 / 0.000 | 0.97 / 0.78 / 0.024 |
++| Discord (real) | 0.97 / 0.23 / 0.004 | 0.94 / 0.72 / 0.024 |
++| Scam dialogues | 0.99 / 0.90 / 0.008 | 0.96 / 0.96 / 0.036 ¹ |
++| ScamGuardBench | 0.95 / 0.92 / 0.036 | 0.80 / 0.96 / 0.164 ¹ |
++
++**Same 200-message test subsample as the v1/v2 LLM runs** (no credit problem here, 1 of 200 calls failed):
++
++| on the same 200 test messages | TP | FP | FN | TN | precision | recall | F1 | FPR |
++|---|---|---|---|---|---|---|---|---|
++| v2 rules only | 11 | 1 | 89 | 99 | 0.92 | 0.11 | 0.20 | 0.01 |
++| v2 rules + LLM (confirm only, as shipped before) | 10 | 1 | 90 | 99 | 0.91 | 0.10 | 0.18 | 0.01 |
++| v2 prompt, LLM alone | 85 | 3 | 15 | 97 | 0.97 | 0.85 | 0.90 | 0.03 |
++| **v3 rules only** | **56** | **2** | **44** | **98** | **0.97** | **0.56** | **0.71** | **0.02** |
++| **v3 rules + AI check on all chats** | **91** | **13** | **9** | **87** | **0.88** | **0.91** | **0.89** | **0.13** |
++| v3 prompt, AI alone | 78 | 15 | 22 | 85 | 0.84 | 0.78 | 0.81 | 0.15 |
++
++The subsample has 25 legit messages per dataset, and ScamGuardBench's legit half is deliberately "looks scary but is fine", so
++its FPR is much higher than in real traffic. Read the full-test FPR (0.045) as the better estimate, and the SMS / Discord
++FPR (0.024 each, real messages) as the closest to real use.
++
++**The v3 prompt is worse alone than the v2 prompt on these 200** (FP 3 → 15, recall 0.85 → 0.78). The new prompt lists many
++more risky asks (links, codes, impersonation), and the model now flags bank notices, courier notifications and OTP messages that
++are legit. Rules + AI still beats both on recall, but most of the new false alarms come from the AI. Fixing the prompt is the first
++open item below.
++
++### Where the AI's false alarms come from (dev split, 49 FPs with rules + AI)
++
++- ScamGuardBench confusables (25): bank transaction alerts read as impersonation, government / courier / subscription notices with a
++  link read as phishing, the disputed "family money request" texts. The code-notice exception removed 9 OTP notices.
++- Phone dialogues (12): legit delivery and insurance calls asking to "confirm your details".
++- Real SMS / Discord (12): clickbait links, "send me your number", friends talking about payments.
++
++### Cost and latency
++
++- **Cost: $0.35** on the OpenRouter key (`/api/v1/key` usage 13.899 → 14.252), about 3,300 calls with gpt-4o-mini
++  (dev 1,574, test 200, test-all 1,268 answered). About $0.10 per 1,000 chats.
++- **Latency** of one AI check, measured from the box straight to OpenRouter (the product adds one hop through the PayBrake server):
++  p50 **2.0 s**, p95 **3.2–3.5 s**, max 7.4 s. The rules card appears at once. The AI result arrives about 3 s later (0.8 s debounce + p50).
++  Above the 6 s timeout, the card says "AI check unavailable".
++- Not done: a full test run with every row answered. That needs about $0.04 more credit on the OpenRouter account.
++
++### Rules v3 on dev (for reference, what the rules were designed on)
++
++pooled dev: TP 328, FP 3, FN 386, TN 857, precision 0.99, recall 0.46. The 3 dev FPs: a telemarketing call ("we'd need a credit card
++to put on file"), one disputed family-money text, and an OTP notice with "this is your bank … unusual login" (impersonation +
++account threat).
++
++Test-set honesty note: the first v3 draft's printout showed the test split once (pooled P 0.95, R 0.36) before later dev-only fixes.
++After that, `run-real.mjs` printed dev only, and every rule and threshold change was made on dev rows. One rule change was prompted by a
++product example, not by data: the promo-page quiz message "Pay with this link: paypa1-secure-checkout.example/pay" now fires
++(bare domains on common TLDs count when the host itself looks off).
++
++### Open risks
++
++1. **AI false alarms.** FPR 4.5% on test overall, 2.4% on real SMS and Discord, 16% on ScamGuardBench's hard legit set. Bank alerts,
++   courier notices and "confirm your details" calls are the main sources. Next: revise the prompt on dev, for example by requiring an
++   actual ask (pay / send / click / install) from Them before "risky", and re-measure.
++2. **Privacy.** With the setting on, every chat (redacted) goes to the PayBrake server and on to the AI provider. Redaction is regex-based:
++   names, street addresses and free-text details are not masked, and the phone rule also masks long order numbers.
++3. **The hosted test server now has AI (Typesafe, 26 Oct).** `hosted/src/index.js` calls the same `classifyText` as the backend with a fixed
++   config (jev-1.14.0, add bar 0.5, 6 s timeout), masks the text again server-side (the mask is idempotent on all 9,542 eval transcripts), caps
++   text at 4,000 characters and bodies at 16 KB, and limits `/api/classify` to 30 calls per minute per IP (Durable Object, strict; plus the
++   approximate Workers rate-limit binding) and 20,000 per day overall. Any provider error is a 502 and the extension keeps the rules result.
++   Live check: `node tests/e2e/hosted-ai-live.cjs` (screenshots in `shots/ai-live/`).
++4. **Credit.** The OpenRouter account behind the eval key returned 402 (out of credit) at the end of this run. The AI check now runs on Typesafe (see below).
++5. **Labels.** Some dataset labels are debatable (family money requests), and none of this data is marketplace chat.
++6. **SMS prize spam** (premium-rate numbers, no link or payment ask) is still out of scope for the rules. Only the AI catches it.
++
++## Headline: rules v3 + Typesafe with extra questions (adopted 26 Oct)
++
++Test split (1,573 messages, run once with this setup; dev-tuned, see the section below). Shipped in `backend/src/classify.js`
++(`TYPESAFE_EXTRA`) and on the hosted demo Worker.
++
++| test split, rules v3 + Typesafe jev-1.14.0 | Precision | Recall | F1 | False alarms |
++|---|---|---|---|---|
++| risky question only (previous) | 0.975 | 0.698 | 0.814 | 13 / 860 (1.5%) |
++| **+ premium, prize and lure questions (now)** | **0.977** | **0.846** | **0.907** | **14 / 860 (1.6%) as labelled** |
++| same, with the 2 mislabeled items counted as spam | 0.981 | 0.846 | 0.909 | 12 / 858 (1.4%) |
++
++TP 603, FP 14, FN 110, TN 846 as labelled. **The 2 mislabeled items** (ScamGuardBench rows labelled `legit_other`, which are spam):
++1. `scamguardbench:uci_sms:uci_sms-03443`: "Get a FREE mobile video player FREE movie. To collect text GO to 89105. Its free! Extra films
++   can be ordered t's and c's apply. 18 yrs only" (premium short-code SMS spam; it comes from the UCI SMS spam corpus).
++2. `scamguardbench:phishing_email:phishing_email-07218`: "dvd x copy platinum 4.0.38 - $19.95 symantec norton ghost 9.0 - $14.95
++   http://loafed.wxget.com/ …" (pirated-software spam email with a link).
++
++So real false alarms do not rise (13 → 12 once those two are counted as spam). The other 12: 7 `family_money_request` legit chats
++(2 of them rules hits), 4 other ScamGuardBench legit rows, 1 Discord clean chat; plus 2 rules hits in scam dialogues (delivery,
++telemarketing). All 31 test scams that ask for money are still caught.
++
++| dataset (test) | P before → now | R before → now | false alarms before → now |
++|---|---|---|---|
++| SMS spam | 1.00 → 1.00 | 0.45 → 0.83 | 0 → 0 |
++| Discord | 0.97 → 0.99 | 0.47 → 0.55 | 2 → 1 |
++| Scam dialogues | 0.99 → 0.99 | 0.98 → 0.98 | 2 → 2 |
++| ScamGuardBench | 0.89 → 0.87 | 1.00 → 0.99 | 9 → 11 (2 mislabeled) |
++
++Card wording: when one of the extra questions fires, the AI answer carries its own signal (`prize_bait` for prize and premium-rate,
++`free_bait` for Discord lures) unless the main signal is a concrete money or account ask. The card then says "Prize or fee bait: real
++prizes never ask you to pay or text a premium number." or "Free-gift bait: free Nitro, giveaways and downloads behind a link are a common
++scam." This changes only the exp

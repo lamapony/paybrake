@@ -1,0 +1,937 @@
+diff --git a/extension/background.js b/extension/background.js
+index 5522fb9..cbd67cd 100644
+--- a/extension/background.js
++++ b/extension/background.js
+@@ -6,7 +6,8 @@ importScripts(
+   "lib/atoms.js",
+   "lib/extract.js",
+   "lib/pay-risk.js",
+-  "lib/ask-llm.js"
++  "lib/ask-llm.js",
++  "lib/chat-state.js"
+ );
+ 
+ const LOG_MAX = 200;
+@@ -141,18 +142,24 @@ async function onDetect(message, opts) {
+   const context = message.context && typeof message.context === "object" ? message.context : {};
+   const cached = hash ? await readCache(hash, opts.llm) : null;
+   const info = await health();
++  let verdict;
++  let fromCache = false;
+   if (cached) {
+-    return { ok: true, verdict: cached.verdict, debug: opts.debug, mode: info && info.paypal, cached: true };
+-  }
+-  const ask = opts.llm
+-    ? (payload) => globalThis.pbAskLlm.askLlm(payload, { baseUrl: opts.backendUrl })
+-    : null;
+-  const verdict = await globalThis.pbPayRisk.detect(text, context, ask ? { askLlm: ask } : {});
+-  if (hash) {
+-    await writeCache(hash, verdict, opts.llm, context);
+-    await rememberDeal(hash, { verdict, context, text: text.slice(0, 500) });
++    verdict = cached.verdict;
++    fromCache = true;
++  } else {
++    const ask = opts.llm
++      ? (payload) => globalThis.pbAskLlm.askLlm(payload, { baseUrl: opts.backendUrl })
++      : null;
++    verdict = await globalThis.pbPayRisk.detect(text, context, ask ? { askLlm: ask } : {});
++    if (hash) {
++      await writeCache(hash, verdict, opts.llm, context);
++      await rememberDeal(hash, { verdict, context, text: text.slice(0, 500) });
++    }
+   }
+-  return { ok: true, verdict, debug: opts.debug, mode: info && info.paypal };
++  const response = { ok: true, verdict, debug: opts.debug, mode: info && info.paypal, cached: fromCache };
++  const deal = hash ? await loadDeal(hash) : null;
++  return globalThis.pbChatState.withStored(response, deal);
+ }
+ 
+ async function onProtect(message) {
+@@ -206,6 +213,9 @@ async function onProtect(message) {
+ async function onStatus(message) {
+   const id = encodeURIComponent(String(message.orderId || ""));
+   const data = await backendFetch("/api/orders/" + id, { method: "GET" });
++  if (message.hash && data && data.status) {
++    await rememberDeal(String(message.hash), { status: data.status, orderId: data.orderId });
++  }
+   return { ok: true, status: data.status, orderId: data.orderId };
+ }
+ 
+@@ -216,6 +226,9 @@ async function onCapture(message) {
+     headers: { "content-type": "application/json" },
+     body: "{}"
+   });
++  if (message.hash && data && data.status) {
++    await rememberDeal(String(message.hash), { status: data.status, orderId: data.orderId });
++  }
+   return { ok: true, status: data.status, orderId: data.orderId, captureId: data.captureId };
+ }
+ 
+@@ -256,6 +269,8 @@ async function handle(message) {
+   return { ok: false, error: "Unknown message" };
+ }
+ 
++globalThis.pbBackground = { handle };
++
+ chrome.runtime.onMessage.addListener((message, _sender, respond) => {
+   if (!message || typeof message.type !== "string" || message.type.indexOf("pb:") !== 0) return;
+   handle(message).then(respond).catch((error) => {
+diff --git a/extension/content.js b/extension/content.js
+index a2fc1eb..c2cf385 100644
+--- a/extension/content.js
++++ b/extension/content.js
+@@ -83,6 +83,44 @@
+     const log = [];
+     let mode = null;
+ 
++    function dealKey(hash) {
++      return "pbdeal:" + String(hash || "");
++    }
++
++    function readDisk(hash) {
++      try {
++        if (!hash || !globalThis.localStorage) return {};
++        const raw = localStorage.getItem(dealKey(hash));
++        const parsed = raw ? JSON.parse(raw) : null;
++        return parsed && typeof parsed === "object" ? parsed : {};
++      } catch {
++        return {};
++      }
++    }
++
++    function loadDeal(hash) {
++      if (!hash) return {};
++      return Object.assign({}, deals.get(hash) || {}, readDisk(hash));
++    }
++
++    function saveDeal(hash, patch) {
++      if (!hash) return patch || {};
++      const next = Object.assign({}, loadDeal(hash), patch || {}, { ts: Date.now() });
++      deals.set(hash, next);
++      try {
++        if (globalThis.localStorage) localStorage.setItem(dealKey(hash), JSON.stringify(next));
++      } catch {
++        /* this page still has the in-memory deal */
++      }
++      return next;
++    }
++
++    function storedResponse(response, hash) {
++      const api = globalThis.pbChatState;
++      if (!api || typeof api.withStored !== "function") return response;
++      return api.withStored(response, loadDeal(hash));
++    }
++
+     async function api(path, options) {
+       const res = await fetch(backend + path, options);
+       const data = await res.json().catch(() => null);
+@@ -102,7 +140,11 @@
+             ? (payload) => pbAskLlm.askLlm(payload, { baseUrl: backend })
+             : null;
+           const verdict = await pbPayRisk.detect(body.text || "", body.context || {}, ask ? { askLlm: ask } : {});
+-          deals.set(body.hash, { verdict: verdict, context: body.context || {}, text: body.text || "" });
++          saveDeal(body.hash, {
++            verdict: verdict,
++            context: body.context || {},
++            text: String(body.text || "").slice(0, 500)
++          });
+           try {
+             const health = await Promise.race([
+               api("/health", { method: "GET" }),
+@@ -112,10 +154,10 @@
+           } catch {
+             mode = null;
+           }
+-          return { ok: true, verdict: verdict, debug: false, mode: mode };
++          return storedResponse({ ok: true, verdict: verdict, debug: false, mode: mode }, body.hash);
+         }
+         if (type === "pb:protect") {
+-          const stored = deals.get(body.hash) || {};
++          const stored = loadDeal(body.hash);
+           const verdict = body.verdict || stored.verdict || {};
+           const deal = verdict.deal || {};
+           const data = await api("/api/protect", {
+@@ -129,12 +171,19 @@
+               verdict: { level: verdict.level, signals: verdict.signals, reason: verdict.reason }
+             })
+           });
+-          deals.set(body.hash, Object.assign({}, stored, data));
++          saveDeal(body.hash, {
++            orderId: data.orderId,
++            approveUrl: data.approveUrl,
++            mode: data.mode,
++            status: data.status,
++            verdict: verdict
++          });
+           mode = data.mode || mode;
+           return { ok: true, orderId: data.orderId, approveUrl: data.approveUrl, mode: data.mode, status: data.status };
+         }
+         if (type === "pb:status") {
+           const data = await api("/api/orders/" + encodeURIComponent(body.orderId), { method: "GET" });
++          if (body.hash) saveDeal(body.hash, { status: data.status, orderId: data.orderId });
+           return { ok: true, status: data.status, orderId: data.orderId };
+         }
+         if (type === "pb:capture") {
+@@ -143,6 +192,7 @@
+             headers: { "content-type": "application/json" },
+             body: "{}"
+           });
++          if (body.hash) saveDeal(body.hash, { status: data.status, orderId: data.orderId });
+           return { ok: true, status: data.status, orderId: data.orderId, captureId: data.captureId };
+         }
+         if (type === "pb:override") {
+@@ -154,6 +204,7 @@
+             ts: Date.now(),
+             head: String(body.head || "").slice(0, 160)
+           });
++          saveDeal(body.hash, { override: true });
+           return { ok: true };
+         }
+         if (type === "pb:mark") {
+@@ -372,15 +423,16 @@
+ 
+   function startPoll(session) {
+     stopPoll(session);
+-    session.poll = setInterval(async () => {
++    const tick = async () => {
+       if (!session.orderId || session.state === "paid" || session.state === "override") {
+         stopPoll(session);
+         return;
+       }
+-      const res = await send("pb:status", { orderId: session.orderId });
++      const res = await send("pb:status", { orderId: session.orderId, hash: session.hash });
+       if (!res || !res.ok) return;
+       if (res.status === "COMPLETED" && session.state !== "paid") {
+         session.state = "paid";
++        session.approved = true;
+         stopPoll(session);
+         render(session);
+         return;
+@@ -389,7 +441,9 @@
+         session.approved = true;
+         render(session);
+       }
+-    }, 2000);
++    };
++    tick();
++    session.poll = setInterval(tick, 2000);
+   }
+ 
+   function render(session) {
+@@ -564,7 +618,7 @@
+   }
+ 
+   async function captureOrder(session, foot) {
+-    const res = await send("pb:capture", { orderId: session.orderId });
++    const res = await send("pb:capture", { orderId: session.orderId, hash: session.hash });
+     if (!res || !res.ok) {
+       if (foot) {
+         foot.className = "pb-foot is-error";
+@@ -657,10 +711,22 @@
+     session.text = text;
+     session.mode = res.mode || session.mode || null;
+     if (!session.state) session.state = "risk";
++    applyStored(session, res.stored);
+     render(session);
++    if (session.state === "created") startPoll(session);
+     updateHud("risk " + verdict.level + " · " + (verdict.signals || []).join(", "));
+   }
+ 
++  function applyStored(session, stored) {
++    const api = globalThis.pbChatState;
++    if (!api || typeof api.sessionPatch !== "function") return;
++    const patch = api.sessionPatch(stored);
++    if (!patch) return;
++    const mode = session.mode;
++    Object.assign(session, patch);
++    if (!session.mode) session.mode = mode || null;
++  }
++
+   async function scan() {
+     if (locked()) {
+       pending = true;
+diff --git a/extension/lib/atoms.js b/extension/lib/atoms.js
+index bafdc92..dce06da 100644
+--- a/extension/lib/atoms.js
++++ b/extension/lib/atoms.js
+@@ -2,7 +2,7 @@
+ // Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, pay-risk.js.
+ // Patterns are case-insensitive and Unicode-aware. A hit is a concrete span.
+ 
+-const RULES_VERSION = 3;
++const RULES_VERSION = 4;
+ 
+ function wordBound(pattern, flags = "giu") {
+   const tidy = globalThis.pbTidy;
+@@ -209,6 +209,117 @@ function overlaps(a, b) {
+   return a.start < b.end && b.start < a.end;
+ }
+ 
++function lower(word) {
++  return String(word || "").toLowerCase();
++}
++
++function repeatedExtra(word, target) {
++  if (word.length !== target.length + 1) return false;
++  for (let i = 1; i < word.length; i++) {
++    if (word[i] !== word[i - 1]) continue;
++    if (word.slice(0, i) + word.slice(i + 1) === target) return true;
++  }
++  return false;
++}
++
++function missingVowel(word, target) {
++  if (word.length + 1 !== target.length) return false;
++  const vowels = "aeiouyæøå";
++  for (let i = 0; i < target.length; i++) {
++    if (!vowels.includes(target[i])) continue;
++    if (target.slice(0, i) + target.slice(i + 1) === word) return true;
++  }
++  return false;
++}
++
++function adjacentSwap(word, target) {
++  if (word.length !== target.length) return false;
++  for (let i = 0; i < word.length - 1; i++) {
++    if (word[i] === word[i + 1]) continue;
++    const swapped = word.slice(0, i) + word[i + 1] + word[i] + word.slice(i + 2);
++    if (swapped === target) return true;
++  }
++  return false;
++}
++
++// A single doubled letter, a missing vowel, or one adjacent swap.
++// Deleting a consonant ("friend" for "friends") is left to the exact rule.
++function typoKind(word, target) {
++  const w = lower(word);
++  const t = lower(target);
++  if (!w || !t) return "";
++  if (w === t) return "exact";
++  if (repeatedExtra(w, t) || missingVowel(w, t) || adjacentSwap(w, t)) return "typo";
++  return "";
++}
++
++function bestKind(word, targets) {
++  let kind = "";
++  for (const target of targets) {
++    const next = typoKind(word, target);
++    if (next === "typo") return "typo";
++    if (next === "exact") kind = "exact";
++  }
++  return kind;
++}
++
++function tokensOf(text) {
++  const out = [];
++  for (const match of String(text).matchAll(/[\p{L}\p{N}]+|&/gu)) {
++    out.push({ word: match[0], start: match.index, end: match.index + match[0].length });
++  }
++  return out;
++}
++
++function onlySpace(text, from, to) {
++  return /^\s*$/u.test(text.slice(from, to));
++}
++
++function findTypoAtoms(text) {
++  const source = String(text ?? "");
++  const found = [];
++  const tokens = tokensOf(source);
++  for (let i = 0; i < tokens.length - 2; i++) {
++    const left = tokens[i];
++    const mid = tokens[i + 1];
++    const right = tokens[i + 2];
++    if (!/^(?:and|&|og)$/iu.test(mid.word)) continue;
++    if (!onlySpace(source, left.end, mid.start) || !onlySpace(source, mid.end, right.start)) continue;
++    const leftKind = bestKind(left.word, ["friends", "venner"]);
++    const rightKind = bestKind(right.word, ["family", "familie"]);
++    if (!leftKind || !rightKind) continue;
++    if (leftKind === "exact" && rightKind === "exact") continue;
++    const start = left.start;
++    const end = right.end;
++    if (!allow({ gate: "ff-phrase" }, source, start, end)) continue;
++    const meta = META.friends_family;
++    found.push({
++      atom: "friends_family",
++      text: source.slice(start, end),
++      start,
++      end,
++      role: meta.role,
++      strength: meta.strength,
++      receipt: meta.receipt
++    });
++  }
++  for (const token of tokens) {
++    if (bestKind(token.word, ["deposit", "deposits", "depositum"]) !== "typo") continue;
++    if (!allow({ gate: "deposit-word" }, source, token.start, token.end)) continue;
++    const meta = META.upfront_deposit;
++    found.push({
++      atom: "upfront_deposit",
++      text: token.word,
++      start: token.start,
++      end: token.end,
++      role: meta.role,
++      strength: meta.strength,
++      receipt: meta.receipt
++    });
++  }
++  return found;
++}
++
+ function findAtoms(text) {
+   const source = String(text ?? "");
+   const found = [];
+@@ -231,6 +342,7 @@ function findAtoms(text) {
+       });
+     }
+   }
++  found.push(...findTypoAtoms(source));
+   found.sort((a, b) => a.start - b.start || (b.end - b.start) - (a.end - a.start));
+   const kept = [];
+   for (const hit of found) {
+diff --git a/extension/lib/chat-state.js b/extension/lib/chat-state.js
+new file mode 100644
+index 0000000..f94ce89
+--- /dev/null
++++ b/extension/lib/chat-state.js
+@@ -0,0 +1,54 @@
++// Classic content script and a Node ESM side-effect module. No import/export.
++// One chat (the hash of its text) keeps its mock order or Pay anyway choice
++// in extension storage. A reload or the approval page's return link reads it back.
++
++function viewDeal(deal) {
++  if (!deal || typeof deal !== "object") return null;
++  if (deal.override === true) return { kind: "override" };
++  const orderId = typeof deal.orderId === "string" ? deal.orderId : "";
++  if (!orderId) return null;
++  const status = typeof deal.status === "string" ? deal.status : "";
++  const approveUrl = typeof deal.approveUrl === "string" ? deal.approveUrl : "";
++  const mode = typeof deal.mode === "string" ? deal.mode : "";
++  return {
++    kind: "order",
++    orderId,
++    approveUrl,
++    mode,
++    status,
++    approved: status === "APPROVED" || status === "COMPLETED",
++    paid: status === "COMPLETED"
++  };
++}
++
++function sessionPatch(stored) {
++  if (!stored || stored.kind === "override") {
++    return stored && stored.kind === "override" ? { state: "override", error: "" } : null;
++  }
++  if (stored.kind !== "order" || !stored.orderId) return null;
++  const mode = stored.mode || "";
++  const approveUrl = stored.approveUrl || "";
++  if (stored.paid || stored.status === "COMPLETED") {
++    return { state: "paid", orderId: stored.orderId, approveUrl, mode, approved: true, error: "" };
++  }
++  return {
++    state: "created",
++    orderId: stored.orderId,
++    approveUrl,
++    mode,
++    approved: stored.approved === true || stored.status === "APPROVED",
++    error: ""
++  };
++}
++
++function withStored(response, deal) {
++  const stored = viewDeal(deal);
++  if (!stored) return response;
++  return Object.assign({}, response, { stored });
++}
++
++globalThis.pbChatState = {
++  viewDeal,
++  sessionPatch,
++  withStored
++};
+diff --git a/extension/lib/index.js b/extension/lib/index.js
+index fe2b8d9..b6a1a19 100644
+--- a/extension/lib/index.js
++++ b/extension/lib/index.js
+@@ -3,7 +3,7 @@
+ // worker load the lib files as classic scripts, which set globalThis.pb*.
+ //
+ //   manifest / addScriptTag order:
+-//   brand.js, tidy.js, atoms.js, extract.js, pay-risk.js, ask-llm.js, content.js
++//   brand.js, tidy.js, atoms.js, extract.js, pay-risk.js, ask-llm.js, chat-state.js, content.js
+ 
+ import "./brand.js";
+ import "./tidy.js";
+@@ -11,6 +11,7 @@ import "./atoms.js";
+ import "./extract.js";
+ import "./pay-risk.js";
+ import "./ask-llm.js";
++import "./chat-state.js";
+ 
+ export const brand = globalThis.pbBrand;
+ export const tidy = globalThis.pbTidy;
+@@ -18,3 +19,4 @@ export const atoms = globalThis.pbAtoms;
+ export const extract = globalThis.pbExtract;
+ export const payRisk = globalThis.pbPayRisk;
+ export const askLlmClient = globalThis.pbAskLlm;
++export const chatState = globalThis.pbChatState;
+diff --git a/extension/lib/pay-risk.js b/extension/lib/pay-risk.js
+index d737e3b..d4af244 100644
+--- a/extension/lib/pay-risk.js
++++ b/extension/lib/pay-risk.js
+@@ -83,6 +83,25 @@ function messagesOf(text, ctx) {
+   return [{ from: "seller", text: String(text ?? "") }];
+ }
+ 
++function adviceSpans(text) {
++  const source = String(text ?? "");
++  const cue = /(?:never|do\s+not|don't|dont)\s+(?:send|pay|use)|avoid\s+(?:sending|paying|using)|aldrig\s+(?:send|betal|brug)|send\s+aldrig|betal\s+aldrig|lad\s+være\s+med\s+at\s+(?:sende|betale)/giu;
++  const spans = [];
++  for (const match of source.matchAll(cue)) {
++    const start = match.index ?? 0;
++    const rest = source.slice(start);
++    let end = source.length;
++    const sentence = rest.search(/[.!?]/u);
++    if (sentence >= 0) end = start + sentence;
++    const contrast = rest.search(/\b(?:but|instead|however|rather)\b/iu);
++    if (contrast > 0) end = Math.min(end, start + contrast);
++    const pivot = rest.search(/,\s*(?:just\s+)?(?:send|pay|betal|transfer|wire)\b/iu);
++    if (pivot > 0) end = Math.min(end, start + pivot);
++    if (end > start) spans.push({ start, end });
++  }
++  return spans;
++}
++
+ function baseOffsets(text, messages) {
+   const joined = messages.map((message) => message.text).join("\n");
+   if (joined === text) {
+@@ -169,17 +188,25 @@ async function detect(text, ctx = {}, options = {}) {
+   const messages = messagesOf(raw, ctx);
+   const offsets = baseOffsets(raw, messages);
+   const perMessage = messages.map((message, index) => {
+-    const hits = api.findAtoms(message.text).map((hit) => ({
+-      ...hit,
+-      start: offsets[index] >= 0 ? offsets[index] + hit.start : hit.start,
+-      end: offsets[index] >= 0 ? offsets[index] + hit.end : hit.end
+-    }));
++    const localHits = api.findAtoms(message.text);
++    const spans = adviceSpans(message.text);
++    const base = offsets[index];
++    const hits = localHits.map((hit) => {
++      const advised = hit.role === "act" && spans.some((span) => hit.start >= span.start && hit.end <= span.end);
++      return {
++        ...hit,
++        advised,
++        start: base >= 0 ? base + hit.start : hit.start,
++        end: base >= 0 ? base + hit.end : hit.end
++      };
++    });
+     return { ...message, hits, amounts: extract.parseAmounts ? extract.parseAmounts(message.text) : [] };
+   });
+ 
+   const goods = api.goodsHit(messages);
+   const vetoHit = goods || perMessage.flatMap((message) => message.hits).find((hit) => hit.role === "veto");
+-  const actHits = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "act");
++  const allActs = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "act");
++  const actHits = allActs.filter((hit) => !hit.advised);
+   const signals = api.ATOMS.map((atom) => atom.id).filter((id) => actHits.some((hit) => hit.atom === id));
+   const strong = [...new Set(actHits.filter((hit) => hit.strength === "strong").map((hit) => hit.atom))];
+   const weak = [...new Set(actHits.filter((hit) => hit.strength === "weak").map((hit) => hit.atom))];
+@@ -187,15 +214,20 @@ async function detect(text, ctx = {}, options = {}) {
+   const deal = extract.extractDeal
+     ? extract.extractDeal(raw, ctx, actHits.map((hit) => ({ ...hit, start: hit.start, end: hit.end, atom: hit.atom })))
+     : emptyDeal();
++  const advisedSignals = api.ATOMS.map((atom) => atom.id).filter((id) => allActs.some((hit) => hit.advised && hit.atom === id));
++  const advisedEvidence = allActs
++    .filter((hit) => hit.advised)
++    .map((hit) => ({ atom: hit.atom, text: hit.text, start: hit.start, end: hit.end }));
+ 
+   if (vetoHit) return silent("veto", { signals, evidence, deal });
+-  if (!actHits.length) return silent("no_atom", { signals, evidence, deal });
++  if (!allActs.length) return silent("no_atom", { signals, evidence, deal });
++  if (!actHits.length) return silent("advice", { signals: advisedSignals, evidence: advisedEvidence, deal });
+   if (!strong.length) return silent("weak_only", { signals, evidence, deal });
+ 
+   let level = null;
+   if (strong.length >= 2 || (strong.length >= 1 && weak.length >= 1)) level = "high";
+   else if (strong.length === 1) {
+-    const host = perMessage.find((message) => message.hits.some((hit) => hit.atom === strong[0] && hit.strength === "strong"));
++    const host = perMessage.find((message) => message.hits.some((hit) => !hit.advised && hit.atom === strong[0] && hit.strength === "strong"));
+     const pay = host && api.hasPayWord(host.text);
+     const money = host && host.amounts && host.amounts.length > 0;
+     if (pay || money || strong[0] === "verification_code") level = "medium";
+diff --git a/extension/manifest.json b/extension/manifest.json
+index ee5a53d..ba56edf 100644
+--- a/extension/manifest.json
++++ b/extension/manifest.json
+@@ -28,6 +28,7 @@
+         "lib/extract.js",
+         "lib/pay-risk.js",
+         "lib/ask-llm.js",
++        "lib/chat-state.js",
+         "content.js"
+       ],
+       "run_at": "document_idle"
+diff --git a/scripts/shot-demo.cjs b/scripts/shot-demo.cjs
+index 63db8a7..bf83e29 100644
+--- a/scripts/shot-demo.cjs
++++ b/scripts/shot-demo.cjs
+@@ -164,6 +164,7 @@ async function livePass(browser) {
+     "extension/lib/extract.js",
+     "extension/lib/pay-risk.js",
+     "extension/lib/ask-llm.js",
++    "extension/lib/chat-state.js",
+     "extension/content.js"
+   ];
+ 
+diff --git a/scripts/shot-messages.cjs b/scripts/shot-messages.cjs
+index 4c65062..7777ce9 100644
+--- a/scripts/shot-messages.cjs
++++ b/scripts/shot-messages.cjs
+@@ -5,7 +5,7 @@ const path = require('path');
+ const fs = require('fs');
+ const root = path.resolve(__dirname, '..');
+ const messages = require('../night/messages.json');
+-const files = ['brand.js', 'tidy.js', 'atoms.js', 'extract.js', 'pay-risk.js', 'ask-llm.js'];
++const files = ['brand.js', 'tidy.js', 'atoms.js', 'extract.js', 'pay-risk.js', 'ask-llm.js', 'chat-state.js'];
+ const expected = ['High', 'Medium', 'High', 'Medium', 'Medium', 'High', 'High', 'High', null];
+ const server = spawn(process.execPath, ['scripts/serve.mjs'], { cwd: root, env: { ...process.env, PORT: '18080' }, stdio: 'inherit' });
+ (async () => {
+diff --git a/tests/qa-round2-flow.test.mjs b/tests/qa-round2-flow.test.mjs
+new file mode 100644
+index 0000000..461afbe
+--- /dev/null
++++ b/tests/qa-round2-flow.test.mjs
+@@ -0,0 +1,144 @@
++// Demo + mock pass for the round-2 chat bugs. Uses the in-page shim, which
++// stores the order on this origin the same way the extension stores it.
++import test from "node:test";
++import assert from "node:assert/strict";
++import { spawn } from "node:child_process";
++import path from "node:path";
++import { fileURLToPath } from "node:url";
++import { chromium } from "playwright-core";
++
++const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
++const demoPort = 8080;
++const apiPort = 8787;
++const origin = `http://localhost:${demoPort}`;
++const backend = `http://127.0.0.1:${apiPort}`;
++const chrome = process.env.CHROME_PATH || "/usr/bin/google-chrome";
++const libs = [
++  "extension/lib/brand.js",
++  "extension/lib/tidy.js",
++  "extension/lib/atoms.js",
++  "extension/lib/extract.js",
++  "extension/lib/pay-risk.js",
++  "extension/lib/ask-llm.js",
++  "extension/lib/chat-state.js",
++  "extension/content.js"
++];
++
++function spawnNode(script, env) {
++  const child = spawn(process.execPath, [script], {
++    cwd: root,
++    env: Object.assign({ PATH: process.env.PATH || "", HOME: process.env.HOME || "" }, env),
++    stdio: ["ignore", "pipe", "pipe"]
++  });
++  child.stdout.on("data", (buf) => process.stdout.write(buf));
++  child.stderr.on("data", (buf) => process.stderr.write(buf));
++  return child;
++}
++
++function stop(child) {
++  if (child && child.exitCode == null && child.pid) {
++    try { process.kill(child.pid, "SIGTERM"); } catch { /* already gone */ }
++  }
++}
++
++async function waitFor(url) {
++  for (let i = 0; i < 50; i++) {
++    try {
++      const res = await fetch(url);
++      if (res.ok) return;
++    } catch { /* retry */ }
++    await new Promise((resolve) => setTimeout(resolve, 100));
++  }
++  throw new Error("timed out waiting for " + url);
++}
++
++async function inject(page) {
++  await page.evaluate((url) => { window.__pbBackend = url; }, backend);
++  for (const file of libs) {
++    await page.addScriptTag({ path: path.join(root, file) });
++  }
++}
++
++test("qa r2 demo and mock: order, typos, advice, pay anyway", { timeout: 120000 }, async () => {
++  const demo = spawnNode("scripts/serve.mjs", { PORT: String(demoPort) });
++  const api = spawnNode("backend/src/server.js", {
++    PORT: String(apiPort),
++    PAYPAL_ENV: "sandbox",
++    PAYPAL_ADAPTER: "mock",
++    PAYPAL_CLIENT_ID: "",
++    LLM_BASE_URL: "",
++    ALLOWED_ORIGINS: `${origin},http://127.0.0.1:${demoPort}`
++  });
++  const browser = await chromium.launch({ executablePath: chrome, headless: true });
++  try {
++    await waitFor(origin + "/demo/marketplace.html?live=1");
++    await waitFor(backend + "/health");
++    const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
++
++    await page.goto(origin + "/demo/marketplace.html?live=1");
++    await page.evaluate(() => {
++      const sellers = document.querySelectorAll("#thread-bike [data-pb-msg][data-from='seller']");
++      sellers[0].textContent = "Send 500 kr deposiit via PayPal frends and famliy now, I ship tomorrow.";
++      sellers[1].textContent = "Hello.";
++    });
++    await inject(page);
++    const typoCard = page.locator("#thread-bike #pb-card");
++    await typoCard.waitFor({ state: "visible", timeout: 8000 });
++    const typoText = await typoCard.innerText();
++    assert.match(typoText, /risk/i);
++    assert.match(typoText, /Friends & Family/);
++    assert.match(typoText, /Upfront deposit/);
++
++    await page.goto(origin + "/demo/marketplace.html?live=1");
++    await page.evaluate(() => {
++      const sellers = document.querySelectorAll("#thread-bike [data-pb-msg][data-from='seller']");
++      sellers[0].textContent = "Hello.";
++      sellers[1].textContent = "Never send a deposit via PayPal Friends & Family. Beware of scams.";
++    });
++    await inject(page);
++    await page.waitForTimeout(1200);
++    assert.equal(await page.locator("#thread-bike [data-pb-host]").count(), 0);
++
++    await page.goto(origin + "/demo/marketplace.html?live=1");
++    await inject(page);
++    const bike = page.locator("#thread-bike #pb-card");
++    await bike.waitFor({ state: "visible", timeout: 8000 });
++    await page.locator("#thread-bike #pb-protect").click();
++    await page.locator("#thread-bike #pb-foot").getByText(/MOCK-/).waitFor({ timeout: 8000 });
++    const orderText = await page.locator("#thread-bike #pb-foot").innerText();
++    const orderId = orderText.match(/MOCK-[0-9a-f-]+/i)[0];
++
++    await page.locator("#pb-show-thread-2").click();
++    await page.locator("#thread-camera #pb-anyway").click();
++    await page.locator("#thread-camera").getByText("You chose to pay anyway. Logged on this device.").waitFor({ timeout: 5000 });
++
++    await page.reload();
++    await inject(page);
++    await page.locator("#thread-bike #pb-foot").getByText(orderId).waitFor({ timeout: 8000 });
++    assert.equal(await page.locator("#thread-bike #pb-protect").count(), 0);
++    assert.equal(await page.locator("#thread-bike #pb-capture").count(), 1);
++
++    await page.locator("#pb-show-thread-2").click();
++    await page.locator("#thread-camera").getByText("You chose to pay anyway. Logged on this device.").waitFor({ timeout: 8000 });
++    assert.equal(await page.locator("#thread-camera #pb-anyway").count(), 0);
++
++    const popupPromise = page.waitForEvent("popup");
++    await page.locator("#pb-show-thread-1").click();
++    await page.locator("#thread-bike #pb-foot").getByText(orderId).waitFor({ timeout: 8000 });
++    await page.locator("#thread-bike a", { hasText: "Open approval" }).click();
++    const popup = await popupPromise;
++    await popup.locator("#approve").click();
++    await popup.locator("#status").getByText("Marked approved").waitFor({ timeout: 8000 });
++    await popup.locator("a.back").click();
++    await popup.waitForURL(/marketplace\.html\?live=1/);
++    await inject(popup);
++    await popup.locator("#thread-bike #pb-foot").getByText(orderId).waitFor({ timeout: 8000 });
++    await popup.locator("#thread-bike").getByText("Approval received.").waitFor({ timeout: 8000 });
++    assert.equal(await popup.locator("#thread-bike #pb-capture").count(), 1);
++    await page.close();
++  } finally {
++    await browser.close();
++    stop(demo);
++    stop(api);
++  }
++});
+diff --git a/tests/qa-round2.test.mjs b/tests/qa-round2.test.mjs
+new file mode 100644
+index 0000000..1c129f2
+--- /dev/null
++++ b/tests/qa-round2.test.mjs
+@@ -0,0 +1,182 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import { readFileSync } from "node:fs";
++import path from "node:path";
++import { fileURLToPath } from "node:url";
++import vm from "node:vm";
++import { payRisk, atoms, chatState } from "../extension/lib/index.js";
++
++const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
++const { detect } = payRisk;
++const { sessionPatch } = chatState;
++
++const TYPO = "Send 500 kr deposiit via PayPal frends and famliy now, I ship tomorrow.";
++const ADVICE = "Never send a deposit via PayPal Friends & Family. Beware of scams.";
++const RISK = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow";
++
++function countingAsk() {
++  const state = { calls: 0 };
++  const askLlm = async () => {
++    state.calls += 1;
++    return { risky: true, evidence: ["deposit"], level: "high" };
++  };
++  return { askLlm, state };
++}
++
++test("qa r2: typo deposiit / frends and famliy warns", async () => {
++  const messages = [
++    { from: "seller", text: TYPO },
++    { from: "seller", text: "Hello." }
++  ];
++  const text = messages.map((message) => message.text).join("\n");
++  const verdict = await detect(text, { messages });
++  assert.equal(verdict.kind, "risk");
++  assert.ok(verdict.signals.includes("friends_family"), JSON.stringify(verdict.signals));
++  assert.ok(verdict.signals.includes("upfront_deposit"), JSON.stringify(verdict.signals));
++  for (const span of verdict.evidence) {
++    assert.equal(text.slice(span.start, span.end), span.text);
++  }
++  const hits = atoms.findAtoms(TYPO);
++  assert.ok(hits.some((hit) => hit.atom === "friends_family" && hit.text.toLowerCase().includes("frends")));
++  assert.ok(hits.some((hit) => hit.atom === "upfront_deposit" && hit.text.toLowerCase() === "deposiit"));
++  const friend = await detect("Please send this lamp to my friend and family this weekend.");
++  assert.equal(friend.kind, "silent");
++});
++
++test("qa r2: advice against Friends & Family stays silent", async () => {
++  const { askLlm, state } = countingAsk();
++  const messages = [
++    { from: "seller", text: "Hello." },
++    { from: "seller", text: ADVICE }
++  ];
++  const verdict = await detect(messages.map((message) => message.text).join("\n"), { messages }, { askLlm });
++  assert.equal(verdict.kind, "silent");
++  assert.equal(verdict.silentReason, "advice");
++  assert.equal(state.calls, 0);
++
++  const followed = await detect(
++    "Never send a deposit via PayPal Friends & Family. You can pay cash on pickup."
++  );
++  assert.equal(followed.kind, "silent");
++
++  const thenAsk = await detect("Do not use the marketplace, send 500 kr via Friends and Family now.");
++  assert.equal(thenAsk.kind, "risk");
++  assert.ok(thenAsk.signals.includes("friends_family"));
++
++  const neverMind = await detect("Never mind, send 500 kr deposit via PayPal Friends and Family today.");
++  assert.equal(neverMind.kind, "risk");
++  assert.ok(neverMind.signals.includes("upfront_deposit"));
++  assert.ok(neverMind.signals.includes("friends_family"));
++});
++
++function loadBackground(storage) {
++  const sandbox = {
++    console,
++    setTimeout,
++    clearTimeout,
++    AbortController,
++    URL,
++    fetch: async () => {
++      throw new Error("offline");
++    },
++    chrome: {
++      storage: {
++        local: {
++          async get(key) {
++            const out = {};
++            if (typeof key === "string" && Object.prototype.hasOwnProperty.call(storage, key)) out[key] = storage[key];
++            return out;
++          },
++          async set(obj) {
++            Object.assign(storage, obj);
++          }
++        }
++      },
++      runtime: {
++        onMessage: { addListener() {} }
++      }
++    },
++    importScripts() {}
++  };
++  sandbox.globalThis = sandbox;
++  vm.createContext(sandbox);
++  const libs = ["brand.js", "tidy.js", "atoms.js", "extract.js", "pay-risk.js", "ask-llm.js", "chat-state.js"];
++  for (const file of libs) {
++    const source = readFileSync(path.join(root, "extension/lib", file), "utf8");
++    vm.runInContext(source, sandbox, { filename: file });
++  }
++  const background = readFileSync(path.join(root, "extension/background.js"), "utf8");
++  vm.runInContext(background, sandbox, { filename: "background.js" });
++  return sandbox.pbBackground;
++}
++
++test("qa r2: stored order is returned for the same chat", async () => {
++  const hash = "chat-bike";
++  const other = "chat-camera";
++  const storage = {
++    ["pbdeal:" + hash]: {
++      orderId: "MOCK-persist",
++      approveUrl: "http://localhost:8080/demo/checkout-return.html?token=MOCK-persist&mock=1",
++      mode: "mock",
++      status: "APPROVED",
++      ts: Date.now()
++    }
++  };
++  const background = loadBackground(storage);
++  const res = await background.handle({
++    type: "pb:detect",
++    hash,
++    text: RISK,
++    context: { listingTitle: "Used road bike", listingPrice: "1,800 kr" }
++  });
++  assert.equal(res.ok, true);
++  assert.equal(res.verdict.kind, "risk");
++  assert.equal(res.stored.kind, "order");
++  assert.equal(res.stored.orderId, "MOCK-persist");
++  assert.equal(res.stored.approved, true);
++  const patch = sessionPatch(res.stored);
++  assert.equal(patch.state, "created");
++  assert.equal(patch.orderId, "MOCK-persist");
++  assert.equal(patch.approved, true);
++
++  const missed = await background.handle({
++    type: "pb:detect",
++    hash: other,
++    text: RISK,
++    context: {}
++  });
++  assert.equal(missed.stored, undefined);
++  assert.equal(sessionPatch(missed.stored), null);
++
++  const paid = sessionPatch({
++    kind: "order",
++    orderId: "MOCK-paid",
++    approveUrl: "",
++    mode: "mock",
++    status: "COMPLETED",
++    approved: true,
++    paid: true
++  });
++  assert.equal(paid.state, "paid");
++});
++
++test("qa r2: pay anyway override is returned for the same chat", async () => {
++  const hash = "chat-camera";
++  const storage = {
++    ["pbdeal:" + hash]: { override: true, ts: Date.now() }
++  };
++  const background = loadBackground(storage);
++  const res = await background.handle({
++    type: "pb:detect",
++    hash,
++    text: "Send 2,400 kr on MobilePay to 20 34 56 78. Bank transfer works too. Today only.",
++    context: { listingTitle: "Mirrorless camera", listingPrice: "2,400 kr" }
++  });
++  assert.equal(res.ok, true);
++  assert.equal(res.verdict.kind, "risk");
++  assert.equal(res.stored.kind, "override");
++  assert.equal(sessionPatch(res.stored).state, "override");
++  const kept = storage["pbdeal:" + hash];
++  assert.equal(kept.override, true);
++  assert.equal(kept.orderId, undefined);
++});

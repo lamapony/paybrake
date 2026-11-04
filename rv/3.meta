@@ -1,0 +1,14 @@
+PR #3: Tester-friendly: hosted mock demo, welcome tab, ready-to-load zip
+mergeable=MERGEABLE state=CLEAN
+checks=
+Makes PayBrake testable in ~2 minutes with no clone and no local servers.
+
+**Base is `backend-rest`** (this branch is built on it, so the diff stays small). Retarget to `main` after #1 merges. It doesn't touch `site/` or the `promo-page` branch (#2).
+
+## What changed
+- **Hosted demo + mock backend**: one free Cloudflare Worker `paybrake-demo` (`hosted/`). It serves the demo pages and the same REST API as `backend/` in mock mode (`/health`, `/api/protect`, `/api/orders/:id`, `approve-mock`, `capture`, `/return`). It reuses `backend/src/agent.js`. Orders are kept in one SQLite Durable Object, deleted after 24 h, and capped at 5000 a day. No PayPal or AI keys, `/api/classify` returns `llm_off`. Responses send `X-Robots-Tag: noindex`, `robots.txt` disallows everything, and the demo HTML gets a meta noindex tag.
+  - Demo: https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1
+  - Backend: https://paybrake-demo.spbabinov.workers.dev/health
+- **Extension 0.2.0**: uses the hosted backend by default (`extension/lib/config.js`). Settings has one-click **Use test server** and **Use localhost:8787** buttons. Adds a manifest host and content-script match for the hosted origin, plus icons.
+- **First run**: on install, a `welcome.html` tab opens with what PayBrake does and a big **Try the demo store** button. Clicking the toolbar icon opens it again.
+- **Demo store**: if live mode runs without the extension, a yellow hint appears ("PayBrake is not running in this browser…"

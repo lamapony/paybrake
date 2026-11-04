@@ -1,0 +1,13 @@
+Claude review:
+
+VERDICT: CHANGES REQUESTED
+REASON: The PR conflicts with main, and its test and eval numbers come from before PRs #15–#20, so they need re-running after a rebase. The new gift regexes also fire on normal shopping messages, because gift purchases are common and the rules use `gate: "none"`.
+
+- **Rebase needed:** PRs #15–#20 all changed the same `RULES` block in `atoms.js` and added tests at the end of `tests/pay-risk.test.mjs`, so both files conflict. Resolve them, re-run `node --test` and `npm run eval`, and update "65 pass" and the 16/14 eval counts. The `npm test` / PR #9 note may also be out of date.
+- **No check on gift-card exclusion after rebase:** After resolving, confirm no main rule now also matches the gift-card control; the `assert.deepEqual(card.signals, ["off_platform"])` test should catch it. The `atoms.js` diff only shows this PR's lines, not what main has in that block now.
+- **False positive across sentences:** The `{0,6}` token window crosses punctuation and sentence ends. For example, `Can you send me photos? I bought it as a gift for my mom.` matches and comes out medium risk with no payment wording at all. Limit the window to one clause (no `.?!` between), or put the rule behind a payment gate.
+- **False positive when shipping as a gift:** A buyer writing `Can you send it as a gift to my sister's address?` is asking about delivery, not payment, but it matches. The Danish rule has the same issue: `Jeg sender den som gave til min mor` matches through `send` + `er`.
+- **No word boundaries:** `send` has no leading or trailing `\b`, so `resend`, `godsend`, `sender` and `sende` all match. `gift` has no trailing `\b`, so `as a gifted…` matches. Add `\bsend\b` (or list the Danish forms you want, such as `send(?:e|er)?\b`) and `gift\b`.
+- **The two rules aren't consistent:** The English rule has the `(?!as\b)` guard and the Danish rule has no matching `(?!som\b)` guard. Also, if a sentence-end limit is added, add it to both.
+- **Tests don't cover the new risk:** The controls (`lamp`, `søster`) never contain `send … as/som gift`, so they don't test the widened window. Add negative cases like the photo, address and `sender den som gave` messages above, and add them to the eval set as silent cases.
+- **Optional Danish coverage:** Other ways to say transfer, like `overfør` and `MobilePay … som gave`, are missing. That's fine to leave for a later PR, but say so in the description.

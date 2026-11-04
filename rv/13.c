@@ -1,0 +1,17 @@
+Claude review:
+
+VERDICT: CHANGES REQUESTED
+REASON: The fix is still needed, because none of PRs #15–#20 changed how checkout vetoes are handled. But the PR conflicts with current main, and `checkoutDismissed` also cancels the veto on clearly pro-checkout messages, which adds false alarms.
+
+- **Rebase required.** `atoms.js` now has the PayPal, Wise, Telegram/WhatsApp, upfront/reserve and named-rails detectors from #15–#20. The `RULES` block and the area around `allow()` have moved. Rebase, then rerun `node --test` and `npm run eval`. The "64 pass" and "16 risk / 14 silent" figures are from before #15 and no longer hold.
+- **False dismissals on safe advice.** The window `(?:don't|never)\s+(?:use|pay|paying)\b[^.]{0,40}$` matches a negation anywhere in the 40 characters before the match, not only one aimed at the checkout. These would all lose their veto:
+  - "Never pay outside the marketplace checkout"
+  - "Don't pay me directly, use the checkout"
+  - "Don't pay anyone except through the checkout"
+
+  These are exactly the safe phrasings the veto exists for. Tie the negation to the verb's object, or add a stop on `outside|except|other than|directly|,\s*(?:just\s+)?use`.
+- **`\bignore\b[^.]{0,40}$` is too broad.** "Ignore my last message, pay through the checkout" and "Don't ignore the checkout" both cancel the veto. At minimum, require `ignore` to sit directly before the checkout phrase (allowing articles and qualifiers only), and not after a negation.
+- **Only `.` ends a sentence.** `!`, `?`, `;` and newlines don't. "Don't send cash!\nUse the checkout" checks across the line break, and "Don't pay now! Use the checkout" is dismissed. Use `[^.!?;\n]`.
+- **English only.** The Danish checkout rules (`brug … checkout`, `platformens checkout`) get the new gate, but no Danish dismissal terms do, such as `ignorer`, `brug ikke`, `lad være med at bruge` or `betal ikke`. Either add them or say in the PR that it's English only.
+- **Missing negative tests.** Add silent-veto cases for the three safe phrasings above, plus at least one case with `!` or a newline. As written, the tests only prove the dismissals that should happen.
+- **Minor:** in `allow()`, the `"checkout"` gate repeats the `negatedBefore` check. That's fine, but a short comment on why checkout gets a wider window would help later readers.

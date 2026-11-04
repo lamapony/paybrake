@@ -1,0 +1,558 @@
+diff --git a/SUBMISSION.md b/SUBMISSION.md
+new file mode 100644
+index 0000000..3c74044
+--- /dev/null
++++ b/SUBMISSION.md
+@@ -0,0 +1,38 @@
++# PayBrake
++
++**Tagline:** Brakes before you pay.
++
++## The problem
++
++A marketplace deal can move from a friendly chat to a request for a deposit, an irreversible transfer, or a verification code. Buyers have to assess the request at the moment they are about to act, often under pressure.
++
++## What it does
++
++PayBrake is a browser extension that checks a supported marketplace-style chat on the device and shows a small card when it finds concrete evidence of a risky request. It identifies the matching text and offers a route to a PayPal order or the option to dismiss the warning. Ordinary collection-and-payment chats should stay quiet. The current main-branch demo runs on a fictional store; it does not support real marketplace sites.
++
++## How we built it
++
++The Chrome MV3 extension uses English and Danish rule patterns, a background service worker, and a card in a shadow DOM. An optional backend model check can confirm or lower a rule-based finding. A Node backend supplies an order interface and a mock approval and capture flow. The main branch currently uses mock orders; real PayPal sandbox and configured AI integration must be validated before claiming them in the submission.
++
++## Challenges
++
++Keeping the card quiet on ordinary conversations while catching varied scam wording requires careful evidence and negative examples. Connecting a payment flow also means preserving the difference between a mock order, a sandbox transaction, and Buyer Protection that may be eligible under PayPal's terms.
++
++## Accomplishments
++
++We built a runnable extension and demo with evidence-based warnings, local override logging, a mock order flow, offline tests, and an evaluation set. The nine roleplay examples include an honest seller as a silent control.
++
++## What's next
++
++Review and integrate the existing sandbox and hosted work, verify the AI and PayPal flows end to end, expand evaluation with consented and representative examples, and build adapters for real marketplace pages.
++
++## Team
++
++Dima — extension, detection, demo and submission. Christopher — backend and payment integration. David — TODO: confirm role.
++
++## Links
++
++- Repository: TODO (public URL when approved)
++- Demo: TODO (confirm submission URL and deployed version)
++- Video: TODO
++- Devpost: TODO
+diff --git a/extension/lib/atoms.js b/extension/lib/atoms.js
+index 8ac19ff..bafdc92 100644
+--- a/extension/lib/atoms.js
++++ b/extension/lib/atoms.js
+@@ -2,7 +2,7 @@
+ // Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, pay-risk.js.
+ // Patterns are case-insensitive and Unicode-aware. A hit is a concrete span.
+ 
+-const RULES_VERSION = 1;
++const RULES_VERSION = 3;
+ 
+ function wordBound(pattern, flags = "giu") {
+   const tidy = globalThis.pbTidy;
+@@ -17,6 +17,9 @@ const ATOMS = [
+   { id: "friends_family", role: "act", strength: "strong", receipt: "Friends & Family" },
+   { id: "upfront_deposit", role: "act", strength: "strong", receipt: "Upfront deposit" },
+   { id: "off_platform", role: "act", strength: "strong", receipt: "Off-platform payment" },
++  { id: "verification_code", role: "act", strength: "strong", receipt: "Request for a verification code" },
++  { id: "suspicious_link", role: "act", strength: "strong", receipt: "Link to verify or pay" },
++  { id: "shipping_fee", role: "act", strength: "strong", receipt: "Shipping label fee" },
+   { id: "pay_before_see", role: "act", strength: "strong", receipt: "Pay before seeing the item" },
+   { id: "urgency_pressure", role: "act", strength: "weak", receipt: "Pressure to hurry" },
+   { id: "ship_before_meet", role: "act", strength: "weak", receipt: "Ships before you meet" },
+@@ -64,6 +67,10 @@ const RULES = [
+   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "none" },
+   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
+ 
++  { id: "verification_code", re: "(?:send|share|tell)\\s+(?:me\\s+)?(?:the|your)\\s+(?:(?:6-digit|verification|login)\\s+)?code", gate: "code" },
++  { id: "suspicious_link", re: "(?:[a-z0-9]+[.-])*(?:secure|verify|delivery)(?![a-z0-9])(?:[.-][a-z0-9]+)*\\.[a-z]{2,}/(?:claim|pay|verify)(?![a-z0-9])(?:[/-][a-z0-9]+)*", gate: "none" },
++  { id: "shipping_fee", re: "pay\\s+(?:a\\s+)?(?:small\\s+)?fee\\s+of\\s+[^.]{0,24}?\\d+(?:[.,]\\d+)*[^.]{0,40}?shipping\\s+label", gate: "none" },
++
+   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
+   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
+   { id: "pay_before_see", re: "payment\\s+before\\s+(?:viewing|seeing|you\\s+see)", gate: "none" },
+@@ -141,6 +148,21 @@ function phoneNear(text, start, end) {
+   return /\+?\d[\d\s]{6,}\d/.test(slice);
+ }
+ 
++// "phone, please send me the code" is inside this gap. The garage-door phone is not.
++const CODE_WINDOW = 24;
++
++function boundedNear(text, start, end, pattern, window) {
++  const re = wordBound(pattern, "giu");
++  const found = [];
++  for (const match of text.matchAll(re)) {
++    const tokenStart = match.index ?? 0;
++    const tokenEnd = tokenStart + match[0].length;
++    const gap = tokenEnd <= start ? start - tokenEnd : tokenStart >= end ? tokenStart - end : 0;
++    if (gap <= window) found.push(match[0].toLowerCase());
++  }
++  return found;
++}
++
+ function depositRejected(text, start, end) {
+   const before = text.slice(Math.max(0, start - 48), start);
+   const after = text.slice(end, Math.min(text.length, end + 40));
+@@ -153,6 +175,14 @@ function depositRejected(text, start, end) {
+ 
+ function allow(rule, text, start, end) {
+   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
++  if (rule.gate === "code") {
++    if (negatedBefore(text, start)) return false;
++    const tokens = boundedNear(text, start, end, "phone|verification|login|6-digit", CODE_WINDOW);
++    if (!tokens.length) return false;
++    const giftCard = boundedNear(text, start, end, "gift\\s*cards?|gavekort", 80);
++    if (giftCard.length && tokens.every((token) => token === "phone")) return false;
++    return true;
++  }
+   if (rule.gate === "negation") return !negatedBefore(text, start);
+   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
+   if (rule.gate === "deposit-word") {
+diff --git a/extension/lib/pay-risk.js b/extension/lib/pay-risk.js
+index 55b1cf6..d737e3b 100644
+--- a/extension/lib/pay-risk.js
++++ b/extension/lib/pay-risk.js
+@@ -15,6 +15,9 @@ const TEMPLATES = {
+   before: "Payment before you see the item: if it never arrives, the money may be hard to get back.",
+   off: "Off-platform payment: a transfer outside PayPal checkout is hard to reverse if the item never arrives.",
+   deposit: "Upfront deposit: if the item never arrives, you may have no way to get your money back.",
++  code: "A request for a verification code can give someone access to your account.",
++  link: "Check this payment or verification link carefully before opening it.",
++  fee: "A request for a shipping label fee may be a payment scam.",
+   generic: "Risky payment request: a direct transfer may be hard to get back if the item never arrives."
+ };
+ 
+@@ -51,6 +54,9 @@ function templateFor(signals) {
+   else if (has("pay_before_see")) reason = TEMPLATES.before;
+   else if (has("off_platform")) reason = TEMPLATES.off;
+   else if (has("upfront_deposit")) reason = TEMPLATES.deposit;
++  else if (has("verification_code")) reason = TEMPLATES.code;
++  else if (has("suspicious_link")) reason = TEMPLATES.link;
++  else if (has("shipping_fee")) reason = TEMPLATES.fee;
+   if (reason.length > 120) reason = reason.slice(0, 119).trimEnd() + "…";
+   return reason;
+ }
+@@ -192,7 +198,7 @@ async function detect(text, ctx = {}, options = {}) {
+     const host = perMessage.find((message) => message.hits.some((hit) => hit.atom === strong[0] && hit.strength === "strong"));
+     const pay = host && api.hasPayWord(host.text);
+     const money = host && host.amounts && host.amounts.length > 0;
+-    if (pay || money) level = "medium";
++    if (pay || money || strong[0] === "verification_code") level = "medium";
+   }
+   if (!level) return silent("no_atom", { signals, evidence, deal });
+ 
+diff --git a/night/AUDIT.md b/night/AUDIT.md
+new file mode 100644
+index 0000000..640f51d
+--- /dev/null
++++ b/night/AUDIT.md
+@@ -0,0 +1,31 @@
++# Baseline audit — origin/main (27c0f89)
++
++Run on 1 November 2026 with rules-only detection. `npm install` succeeded (0 reported vulnerabilities). The default environment Node failed to load libnode.so.115; using Node 24, `npm test` failed because directory arguments are not discovered (`package.json:15`). `npm run eval` passed: precision 1, recall 1, 0 false alarms on 30 synthetic cases. `npm run shots` passed static and injected live demo checks at 1280 and 390; `npm run e2e` passed unpacked extension, mock order, override and options smoke. Chromium 1208 was explicitly selected. Neither a real PayPal sandbox nor a live model was exercised.
++
++## Findings, ranked
++
++1. **High — submission blocker:** the checkout adapter is mock only; real PayPal adapters throw (`backend/src/paypal.js:80`). The model is optional and off without configuration (`backend/src/classify.js`); the hackathon requires sandbox and AI to be central. The backend-rest and tester-friendly branches contain work to review, not included here.
++2. **High — missed scam asks:** verification code and shipping-label fee have no matching strong rule (`extension/lib/atoms.js:29`); messages 5 and 7 stay silent. Suspicious verification links are not recognised, so message 6 is underrated.
++3. **Medium — test command compatibility:** Node 24 does not resolve the directory arguments in `package.json:15`, despite the declared >=20 range.
++4. **Medium — veto can hide a risky request:** any collection/checkout phrase anywhere in a thread silences all risk (`extension/lib/pay-risk.js:190`, `extension/lib/atoms.js:92`), even if it describes a later alternative after an upfront transfer. This needs targeted design and regression cases before changing the precision-first policy.
++5. **Medium — limited scope:** main has only the demo adapter and English/Danish patterns; it does not run on real marketplace chats (`extension/manifest.json`). The 30-case synthetic eval does not establish real-world accuracy.
++
++## Roleplay messages on main
++
++| Message | Expected | Observed | Match |
++|---|---|---|---|
++| 1 | high | high | yes |
++| 2 | medium | medium | yes |
++| 3 | high | high | yes |
++| 4 | medium | medium | yes |
++| 5 | medium | silent | no |
++| 6 | high | medium | no |
++| 7 | high | silent | no |
++| 8 | high | high | yes |
++| 9 | silent | silent (veto) | yes |
++
++Messages are from `/workspace/night-1101/scam-examples.md`; they were evaluated individually with `pbPayRisk.detect` and no AI. Branch context inspected locally: fix/terra-detection-1027 and eval-real-scams contain detector/eval work; tester-friendly includes hosted/tester and backend changes; promo-page contains a separate site; backend-rest contains PayPal and provider adapters. None was merged. Branch names are local remote-tracking refs, not evidence of current PR status.
++
++## Follow-up on this branch
++
++The roleplay rules now match all nine expected levels in rules-only mode, with a regression test. These additions are deliberately narrow and do not establish general phishing detection. The unconditional veto and real sandbox/AI integration remain open. Recreate roleplay images with `CHROME_PATH=/path/to/chrome node scripts/shot-messages.cjs` after `npm install`. The script injects the actual content scripts into `?live=1` in rules-only mode; no payment is made. Message 9 intentionally has no card. The static comparison panel is removed in these images because its original 500 kr claim applies only to the default demo message.
+diff --git a/night/CHECKLIST-5-11.md b/night/CHECKLIST-5-11.md
+new file mode 100644
+index 0000000..cde4d67
+--- /dev/null
++++ b/night/CHECKLIST-5-11.md
+@@ -0,0 +1,15 @@
++# Before 5 November, 21:00 Copenhagen
++
++Owners are proposed from the project status; confirm assignments with the team.
++
++- [ ] **Christopher:** review backend-rest and tester-friendly work; integrate the selected sandbox and AI changes with tests, without exposing credentials.
++- [ ] **Christopher:** demonstrate actual PayPal sandbox create, approval and capture and confirm hosted health/configuration. Mock IDs are not sandbox proof.
++- [ ] **Dima:** review detector changes and real-scam evaluation branch; test the nine roleplay messages and honest control on the final build, including with the configured AI.
++- [ ] **Dima:** review the unconditional safe-phrase veto and add adversarial cases before deciding whether to change it.
++- [ ] **David:** run a clean-install tester walkthrough and report browser, extension and demo problems; confirm role and ownership.
++- [ ] **Dima:** review promo-page work, choose the deployed demo and verify links and branding for submission.
++- [ ] **Dima:** record and edit the under-three-minute demo, showing the real sandbox and AI behavior once verified; avoid third-party trademarks.
++- [ ] **Dima:** finish SUBMISSION.md, fill links and team details, verify Devpost requirements and submit the early entry before 21:00 CET on 5 November.
++- [ ] **Team:** freeze and rehearse the exact demo build, preserve a mock fallback clearly labelled as mock, and retest on another machine.
++- [ ] **Dima:** decide when to make the repository public before the 12 November final deadline; review history for secrets and private material first. Do not change visibility without Dima's decision.
++- [ ] **Team:** resolve early feedback and submit final materials by 12 November, 21:00 Copenhagen (confirm deadline on Devpost).
+diff --git a/night/messages.json b/night/messages.json
+new file mode 100644
+index 0000000..3491156
+--- /dev/null
++++ b/night/messages.json
+@@ -0,0 +1,11 @@
++[
++  "Hi! Yes the bike is still available. A lot of people are asking about it, so I can only hold it for you if you send a 300 kr deposit via PayPal Friends & Family today. Then it's yours and we meet on Saturday.",
++  "Please send it as friends and family, not goods and services. G&S takes fees and I'm only a private seller. 2500 kr to my PayPal, then I'll ship it tomorrow.",
++  "I'm abroad for work right now, so I can only ship. Pay first by bank transfer and the courier delivers after payment. IBAN DK50 0040 0440 1162 43, name Jonas H.",
++  "Facebook takes a long time to verify buyers. Can you pay me on WhatsApp instead? MobilePay 2500 kr to +45 22 33 44 55 and I'll keep it for you.",
++  "Before I can send the bike, Facebook needs to verify you are a real buyer. I just sent a 6-digit code to your phone, please send me the code here so I can confirm.",
++  "I've paid you 3000 kr instead of 2500 by mistake! To receive the payment you have to confirm your details through this link: paypal-secure-verify.example.com/claim. Then please refund the extra 500 kr by bank transfer.",
++  "I've booked the courier for you. You just need to pay a small fee of 49 kr for the shipping label here: https://postnord-delivery-secure.example.com/pay and they'll pick it up within the hour.",
++  "Today only: if you pay half now with a gift card (Amazon or Steam) I'll hold it for you. Others are interested and the first to pay gets it.",
++  "Yes it's still available! You can come and look at it on Saturday and pay when you pick it up, cash or MobilePay is fine."
++]
+diff --git a/package.json b/package.json
+index fd1f595..32f1608 100644
+--- a/package.json
++++ b/package.json
+@@ -12,7 +12,7 @@
+     "backend"
+   ],
+   "scripts": {
+-    "test": "node --test tests/ backend/test/",
++    "test": "node --test tests/*.test.mjs backend/test/*.test.mjs",
+     "eval": "node eval/run-eval.mjs --mode=rules",
+     "dev:backend": "node backend/src/server.js",
+     "serve:demo": "node scripts/serve.mjs",
+diff --git a/scripts/shot-messages.cjs b/scripts/shot-messages.cjs
+new file mode 100644
+index 0000000..4c65062
+--- /dev/null
++++ b/scripts/shot-messages.cjs
+@@ -0,0 +1,46 @@
++// Reproduce roleplay screenshots using the real content script in rules-only mode.
++const { chromium } = require('playwright-core');
++const { spawn } = require('child_process');
++const path = require('path');
++const fs = require('fs');
++const root = path.resolve(__dirname, '..');
++const messages = require('../night/messages.json');
++const files = ['brand.js', 'tidy.js', 'atoms.js', 'extract.js', 'pay-risk.js', 'ask-llm.js'];
++const expected = ['High', 'Medium', 'High', 'Medium', 'Medium', 'High', 'High', 'High', null];
++const server = spawn(process.execPath, ['scripts/serve.mjs'], { cwd: root, env: { ...process.env, PORT: '18080' }, stdio: 'inherit' });
++(async () => {
++  let browser;
++  try {
++    for (let i = 0; i < 50; i++) {
++      try { if ((await fetch('http://127.0.0.1:18080/demo/marketplace.html')).ok) break; } catch {}
++      await new Promise(r => setTimeout(r, 100));
++    }
++    browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
++    for (const width of [1280, 390]) for (let i = 0; i < messages.length; i++) {
++      const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 800 } });
++      await page.goto('http://127.0.0.1:18080/demo/marketplace.html?live=1');
++      await page.evaluate(message => {
++        document.querySelector('.compare')?.remove();
++        const thread = document.querySelector('#thread-bike');
++        const sellers = thread.querySelectorAll('[data-pb-msg][data-from="seller"]');
++        sellers[0].remove();
++        sellers[1].textContent = message;
++      }, messages[i]);
++      for (const file of files) await page.addScriptTag({ path: path.join(root, 'extension/lib', file) });
++      await page.addScriptTag({ path: path.join(root, 'extension/content.js') });
++      const card = page.locator('#thread-bike #pb-card');
++      if (expected[i]) {
++        await card.waitFor({ state: 'visible', timeout: 5000 });
++        if (!(await card.innerText()).includes((expected[i] === 'High' ? 'High risk' : 'Possible payment risk'))) throw Error(`Unexpected level for message ${i + 1}: ${await card.innerText()}`);
++      } else {
++        await page.waitForTimeout(1000);
++        if (await card.count()) throw Error('Honest control showed a card');
++      }
++      await page.screenshot({ path: path.join(root, `shots/msg-${i + 1}-${width}.png`), fullPage: true });
++      await page.close();
++    }
++  } finally {
++    if (browser) await browser.close();
++    server.kill();
++  }
++})().catch(error => { console.error(error); process.exitCode = 1; });
+diff --git a/shots/msg-1-1280.png b/shots/msg-1-1280.png
+new file mode 100644
+index 0000000..2c49c62
+Binary files /dev/null and b/shots/msg-1-1280.png differ
+diff --git a/shots/msg-1-390.png b/shots/msg-1-390.png
+new file mode 100644
+index 0000000..8b0c7e6
+Binary files /dev/null and b/shots/msg-1-390.png differ
+diff --git a/shots/msg-2-1280.png b/shots/msg-2-1280.png
+new file mode 100644
+index 0000000..642f871
+Binary files /dev/null and b/shots/msg-2-1280.png differ
+diff --git a/shots/msg-2-390.png b/shots/msg-2-390.png
+new file mode 100644
+index 0000000..494c3ec
+Binary files /dev/null and b/shots/msg-2-390.png differ
+diff --git a/shots/msg-3-1280.png b/shots/msg-3-1280.png
+new file mode 100644
+index 0000000..0843fc3
+Binary files /dev/null and b/shots/msg-3-1280.png differ
+diff --git a/shots/msg-3-390.png b/shots/msg-3-390.png
+new file mode 100644
+index 0000000..d00abfe
+Binary files /dev/null and b/shots/msg-3-390.png differ
+diff --git a/shots/msg-4-1280.png b/shots/msg-4-1280.png
+new file mode 100644
+index 0000000..3644b36
+Binary files /dev/null and b/shots/msg-4-1280.png differ
+diff --git a/shots/msg-4-390.png b/shots/msg-4-390.png
+new file mode 100644
+index 0000000..c6b255a
+Binary files /dev/null and b/shots/msg-4-390.png differ
+diff --git a/shots/msg-5-1280.png b/shots/msg-5-1280.png
+new file mode 100644
+index 0000000..dbd90cc
+Binary files /dev/null and b/shots/msg-5-1280.png differ
+diff --git a/shots/msg-5-390.png b/shots/msg-5-390.png
+new file mode 100644
+index 0000000..ebc982a
+Binary files /dev/null and b/shots/msg-5-390.png differ
+diff --git a/shots/msg-6-1280.png b/shots/msg-6-1280.png
+new file mode 100644
+index 0000000..e3ce3d4
+Binary files /dev/null and b/shots/msg-6-1280.png differ
+diff --git a/shots/msg-6-390.png b/shots/msg-6-390.png
+new file mode 100644
+index 0000000..058fac9
+Binary files /dev/null and b/shots/msg-6-390.png differ
+diff --git a/shots/msg-7-1280.png b/shots/msg-7-1280.png
+new file mode 100644
+index 0000000..196b951
+Binary files /dev/null and b/shots/msg-7-1280.png differ
+diff --git a/shots/msg-7-390.png b/shots/msg-7-390.png
+new file mode 100644
+index 0000000..b484586
+Binary files /dev/null and b/shots/msg-7-390.png differ
+diff --git a/shots/msg-8-1280.png b/shots/msg-8-1280.png
+new file mode 100644
+index 0000000..71334c4
+Binary files /dev/null and b/shots/msg-8-1280.png differ
+diff --git a/shots/msg-8-390.png b/shots/msg-8-390.png
+new file mode 100644
+index 0000000..04aeb40
+Binary files /dev/null and b/shots/msg-8-390.png differ
+diff --git a/shots/msg-9-1280.png b/shots/msg-9-1280.png
+new file mode 100644
+index 0000000..a066898
+Binary files /dev/null and b/shots/msg-9-1280.png differ
+diff --git a/shots/msg-9-390.png b/shots/msg-9-390.png
+new file mode 100644
+index 0000000..7462e87
+Binary files /dev/null and b/shots/msg-9-390.png differ
+diff --git a/tests/atoms.test.mjs b/tests/atoms.test.mjs
+index bd64379..a963431 100644
+--- a/tests/atoms.test.mjs
++++ b/tests/atoms.test.mjs
+@@ -17,6 +17,9 @@ const CASES = {
+     fire: "Please pay by bank transfer, 200 kr",
+     miss: "The frame serial is DE89370400440532013000, check it when you visit"
+   },
++  verification_code: { fire: "I sent a code to your phone, please send me the code", miss: "Send me the code from the gift card" },
++  suspicious_link: { fire: "Visit paypal-secure-verify.example.com/claim", miss: "Visit paypal.com for help" },
++  shipping_fee: { fire: "Pay a small fee of 49 kr for the shipping label", miss: "Shipping label included at no cost" },
+   pay_before_see: {
+     fire: "Pay first then I send the bike to you",
+     miss: "You can pay after you see the bike in person"
+@@ -68,3 +71,79 @@ test("evidence spans are slices of the input", () => {
+     assert.equal(text.slice(hit.start, hit.end), hit.text);
+   }
+ });
++
++const CODE_FIRES = [
++  "Please send me the 6-digit code.",
++  "Please send me the 6-digit code from your phone.",
++  "Please send me your verification code.",
++  "Before I can send the bike, please send me the 6-digit code I texted to your phone.",
++  "Please send the 6-digit code to me here so I can confirm."
++];
++
++const CODE_MISSES = [
++  "The headphones are ready. Send me the code for the padlock.",
++  "The smartphone is ready. Send me the code for the padlock.",
++  "Send me the code, the serial is 16-digit.",
++  "Send me the code for the garage door. My phone is in the car so I cannot open it.",
++  "Buy a gift card and send me the code. Call my phone when you have it."
++];
++
++for (const text of CODE_FIRES) {
++  test(`verification_code fires: ${text}`, () => {
++    const hits = findAtoms(text);
++    assert.ok(hits.some((hit) => hit.atom === "verification_code"), JSON.stringify(hits));
++  });
++}
++
++for (const text of CODE_MISSES) {
++  test(`verification_code near-miss: ${text}`, () => {
++    const hits = findAtoms(text);
++    assert.equal(hits.some((hit) => hit.atom === "verification_code"), false, JSON.stringify(hits));
++  });
++}
++
++const LINK_FIRES = [
++  "Visit paypal-secure-verify.example.com/claim",
++  "https://postnord-delivery-secure.example.com/pay"
++];
++
++const LINK_MISSES = [
++  "Pay here https://secure.example.com/payment",
++  "See https://insecure.example.com/pay",
++  "https://redelivery.example.com/pay",
++  "https://secure.example.com/payments",
++  "Open https://secure.example.com/paypal today"
++];
++
++for (const text of LINK_FIRES) {
++  test(`suspicious_link fires: ${text}`, () => {
++    const hits = findAtoms(text);
++    assert.ok(hits.some((hit) => hit.atom === "suspicious_link"), JSON.stringify(hits));
++  });
++}
++
++for (const text of LINK_MISSES) {
++  test(`suspicious_link near-miss: ${text}`, () => {
++    const hits = findAtoms(text);
++    assert.equal(hits.some((hit) => hit.atom === "suspicious_link"), false, JSON.stringify(hits));
++  });
++}
++
++const FEE_FIRES = [
++  "Pay a small fee of $4.99 for the shipping label.",
++  "Pay a small fee of 49.50 kr for the shipping label.",
++  "Pay a small fee of 4,99 kr for the shipping label."
++];
++
++for (const text of FEE_FIRES) {
++  test(`shipping_fee fires: ${text}`, () => {
++    const hits = findAtoms(text);
++    assert.ok(hits.some((hit) => hit.atom === "shipping_fee"), JSON.stringify(hits));
++  });
++}
++
++test("shipping_fee does not cross a sentence period", () => {
++  const text = "Pay a small fee of 49 kr. Shipping label is extra and not included.";
++  const hits = findAtoms(text);
++  assert.equal(hits.some((hit) => hit.atom === "shipping_fee"), false, JSON.stringify(hits));
++});
+diff --git a/tests/pay-risk.test.mjs b/tests/pay-risk.test.mjs
+index 653a157..d276136 100644
+--- a/tests/pay-risk.test.mjs
++++ b/tests/pay-risk.test.mjs
+@@ -88,6 +88,80 @@ test("one strong atom with an amount is medium", async () => {
+   assert.deepEqual(verdict.signals, ["off_platform"]);
+ });
+ 
++const CODE_REQUESTS = [
++  "Please send me the 6-digit code.",
++  "Please send me the 6-digit code from your phone.",
++  "Please send me your verification code.",
++  "Before I can send the bike, please send me the 6-digit code I texted to your phone.",
++  "Please send the 6-digit code to me here so I can confirm."
++];
++
++for (const text of CODE_REQUESTS) {
++  test(`verification code request is medium: ${text}`, async () => {
++    const verdict = await detect(text);
++    assert.equal(verdict.kind, "risk");
++    assert.equal(verdict.level, "medium");
++    assert.ok(verdict.signals.includes("verification_code"), JSON.stringify(verdict.signals));
++  });
++}
++
++test("gift card code plus an incidental phone stays off-platform only", async () => {
++  const text = "Buy a gift card and send me the code. Call my phone when you have it.";
++  const verdict = await detect(text);
++  assert.equal(verdict.kind, "risk");
++  assert.equal(verdict.level, "medium");
++  assert.deepEqual(verdict.signals, ["off_platform"]);
++});
++
++test("incidental phone and digit substrings do not request a verification code", async () => {
++  const samples = [
++    "The headphones are ready. Send me the code for the padlock.",
++    "The smartphone is ready. Send me the code for the padlock.",
++    "Send me the code, the serial is 16-digit.",
++    "Send me the code for the garage door. My phone is in the car so I cannot open it."
++  ];
++  for (const text of samples) {
++    const verdict = await detect(text);
++    assert.equal(verdict.kind, "silent", text);
++    assert.equal((verdict.signals || []).includes("verification_code"), false, text);
++  }
++});
++
++test("benign secure and delivery hosts do not card", async () => {
++  const samples = [
++    "Pay here https://secure.example.com/payment",
++    "See https://insecure.example.com/pay",
++    "https://redelivery.example.com/pay",
++    "https://secure.example.com/payments",
++    "Open https://secure.example.com/paypal today please"
++  ];
++  for (const text of samples) {
++    const verdict = await detect(text);
++    assert.equal(verdict.kind, "silent", text);
++    assert.equal((verdict.signals || []).includes("suspicious_link"), false, text);
++  }
++});
++
++test("a decimal shipping label fee is medium", async () => {
++  const samples = [
++    "Pay a small fee of $4.99 for the shipping label.",
++    "Pay a small fee of 49.50 kr for the shipping label."
++  ];
++  for (const text of samples) {
++    const verdict = await detect(text);
++    assert.equal(verdict.kind, "risk", text);
++    assert.equal(verdict.level, "medium", text);
++    assert.deepEqual(verdict.signals, ["shipping_fee"], text);
++  }
++});
++
++test("a shipping label after a sentence period stays silent", async () => {
++  const text = "Pay a small fee of 49 kr. Shipping label is extra and not included.";
++  const verdict = await detect(text);
++  assert.equal(verdict.kind, "silent");
++  assert.equal((verdict.signals || []).includes("shipping_fee"), false);
++});
++
+ test("rules result stands when no askLlm is passed", async () => {
+   const verdict = await detect(FF);
+   assert.equal(verdict.llm, "off");
+diff --git a/tests/roleplay.test.mjs b/tests/roleplay.test.mjs
+new file mode 100644
+index 0000000..1fb7401
+--- /dev/null
++++ b/tests/roleplay.test.mjs
+@@ -0,0 +1,13 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import fs from "node:fs";
++import { payRisk } from "../extension/lib/index.js";
++
++const messages = JSON.parse(fs.readFileSync(new URL("../night/messages.json", import.meta.url)));
++const expected = ["high", "medium", "high", "medium", "medium", "high", "high", "high", "silent"];
++test("roleplay messages have the expected rules-only levels", async () => {
++  for (const [i, message] of messages.entries()) {
++    const result = await payRisk.detect(message);
++    assert.equal(result.kind === "silent" ? "silent" : result.level, expected[i], `message ${i + 1}`);
++  }
++});

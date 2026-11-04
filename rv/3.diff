@@ -1,0 +1,887 @@
+diff --git a/.github/ISSUE_TEMPLATE/bug_report.md b/.github/ISSUE_TEMPLATE/bug_report.md
+new file mode 100644
+index 0000000..5a918a7
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/bug_report.md
+@@ -0,0 +1,28 @@
++---
++name: Bug report
++about: Something in PayBrake or the demo store did not work or was confusing
++title: "[Bug] "
++labels: bug
++---
++
++**What happened?**
++<!-- One or two sentences. Example: "Clicked Switch to a PayPal order and nothing happened." -->
++
++**What did you expect?**
++
++**Steps to get there**
++1. 
++2. 
++3. 
++
++**Screenshot**
++<!-- Drag a screenshot here if you can. It helps a lot. -->
++
++**Your setup**
++- PayBrake version (chrome://extensions, under the name): 
++- Browser and version (chrome://version, first line): 
++- Computer: Mac / Windows / Linux
++- Page URL: 
++
++**Anything else?**
++<!-- Optional: right-click the page > Inspect > Console, and paste any red errors. -->
+diff --git a/.github/ISSUE_TEMPLATE/config.yml b/.github/ISSUE_TEMPLATE/config.yml
+new file mode 100644
+index 0000000..0086358
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/config.yml
+@@ -0,0 +1 @@
++blank_issues_enabled: true
+diff --git a/.gitignore b/.gitignore
+index 48590bd..773c34e 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -8,3 +8,5 @@ test-results/
+ playwright-report/
+ eval/report.json
+ dist/
++hosted/public/
++hosted/.wrangler/
+diff --git a/PILOT-TASK.md b/PILOT-TASK.md
+index f30a1bb..92ca52a 100644
+--- a/PILOT-TASK.md
++++ b/PILOT-TASK.md
+@@ -81,7 +81,7 @@ Truncate to 160 chars with "…" if needed but keep at least one full quoted spa
+ 
+ ## Card (Shadow DOM, styled like `demo/marketplace.html` `.pb` card)
+ Host: `<div data-paybrake="card" data-pb-hash="...">` with `attachShadow({mode:"open"})`; all CSS inside the shadow root (copy the `.pb`, `.pb-body`, `.pb-top`, `.risk-badge`, `.pb-explain`, `.chips`, `.chip`, `.actions`, `.btn`, `.btn-primary`, `.btn-ghost`, `.pb-foot`, `.pb-collapsed` rules and the colour variables from `demo/marketplace.html`; the left amber→red stripe; same warning triangle SVG). `all: initial` on `:host`, `display:block`, max-width 560px, margin 6px 0 10px 36px (0 left margin under 520 px), font-family system-ui, `color-scheme: light` so dark mode does not invert it; z-index not needed (in flow).
+-Content: badge "High risk payment request" (level high) or "Possible payment risk" (medium); tag "Checked just now"; `.pb-explain` = verdict.reason; "Detected signals" chips with human labels (Friends & Family, MobilePay, Bank transfer, Upfront deposit, Pressure to hurry, Shipping only); buttons `<button data-pb-action="protect" class="btn btn-primary">Move to protected PayPal order</button>` and `<button data-pb-action="anyway" class="btn btn-ghost">Pay anyway</button>` (≥ 44 px tall; full width stacked under 520 px card width — use a container query or `@media (max-width:520px)`); footer "PayBrake · on-device check · only you can see this". Stop click propagation inside the shadow root so the site's handlers do not react. `aria-live="polite"` on the footer. Focus rings visible. `prefers-reduced-motion` respected. No third-party logos (PayPal only as plain text).
++Content: badge "High risk payment request" (level high) or "Possible payment risk" (medium); tag "Checked just now"; `.pb-explain` = verdict.reason; "Detected signals" chips with human labels (Friends & Family, MobilePay, Bank transfer, Upfront deposit, Pressure to hurry, Shipping only); buttons `<button data-pb-action="protect" class="btn btn-primary">Switch to a PayPal order</button>` and `<button data-pb-action="anyway" class="btn btn-ghost">Pay anyway</button>` (≥ 44 px tall; full width stacked under 520 px card width — use a container query or `@media (max-width:520px)`); footer "PayBrake · on-device check · only you can see this". Stop click propagation inside the shadow root so the site's handlers do not react. `aria-live="polite"` on the footer. Focus rings visible. `prefers-reduced-motion` respected. No third-party logos (PayPal only as plain text).
+ - Protect → `chrome.runtime.sendMessage({type:"pb:protect", deal, item, seller, hash, signals, reason})`; background opens `order.html?d=<encodeURIComponent(JSON)>` with `chrome.tabs.create`; card footer updates to "Opened a protected order draft in a new tab".
+ - Pay anyway → `chrome.runtime.sendMessage({type:"pb:log", entry:{action:"pay_anyway", hash, signals, level, head: first 160 chars, url: location.origin + location.pathname, ts}})`; card collapses to "You chose to pay anyway. Logged on this device." (the e2e test looks for /pay anyway/i in the host text).
+ - Wrap `chrome.runtime.sendMessage` so an invalidated extension context (after reload) never throws.
+diff --git a/README.md b/README.md
+index 7820c8e..4a302f0 100644
+--- a/README.md
++++ b/README.md
+@@ -4,6 +4,8 @@
+ 
+ Fictional names only. Not affiliated with PayPal or any marketplace. No real money moves in this build.
+ 
++**Just want to try it?** See [TESTING.md](TESTING.md): download a zip, load it in Chrome, open the hosted demo store. No servers, about 2 minutes.
++
+ ## Run in 5 minutes
+ 
+ From a clean clone, Node 20:
+@@ -24,14 +26,15 @@ Then:
+ 
+ 1. Open `chrome://extensions`.
+ 2. Turn on Developer mode.
+-3. Load unpacked and choose the `extension/` folder.
++3. Load unpacked and choose the `extension/` folder (the one with `manifest.json`, not the repo root).
++   The extension talks to the hosted mock server by default. For this local setup open its options, click **Use localhost:8787**, and save.
+ 4. Open `http://localhost:8080/demo/marketplace.html?live=1`.
+ 
+-The static card is hidden. The extension draws its own card in the bike thread. **Move to protected PayPal order** creates a `MOCK-` sandbox order with no PayPal credentials. **Open approval** goes to a mock page. **Approve (mock)**, return to the chat, then **I approved it, capture**.
++The static card is hidden. The extension draws its own card in the bike thread. **Switch to a PayPal order** creates a `MOCK-` sandbox order with no PayPal credentials. **Open approval** goes to a mock page. **Approve (mock)**, return to the chat, then **I approved it, capture**.
+ 
+ `Signe Kruse · camera` is a second risky thread for **Pay anyway**. `demo/safe-chats.html` should stay silent.
+ 
+-Options (right-click the toolbar icon, or open the extension's options page): backend URL (default `http://localhost:8787`), rules-only vs an AI check, a debug HUD, and the on-device override log (download JSON or clear).
++Options (right-click the toolbar icon, or open the extension's options page): backend URL (default: the hosted mock server `https://paybrake-demo.spbabinov.workers.dev`; one click switches to `http://localhost:8787`), rules-only vs an AI check, a debug HUD, and the on-device override log (download JSON or clear).
+ 
+ ## What the pieces do
+ 
+@@ -85,7 +88,7 @@ Published `@paypal/agent-toolkit` 1.11.0: `create_order` has no payee field, and
+ 
+ 4. Run `npm run dev:backend`. Open `http://127.0.0.1:8787/health`. `paypal` is `"rest"`. If the client id is set and the secret is empty, the process exits with `PAYPAL_CLIENT_SECRET is required for the rest adapter`. An empty client id leaves `paypal` as `"mock"`.
+ 
+-5. On the demo page, press **Move to protected PayPal order**. **Open approval** opens the PayPal sandbox page. Log in as the sandbox Personal buyer, approve, and the browser returns to the demo return page (the **Approve (mock)** button stays hidden). Go back to the chat and press **I approved it, capture**.
++5. On the demo page, press **Switch to a PayPal order**. **Open approval** opens the PayPal sandbox page. Log in as the sandbox Personal buyer, approve, and the browser returns to the demo return page (the **Approve (mock)** button stays hidden). Go back to the chat and press **I approved it, capture**.
+ 
+ The payee has to be that Business account's email, or PayPal rejects the order. The bike messages contain no email address, so the extension sends `data-pb-seller-email` from the thread. In `demo/marketplace.html`, on the section `#thread-bike`, change `data-pb-seller-email` from `jonas.holm@example.com` to the sandbox Business email before you click protect. The card field **Seller email for this order** (`#pb-email` in `extension/content.js`) is shown only when that value is missing, so this thread does not show it. For the camera thread, edit the same attribute on `#thread-camera` (currently `signe.kruse@example.com`). An email written in a message wins over the attribute (`extension/lib/extract.js`).
+ 
+diff --git a/SPEC.md b/SPEC.md
+index 9b23fa1..cb8c0f6 100644
+--- a/SPEC.md
++++ b/SPEC.md
+@@ -4,7 +4,7 @@
+ 
+ Chrome MV3 extension that reads a marketplace chat the user has open, detects a **risky payment request** (Friends & Family for goods, upfront deposit or "hold" fee, off-platform payment such as MobilePay / IBAN / bank transfer / crypto / gift card, pressure and urgency, ship-before-pay), and shows a small in-page risk card with two actions:
+ 
+-- **Move to protected PayPal order**: the backend creates a **PayPal sandbox Orders v2** order (intent `CAPTURE`, payee = seller email, item + amount from the chat), the user approves in sandbox checkout, the backend captures, and the card shows the order ID and status.
++- **Switch to a PayPal order**: the backend creates a **PayPal sandbox Orders v2** order (intent `CAPTURE`, payee = seller email, item + amount from the chat), the user approves in sandbox checkout, the backend captures, and the card shows the order ID and status.
+ - **Pay anyway**: dismisses the card and logs the override locally. Nothing is ever posted, typed, or clicked in the chat.
+ 
+ Hackathon: PayPal AI Hackathon on Devpost, deadline **Thu 12 Nov 2026 12:00 PT (21:00 Copenhagen)**. Rules that shape this spec: PayPal sandbox + an AI tool must be central; judges must be able to run a working build; the repo is public with an OSS license (MIT); the video is under 3 min with no third-party trademarks (so the demo surface is our own fictional page, never a real social network).
+@@ -188,7 +188,7 @@ At least 15 risky: F&F + deposit, IBAN transfer, MobilePay to a number before vi
+ 
+ ## 8. UI and copy
+ 
+-- Card: Shadow DOM root, `.pb-*` classes. Badge "High risk payment request" or "Possible payment risk", one-line reason, evidence chips, primary "Move to protected PayPal order", secondary "Pay anyway", footer "PayBrake · AI check · only you can see this". Highlight evidence spans inside the message bubble by wrapping text nodes; never touch the site's input box.
++- Card: Shadow DOM root, `.pb-*` classes. Badge "High risk payment request" or "Possible payment risk", one-line reason, evidence chips, primary "Switch to a PayPal order", secondary "Pay anyway", footer "PayBrake · AI check · only you can see this". Highlight evidence spans inside the message bubble by wrapping text nodes; never touch the site's input box.
+ - After order creation: "Sandbox order created · ID … · awaiting approval" + "Open approval". After capture: "Paid with PayPal Goods & Services (sandbox). Buyer Protection may be eligible; see PayPal terms."
+ - Fallback reason templates when the LLM is off, e.g. F&F + deposit: "Friends & Family + upfront deposit: if the item never arrives, you may have no way to get your money back."
+ - Visual reference: `demo/marketplace.html` in this repo (built from the concept mockup). PayPal appears only as a text wordmark; no PayPal logo files.
+diff --git a/TESTING.md b/TESTING.md
+new file mode 100644
+index 0000000..2975380
+--- /dev/null
++++ b/TESTING.md
+@@ -0,0 +1,56 @@
++# Try PayBrake in 2 minutes
++
++No cloning, no servers. You need Google Chrome (or another Chromium browser such as Edge or Brave) on a computer.
++
++The demo store and its test server are online. Everything there is pretend: fictional people, test orders, no real money.
++
++## 1. Download and unzip
++
++1. Open the test build: **https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.2** (you need to be signed in to GitHub with access to the repo).
++2. Download **`paybrake-extension.zip`** ([direct link](https://github.com/lamapony/paybrake/releases/download/v0.2.0-test.2/paybrake-extension.zip)) and unzip it (double-click it).
++3. You now have a folder called **`paybrake-extension`**. Inside it you should see `manifest.json`.
++
++> On Windows, "Extract All" sometimes makes a folder inside a folder: `paybrake-extension\paybrake-extension\`. Use the inner one, the one where you can see `manifest.json`.
++
++## 2. Load it in Chrome
++
++1. Go to **`chrome://extensions`** (type it in the address bar).
++2. Switch on **Developer mode** (top right).
++3. Click **Load unpacked** and select the **`paybrake-extension`** folder (the one that contains `manifest.json`, not a folder above it).
++
++If Chrome says **"Manifest file is missing or unreadable"**, you picked the wrong folder. Go one level deeper and pick the folder with `manifest.json` in it.
++
++A **Welcome to PayBrake** tab opens by itself. (If it does not, click the PayBrake icon in the toolbar. It may be hidden under the puzzle-piece icon.)
++
++## 3. Try the demo store
++
++Click the big **Try the demo store** button, or open:
++
++**https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1**
++
++What you should see:
++
++1. The **bike** chat with seller Jonas. Under his message *"Send 500 kr deposit via PayPal Friends & Family..."* a PayBrake card appears saying **High risk payment request**, with the reasons it noticed (Friends & Family, upfront deposit, pressure to hurry, ships before you meet).
++2. Click **Switch to a PayPal order**. The card shows **Sandbox order created · ID MOCK-...**.
++3. Click **Open approval**. A new tab opens. Click **Approve (mock)**. It says **Marked approved**.
++4. Go back to the chat tab and click **I approved it, capture**. The card says **Paid with PayPal Goods & Services (sandbox)**.
++5. Bonus: click the **Signe Kruse · camera** chat and press **Pay anyway**. PayBrake lets you and notes it on this device. The desk lamp chat further down the page is a normal chat and should stay quiet.
++
++If you see a yellow box saying **PayBrake is not running in this browser**, the extension is not loaded. Repeat step 2 and reload the page.
++
++## 4. Report a bug
++
++Open **https://github.com/lamapony/paybrake/issues/new?template=bug_report.md** and fill in the short form. A screenshot helps most. Also handy: the PayBrake version shown on `chrome://extensions`.
++
++## Updating to a newer test build
++
++Download the new zip, unzip it over the old folder (or into a new one), then on `chrome://extensions` click the circular **Reload** arrow on the PayBrake card. If you used a new folder, remove the old PayBrake first and **Load unpacked** again.
++
++---
++
++### For developers
++
++- The extension talks to the hosted mock server by default (`https://paybrake-demo.spbabinov.workers.dev`). To use a local backend, open the extension's **Settings** (right-click the icon > Options), click **Use localhost:8787**, then **Save**. Run `npm run dev:backend` and `npm run serve:demo`, and open `http://localhost:8080/demo/marketplace.html?live=1`.
++- Build the zip: `npm run pack:extension` (writes `dist/paybrake-extension.zip`).
++- Hosted demo and mock backend: one Cloudflare Worker in `hosted/` (static demo pages plus the mock API, orders kept in a Durable Object for 24 hours). Mock mode only: no PayPal keys, no AI key, nothing to configure. `npm run hosted:deploy` builds and deploys it (needs `npx wrangler login`). Pages and API send `X-Robots-Tag: noindex`, and `robots.txt` disallows everything.
++- Tester end-to-end check (unzips the zip, loads it in Chromium, runs the steps above against the hosted URL, saves screenshots to `shots/tester/`): `npm run pack:extension && npm run e2e:hosted`.
+diff --git a/demo/checkout-return.html b/demo/checkout-return.html
+index 13c409e..b70f0f8 100644
+--- a/demo/checkout-return.html
++++ b/demo/checkout-return.html
+@@ -119,8 +119,13 @@ <h1 id="title">Sandbox approval</h1>
+     var button = document.getElementById("approve");
+     var status = document.getElementById("status");
+     tokenNode.textContent = token || "(none)";
++    // Local dev: backend on :8787 of the same host. Hosted demo: same origin.
+     var backend = "http://localhost:8787";
+-    if (location.hostname) backend = location.protocol + "//" + location.hostname + ":8787";
++    if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
++      backend = location.protocol + "//" + location.hostname + ":8787";
++    } else if (location.protocol === "https:") {
++      backend = location.origin;
++    }
+ 
+     if (!isMock) {
+       document.title = "Sandbox approval";
+@@ -162,7 +167,7 @@ <h1 id="title">Sandbox approval</h1>
+         });
+       }).catch(function () {
+         button.disabled = false;
+-        status.textContent = "Could not reach the mock backend. Start it, then try again.";
++        status.textContent = "Could not reach the PayBrake test server. Check your connection, then try again.";
+       });
+     });
+   })();
+diff --git a/demo/marketplace.html b/demo/marketplace.html
+index 77ead46..042a22d 100644
+--- a/demo/marketplace.html
++++ b/demo/marketplace.html
+@@ -520,7 +520,7 @@ <h1>Used road bike</h1>
+             </ul>
+ 
+             <div class="actions">
+-              <button type="button" class="btn btn-primary" id="pb-protect">Move to protected PayPal order</button>
++              <button type="button" class="btn btn-primary" id="pb-protect">Switch to a PayPal order</button>
+               <button type="button" class="btn btn-ghost" id="pb-anyway">Pay anyway</button>
+             </div>
+           </div>
+@@ -598,10 +598,10 @@ <h1>Used road bike</h1>
+     </section>
+   </section>
+ 
+-  <aside class="side" aria-label="Protected order preview">
++  <aside class="side" aria-label="PayPal order preview">
+     <section class="card">
+       <div class="preview-head">
+-        <h2>Protected order preview</h2>
++        <h2>PayPal order preview</h2>
+         <span class="sandbox">Sandbox demo</span>
+       </div>
+       <div class="preview-body">
+@@ -656,6 +656,17 @@ <h3>How PayBrake works</h3>
+       var staticCard = document.getElementById("pb-card");
+       if (staticCard) staticCard.remove();
+       document.documentElement.dataset.pbLive = "1";
++      // Friendly hint when the extension is not installed (live mode needs it).
++      setTimeout(function () {
++        if (document.documentElement.dataset.paybrake === "on") return;
++        var note = document.createElement("div");
++        note.id = "pb-missing";
++        note.setAttribute("role", "status");
++        note.style.cssText = "position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:560px;width:calc(100% - 32px);background:#fff8e1;border:1px solid #f0c36d;color:#1c2530;border-radius:12px;padding:14px 18px;font:15px/1.5 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999";
++        note.innerHTML = "<b>PayBrake is not running in this browser.</b> Install the extension first (chrome://extensions, Developer mode, Load unpacked), then reload this page. " +
++          "Just looking? <a href=\"marketplace.html\">See the built-in preview</a>.";
++        document.body.appendChild(note);
++      }, 2500);
+     }
+ 
+     var bike = document.getElementById("thread-bike");
+diff --git a/docs/BUILD-TASK-GROK.md b/docs/BUILD-TASK-GROK.md
+index c6f0206..4327b64 100644
+--- a/docs/BUILD-TASK-GROK.md
++++ b/docs/BUILD-TASK-GROK.md
+@@ -10,7 +10,7 @@ Work in this order, commit locally after each step (`git -c user.name="PayBrake
+ 2. Detector (SPEC §4): extension/lib/atoms.js, extract.js, pay-risk.js, tidy.js, ask-llm.js. Files must work BOTH as ES modules in Node tests AND as classic content scripts in MV3 (use the globalThis.pbX = {...} pattern + a thin ESM re-export, or make content scripts load them via dynamic import of chrome.runtime.getURL — pick the simplest robust option and document it). Verdict shape per SPEC §2. detect(text, ctx, {askLlm}) async; askLlm optional; LLM can only confirm or lower; evidence substring guard; LLM error/timeout(4s) caps at medium with llm:"error"; never called on short/no_atom/weak_only/veto. Tests: tests/atoms.test.mjs, extract.test.mjs, pay-risk.test.mjs (assert askLlm call count 0 on refusals).
+ 3. Eval: eval/cases/pay-risk.json with 30 synthetic cases (16 risky incl. 4 Danish; 14+ safe incl. 4 Danish and >=5 hard negatives sharing words with positives), fictional names only. eval/run-eval.mjs: rules mode prints a per-case table + precision/recall/F1 + false-alarm count, writes eval/report.json, exits 1 if precision < 0.95, any false alarm, or recall < 0.80. live mode: skips cleanly (exit 0, message) unless backend /health says llm configured. Do NOT soften hard negatives to pass; fix atoms instead.
+ 4. Backend mock (node:http, Node 20): routes per SPEC §5 (health, classify, protect, orders/:id, capture, /return, /cancel). CORS: ALLOWED_ORIGINS + any chrome-extension:// origin. Body limit 16 kB. Mock: MOCK-<uuid> ids, approveUrl = http://localhost:8080/demo/checkout-return.html?token=<id>&mock=1, statuses CREATED→APPROVED (GET /return or POST /api/orders/:id/approve-mock)→COMPLETED on capture. In-memory store. Logs order ids + status only. Loads backend/.env if present (tiny parser, no dotenv dep). Tests in backend/test/ using an ephemeral port (server.listen(0)): health, protect returns MOCK- id + approveUrl, capture flow, 400 on bad body, 413 on large body, sandbox guard throws for PAYPAL_ENV=live, CORS.
+-5. Extension (extension/, MV3, no build): manifest (content scripts on http://localhost/*, http://127.0.0.1/*, file:///* optional; host_permissions for http://localhost:8787/*), background.js (message bus pb:detect/pb:protect/pb:status/pb:capture/pb:override/pb:mark per SPEC §2, cache by hash+RULES_VERSION, override ring log in chrome.storage.local max 200, backend URL from options default http://localhost:8787; on backend unreachable return {ok:false,error} and the card shows a friendly one-line error, never throws), content.js (one `demo` adapter row in SITES matching data-pb-* attributes on the demo page; commented template row; MutationObserver + interval rescan; Shadow DOM card; highlight evidence by wrapping text nodes only inside message bubbles; never touch inputs/composer, never click site elements; sets document.documentElement.dataset.paybrake="on"), card UI (port the look of the static card in demo/marketplace.html: badge, one-line reason, evidence chips, primary "Move to protected PayPal order", secondary "Pay anyway", footer "PayBrake · AI check · only you can see this" (say "rules check" when llm off), buttons >= 44px, stacked full width under 520px, aria-live status, focus rings, prefers-reduced-motion, "mock mode" tag when backend mode is mock). Protect flow: pb:protect → backend /api/protect → card shows "Sandbox order created · ID MOCK-… · awaiting approval" + "Open approval" link (opens approveUrl in new tab) → after approval the card polls status / offers "I approved it, capture" → shows "Paid with PayPal Goods & Services (sandbox). Buyer Protection may be eligible; see PayPal terms." Pay anyway → pb:override → collapsed "You chose to pay anyway. Logged on this device." options.html/js/css: backend URL, LLM on/off, debug, override log viewer + Download JSON + Clear.
++5. Extension (extension/, MV3, no build): manifest (content scripts on http://localhost/*, http://127.0.0.1/*, file:///* optional; host_permissions for http://localhost:8787/*), background.js (message bus pb:detect/pb:protect/pb:status/pb:capture/pb:override/pb:mark per SPEC §2, cache by hash+RULES_VERSION, override ring log in chrome.storage.local max 200, backend URL from options default http://localhost:8787; on backend unreachable return {ok:false,error} and the card shows a friendly one-line error, never throws), content.js (one `demo` adapter row in SITES matching data-pb-* attributes on the demo page; commented template row; MutationObserver + interval rescan; Shadow DOM card; highlight evidence by wrapping text nodes only inside message bubbles; never touch inputs/composer, never click site elements; sets document.documentElement.dataset.paybrake="on"), card UI (port the look of the static card in demo/marketplace.html: badge, one-line reason, evidence chips, primary "Switch to a PayPal order", secondary "Pay anyway", footer "PayBrake · AI check · only you can see this" (say "rules check" when llm off), buttons >= 44px, stacked full width under 520px, aria-live status, focus rings, prefers-reduced-motion, "mock mode" tag when backend mode is mock). Protect flow: pb:protect → backend /api/protect → card shows "Sandbox order created · ID MOCK-… · awaiting approval" + "Open approval" link (opens approveUrl in new tab) → after approval the card polls status / offers "I approved it, capture" → shows "Paid with PayPal Goods & Services (sandbox). Buyer Protection may be eligible; see PayPal terms." Pay anyway → pb:override → collapsed "You chose to pay anyway. Logged on this device." options.html/js/css: backend URL, LLM on/off, debug, override log viewer + Download JSON + Clear.
+    The content script must also be injectable without the extension for screenshots: if `chrome.runtime` is unavailable, use an in-page shim (window.__pbShim) that calls the backend directly via fetch, so scripts/shot-demo.cjs can `addScriptTag` the lib files + content.js. Keep that shim small and clearly marked as test-only.
+ 6. Demo pages: extend demo/marketplace.html (keep look + ids of the static card) with data-pb-thread, data-pb-msg + data-from, data-pb-listing-title/price, data-pb-seller-email, and `?live=1` hides the static card. Add a thread switcher with a SECOND risky thread (e.g. a fictional camera seller asking for MobilePay/bank transfer + urgency) for the pay-anyway smoke, and demo/safe-chats.html (3 safe chats, must stay silent), demo/checkout-return.html (fictional "sandbox approval" landing for mock mode: shows token, button "Approve (mock)" that calls backend approve-mock then tells the user to return to the chat; clearly labelled mock, no PayPal logo). Fictional names only; no Meta/Facebook/Messenger names, logos, colours; PayPal only as a text wordmark.
+ 7. Tests: tests/copy.test.mjs (grep extension/, demo/, README.md for /guarantee|you are protected|100% safe/i — fail on hit; demo/ must not contain facebook|messenger|meta(?![a-z])|instagram case-insensitive except inside this test file), secret grep test per SPEC §7.6 over tracked files. scripts/shot-demo.cjs: (a) static: demo-390.png (390x844 dpr2), demo-1280.png, demo-1280-protect.png, safe-1280.png; (b) injected: with backend mock running (script starts it on an ephemeral/8787 port itself and stops it), open marketplace.html?live=1, inject lib + content.js, wait for the live card, assert High risk + buttons >=44px at 390, save shots/live-390.png and shots/live-1280.png, click protect and save shots/live-1280-order.png. tests/e2e/ext-smoke.cjs: launch Chromium persistent context with --load-extension=extension (headless=new works with extensions in recent Chromium; if it fails, try xvfb-run if available, otherwise print SKIP with the reason and exit 0), serve repo on 8080 and backend on 8787 (start them itself, stop them by PID), open marketplace.html?live=1, card within 5s, protect → MOCK- id visible, switch to thread 2 → Pay anyway → override in ring log (read via the options page or service worker). Save shots/ext-live-1280.png and shots/ext-live-390.png.
+diff --git a/docs/CHRISTOPHER-HANDOFF.md b/docs/CHRISTOPHER-HANDOFF.md
+index e104a55..43d8952 100644
+--- a/docs/CHRISTOPHER-HANDOFF.md
++++ b/docs/CHRISTOPHER-HANDOFF.md
+@@ -50,7 +50,7 @@ Run `npm run dev:backend`. Check `http://127.0.0.1:8787/health` shows `"paypal":
+ 
+ The demo payee has to be the sandbox Business email. The bike thread has no email in the messages, so the extension sends the attribute. In `demo/marketplace.html`, on `#thread-bike`, change `data-pb-seller-email` from `jonas.holm@example.com` to that Business email. The card input is hidden while the attribute is set. The camera thread is `#thread-camera` if you use that one instead.
+ 
+-Then `npm run serve:demo`, open `http://localhost:8080/demo/marketplace.html?live=1`, and press **Move to protected PayPal order**. **Open approval** is the PayPal sandbox page. Log in as the Personal buyer, approve, go back to the chat, and press **I approved it, capture**.
++Then `npm run serve:demo`, open `http://localhost:8080/demo/marketplace.html?live=1`, and press **Switch to a PayPal order**. **Open approval** is the PayPal sandbox page. Log in as the Personal buyer, approve, go back to the chat, and press **I approved it, capture**.
+ 
+ Or, with the backend already running, one create (use the Business email):
+ 
+diff --git a/docs/CLAUDE-DEMO-PROMPT.md b/docs/CLAUDE-DEMO-PROMPT.md
+index e97a500..475f84f 100644
+--- a/docs/CLAUDE-DEMO-PROMPT.md
++++ b/docs/CLAUDE-DEMO-PROMPT.md
+@@ -11,7 +11,7 @@ Requirements
+   - badge "High risk payment request", "Checked just now"
+   - one line: "Friends & Family + upfront deposit: if the bike never arrives, you may have no way to get your money back."
+   - "Detected signals" chips: Friends & Family · Upfront deposit · Ships before meeting
+-  - primary button `id="pb-protect"`: "Move to protected PayPal order"; secondary `id="pb-anyway"`: "Pay anyway"
++  - primary button `id="pb-protect"`: "Switch to a PayPal order"; secondary `id="pb-anyway"`: "Pay anyway"
+   - footer: "PayBrake · AI check · only you can see this"
+ - Side panel "Protected order preview" with a "SANDBOX DEMO" tag, text-only "PayPal" wordmark (plain text, no logo image), item, payee "jonas.holm@example.com", payment type "Goods & Services", amount 1,800 kr, and the row **Buyer Protection: "may be eligible"** (pill reads "may be eligible*"). Footnote: "*Eligibility depends on PayPal terms and the transaction. Sandbox demo, no real payment is made." NEVER say protection is guaranteed, never a bare "eligible" or "protected" claim.
+ - Below the chat, a second smaller "safe chat" example (another fictional seller, e.g. "Mette Lund", selling a lamp, 250 kr, "Pick up Saturday, pay on collection with MobilePay is fine" is RISKY, so instead use: "Sure, pay through the Marketplace checkout or cash when you pick it up") with a quiet note "PayBrake stayed silent: no risky payment request" to show no false alarm.
+diff --git a/extension/background.js b/extension/background.js
+index 5522fb9..9b35346 100644
+--- a/extension/background.js
++++ b/extension/background.js
+@@ -1,6 +1,7 @@
+ /* PayBrake service worker. Classic script: importScripts, not type:module.
+    Load order matches extension/lib/index.js. Do not import that ESM file. */
+ importScripts(
++  "lib/config.js",
+   "lib/brand.js",
+   "lib/tidy.js",
+   "lib/atoms.js",
+@@ -11,8 +12,8 @@ importScripts(
+ 
+ const LOG_MAX = 200;
+ const TTL_MS = 24 * 60 * 60 * 1000;
+-const DEFAULT_BACKEND = "http://localhost:8787";
+-const FRIENDLY = "Could not reach PayBrake. Start the backend and try again.";
++const DEFAULT_BACKEND = globalThis.pbConfig.DEFAULT_BACKEND;
++const FRIENDLY = "Could not reach the PayBrake server. Check your internet connection and try again.";
+ 
+ const memory = new Map();
+ let logQueue = Promise.resolve();
+@@ -263,3 +264,16 @@ chrome.runtime.onMessage.addListener((message, _sender, respond) => {
+   });
+   return true;
+ });
++
++// First run: open a short welcome tab. The toolbar icon opens it again.
++function openWelcome() {
++  return chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
++}
++
++chrome.runtime.onInstalled.addListener((details) => {
++  if (details && details.reason === "install") openWelcome();
++});
++
++chrome.action.onClicked.addListener(() => {
++  openWelcome();
++});
+diff --git a/extension/content.js b/extension/content.js
+index a2fc1eb..4dadf67 100644
+--- a/extension/content.js
++++ b/extension/content.js
+@@ -7,7 +7,7 @@
+   if (globalThis.__paybrakeContent) return;
+   globalThis.__paybrakeContent = true;
+ 
+-  const FRIENDLY = "Could not reach PayBrake. Start the backend and try again.";
++  const FRIENDLY = "Could not reach the PayBrake server. Check your internet connection and try again.";
+   const PAID = "Paid with PayPal Goods & Services (sandbox). Buyer Protection may be eligible; see PayPal terms.";
+   const ANYWAY = "You chose to pay anyway. Logged on this device.";
+ 
+@@ -499,7 +499,7 @@
+       capture.addEventListener("click", () => captureOrder(session, foot));
+       actions.append(open, capture);
+     } else {
+-      const protect = el("button", "btn btn-primary", "Move to protected PayPal order");
++      const protect = el("button", "btn btn-primary", "Switch to a PayPal order");
+       protect.type = "button";
+       protect.id = "pb-protect";
+       const anyway = el("button", "btn btn-ghost", "Pay anyway");
+diff --git a/extension/icons/icon128.png b/extension/icons/icon128.png
+new file mode 100644
+index 0000000..de3a127
+Binary files /dev/null and b/extension/icons/icon128.png differ
+diff --git a/extension/icons/icon16.png b/extension/icons/icon16.png
+new file mode 100644
+index 0000000..0c7d76b
+Binary files /dev/null and b/extension/icons/icon16.png differ
+diff --git a/extension/icons/icon32.png b/extension/icons/icon32.png
+new file mode 100644
+index 0000000..70b0818
+Binary files /dev/null and b/extension/icons/icon32.png differ
+diff --git a/extension/icons/icon48.png b/extension/icons/icon48.png
+new file mode 100644
+index 0000000..1af617b
+Binary files /dev/null and b/extension/icons/icon48.png differ
+diff --git a/extension/lib/config.js b/extension/lib/config.js
+new file mode 100644
+index 0000000..b9cd2f1
+--- /dev/null
++++ b/extension/lib/config.js
+@@ -0,0 +1,13 @@
++/* PayBrake config. Classic script: sets globalThis.pbConfig.
++   HOSTED_BACKEND is the free mock-mode test server (no real money).
++   LOCAL_BACKEND is for development: npm run dev:backend. */
++(function () {
++  const HOSTED = "https://paybrake-demo.spbabinov.workers.dev";
++  globalThis.pbConfig = Object.freeze({
++    HOSTED_BACKEND: HOSTED,
++    LOCAL_BACKEND: "http://localhost:8787",
++    DEFAULT_BACKEND: HOSTED,
++    DEMO_URL: HOSTED + "/demo/marketplace.html?live=1",
++    LOCAL_DEMO_URL: "http://localhost:8080/demo/marketplace.html?live=1"
++  });
++})();
+diff --git a/extension/logo.svg b/extension/logo.svg
+new file mode 100644
+index 0000000..c14337f
+--- /dev/null
++++ b/extension/logo.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><title>PayBrake</title><defs><linearGradient id="pbg" x1="48" y1="48" x2="976" y2="976" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF3F42"/><stop offset="1" stop-color="#FD9A1C"/></linearGradient></defs><rect x="48" y="48" width="928" height="928" rx="200" fill="url(#pbg)"/><path fill="#fff" d="M272.5 788.9C271.5 788.6 270.7 787.9 270.1 786.8C269.6 785.9 269.3 544.2 269.8 536.2C271.9 501.3 298.4 471.2 333.3 464.2C341.1 462.6 334.4 462.7 418.1 462.5C488.0 462.4 494.7 462.4 496.8 462.0C516.3 458.5 530.9 448.1 540.4 431.0C549.6 414.3 550.3 391.8 542.0 374.8C534.1 358.4 519.5 346.5 502.0 342.2C495.0 340.5 505.5 340.6 383.5 340.6C273.2 340.6 273.2 340.6 271.9 339.9C269.6 338.8 269.7 339.6 269.6 322.2C269.5 301.9 269.8 298.2 272.2 290.5C277.2 273.9 291.0 260.8 308.1 256.4C314.3 254.8 306.0 255.0 400.1 254.8C489.5 254.8 498.7 254.8 506.8 255.8C527.5 258.2 544.4 263.5 560.6 272.5C606.4 298.1 632.8 345.7 632.7 402.4C632.7 414.1 632.4 419.3 631.0 429.3C621.8 494.2 577.7 539.3 516.2 546.6C505.8 547.8 507.2 547.8 441.2 548.0C373.4 548.1 377.9 548.0 374.2 549.6C368.7 551.8 365.1 556.0 363.4 562.1C362.9 564.1 362.9 564.1 362.8 643.9C362.8 727.3 362.8 727.3 362.0 732.0C359.6 745.9 353.1 758.6 343.5 768.4C331.1 780.9 316.8 787.6 299.8 788.9C295.7 789.3 273.7 789.2 272.5 788.9ZM431.3 629.4C409.0 627.3 394.4 609.1 398.5 588.6C401.6 573.4 414.0 562.4 430.7 560.2C432.3 560.0 441.4 559.9 465.4 559.9C508.5 559.9 515.3 559.7 528.6 557.4C588.6 547.3 631.5 505.8 641.3 448.3C641.8 445.2 642.3 441.7 643.1 435.0C645.0 420.2 644.4 394.9 641.9 379.8C640.9 373.8 638.7 363.1 637.7 359.5C636.5 355.2 636.2 352.4 636.7 348.7C636.8 347.4 637.1 344.6 637.3 342.4C637.5 340.3 637.9 336.2 638.2 333.3C638.5 330.4 638.9 326.3 639.1 324.2C639.3 322.1 639.8 316.3 640.3 311.3C640.8 306.4 641.3 300.3 641.5 297.7C643.0 279.3 643.9 274.2 646.7 269.4C651.7 260.4 663.3 258.3 670.0 265.0C673.8 268.9 674.6 273.0 673.6 283.1C673.3 286.6 672.9 290.3 672.8 291.4C672.6 295.0 671.9 302.3 671.6 306.0C671.4 308.0 671.0 311.6 670.8 314.1C670.6 316.6 670.2 321.7 669.8 325.5C669.5 329.2 669.0 335.1 668.7 338.4C668.5 341.8 668.1 345.7 668.0 347.1C667.6 350.6 667.1 357.5 666.6 363.3C666.4 366.0 666.0 371.1 665.6 374.6C665.3 378.2 664.9 383.0 664.8 385.4C664.6 387.8 664.3 391.3 664.1 393.2C663.1 403.5 663.5 406.0 666.3 406.0C669.2 406.0 669.5 404.4 671.6 383.1C671.8 380.9 672.3 376.7 672.6 373.8C672.9 370.9 673.4 366.1 673.7 363.0C674.0 360.0 674.4 356.0 674.6 354.2C674.8 352.3 675.0 350.0 675.1 348.9C675.2 347.9 675.4 345.1 675.7 342.8C676.6 334.1 678.5 316.1 679.2 308.3C679.4 305.6 680.0 300.0 680.4 296.0C681.7 283.4 682.4 276.8 682.8 272.5C684.8 250.6 685.3 247.6 687.5 243.2C694.6 228.7 715.0 229.7 720.0 244.8C721.1 248.1 721.3 250.2 720.8 255.1C720.0 263.9 719.6 265.3 716.9 271.0C714.2 276.8 713.3 280.0 712.6 286.6C712.4 288.4 711.9 292.4 711.6 295.5C710.8 302.3 710.3 307.3 709.1 318.2C708.6 322.8 708.1 327.4 708.0 328.3C707.6 330.9 706.8 338.4 706.5 342.1C706.3 343.8 705.9 348.0 705.5 351.3C704.8 356.8 704.1 363.6 703.1 373.1C702.9 375.1 702.3 381.3 701.7 386.9C701.1 392.4 700.5 397.8 700.4 398.9C700.3 399.9 700.0 403.2 699.6 406.1C698.8 413.1 699.0 414.6 701.0 415.5C702.0 416.0 702.7 415.8 703.7 415.0C704.8 414.1 705.1 412.8 706.0 405.6C706.4 402.2 707.2 396.1 707.7 392.0C708.3 387.9 708.8 383.9 708.9 383.1C708.9 382.4 709.3 379.8 709.6 377.4C709.9 375.0 710.4 370.9 710.7 368.4C711.0 365.9 711.5 361.1 712.0 357.9C712.4 354.7 713.2 347.8 713.8 342.7C714.4 337.5 715.3 330.8 715.7 327.8C716.1 324.8 716.7 319.9 717.0 316.8C717.4 313.8 717.9 309.4 718.2 307.1C718.4 304.8 718.9 300.2 719.3 297.0C720.7 284.2 721.3 280.7 722.4 277.8C727.4 265.7 741.8 262.8 750.5 272.2C753.9 275.9 755.3 281.2 754.7 288.6C753.0 311.6 752.5 314.6 749.0 322.2C745.9 328.8 745.0 332.5 744.3 340.8C744.1 342.5 743.6 346.8 743.1 350.4C742.7 354.1 742.2 358.2 742.0 359.7C741.9 361.1 741.3 365.8 740.8 370.0C739.8 377.4 738.8 386.0 737.9 393.8C737.7 395.7 737.3 399.6 736.9 402.4C736.6 405.2 736.2 409.3 735.9 411.5C735.7 413.7 735.3 417.7 734.9 420.5C733.8 430.2 733.8 431.9 735.2 433.3C736.4 434.5 738.1 434.3 739.0 432.7C739.8 431.4 740.2 429.4 741.5 419.8C742.2 414.7 743.2 407.8 743.6 404.5C744.1 401.2 744.7 396.5 745.0 394.1C745.7 388.0 746.6 381.1 747.5 375.1C747.9 372.3 748.4 368.2 748.7 365.9C752.5 333.6 753.1 330.1 755.5 326.1C762.7 313.8 779.5 316.3 783.4 330.2C784.0 332.4 784.0 340.7 783.4 347.3C783.2 349.9 782.9 353.3 782.7 354.8C782.6 356.3 782.3 359.7 782.0 362.3C780.5 376.7 780.2 379.9 779.9 383.5C779.7 385.6 779.2 389.9 778.9 393.0C778.6 396.0 778.2 399.8 778.0 401.4C777.9 402.9 777.4 407.9 776.9 412.4C775.6 424.9 775.1 429.5 774.5 435.3C771.2 470.6 768.2 488.4 762.3 509.0C745.6 566.7 707.6 606.4 654.0 622.0C651.0 622.9 647.6 623.8 646.5 624.0C645.4 624.2 643.3 624.7 641.8 625.0C632.5 627.1 619.3 628.5 603.3 629.2C595.2 629.5 434.6 629.7 431.3 629.4Z"/></svg>
+\ No newline at end of file
+diff --git a/extension/manifest.json b/extension/manifest.json
+index ee5a53d..7b22590 100644
+--- a/extension/manifest.json
++++ b/extension/manifest.json
+@@ -1,10 +1,20 @@
+ {
+   "manifest_version": 3,
+   "name": "PayBrake",
+-  "version": "0.1.0",
++  "version": "0.2.0.2",
++  "version_name": "0.2.0-test.2",
+   "description": "Brakes before you pay. Flags risky payment asks in a chat and can open a sandbox order.",
+-  "permissions": ["storage"],
++  "icons": {
++    "16": "icons/icon16.png",
++    "32": "icons/icon32.png",
++    "48": "icons/icon48.png",
++    "128": "icons/icon128.png"
++  },
++  "permissions": [
++    "storage"
++  ],
+   "host_permissions": [
++    "https://paybrake-demo.spbabinov.workers.dev/*",
+     "http://localhost:8787/*",
+     "http://127.0.0.1:8787/*"
+   ],
+@@ -12,7 +22,13 @@
+     "service_worker": "background.js"
+   },
+   "action": {
+-    "default_title": "PayBrake"
++    "default_title": "PayBrake: open the welcome page",
++    "default_icon": {
++      "16": "icons/icon16.png",
++      "32": "icons/icon32.png",
++      "48": "icons/icon48.png",
++      "128": "icons/icon128.png"
++    }
+   },
+   "options_ui": {
+     "page": "options.html",
+@@ -20,7 +36,12 @@
+   },
+   "content_scripts": [
+     {
+-      "matches": ["http://localhost/*", "http://127.0.0.1/*", "file:///*"],
++      "matches": [
++        "https://paybrake-demo.spbabinov.workers.dev/*",
++        "http://localhost/*",
++        "http://127.0.0.1/*",
++        "file:///*"
++      ],
+       "js": [
+         "lib/brand.js",
+         "lib/tidy.js",
+@@ -35,8 +56,15 @@
+   ],
+   "web_accessible_resources": [
+     {
+-      "resources": ["card.css"],
+-      "matches": ["http://localhost/*", "http://127.0.0.1/*", "file:///*"]
++      "resources": [
++        "card.css"
++      ],
++      "matches": [
++        "https://paybrake-demo.spbabinov.workers.dev/*",
++        "http://localhost/*",
++        "http://127.0.0.1/*",
++        "file:///*"
++      ]
+     }
+   ]
+ }
+diff --git a/extension/options.css b/extension/options.css
+index 17fce74..98f4d02 100644
+--- a/extension/options.css
++++ b/extension/options.css
+@@ -77,3 +77,4 @@ h2 { margin: 0; font-size: 18px; }
+ @media (prefers-reduced-motion: reduce) {
+   * { transition: none !important; animation: none !important; }
+ }
++.hint { margin: 8px 0 0; color: var(--ink-2); font-size: 14px; }
+diff --git a/extension/options.html b/extension/options.html
+index decf588..dcebf22 100644
+--- a/extension/options.html
++++ b/extension/options.html
+@@ -12,13 +12,19 @@
+     <p class="mark">PayBrake</p>
+     <h1>Settings</h1>
+     <p class="lede">These stay on this device. The override log is not uploaded.</p>
++    <p class="lede"><a href="welcome.html">Welcome page and demo store</a></p>
+   </header>
+ 
+   <form id="opts" class="panel">
+     <label class="field">
+       <span>Backend URL</span>
+-      <input id="backend" name="backend" type="url" required spellcheck="false" autocomplete="off" value="http://localhost:8787">
++      <input id="backend" name="backend" type="url" required spellcheck="false" autocomplete="off" value="https://paybrake-demo.spbabinov.workers.dev">
+     </label>
++    <p class="hint">Default is the free PayBrake test server (test orders only, no real money). Developers running <code>npm run dev:backend</code> can switch to localhost.</p>
++    <div class="row">
++      <button type="button" class="btn" id="use-hosted">Use test server</button>
++      <button type="button" class="btn ghost" id="use-local">Use localhost:8787</button>
++    </div>
+     <label class="check">
+       <input id="llm" name="llm" type="checkbox">
+       <span>Ask the backend for an AI check (off uses rules only)</span>
+@@ -45,6 +51,7 @@ <h2 id="log-title">Override log</h2>
+     <ol id="log" class="log"></ol>
+   </section>
+ </main>
++<script src="lib/config.js"></script>
+ <script src="options.js"></script>
+ </body>
+ </html>
+diff --git a/extension/options.js b/extension/options.js
+index 6314ebe..00e9c8e 100644
+--- a/extension/options.js
++++ b/extension/options.js
+@@ -1,4 +1,4 @@
+-const DEFAULT_BACKEND = "http://localhost:8787";
++const DEFAULT_BACKEND = globalThis.pbConfig.DEFAULT_BACKEND;
+ 
+ function $(id) {
+   return document.getElementById(id);
+@@ -55,6 +55,13 @@ $("opts").addEventListener("submit", async (event) => {
+   $("saved").textContent = "Saved";
+ });
+ 
++function pick(url) {
++  $("backend").value = url;
++  $("saved").textContent = "Press Save to keep this";
++}
++$("use-hosted").addEventListener("click", () => pick(globalThis.pbConfig.HOSTED_BACKEND));
++$("use-local").addEventListener("click", () => pick(globalThis.pbConfig.LOCAL_BACKEND));
++
+ $("download").addEventListener("click", async () => {
+   const entries = await readLog();
+   const blob = new Blob([JSON.stringify(entries, null, 2)], { type: "application/json" });
+diff --git a/extension/welcome.css b/extension/welcome.css
+new file mode 100644
+index 0000000..39832f2
+--- /dev/null
++++ b/extension/welcome.css
+@@ -0,0 +1,22 @@
++:root { color-scheme: light; --ink: #1c2530; --ink-2: #4a5666; --line: #dde3ea; --bg: #eef1f5; --blue: #0062a8; --cta: #1f5fbf; }
++* { box-sizing: border-box; }
++html, body { margin: 0; }
++body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--ink); font-size: 17px; line-height: 1.55; }
++:focus-visible { outline: 3px solid #2e90fa; outline-offset: 3px; }
++.wrap { max-width: 720px; margin: 0 auto; padding: 36px 20px 56px; }
++.head { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
++.head img { border-radius: 14px; }
++.mark { margin: 0; font-weight: 750; letter-spacing: .04em; color: var(--blue); font-size: 15px; }
++h1 { margin: 0; font-size: 32px; line-height: 1.2; }
++h2 { margin: 0 0 10px; font-size: 21px; line-height: 1.3; }
++p { margin: 0 0 12px; }
++.panel { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-top: 16px; }
++.hero { border-color: #b9cdea; box-shadow: 0 6px 24px rgba(31, 95, 191, .08); }
++.btn.big { display: block; text-align: center; margin: 20px 0 10px; padding: 18px 24px; font-size: 20px; font-weight: 750; color: #fff; background: var(--cta); border-radius: 12px; text-decoration: none; }
++.btn.big:hover { background: #174d9e; }
++.small { color: var(--ink-2); font-size: 15px; margin: 0; text-align: center; }
++.steps, ul { margin: 0; padding-left: 24px; }
++.steps li, ul li { margin: 8px 0; }
++.quiet { font-size: 16px; color: var(--ink-2); }
++.quiet h2 { color: var(--ink); }
++a { color: var(--blue); }
+diff --git a/extension/welcome.html b/extension/welcome.html
+new file mode 100644
+index 0000000..637b5b5
+--- /dev/null
++++ b/extension/welcome.html
+@@ -0,0 +1,51 @@
++<!DOCTYPE html>
++<html lang="en">
++<head>
++<meta charset="utf-8">
++<meta name="viewport" content="width=device-width, initial-scale=1">
++<title>Welcome to PayBrake</title>
++<link rel="icon" href="icons/icon32.png">
++<link rel="stylesheet" href="welcome.css">
++</head>
++<body>
++<main class="wrap">
++  <header class="head">
++    <img src="logo.svg" width="56" height="56" alt="PayBrake logo">
++    <div>
++      <p class="mark">PayBrake</p>
++      <h1>You're all set</h1>
++    </div>
++  </header>
++
++  <section class="panel hero" aria-labelledby="what">
++    <h2 id="what">PayBrake warns you before you pay a possible scammer</h2>
++    <p>When a seller in a marketplace chat pushes you to pay in a risky way, for example a bank transfer or "Friends and Family" before you have seen the item, PayBrake shows a warning right in the chat.</p>
++    <p>It explains what looks wrong and suggests paying with a PayPal order instead. That order may be eligible for Buyer Protection; see PayPal terms.</p>
++    <a class="btn big" id="demo" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1" target="_blank" rel="noopener">Try the demo store</a>
++    <p class="small">The demo store is a pretend marketplace. Fictional people, test orders, no real money.</p>
++  </section>
++
++  <section class="panel" aria-labelledby="try">
++    <h2 id="try">What to try (about a minute)</h2>
++    <ol class="steps">
++      <li>In the demo store, the <b>bike</b> chat is open. A PayBrake card pops up in the chat and says <b>High risk</b>.</li>
++      <li>Click <b>Switch to a PayPal order</b>. PayBrake makes a test order.</li>
++      <li>Click <b>Open approval</b>, then <b>Approve (mock)</b>. Go back to the chat tab and click <b>I approved it, capture</b>.</li>
++      <li>Bonus: open the <b>camera</b> chat and click <b>Pay anyway</b>. PayBrake lets you, and notes it on this device.</li>
++    </ol>
++  </section>
++
++  <section class="panel quiet" aria-labelledby="more">
++    <h2 id="more">Good to know</h2>
++    <ul>
++      <li>Chats are checked inside your browser. Chat messages are not uploaded. When you make an order, only the order details (item, price, seller email) go to the test server.</li>
++      <li>This test version only works on the demo store.</li>
++      <li>Found a bug or something confusing? <a id="bug" href="https://github.com/lamapony/paybrake/issues/new?template=bug_report.md" target="_blank" rel="noopener">Report it on GitHub</a>.</li>
++      <li>Click the PayBrake icon in the toolbar to open this page again. <a href="options.html">Settings</a></li>
++    </ul>
++  </section>
++</main>
++<script src="lib/config.js"></script>
++<script src="welcome.js"></script>
++</body>
++</html>
+diff --git a/extension/welcome.js b/extension/welcome.js
+new file mode 100644
+index 0000000..1b5be71
+--- /dev/null
++++ b/extension/welcome.js
+@@ -0,0 +1,12 @@
++// Point the demo button at the backend in use: hosted by default, localhost for dev.
++(async function () {
++  const cfg = globalThis.pbConfig;
++  const link = document.getElementById("demo");
++  try {
++    const stored = await chrome.storage.local.get("pb_opts");
++    const backend = String((stored.pb_opts && stored.pb_opts.backendUrl) || cfg.DEFAULT_BACKEND);
++    link.href = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(backend) ? cfg.LOCAL_DEMO_URL : cfg.DEMO_URL;
++  } catch {
++    link.href = cfg.DEMO_URL;
++  }
++})();
+diff --git a/hosted/src/index.js b/hosted/src/index.js
+new file mode 100644
+index 0000000..5743450
+--- /dev/null
++++ b/hosted/src/index.js
+@@ -0,0 +1,212 @@
++// PayBrake hosted demo: static demo store + mock backend on one Cloudflare Worker.
++// Mock mode only. No PayPal credentials, no AI provider, no real money.
++// Orders live in one Durable Object so approve and capture see the same state.
++import { DurableObject } from "cloudflare:workers";
++import { protectDeal } from "../../backend/src/agent.js";
++
++const BODY_LIMIT = 16 * 1024;
++const NOINDEX = "noindex, nofollow, noarchive";
++const ORDER_TTL_MS = 24 * 60 * 60 * 1000;
++const MAX_ORDERS = 5000; // per day; keeps a public mock server from filling storage
++
++function json(status, body, extra = {}) {
++  return new Response(JSON.stringify(body), {
++    status,
++    headers: Object.assign({
++      "content-type": "application/json; charset=utf-8",
++      "x-robots-tag": NOINDEX,
++      "cache-control": "no-store"
++    }, extra)
++  });
++}
++
++function cors(request) {
++  const origin = request.headers.get("origin");
++  if (!origin) return {};
++  const self = new URL(request.url).origin;
++  const ok = origin === self || origin.startsWith("chrome-extension://") ||
++    /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
++  if (!ok) return {};
++  return {
++    "access-control-allow-origin": origin,
++    "vary": "origin",
++    "access-control-allow-methods": "GET, POST, OPTIONS",
++    "access-control-allow-headers": "content-type",
++    "access-control-max-age": "600"
++  };
++}
++
++async function readJson(request) {
++  const declared = Number(request.headers.get("content-length") || 0);
++  if (declared > BODY_LIMIT) throw Object.assign(new Error("payload too large"), { status: 413 });
++  // Count bytes as they stream so chunked bodies cannot grow past the limit.
++  const chunks = [];
++  let size = 0;
++  if (request.body) {
++    const reader = request.body.getReader();
++    for (;;) {
++      const { done, value } = await reader.read();
++      if (done) break;
++      size += value.byteLength;
++      if (size > BODY_LIMIT) {
++        await reader.cancel();
++        throw Object.assign(new Error("payload too large"), { status: 413 });
++      }
++      chunks.push(value);
++    }
++  }
++  const bytes = new Uint8Array(size);
++  let at = 0;
++  for (const chunk of chunks) { bytes.set(chunk, at); at += chunk.byteLength; }
++  const raw = new TextDecoder().decode(bytes);
++  if (!raw.trim()) return {};
++  let body;
++  try { body = JSON.parse(raw); } catch { throw Object.assign(new Error("invalid JSON"), { status: 400 }); }
++  if (!body || typeof body !== "object" || Array.isArray(body)) {
++    throw Object.assign(new Error("JSON body must be an object"), { status: 400 });
++  }
++  return body;
++}
++
++function formatAmount(value) {
++  const n = Number(value);
++  if (!Number.isFinite(n)) throw Object.assign(new Error("amount must be a number"), { status: 400 });
++  return (Math.round(n * 100) / 100).toFixed(2);
++}
++
++export class MockOrders extends DurableObject {
++  async fetch(request) {
++    const { op, id, deal, origin } = await request.json();
++    const store = this.ctx.storage;
++    if (op === "create") {
++      const count = (await store.get("meta:count")) || 0;
++      if (count >= MAX_ORDERS) return Response.json({ error: "busy" }, { status: 429 });
++      await store.put("meta:count", count + 1);
++      const orderId = `MOCK-${crypto.randomUUID()}`;
++      const record = {
++        orderId,
++        status: "CREATED",
++        item: String(deal.item || "").slice(0, 200),
++        amount: formatAmount(deal.amount),
++        currency: String(deal.currency || "").toUpperCase(),
++        payeeEmail: deal.payeeEmail ? String(deal.payeeEmail).slice(0, 200) : "",
++        approveUrl: `${origin}/demo/checkout-return.html?token=${encodeURIComponent(orderId)}&mock=1`,
++        captureId: null,
++        ts: Date.now()
++      };
++      await store.put(orderId, record);
++      if (!(await store.getAlarm())) await store.setAlarm(Date.now() + ORDER_TTL_MS);
++      return Response.json({ orderId, status: record.status, approveUrl: record.approveUrl });
++    }
++    const key = String(id || "");
++    const record = key.startsWith("MOCK-") ? await store.get(key) : null;
++    if (!record) return Response.json(null);
++    if (op === "approve" && record.status === "CREATED") record.status = "APPROVED";
++    if (op === "capture") {
++      if (record.status === "CREATED") return Response.json({ error: "not_approved" }, { status: 409 });
++      if (record.status !== "COMPLETED") {
++        record.status = "COMPLETED";
++        record.captureId = `MOCK-CAP-${crypto.randomUUID()}`;
++      }
++    }
++    if (op !== "get") await store.put(record.orderId, record);
++    return Response.json({ orderId: record.orderId, status: record.status, captureId: record.captureId, approveUrl: record.approveUrl });
++  }
++
++  async alarm() {
++    // Drop mock orders older than a day; keep the demo store small.
++    const cutoff = Date.now() - ORDER_TTL_MS;
++    const all = await this.ctx.storage.list({ prefix: "MOCK-" });
++    const old = [...all].filter(([, v]) => !v || v.ts < cutoff).map(([k]) => k);
++    for (let i = 0; i < old.length; i += 128) await this.ctx.storage.delete(old.slice(i, i + 128));
++    const left = all.size - old.length;
++    await this.ctx.storage.put("meta:count", left);
++    if (left > 0) await this.ctx.storage.setAlarm(Date.now() + ORDER_TTL_MS);
++  }
++}
++
++function ordersPort(env, origin) {
++  const stub = env.ORDERS.get(env.ORDERS.idFromName("demo"));
++  async function call(payload) {
++    const res = await stub.fetch("https://orders/", { method: "POST", body: JSON.stringify(Object.assign({ origin }, payload)) });
++    const data = await res.json();
++    if (res.status === 429) throw Object.assign(new Error("The demo server is busy. Try again tomorrow."), { status: 429 });
++    if (res.status === 409) throw Object.assign(new Error("Order is not approved"), { status: 409, code: "not_approved" });
++    return data;
++  }
++  return {
++    mode: "mock",
++    createOrder: (deal) => call({ op: "create", deal }),
++    getOrder: (id) => call({ op: "get", id }),
++    approve: (id) => call({ op: "approve", id }),
++    captureOrder: (id) => call({ op: "capture", id })
++  };
++}
++
++async function api(request, env) {
++  const url = new URL(request.url);
++  const path = url.pathname;
++  const orders = ordersPort(env, url.origin);
++
++  if (request.method === "GET" && path === "/health") {
++    return json(200, { ok: true, name: "PayBrake", env: "sandbox", paypal: "mock", llm: "off", llmProvider: "off", hosted: true });
++  }
++  if (request.method === "POST" && path === "/api/classify") {
++    await readJson(request);
++    return json(503, { error: "llm_off" });
++  }
++  if (request.method === "POST" && path === "/api/protect") {
++    const body = await readJson(request);
++    return json(200, await protectDeal(body, orders));
++  }
++  const m = path.match(/^\/api\/orders\/([^/]+)(?:\/(capture|approve-mock))?$/);
++  if (m) {
++    const id = decodeURIComponent(m[1]);
++    const action = m[2] || "";
++    if (request.method === "GET" && !action) {
++      const order = await orders.getOrder(id);
++      return order ? json(200, { orderId: order.orderId, status: order.status }) : json(404, { error: "not_found" });
++    }
++    if (request.method === "POST" && action === "approve-mock") {
++      await readJson(request);
++      const order = await orders.approve(id);
++      return order ? json(200, { orderId: order.orderId, status: order.status }) : json(404, { error: "not_found" });
++    }
++    if (request.method === "POST" && action === "capture") {
++      await readJson(request);
++      const order = await orders.captureOrder(id);
++      return order ? json(200, { orderId: order.orderId, status: order.status, captureId: order.captureId }) : json(404, { error: "not_found" });
++    }
++  }
++  if (request.method === "GET" && (path === "/return" || path === "/cancel")) {
++    const token = url.searchParams.get("token") || "";
++    if (path === "/return" && token) await orders.approve(token);
++    const dest = new URL("/demo/checkout-return.html", url.origin);
++    if (token) dest.searchParams.set("token", token);
++    dest.searchParams.set("mock", "1");
++    if (path === "/cancel") dest.searchParams.set("cancel", "1");
++    return new Response(null, { status: 302, headers: { location: dest.toString(), "x-robots-tag": NOINDEX } });
++  }
++  return json(404, { error: "not_found" });
++}
++
++export default {
++  async fetch(request, env) {
++    const extra = cors(request);
++    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: extra });
++    let res;
++    try {
++      res = await api(request, env);
++    } catch (error) {
++      const status = error && error.status;
++      if (status === 413) res = json(413, { error: "payload_too_large" });
++      else if (status === 400) res = json(400, { error: "bad_request", message: String(error.message || "bad_request") });
++      else if (status === 409) res = json(409, { error: error.code || "conflict" });
++      else if (status === 429) res = json(429, { error: "busy", message: error.message });
++      else res = json(500, { error: "internal" });
++    }
++    const out = new Response(res.body, res);
++    for (const [k, v] of Object.entries(extra)) out.headers.set(k, v);
++    return out;
++  }
++};
+diff --git a/hosted/static/_headers b/hosted/static/_headers
+new file mode 100644
+index 0000000..7a48db9
+--- /dev/null
++++ b/hosted/static/_headers
+@@ -0,0 +1,4 @@
++/*
++  X-Robots-Tag: noindex, nofollow, noarchive
++  Referrer-Policy: no-referrer
++  X-Content-Type-Options: nosniff
+diff --git a/hosted/static/favicon-32.png b/hosted/static/favicon-32.png
+new file mode 100644
+index 0000000..70b0818
+Binary files /dev/null and b/hosted/static/favicon-32.png differ
+diff --git a/hosted/static/favicon.svg b/hosted/static/favicon.svg
+new file mode 100644
+index 0000000..971de65
+--- /dev/null
++++ b/hosted/static/favicon.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><title>PayBrake</title><defs><linearGradient id="pbg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF3F42"/><stop offset="1" stop-color="#FD9A1C"/></linearGradient></defs><rect x="16" y="16" width="9

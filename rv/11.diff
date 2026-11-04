@@ -1,0 +1,82 @@
+diff --git a/extension/lib/atoms.js b/extension/lib/atoms.js
+index 8ac19ff..6c34ff6 100644
+--- a/extension/lib/atoms.js
++++ b/extension/lib/atoms.js
+@@ -90,7 +90,7 @@ const RULES = [
+   { id: "ship_before_meet", re: "kun\\s+forsendelse", gate: "ship" },
+ 
+   { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?:\\s+it\\s+up)?", gate: "none" },
+-  { id: "pay_on_collection", re: "when\\s+you\\s+pick(?:\\s+it\\s+up)?", gate: "none" },
++  { id: "pay_on_collection", re: "when\\s+you\\s+pick(?:\\s+it)?\\s+up", gate: "none" },
+   { id: "pay_on_collection", re: "cash\\s+on\\s+(?:pick\\s*up|collection)", gate: "none" },
+   { id: "pay_on_collection", re: "cash\\s+when\\s+you\\s+pick", gate: "none" },
+   { id: "pay_on_collection", re: "pay\\s+on\\s+(?:pick\\s*up|collection)", gate: "none" },
+diff --git a/tests/atoms.test.mjs b/tests/atoms.test.mjs
+index bd64379..71d8418 100644
+--- a/tests/atoms.test.mjs
++++ b/tests/atoms.test.mjs
+@@ -62,6 +62,18 @@ test("goods and services near-miss when the seller refuses", () => {
+   assert.equal(hit, null);
+ });
+ 
++test("when you pick a time is not pay on collection", () => {
++  const text = "We can meet when you pick a time.";
++  const hits = findAtoms(text);
++  assert.equal(hits.some((hit) => hit.atom === "pay_on_collection"), false, JSON.stringify(hits));
++});
++
++test("when you pick it up is still pay on collection", () => {
++  const text = "See you when you pick it up tomorrow.";
++  const hits = findAtoms(text);
++  assert.ok(hits.some((hit) => hit.atom === "pay_on_collection" && hit.text.toLowerCase() === "when you pick it up"), JSON.stringify(hits));
++});
++
+ test("evidence spans are slices of the input", () => {
+   const text = "Send a 500 kr deposit via PayPal Friends & Family today";
+   for (const hit of findAtoms(text)) {
+diff --git a/tests/pay-risk.test.mjs b/tests/pay-risk.test.mjs
+index 653a157..d7771a8 100644
+--- a/tests/pay-risk.test.mjs
++++ b/tests/pay-risk.test.mjs
+@@ -1,8 +1,9 @@
+ import test from "node:test";
+ import assert from "node:assert/strict";
+-import { payRisk } from "../extension/lib/index.js";
++import { atoms, payRisk } from "../extension/lib/index.js";
+ 
+ const { detect } = payRisk;
++const { findAtoms } = atoms;
+ 
+ const FF = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow";
+ const SAFE_FRIENDS = "My friends and family loved this lamp, but I am moving house soon";
+@@ -40,6 +41,30 @@ test("weak atoms alone are silent and do not ask the model", async () => {
+   assert.equal(state.calls, 0);
+ });
+ 
++test("when you pick a time does not veto a Friends and Family deposit", async () => {
++  const text = "Send 500 kr deposit via PayPal Friends and Family now. We can meet when you pick a time.";
++  const hits = findAtoms(text);
++  assert.equal(hits.some((hit) => hit.atom === "pay_on_collection"), false, JSON.stringify(hits));
++  const verdict = await detect(text);
++  assert.equal(verdict.kind, "risk");
++  assert.equal(verdict.level, "high");
++  assert.ok(verdict.signals.includes("friends_family"));
++  assert.ok(verdict.signals.includes("upfront_deposit"));
++  assert.equal(verdict.signals.includes("pay_on_collection"), false);
++  assert.equal(verdict.deal.amount, 500);
++  for (const span of verdict.evidence) assert.equal(text.slice(span.start, span.end), span.text);
++});
++
++test("pay on collection only stays a silent veto", async () => {
++  const text = "You can pay cash when you pick it up. No deposit needed before we meet.";
++  const hits = findAtoms(text);
++  assert.ok(hits.some((hit) => hit.atom === "pay_on_collection"), JSON.stringify(hits));
++  const verdict = await detect(text);
++  assert.equal(verdict.kind, "silent");
++  assert.equal(verdict.silentReason, "veto");
++  assert.deepEqual(verdict.signals, []);
++});
++
+ test("a veto is silent and does not ask the model", async () => {
+   const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["Friends"] }));
+   const text = "Send 500 kr via Friends & Family, or cash on pickup if you prefer to wait.";

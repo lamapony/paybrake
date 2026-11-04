@@ -1,0 +1,85 @@
+diff --git a/extension/lib/atoms.js b/extension/lib/atoms.js
+index 8ac19ff..b2352e9 100644
+--- a/extension/lib/atoms.js
++++ b/extension/lib/atoms.js
+@@ -99,9 +99,9 @@ const RULES = [
+   { id: "pay_on_collection", re: "betal(?:ing)?\\s+ved\\s+afhentning", gate: "none" },
+   { id: "pay_on_collection", re: "ved\\s+afhentning", gate: "none" },
+   { id: "pay_on_collection", re: "når\\s+du\\s+henter", gate: "none" },
+-  { id: "pay_on_collection", re: "through\\s+the\\s+(?:\\w+\\s+){0,3}checkout", gate: "none" },
+-  { id: "pay_on_collection", re: "(?:the|platform(?:ens)?|marketplace)\\s+checkout", gate: "none" },
+-  { id: "pay_on_collection", re: "brug\\s+(?:platformens\\s+)?checkout", gate: "none" }
++  { id: "pay_on_collection", re: "through\\s+the\\s+(?:\\w+\\s+){0,3}checkout", gate: "checkout" },
++  { id: "pay_on_collection", re: "(?:the|platform(?:ens)?|marketplace)\\s+checkout", gate: "checkout" },
++  { id: "pay_on_collection", re: "brug\\s+(?:platformens\\s+)?checkout", gate: "checkout" }
+ ];
+ 
+ const GS = wordBound("goods\\s*(?:&|and)\\s*services|varer\\s+og\\s+tjenester|G&S", "iu");
+@@ -123,6 +123,13 @@ function negatedBefore(text, start) {
+   return /(?:no|not|don't|dont|never|without|ingen|uden|ikke|nej)\s+$/iu.test(before);
+ }
+ 
++function checkoutDismissed(text, start) {
++  const before = text.slice(Math.max(0, start - 64), start);
++  if (/(?:don't|dont|do\s+not|never)\s+(?:use|pay|paying)\b[^.]{0,40}$/iu.test(before)) return true;
++  if (/\bignore\b[^.]{0,40}$/iu.test(before)) return true;
++  return false;
++}
++
+ function amountSpans(text) {
+   const extract = globalThis.pbExtract;
+   if (extract && typeof extract.parseAmounts === "function") return extract.parseAmounts(text);
+@@ -152,6 +159,7 @@ function depositRejected(text, start, end) {
+ }
+ 
+ function allow(rule, text, start, end) {
++  if (rule.gate === "checkout") return !negatedBefore(text, start) && !checkoutDismissed(text, start);
+   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
+   if (rule.gate === "negation") return !negatedBefore(text, start);
+   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
+diff --git a/tests/pay-risk.test.mjs b/tests/pay-risk.test.mjs
+index 653a157..72c173f 100644
+--- a/tests/pay-risk.test.mjs
++++ b/tests/pay-risk.test.mjs
+@@ -1,8 +1,9 @@
+ import test from "node:test";
+ import assert from "node:assert/strict";
+-import { payRisk } from "../extension/lib/index.js";
++import { atoms, payRisk } from "../extension/lib/index.js";
+ 
+ const { detect } = payRisk;
++const { findAtoms } = atoms;
+ 
+ const FF = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow";
+ const SAFE_FRIENDS = "My friends and family loved this lamp, but I am moving house soon";
+@@ -210,3 +211,30 @@ test("banned promise language in a model reason is dropped", async () => {
+   assert.match(verdict.reason, /may have no way/i);
+   assert.equal(/you are protected/i.test(verdict.reason), false);
+ });
++
++test("refusing the checkout does not hide friends and family", async () => {
++  const texts = [
++    "Don't use the checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
++    "Ignore the marketplace checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
++    "Do not pay through the checkout. Send 500 kr via PayPal Friends and Family now, I ship tomorrow."
++  ];
++  for (const text of texts) {
++    const hits = findAtoms(text);
++    assert.equal(hits.some((hit) => hit.atom === "pay_on_collection"), false, JSON.stringify(hits));
++    const verdict = await detect(text);
++    assert.equal(verdict.kind, "risk", text);
++    assert.equal(verdict.level, "high", text);
++    assert.ok(verdict.signals.includes("friends_family"), text);
++    assert.ok(verdict.signals.includes("ship_before_meet"), text);
++  }
++});
++
++test("paying through checkout stays a silent veto", async () => {
++  const text = "Pay through the marketplace checkout when you pick it up. No deposit.";
++  const hits = findAtoms(text);
++  assert.ok(hits.some((hit) => hit.atom === "pay_on_collection"));
++  const verdict = await detect(text);
++  assert.equal(verdict.kind, "silent");
++  assert.equal(verdict.silentReason, "veto");
++  assert.deepEqual(verdict.signals, []);
++});

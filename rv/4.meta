@@ -1,0 +1,30 @@
+PR #4: Eval on real HF scam/ham datasets (+ rules v2 tuned on dev split)
+mergeable=MERGEABLE state=CLEAN
+checks=
+Draft — do not merge.
+
+Runs PayBrake's detector on 4 public Hugging Face scam/ham datasets: real SMS (UCI, CC-BY-4.0), real Discord (MIT), synthetic phone dialogues (Apache-2.0) and ScamGuardBench EN (Apache-2.0). That's 3,147 messages, seed 20261026, split 50/50 into dev and test. Full write-up: `eval/real/RESULTS.md`. Mapping and caveats: `eval/real/README.md`.
+
+**Rules v1, unchanged, all sampled messages:** precision 0.96, recall 0.11, F1 0.20, FPR 0.003 (6 FP out of 1,714 legit; 0 on real SMS and Discord). Recall is low because these are not marketplace chats, and most of the scams never name a payment rail.
+
+**Rules v2, designed on dev, reported on test:**
+- Recognises spaced IBANs and "secure/new account".
+- "transfer" counts as a payment word.
+- A gift card offered as a prize no longer counts as a payment method.
+- "Your account number" on bills no longer fires.
+- Adds Zelle, Cash App, Venmo, Western Union and MoneyGram.
+- Parses £ amounts.
+
+Results:
+- Test FP 4 → 2.
+- Money-asking scams in the ScamGuardBench test split: 5/31 → 11/31.
+- Pooled test recall 0.11 → 0.05, because the gift-card-as-prize coincidences are gone.
+
+Synthetic 30-chat eval: still 1.0 / 1.0. `npm test`: 108 pass.
+
+**LLM** (gpt-4o-mini, 200 test messages):
+- Rules+LLM as shipped: P 0.91, R 0.10. The model only confirms rule hits.
+- LLM alone on every message: P 0.97, R 0.85, FPR 0.03.
+
+Raw datasets are not committed. `npm run eval:real:download` fetches pinned revisions into a gitignored folder.
+

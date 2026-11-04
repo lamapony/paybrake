@@ -1,0 +1,12 @@
+PR #9: Fix npm test on Node 24
+mergeable=MERGEABLE state=CLEAN
+checks=
+## Summary
+- `npm test` passed `tests/` and `backend/test/` to `node --test`. On Node 24 that path is loaded as a module, so the run exits with `Cannot find module '.../tests'` before any test file loads.
+- The script now points at `tests/*.mjs` and `backend/test/*.mjs`, the set that already passes (62 tests). `npm run eval` is unchanged. No tests were removed or weakened.
+
+## Checks
+- `npm test` on Node v24.22.1: 62 pass
+- `npm run eval`: precision 1, recall 1, false alarms 0
+- Local demo `http://127.0.0.1:8080/demo/marketplace.html`: the bike risk card renders, and switching to the camera thread shows the MobilePay message. The only console error is a favicon 404.
+- This repo has no GitHub Actions, so the PR is not merged.

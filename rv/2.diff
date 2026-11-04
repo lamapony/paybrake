@@ -1,0 +1,253 @@
+diff --git a/shots/options-typesafe.png b/shots/options-typesafe.png
+new file mode 100644
+index 0000000..e069e68
+Binary files /dev/null and b/shots/options-typesafe.png differ
+diff --git a/site/README.md b/site/README.md
+new file mode 100644
+index 0000000..49872bc
+--- /dev/null
++++ b/site/README.md
+@@ -0,0 +1,21 @@
++# PayBrake promo page
++
++Static one-page site for the PayPal AI Hackathon submission. No build step: open `index.html` or serve this folder. All CSS is inline in `index.html`; there is no JavaScript.
++
++The page is one narrow column: a one-line description, one screenshot, "Try PayBrake in 2 minutes" (demo link, download, 3 install steps), accuracy numbers, a privacy note, one collapsed "Details" block and a footer. One typeface (system stack), one accent (the logo orange `#fd9a1c`).
++
++## Images
++
++- `img/logo.svg`, `img/favicon.svg`, `img/favicon-32.png`: the PayBrake logo, unchanged.
++- `img/chat-card.webp`: fresh Playwright screenshot of the real extension (`paybrake-extension.zip` from v0.2.0-test.3) on the hosted demo `demo/marketplace.html?live=1`, bike chat, card from rules + AI check, PayPal in mock mode. Taken at a 480 px viewport, 2x, so the text stays readable at 390 px.
++- `img/og.jpg`: 1200x630, composed from that screenshot plus the logo and one line of text.
++
++Script: `/workspace/pb-redesign-logs/shoot.cjs` (screenshots) and `towebp.py` (WebP/JPEG encoding).
++
++## Numbers
++
++Accuracy figures come from `eval/real/RESULTS.md` on branch eval-real-scams (held-out test split, 1,573 messages). Update the page if they change.
++
++## Indexing
++
++`noindex` via the meta tag, `_headers` and `robots.txt`. Preview only, on Cloudflare Pages.
+diff --git a/site/_headers b/site/_headers
+new file mode 100644
+index 0000000..c01bc20
+--- /dev/null
++++ b/site/_headers
+@@ -0,0 +1,2 @@
++/*
++  X-Robots-Tag: noindex, nofollow
+diff --git a/site/img/chat-card.webp b/site/img/chat-card.webp
+new file mode 100644
+index 0000000..c1ae2a2
+Binary files /dev/null and b/site/img/chat-card.webp differ
+diff --git a/site/img/favicon-32.png b/site/img/favicon-32.png
+new file mode 100644
+index 0000000..70b0818
+Binary files /dev/null and b/site/img/favicon-32.png differ
+diff --git a/site/img/favicon.svg b/site/img/favicon.svg
+new file mode 100644
+index 0000000..971de65
+--- /dev/null
++++ b/site/img/favicon.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><title>PayBrake</title><defs><linearGradient id="pbg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF3F42"/><stop offset="1" stop-color="#FD9A1C"/></linearGradient></defs><rect x="16" y="16" width="992" height="992" rx="220" fill="url(#pbg)"/><g transform="translate(512 512) scale(1.1) translate(-562 -500)" fill="#fff"><path fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="100" d="M310 790 V290 H440 A110 110 0 0 1 440 510 H310"/><path d="M485 612 H600 C640 612 662 562 668 480 H822 C815 610 755 702 620 702 H485 A45 45 0 0 1 485 612 Z"/><rect x="672" y="312" width="40" height="190" rx="20"/><rect x="727" y="262" width="40" height="240" rx="20"/><rect x="782" y="312" width="40" height="190" rx="20"/></g></svg>
+\ No newline at end of file
+diff --git a/site/img/logo.svg b/site/img/logo.svg
+new file mode 100644
+index 0000000..c14337f
+--- /dev/null
++++ b/site/img/logo.svg
+@@ -0,0 +1 @@
++<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><title>PayBrake</title><defs><linearGradient id="pbg" x1="48" y1="48" x2="976" y2="976" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF3F42"/><stop offset="1" stop-color="#FD9A1C"/></linearGradient></defs><rect x="48" y="48" width="928" height="928" rx="200" fill="url(#pbg)"/><path fill="#fff" d="M272.5 788.9C271.5 788.6 270.7 787.9 270.1 786.8C269.6 785.9 269.3 544.2 269.8 536.2C271.9 501.3 298.4 471.2 333.3 464.2C341.1 462.6 334.4 462.7 418.1 462.5C488.0 462.4 494.7 462.4 496.8 462.0C516.3 458.5 530.9 448.1 540.4 431.0C549.6 414.3 550.3 391.8 542.0 374.8C534.1 358.4 519.5 346.5 502.0 342.2C495.0 340.5 505.5 340.6 383.5 340.6C273.2 340.6 273.2 340.6 271.9 339.9C269.6 338.8 269.7 339.6 269.6 322.2C269.5 301.9 269.8 298.2 272.2 290.5C277.2 273.9 291.0 260.8 308.1 256.4C314.3 254.8 306.0 255.0 400.1 254.8C489.5 254.8 498.7 254.8 506.8 255.8C527.5 258.2 544.4 263.5 560.6 272.5C606.4 298.1 632.8 345.7 632.7 402.4C632.7 414.1 632.4 419.3 631.0 429.3C621.8 494.2 577.7 539.3 516.2 546.6C505.8 547.8 507.2 547.8 441.2 548.0C373.4 548.1 377.9 548.0 374.2 549.6C368.7 551.8 365.1 556.0 363.4 562.1C362.9 564.1 362.9 564.1 362.8 643.9C362.8 727.3 362.8 727.3 362.0 732.0C359.6 745.9 353.1 758.6 343.5 768.4C331.1 780.9 316.8 787.6 299.8 788.9C295.7 789.3 273.7 789.2 272.5 788.9ZM431.3 629.4C409.0 627.3 394.4 609.1 398.5 588.6C401.6 573.4 414.0 562.4 430.7 560.2C432.3 560.0 441.4 559.9 465.4 559.9C508.5 559.9 515.3 559.7 528.6 557.4C588.6 547.3 631.5 505.8 641.3 448.3C641.8 445.2 642.3 441.7 643.1 435.0C645.0 420.2 644.4 394.9 641.9 379.8C640.9 373.8 638.7 363.1 637.7 359.5C636.5 355.2 636.2 352.4 636.7 348.7C636.8 347.4 637.1 344.6 637.3 342.4C637.5 340.3 637.9 336.2 638.2 333.3C638.5 330.4 638.9 326.3 639.1 324.2C639.3 322.1 639.8 316.3 640.3 311.3C640.8 306.4 641.3 300.3 641.5 297.7C643.0 279.3 643.9 274.2 646.7 269.4C651.7 260.4 663.3 258.3 670.0 265.0C673.8 268.9 674.6 273.0 673.6 283.1C673.3 286.6 672.9 290.3 672.8 291.4C672.6 295.0 671.9 302.3 671.6 306.0C671.4 308.0 671.0 311.6 670.8 314.1C670.6 316.6 670.2 321.7 669.8 325.5C669.5 329.2 669.0 335.1 668.7 338.4C668.5 341.8 668.1 345.7 668.0 347.1C667.6 350.6 667.1 357.5 666.6 363.3C666.4 366.0 666.0 371.1 665.6 374.6C665.3 378.2 664.9 383.0 664.8 385.4C664.6 387.8 664.3 391.3 664.1 393.2C663.1 403.5 663.5 406.0 666.3 406.0C669.2 406.0 669.5 404.4 671.6 383.1C671.8 380.9 672.3 376.7 672.6 373.8C672.9 370.9 673.4 366.1 673.7 363.0C674.0 360.0 674.4 356.0 674.6 354.2C674.8 352.3 675.0 350.0 675.1 348.9C675.2 347.9 675.4 345.1 675.7 342.8C676.6 334.1 678.5 316.1 679.2 308.3C679.4 305.6 680.0 300.0 680.4 296.0C681.7 283.4 682.4 276.8 682.8 272.5C684.8 250.6 685.3 247.6 687.5 243.2C694.6 228.7 715.0 229.7 720.0 244.8C721.1 248.1 721.3 250.2 720.8 255.1C720.0 263.9 719.6 265.3 716.9 271.0C714.2 276.8 713.3 280.0 712.6 286.6C712.4 288.4 711.9 292.4 711.6 295.5C710.8 302.3 710.3 307.3 709.1 318.2C708.6 322.8 708.1 327.4 708.0 328.3C707.6 330.9 706.8 338.4 706.5 342.1C706.3 343.8 705.9 348.0 705.5 351.3C704.8 356.8 704.1 363.6 703.1 373.1C702.9 375.1 702.3 381.3 701.7 386.9C701.1 392.4 700.5 397.8 700.4 398.9C700.3 399.9 700.0 403.2 699.6 406.1C698.8 413.1 699.0 414.6 701.0 415.5C702.0 416.0 702.7 415.8 703.7 415.0C704.8 414.1 705.1 412.8 706.0 405.6C706.4 402.2 707.2 396.1 707.7 392.0C708.3 387.9 708.8 383.9 708.9 383.1C708.9 382.4 709.3 379.8 709.6 377.4C709.9 375.0 710.4 370.9 710.7 368.4C711.0 365.9 711.5 361.1 712.0 357.9C712.4 354.7 713.2 347.8 713.8 342.7C714.4 337.5 715.3 330.8 715.7 327.8C716.1 324.8 716.7 319.9 717.0 316.8C717.4 313.8 717.9 309.4 718.2 307.1C718.4 304.8 718.9 300.2 719.3 297.0C720.7 284.2 721.3 280.7 722.4 277.8C727.4 265.7 741.8 262.8 750.5 272.2C753.9 275.9 755.3 281.2 754.7 288.6C753.0 311.6 752.5 314.6 749.0 322.2C745.9 328.8 745.0 332.5 744.3 340.8C744.1 342.5 743.6 346.8 743.1 350.4C742.7 354.1 742.2 358.2 742.0 359.7C741.9 361.1 741.3 365.8 740.8 370.0C739.8 377.4 738.8 386.0 737.9 393.8C737.7 395.7 737.3 399.6 736.9 402.4C736.6 405.2 736.2 409.3 735.9 411.5C735.7 413.7 735.3 417.7 734.9 420.5C733.8 430.2 733.8 431.9 735.2 433.3C736.4 434.5 738.1 434.3 739.0 432.7C739.8 431.4 740.2 429.4 741.5 419.8C742.2 414.7 743.2 407.8 743.6 404.5C744.1 401.2 744.7 396.5 745.0 394.1C745.7 388.0 746.6 381.1 747.5 375.1C747.9 372.3 748.4 368.2 748.7 365.9C752.5 333.6 753.1 330.1 755.5 326.1C762.7 313.8 779.5 316.3 783.4 330.2C784.0 332.4 784.0 340.7 783.4 347.3C783.2 349.9 782.9 353.3 782.7 354.8C782.6 356.3 782.3 359.7 782.0 362.3C780.5 376.7 780.2 379.9 779.9 383.5C779.7 385.6 779.2 389.9 778.9 393.0C778.6 396.0 778.2 399.8 778.0 401.4C777.9 402.9 777.4 407.9 776.9 412.4C775.6 424.9 775.1 429.5 774.5 435.3C771.2 470.6 768.2 488.4 762.3 509.0C745.6 566.7 707.6 606.4 654.0 622.0C651.0 622.9 647.6 623.8 646.5 624.0C645.4 624.2 643.3 624.7 641.8 625.0C632.5 627.1 619.3 628.5 603.3 629.2C595.2 629.5 434.6 629.7 431.3 629.4Z"/></svg>
+\ No newline at end of file
+diff --git a/site/img/og.jpg b/site/img/og.jpg
+new file mode 100644
+index 0000000..11df2f4
+Binary files /dev/null and b/site/img/og.jpg differ
+diff --git a/site/index.html b/site/index.html
+new file mode 100644
+index 0000000..f1a0336
+--- /dev/null
++++ b/site/index.html
+@@ -0,0 +1,172 @@
++<!doctype html>
++<html lang="en">
++<head>
++<meta charset="utf-8">
++<meta name="viewport" content="width=device-width, initial-scale=1">
++<meta name="robots" content="noindex, nofollow">
++<title>PayBrake: spots payment scams in marketplace chats</title>
++<meta name="description" content="PayBrake is a browser extension that spots payment-scam messages in marketplace chats and offers to switch to a PayPal Goods &amp; Services order instead. A PayPal AI Hackathon project.">
++<meta name="theme-color" content="#fbfbfa">
++<meta name="color-scheme" content="light">
++<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
++<link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
++<meta property="og:type" content="website">
++<meta property="og:title" content="PayBrake: spots payment scams in marketplace chats">
++<meta property="og:description" content="A browser extension that spots payment-scam messages in marketplace chats and offers a PayPal Goods &amp; Services order instead.">
++<meta property="og:image" content="img/og.jpg">
++<meta property="og:image:width" content="1200">
++<meta property="og:image:height" content="630">
++<meta property="og:image:alt" content="PayBrake card under a seller message asking for a 500 kr deposit via PayPal Friends &amp; Family.">
++<meta name="twitter:card" content="summary_large_image">
++<style>
++:root{
++  --bg:#fbfbfa;
++  --ink:#1c1c1a;
++  --ink-2:#5f5e5a;
++  --line:#e6e5e1;
++  --tint:#f1f0ec;
++  --accent:#fd9a1c;
++  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Ubuntu,Cantarell,"Helvetica Neue",Arial,sans-serif;
++}
++*,*::before,*::after{box-sizing:border-box}
++html{-webkit-text-size-adjust:100%}
++body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.6 var(--font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
++.wrap{max-width:41rem;margin:0 auto;padding:0 1.25rem}
++::selection{background:#fde3bd}
++
++a{color:inherit;text-decoration-line:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:.2em;transition:text-decoration-color .15s ease-out}
++@media (hover:hover) and (pointer:fine){a:hover{text-decoration-color:var(--ink)}}
++:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
++
++header{display:flex;align-items:center;justify-content:space-between;padding-top:1.25rem;padding-bottom:1.25rem}
++.brand{display:flex;align-items:center;gap:.625rem;min-height:44px;font-weight:600;font-size:1.0625rem;text-decoration:none}
++.brand img{display:block}
++header nav a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink-2);text-decoration-color:transparent}
++@media (hover:hover) and (pointer:fine){header nav a:hover{color:var(--ink);text-decoration-color:var(--accent)}}
++
++h1,h2{margin:0;font-weight:600;text-wrap:balance}
++h1{font-size:clamp(1.5rem,1.05rem + 2vw,2.125rem);line-height:1.2;letter-spacing:-.018em;max-width:20em}
++h2{font-size:1.25rem;line-height:1.3;letter-spacing:-.01em;margin-bottom:.75rem}
++p{margin:0 0 1rem;text-wrap:pretty}
++.muted{color:var(--ink-2)}
++code{font-family:inherit;font-size:.9375em;background:var(--tint);border-radius:4px;padding:.05em .3em;white-space:nowrap}
++
++.intro{padding-top:2.5rem}
++.shot{margin:2.5rem 0 0}
++.shot img{display:block;width:100%;max-width:439px;height:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
++.shot figcaption{margin-top:.625rem;font-size:.875rem;color:var(--ink-2)}
++
++section{margin-top:4.5rem}
++
++.actions{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 1.5rem;margin:1.25rem 0 2rem}
++.btn{display:inline-flex;align-items:center;min-height:44px;padding:.625rem 1.125rem;border-radius:6px;background:var(--accent);color:var(--ink);font-weight:600;text-decoration:none;transition:transform .16s ease-out,background-color .15s ease-out}
++.btn:active{transform:scale(.97)}
++@media (hover:hover) and (pointer:fine){.btn:hover{background:#f08d0e}}
++.actions a:not(.btn){display:inline-flex;align-items:center;min-height:44px}
++
++ol.steps{margin:0 0 1rem;padding:0;list-style:none;counter-reset:s}
++ol.steps li{counter-increment:s;position:relative;padding-left:2.25rem;margin-bottom:.875rem}
++ol.steps li::before{content:counter(s);position:absolute;left:0;top:.05em;width:1.5rem;height:1.5rem;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:.8125rem;font-weight:600;color:var(--ink-2);background:#fff}
++.note{font-size:.875rem;color:var(--ink-2)}
++
++ul.nums{list-style:none;margin:0 0 1.25rem;padding:0;border-top:1px solid var(--line)}
++ul.nums li{display:grid;grid-template-columns:5.25rem 1fr;gap:1rem;align-items:baseline;padding:.875rem 0;border-bottom:1px solid var(--line)}
++ul.nums .v{font-size:1.5rem;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
++.tab{font-variant-numeric:tabular-nums;white-space:nowrap}
++
++details{margin-top:4.5rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
++summary{display:flex;align-items:center;justify-content:space-between;min-height:3.25rem;font-weight:600;cursor:pointer;list-style:none}
++summary::-webkit-details-marker{display:none}
++summary::after{content:"+";font-weight:400;font-size:1.375rem;line-height:1;color:var(--ink-2)}
++details[open] summary::after{content:"\2212"}
++details .body{padding:.25rem 0 1.25rem}
++details h3{font-size:1rem;margin:1rem 0 .25rem}
++details ul{margin:0 0 .5rem;padding-left:1.125rem}
++details li{margin-bottom:.25rem}
++
++footer{margin-top:3rem;padding:1.5rem 0 3rem;font-size:.875rem;color:var(--ink-2)}
++footer p{margin:0}
++
++@media (min-width:48rem){
++  body{font-size:1.0625rem}
++  header{padding-top:2rem}
++  .intro{padding-top:4rem}
++  section,details{margin-top:5.5rem}
++}
++@media (prefers-reduced-motion:reduce){
++  *{transition:none!important}
++}
++</style>
++</head>
++<body>
++<div class="wrap">
++<header>
++  <a class="brand" href="./" aria-label="PayBrake home"><img src="img/logo.svg" width="32" height="32" alt=""><span>PayBrake</span></a>
++  <nav aria-label="Project"><a href="https://github.com/lamapony/paybrake">GitHub</a></nav>
++</header>
++
++<main>
++  <div class="intro">
++    <h1>A browser extension that spots payment scams in marketplace chats and offers a PayPal order instead.</h1>
++    <figure class="shot">
++      <img src="img/chat-card.webp" width="439" height="642" fetchpriority="high" decoding="async"
++        alt="Demo marketplace chat. The seller writes: Send 500 kr deposit via PayPal Friends &amp; Family to hold it, I ship tomorrow. Below it PayBrake shows a High risk payment request card: Friends &amp; Family plus an upfront deposit means you may have no way to get your money back if the item never arrives. Signals: Friends &amp; Family, Upfront deposit, Pressure to hurry, Ships before you meet. Buttons: Switch to a PayPal order, and Pay anyway.">
++      <figcaption>The test build on our demo marketplace page. Names are fictional.</figcaption>
++    </figure>
++  </div>
++
++  <section aria-labelledby="try-h">
++    <h2 id="try-h">Try PayBrake in 2 minutes</h2>
++    <p>No install needed to look: the demo page shows a built-in preview of the card.</p>
++    <div class="actions">
++      <a class="btn" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html">Open the demo</a>
++      <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">Download the test build</a>
++    </div>
++    <p>To run the real extension in Chrome:</p>
++    <ol class="steps">
++      <li>Download <code>paybrake-extension.zip</code> from the <a href="https://github.com/lamapony/paybrake/releases/tag/v0.2.0-test.3">v0.2.0-test.3 release</a> and unzip it.</li>
++      <li>Open <code>chrome://extensions</code>, turn on Developer mode, click Load unpacked and pick the unzipped <code>paybrake-extension</code> folder.</li>
++      <li>Open the <a href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">live demo</a>. PayBrake shows a card under the risky message in the bike chat.</li>
++    </ol>
++    <p class="note">The test build works on our demo page only. The GitHub repo is private until judging, so the download needs repo access.</p>
++  </section>
++
++  <section aria-labelledby="acc-h">
++    <h2 id="acc-h">How accurate it is</h2>
++    <ul class="nums">
++      <li><span class="v">~85%</span><span>of scam messages got a card <span class="tab">(603 / 713)</span></span></li>
++      <li><span class="v">~1.6%</span><span>of normal messages got a card by mistake <span class="tab">(14 / 860)</span></span></li>
++    </ul>
++    <p class="muted">Measured on a held-out test split of 1,573 messages from public datasets, not on marketplace chats. The AI check uses Typesafe <code>jev-1.14.0</code> on masked text and answers in about 0.07&nbsp;s.</p>
++  </section>
++
++  <section aria-labelledby="priv-h">
++    <h2 id="priv-h">Privacy</h2>
++    <p>The rules run in your browser. With the AI check on (the default in this build), a masked copy of the chat goes to the configured server: emails, phone numbers, card numbers, IBANs, ID numbers and one-time codes are masked, but names, addresses and other free text are not. PayBrake never types or clicks in the chat.</p>
++  </section>
++
++  <details>
++    <summary>Details</summary>
++    <div class="body">
++      <h3>How it works</h3>
++      <ul>
++        <li>Rules in English and Danish check the open chat for risky payment requests. The AI check also reads every chat and can add a card the rules missed.</li>
++        <li>Switch to a PayPal order creates a PayPal sandbox order for the item. In the test build PayPal runs in mock mode.</li>
++        <li>Pay anyway hides the card and saves your choice on your device.</li>
++      </ul>
++      <h3>Limits</h3>
++      <ul>
++        <li>English and Danish only. No support for real marketplace sites yet.</li>
++        <li>The numbers above come from public datasets, so real marketplace accuracy is unknown.</li>
++      </ul>
++      <p style="margin:.75rem 0 0">More in the <a href="https://github.com/lamapony/paybrake#readme">README</a>. Found a bug? <a href="https://github.com/lamapony/paybrake/issues">Open an issue</a>.</p>
++    </div>
++  </details>
++</main>
++
++<footer>
++  <p>PayBrake is a PayPal AI Hackathon project. This is a test build: test orders only, no real money moves. Not affiliated with PayPal.</p>
++</footer>
++</div>
++</body>
++</html>
+diff --git a/site/robots.txt b/site/robots.txt
+new file mode 100644
+index 0000000..1f53798
+--- /dev/null
++++ b/site/robots.txt
+@@ -0,0 +1,2 @@
++User-agent: *
++Disallow: /

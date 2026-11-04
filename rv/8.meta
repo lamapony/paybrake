@@ -1,0 +1,18 @@
+PR #8: QA round 2: keep the order, catch payment typos, ignore pay advice
+mergeable=MERGEABLE state=CLEAN
+checks=
+## Summary
+- The mock order stays with the chat. Return to the chat, and a reload, still show that order and the capture button. Pay anyway stays collapsed for the same unchanged thread.
+- A one-edit typo of Friends & Family or deposit (deposiit, frends and famliy) warns. A sentence that only tells the buyer not to pay that way stays quiet. A later clause that actually asks for the payment still warns.
+- One regression test per round-2 finding, plus a demo and mock browser pass.
+
+## Checks
+- `npm test`: 105 passed
+- `npm run eval`: precision 1, recall 1, 30 synthetic cases, false alarms 0
+- `npm run e2e`: extension smoke passed on Playwright Chromium
+- No lint, typecheck, or build script. The extension has no build step. `node --check` on the edited files passed.
+
+Draft only. Not merged. Not deployed.
+
+Stacks on `night/1101-audit-fixes` (draft PR #6). PR #7 stays the submission-docs PR.
+

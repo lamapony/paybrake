@@ -1,0 +1,15 @@
+PR #11: Do not treat "when you pick a time" as collection
+mergeable=MERGEABLE state=CLEAN
+checks=
+## Summary
+- `pay_on_collection` matched `when you pick` with `it up` optional, so “when you pick a time” was a veto. A Friends & Family deposit in that message stayed silent.
+- The pattern now requires `pick it up` or `pick up`. “Send 500 kr deposit via PayPal Friends and Family now. We can meet when you pick a time.” is risk high, signals `friends_family` and `upfront_deposit`, and `pay_on_collection` is not among the hits.
+- “You can pay cash when you pick it up. No deposit needed before we meet.” stays a silent veto with no signals.
+- `pay-risk.js` is unchanged, so “Send 500 kr via Friends & Family, or cash on pickup” is still a silent veto. That case is a separate change.
+
+## Checks
+- `node --test tests/*.mjs backend/test/*.mjs` (the `npm test` command from #9; this branch is still on the old script): 66 pass
+- `npm run eval`: precision 1, recall 1, false alarms 0
+- Browser on the local demo: the “pick a time” sentence is risk high, amount 500, no collection hit; pickup only is silent veto; the cash-on-pickup ask stays silent. Switching to the camera thread still shows the MobilePay message.
+
+This repo has no GitHub Actions, so the PR is not merged.

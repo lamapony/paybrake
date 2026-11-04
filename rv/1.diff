@@ -1,0 +1,1433 @@
+diff --git a/PROGRESS.md b/PROGRESS.md
+index 92084fe..f82fd85 100644
+--- a/PROGRESS.md
++++ b/PROGRESS.md
+@@ -11,3 +11,8 @@
+ - 2026-10-26 12:55 CET: step 8 done. docs/BACKEND-CONTRACT.md (routes, OrdersPort, sandbox guard, rest/classify TODOs) and docs/adr/0001-silent-unless-evidenced.md.
+ - 2026-10-26 12:56 CET: step 9 docs committed (README run-in-5-minutes, STATUS after-build table). Clean-clone check is next; §7.7 stays pending until that passes.
+ - 2026-10-26 12:56 CET: step 9 clone check PASS. Clean clone: npm install, npm test 62/62, eval precision 1 recall 1 false alarms 0, /health paypal mock llm off, POST /api/protect returned a MOCK- id. Servers stopped. Temp clone removed.
++- 2026-10-26 13:04 CET: backend-rest session start. Branch backend-rest. Grok weekly 93% left. Toolkit check: @paypal/agent-toolkit 1.11.0 create_order schema has no payee field and currencyCode enum is USD only; deps are heavy (ai, openai, langchain, axios, paypal-server-sdk). Plan: toolkit adapter = documented stub that delegates execution to rest, no new dependency.
++- 2026-10-26 13:22 CET: rest adapter done. Sandbox Orders v2 port (token cache, create/get/capture, error mapping) wired for PAYPAL_ADAPTER=rest. Toolkit still throws. Sandbox return hides the mock approve button unless mock=1. npm test 84/84, eval precision 1 recall 1 false alarms 0.
++- 2026-10-26 13:31 CET: LLM provider + toolkit port done. classify resolves openrouter, openai-compatible, or off (OpenRouter key alone counts as configured). /health adds llmProvider. Toolkit tools execute through the rest adapter; no toolkit npm package. npm test 102/102, eval precision 1 recall 1 false alarms 0.
++- 2026-10-26 13:41 CET: backend-rest docs. .env.example lists the new vars with empty secrets. README covers rest, the toolkit finding (create_order has no payee and is USD-only), and the sandbox switch. Contract, STATUS, and docs/CHRISTOPHER-HANDOFF.md updated. npm test 102/102, eval precision 1 recall 1 false alarms 0.
++- 2026-10-26 13:42 CET: reviewed Grok Build diffs (tasks A rest, B classify+toolkit, C docs). npm test 102/102, eval precision 1 recall 1 false alarms 0. No live calls made. Pushing backend-rest and opening PR (not merged).
+diff --git a/README.md b/README.md
+index 1ee9920..7820c8e 100644
+--- a/README.md
++++ b/README.md
+@@ -46,24 +46,54 @@ content.js  ----messages---->  background.js
+         |                          v
+         +-------- JSON --------  server.js   :8787
+                                  OrdersPort
+-                                   mock   (this build, no credentials)
+-                                   rest   (not implemented)
+-                                   toolkit (not implemented)
+-                                 /api/classify -> 503 llm_off until LLM_BASE_URL is set
++                                   mock     (empty client id, or PAYPAL_ADAPTER=mock)
++                                   rest     (sandbox Orders v2)
++                                   toolkit  (tool names; calls go through rest)
++                                 /api/classify
++                                   off until a provider is set
++                                   openrouter or openai-compatible
+ ```
+ 
+-Detection runs in the extension from regex atoms (English and Danish). The backend is only for orders and, later, the model. With the AI check left off, a stopped backend still shows the card. Protect then shows one line: the helper could not be reached.
++Detection runs in the extension from regex atoms (English and Danish). The backend creates orders and, when the AI check is on, calls the model. With the AI check left off, a stopped backend still shows the card. Protect then shows one line: the helper could not be reached.
+ 
+ ## Mock and sandbox
+ 
+-| | Mock (this repo) | Sandbox (next) |
++| | Mock | Sandbox |
+ |---|---|---|
+-| When | `PAYPAL_CLIENT_ID` empty | client id and secret set, adapter `rest` |
++| When | `PAYPAL_CLIENT_ID` empty, or `PAYPAL_ADAPTER=mock` | client id and secret set, adapter `rest` or empty |
+ | Order id | `MOCK-<uuid>` | PayPal order id |
+-| Approval | `demo/checkout-return.html` button | PayPal sandbox checkout |
++| Approval | `demo/checkout-return.html` button | PayPal sandbox page (`payer-action` link, else `approve`) |
+ | Money | none | sandbox only |
+ 
+-`PAYPAL_ENV` must be `sandbox`. The process refuses to start otherwise, including `live`. `rest` and `toolkit` throw `not implemented yet: see docs/BACKEND-CONTRACT.md` until Christopher lands them. See that file for routes, JSON, and the OrdersPort.
++`PAYPAL_ENV` must be `sandbox`. The process refuses to start otherwise, including `live`. `PAYPAL_BASE_URL` must be `https://api-m.sandbox.paypal.com` (the default when the variable is empty) or `https://api.sandbox.paypal.com`. Any other host is refused.
++
++With an empty client id, `PAYPAL_ADAPTER=rest` still selects mock. `/health` then shows `"paypal": "mock"`.
++
++### Toolkit finding (SPEC §5)
++
++Published `@paypal/agent-toolkit` 1.11.0: `create_order` has no payee field, and `currencyCode` is USD only. The package also pulls in `ai`, `openai`, `langchain`, `axios`, and the PayPal server SDK. This repo does not install it.
++
++`backend/src/paypal-toolkit.js` is a stub with the tool names `create_order`, `get_order`, and `pay_order`. Each call runs through the rest adapter, which sends `payee.email_address` and accepts DKK, EUR, and USD. `PAYPAL_ADAPTER=toolkit` needs the same client id and secret as rest. `backend/src/agent.js` fills `create_order` from the validated deal and calls `runTool`. There is no model tool loop.
++
++## Switch from mock to PayPal sandbox
++
++1. Log in at [developer.paypal.com](https://developer.paypal.com) with a PayPal account. Open **Apps & Credentials**, set the toggle to **Sandbox**, and choose **Create App** with type **Merchant**. Copy the Client ID and the Secret. Keep both out of git.
++
++2. Open **Testing Tools → Sandbox Accounts**. Use or create one **Business** account (the seller; its email is the payee) and one **Personal** account (the buyer; this is the login on the approval page).
++
++3. Run `cp backend/.env.example backend/.env`. Set `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET`. Leave `PAYPAL_ENV=sandbox` and `PAYPAL_ADAPTER=rest`. `backend/.env` is gitignored. Never commit it.
++
++4. Run `npm run dev:backend`. Open `http://127.0.0.1:8787/health`. `paypal` is `"rest"`. If the client id is set and the secret is empty, the process exits with `PAYPAL_CLIENT_SECRET is required for the rest adapter`. An empty client id leaves `paypal` as `"mock"`.
++
++5. On the demo page, press **Move to protected PayPal order**. **Open approval** opens the PayPal sandbox page. Log in as the sandbox Personal buyer, approve, and the browser returns to the demo return page (the **Approve (mock)** button stays hidden). Go back to the chat and press **I approved it, capture**.
++
++The payee has to be that Business account's email, or PayPal rejects the order. The bike messages contain no email address, so the extension sends `data-pb-seller-email` from the thread. In `demo/marketplace.html`, on the section `#thread-bike`, change `data-pb-seller-email` from `jonas.holm@example.com` to the sandbox Business email before you click protect. The card field **Seller email for this order** (`#pb-email` in `extension/content.js`) is shown only when that value is missing, so this thread does not show it. For the camera thread, edit the same attribute on `#thread-camera` (currently `signe.kruse@example.com`). An email written in a message wins over the attribute (`extension/lib/extract.js`).
++
++The bike price is DKK. Rest accepts DKK, EUR, and USD.
++
++## Turn on the AI check
++
++In `backend/.env`, set `LLM_PROVIDER=openrouter` and set `OPENROUTER_API_KEY` to your OpenRouter key. Restart the backend. `/health` shows `"llm": "configured"` and `"llmProvider": "openrouter"`. A key with `LLM_PROVIDER` and `LLM_BASE_URL` both empty selects openrouter the same way. If `LLM_BASE_URL` is set, that empty provider means openai-compatible instead. In the extension options, turn on **Ask the backend for an AI check (off uses rules only)** and save. The model can confirm a rules hit or lower it. It cannot raise one. A quote that is not in the message is ignored.
+ 
+ ## Checks
+ 
+@@ -74,6 +104,8 @@ npm test
+ npm run eval
+ ```
+ 
++`npm test` passes 102 tests, all offline.
++
+ Rules eval on 30 synthetic chats (16 risky, 14 safe, fictional names): precision 1, recall 1, F1 1, false alarms 0. The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
+ 
+ Screenshots: `npm run shots`. Extension smoke: `npm run e2e` (Chromium with the unpacked extension). If the browser cannot load an extension in this environment, that script prints `SKIP` and exits 0.
+@@ -82,7 +114,7 @@ Screenshots: `npm run shots`. Extension smoke: `npm run e2e` (Chromium with the
+ 
+ - Atoms are English and Danish only. Wording outside the list stays silent on purpose.
+ - The model can confirm or lower a hit. It cannot raise one, and a quote that is not in the message is ignored.
+-- Orders live in memory on one Node process.
++- Mock orders live in memory on one Node process. Rest orders live at PayPal. This process keeps the OAuth token in memory.
+ - One demo adapter (`data-pb-*` on our own pages). No adapters for real marketplaces.
+ - Buyer Protection copy says **may be eligible**, and points at PayPal's terms. The UI does not claim a payment is certain or covered.
+ 
+diff --git a/STATUS.md b/STATUS.md
+index 1f8331c..e2c5368 100644
+--- a/STATUS.md
++++ b/STATUS.md
+@@ -36,8 +36,24 @@ _2026-10-26. Mock backend, extension, demo, eval, shots, and extension smoke. Re
+ | 7.2 `npm run eval` rules: precision 1, recall 1, F1 1, false alarms 0 (gate is 0.95 / 0.80 / zero false alarms) | PASS |
+ | 7.2 live eval | skips with exit 0 while `/health` says llm is off. Not a failure |
+ | 7.3 mock `/api/protect` returns `MOCK-` id and approve URL, capture flow, 400, 413, sandbox guard, CORS, classify 503 `llm_off`, evidence substring guard | PASS |
+-| 7.3 rest: OAuth token cache, create-order body, `PayPal-Request-Id`, payer-action link | NOT DONE (no rest adapter in this build) |
++| 7.3 rest: OAuth token cache, create-order body, `PayPal-Request-Id`, payer-action link | PASS (offline, mocked fetch) |
+ | 7.4 Playwright static card at 390 and 1280, protect shot, `safe-1280.png` with no card, plus injected live card shots | PASS |
+ | 7.5 extension smoke: live card within 5s, protect shows `MOCK-`, second thread Pay anyway lands in the ring log, `shots/ext-live-1280.png` and `shots/ext-live-390.png` | PASS |
+ | 7.6 secret grep on tracked files, `.env` gitignored, `.env.example` empty | PASS |
+ | 7.7 README run-in-5-minutes from a clean clone | PASS (`npm install`, `npm test` 62/62, `npm run eval` precision 1, `/health` mock, `POST /api/protect` returns `MOCK-`) |
++
++## Backend-rest session (2026-10-26)
++
++The table above is the earlier mock-only session. This branch adds the sandbox adapter, still with no live credentials.
++
++| Piece | Result |
++|---|---|
++| Rest adapter (`backend/src/paypal-rest.js`, wired from `paypal.js` and `server.js`) | DONE |
++| Toolkit stub (`backend/src/paypal-toolkit.js`, executes through rest) | DONE |
++| OpenRouter classify (`resolveLlm` in `backend/src/classify.js`, `llmProvider` on `/health`) | DONE |
++| Offline tests | DONE (102 passing, mocked fetch, no network) |
++| Live sandbox `create_order` | NOT DONE (needs Christopher / credentials) |
++| Live LLM eval | NOT DONE (needs Christopher / credentials) |
++| Hosting | NOT DONE (needs Christopher / credentials). `server.js` still binds `127.0.0.1` and `::1` only |
++
++§7.3 rest is PASS offline with mocked fetch. See `docs/CHRISTOPHER-HANDOFF.md`.
+diff --git a/backend/.env.example b/backend/.env.example
+index b8a1d74..3531e0d 100644
+--- a/backend/.env.example
++++ b/backend/.env.example
+@@ -1,9 +1,32 @@
++# Must be sandbox. Anything else, including empty, refuses to start.
+ PAYPAL_ENV=sandbox
++# mock, rest, or toolkit. An empty client id still selects mock.
+ PAYPAL_ADAPTER=rest
++# Sandbox app client id. Empty selects the mock adapter.
+ PAYPAL_CLIENT_ID=
++# Sandbox app secret. Required once the client id is set. Never commit a value.
+ PAYPAL_CLIENT_SECRET=
++# Orders API origin. Empty uses https://api-m.sandbox.paypal.com. https://api.sandbox.paypal.com is also allowed. Any other host is refused.
++PAYPAL_BASE_URL=
++# Where PayPal sends the browser after approval. Empty uses http://localhost:8080/demo/checkout-return.html.
++PAYPAL_RETURN_URL=
++# Where PayPal sends the browser on cancel. Empty uses the demo return page with ?cancel=1.
++PAYPAL_CANCEL_URL=
++# PayPal HTTP timeout in milliseconds. Empty, zero, or not a number uses 10000.
++PAYPAL_TIMEOUT_MS=
++# off, openrouter, or openai-compatible. Empty picks openrouter when OPENROUTER_API_KEY is set, otherwise openai-compatible when LLM_BASE_URL is set, otherwise off.
++LLM_PROVIDER=
++# OpenRouter key. A key alone, with LLM_PROVIDER empty, turns classify on as openrouter. Never commit a value.
++OPENROUTER_API_KEY=
++# OpenAI-compatible base. Requests go to {LLM_BASE_URL}/chat/completions. Empty, and no OpenRouter key, makes classify return 503.
+ LLM_BASE_URL=
++# Bearer token for openai-compatible. Also used as the OpenRouter key when OPENROUTER_API_KEY is empty. Omitted from the request when empty.
+ LLM_API_KEY=
++# Model id. Empty uses openai/gpt-4o-mini on OpenRouter and gpt-4o-mini on openai-compatible.
+ LLM_MODEL=
++# Classify HTTP timeout in milliseconds. Empty, zero, or not a number uses 8000.
++LLM_TIMEOUT_MS=
++# Listen port. Empty uses 8787.
+ PORT=8787
++# Comma-separated page origins. Empty uses http://localhost:8080 and http://127.0.0.1:8080. chrome-extension:// origins are always allowed.
+ ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080
+diff --git a/backend/src/agent.js b/backend/src/agent.js
+index 7f6b849..6b3c4a0 100644
+--- a/backend/src/agent.js
++++ b/backend/src/agent.js
+@@ -1,5 +1,5 @@
+-// Protect agent: verdict + deal in, OrdersPort createOrder out.
+-// The real toolkit tool-call loop is not in this build. See docs/BACKEND-CONTRACT.md.
++// Protect agent: verdict + deal in, order out.
++// Toolkit mode calls runTool("create_order") with the validated deal. No model tool loop.
+ import { randomUUID } from "node:crypto";
+ 
+ function bad(message) {
+@@ -18,13 +18,27 @@ export async function protectDeal(input, orders) {
+   if (!Number.isFinite(amount) || amount <= 0) bad("amount must be a positive number");
+   if (!/^[A-Z]{3}$/.test(currency)) bad("currency must be a 3-letter code");
+   if (payeeEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payeeEmail)) bad("payeeEmail is not an email");
+-  const created = await orders.createOrder({
++  const deal = {
+     item,
+     amount,
+     currency,
+     payeeEmail,
+     referenceId: input?.referenceId || randomUUID()
+-  });
++  };
++  const created = orders.mode === "toolkit"
++    ? await orders.runTool("create_order", {
++      currencyCode: currency,
++      items: [{
++        name: item,
++        quantity: 1,
++        itemCost: amount,
++        taxPercent: 0,
++        itemTotal: amount
++      }],
++      ...(payeeEmail ? { payeeEmail } : {}),
++      referenceId: deal.referenceId
++    })
++    : await orders.createOrder(deal);
+   return {
+     orderId: created.orderId,
+     status: created.status,
+diff --git a/backend/src/classify.js b/backend/src/classify.js
+index 1731bb3..6a7f45a 100644
+--- a/backend/src/classify.js
++++ b/backend/src/classify.js
+@@ -1,9 +1,13 @@
+ // LLM classify wrapper. The evidence guard is local and tested offline.
+-// Provider calls go through the injected fetch. /api/classify returns 503
+-// llm_off when LLM_BASE_URL is empty, before this function is used.
++// Provider calls go through the injected fetch. Not configured → 503 llm_off
++// and fetch is not called. Error text never includes the provider body.
+ 
+ const BANNED = /guarantee|you are protected|100%\s*safe/i;
+ const FALLBACK = "Risky payment request: a direct transfer may be hard to get back if the item never arrives.";
++const TEXT_LIMIT = 4000;
++const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
++const OPENROUTER_REFERER = "https://github.com/lamapony/paybrake";
++const SYSTEM = "You judge whether a marketplace chat asks for a risky payment. Reply with JSON only: {risky:boolean, level:\"high\"|\"medium\"|\"none\", reason:string<=120, evidence:string[], item:string|null, amount:number|null, currency:string|null}. Every evidence string must be a verbatim substring of the user text. Do not promise a refund.";
+ 
+ export function normalizeWs(value) {
+   return String(value ?? "").replace(/\s+/g, " ").trim();
+@@ -26,6 +30,65 @@ export function sanitizeReason(reason, fallback = FALLBACK) {
+   return text;
+ }
+ 
++function trim(value) {
++  return String(value ?? "").trim();
++}
++
++function timeoutMsOf(env) {
++  const raw = trim(env.LLM_TIMEOUT_MS);
++  if (!raw) return 8000;
++  const n = Number(raw);
++  if (!Number.isFinite(n) || n <= 0) return 8000;
++  return n;
++}
++
++function offResult(timeoutMs) {
++  return {
++    configured: false,
++    provider: "off",
++    baseUrl: "",
++    apiKey: "",
++    model: "",
++    timeoutMs
++  };
++}
++
++export function resolveLlm(env = {}) {
++  const timeoutMs = timeoutMsOf(env);
++  const asked = trim(env.LLM_PROVIDER).toLowerCase();
++  if (asked === "off") return offResult(timeoutMs);
++
++  let provider = asked;
++  if (!provider) {
++    if (trim(env.LLM_BASE_URL)) provider = "openai-compatible";
++    else if (trim(env.OPENROUTER_API_KEY)) provider = "openrouter";
++    else return offResult(timeoutMs);
++  }
++
++  if (provider === "openrouter") {
++    const apiKey = trim(env.OPENROUTER_API_KEY) || trim(env.LLM_API_KEY);
++    if (!apiKey) return offResult(timeoutMs);
++    const baseUrl = (trim(env.LLM_BASE_URL) || OPENROUTER_BASE).replace(/\/+$/, "");
++    const model = trim(env.LLM_MODEL) || "openai/gpt-4o-mini";
++    return { configured: true, provider: "openrouter", baseUrl, apiKey, model, timeoutMs };
++  }
++
++  if (provider === "openai-compatible") {
++    const baseUrl = trim(env.LLM_BASE_URL).replace(/\/+$/, "");
++    if (!baseUrl) return offResult(timeoutMs);
++    return {
++      configured: true,
++      provider: "openai-compatible",
++      baseUrl,
++      apiKey: trim(env.LLM_API_KEY),
++      model: trim(env.LLM_MODEL) || "gpt-4o-mini",
++      timeoutMs
++    };
++  }
++
++  return offResult(timeoutMs);
++}
++
+ function llmError(message, status = 502) {
+   const error = new Error(message);
+   error.status = status;
+@@ -33,39 +96,76 @@ function llmError(message, status = 502) {
+   return error;
+ }
+ 
++function badRequest(message) {
++  const error = new Error(message);
++  error.status = 400;
++  error.code = "bad_request";
++  return error;
++}
++
++function stripFences(content) {
++  let text = String(content).trim();
++  if (!text.startsWith("```")) return text;
++  text = text.replace(/^```(?:json)?\s*/i, "");
++  text = text.replace(/\s*```$/, "");
++  return text.trim();
++}
++
+ export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch) {
+-  const base = String(env.LLM_BASE_URL || "").trim();
+-  if (!base) throw llmError("llm_off", 503);
++  const llm = resolveLlm(env);
++  if (!llm.configured) throw llmError("llm_off", 503);
+   const source = String(text ?? "");
+-  const res = await fetchImpl(base.replace(/\/$/, "") + "/chat/completions", {
+-    method: "POST",
+-    headers: {
+-      "content-type": "application/json",
+-      ...(env.LLM_API_KEY ? { authorization: `Bearer ${env.LLM_API_KEY}` } : {})
+-    },
+-    body: JSON.stringify({
+-      model: env.LLM_MODEL || "gpt-4o-mini",
+-      temperature: 0,
+-      response_format: { type: "json_object" },
+-      messages: [
+-        {
+-          role: "system",
+-          content: "You judge whether a marketplace chat asks for a risky payment. Reply with JSON only: {risky:boolean, level:\"high\"|\"medium\"|\"none\", reason:string<=120, evidence:string[], item:string|null, amount:number|null, currency:string|null}. Every evidence string must be a verbatim substring of the user text. Do not promise a refund."
+-        },
+-        { role: "user", content: source }
+-      ]
+-    })
+-  });
+-  const raw = await res.text();
+-  if (!res.ok) throw llmError(`llm ${res.status}: ${raw.slice(0, 160)}`);
++  if (source.length > TEXT_LIMIT) throw badRequest("text is too long");
++
++  const headers = { "content-type": "application/json" };
++  if (llm.apiKey) headers.authorization = `Bearer ${llm.apiKey}`;
++  if (llm.provider === "openrouter") {
++    headers["HTTP-Referer"] = OPENROUTER_REFERER;
++    headers["X-Title"] = "PayBrake";
++  }
++
++  let res;
++  try {
++    res = await fetchImpl(llm.baseUrl + "/chat/completions", {
++      method: "POST",
++      headers,
++      body: JSON.stringify({
++        model: llm.model,
++        temperature: 0,
++        response_format: { type: "json_object" },
++        messages: [
++          { role: "system", content: SYSTEM },
++          { role: "user", content: source }
++        ]
++      }),
++      signal: AbortSignal.timeout(llm.timeoutMs)
++    });
++  } catch {
++    throw llmError("llm error", 502);
++  }
++
++  if (!res.ok) {
++    try { await res.text(); } catch { /* discard provider body */ }
++    throw llmError(`llm ${res.status}`, 502);
++  }
++
++  let raw = "";
++  try {
++    raw = await res.text();
++  } catch {
++    throw llmError("llm error", 502);
++  }
++
+   let parsed;
+   try {
+     const body = JSON.parse(raw);
+     const content = body?.choices?.[0]?.message?.content ?? body;
+-    parsed = typeof content === "string" ? JSON.parse(content) : content;
++    parsed = typeof content === "string" ? JSON.parse(stripFences(content)) : content;
++    if (!parsed || typeof parsed !== "object") throw new Error("shape");
+   } catch {
+-    throw llmError("llm returned non-JSON: " + raw.slice(0, 160));
++    throw llmError(`llm ${res.status}`, 502);
+   }
++
+   const evidence = Array.isArray(parsed.evidence) ? parsed.evidence.filter((quote) => typeof quote === "string") : [];
+   const ok = parsed.risky === true && evidencePasses(evidence, source);
+   return {
+diff --git a/backend/src/paypal-rest.js b/backend/src/paypal-rest.js
+new file mode 100644
+index 0000000..9ad459f
+--- /dev/null
++++ b/backend/src/paypal-rest.js
+@@ -0,0 +1,275 @@
++// Sandbox Orders v2 port. Callers inject fetchImpl so tests stay offline.
++import { randomUUID } from "node:crypto";
++import { formatAmount } from "./paypal.js";
++
++const DEFAULT_BASE = "https://api-m.sandbox.paypal.com";
++const DEFAULT_RETURN = "http://localhost:8080/demo/checkout-return.html";
++const SANDBOX_HOSTS = new Set(["api-m.sandbox.paypal.com", "api.sandbox.paypal.com"]);
++const CURRENCIES = new Set(["DKK", "EUR", "USD"]);
++const CONSTANT = /^[A-Z][A-Z0-9_]*$/;
++
++export function assertSandboxBaseUrl(url) {
++  let parsed;
++  try {
++    parsed = new URL(url);
++  } catch {
++    throw new Error("Refusing non-sandbox PayPal base URL");
++  }
++  if (parsed.protocol !== "https:" || !SANDBOX_HOSTS.has(parsed.hostname)) {
++    throw new Error("Refusing non-sandbox PayPal base URL");
++  }
++}
++
++export function pickApproveUrl(links) {
++  if (!Array.isArray(links)) return null;
++  const payer = links.find((link) => link && link.rel === "payer-action" && link.href);
++  if (payer) return payer.href;
++  const approve = links.find((link) => link && link.rel === "approve" && link.href);
++  return approve ? approve.href : null;
++}
++
++function constantOf(value) {
++  return typeof value === "string" && CONSTANT.test(value) ? value : "";
++}
++
++function issueList(body) {
++  if (!body || typeof body !== "object" || !Array.isArray(body.details)) return [];
++  return body.details.map((detail) => constantOf(detail && detail.issue)).filter(Boolean);
++}
++
++export function paypalError(status, body) {
++  const label = issueList(body)[0] || constantOf(body && body.name);
++  if (status === 400 || status === 422) {
++    const error = new Error(label ? `PayPal rejected the order: ${label}` : "PayPal rejected the order");
++    error.status = 400;
++    error.code = "bad_request";
++    return error;
++  }
++  if (status === 401 || status === 403) {
++    const error = new Error("PayPal authorization failed");
++    error.status = 502;
++    error.code = "paypal_auth";
++    return error;
++  }
++  const error = new Error("PayPal request failed");
++  error.status = 502;
++  error.code = "paypal_error";
++  return error;
++}
++
++function notApproved() {
++  const error = new Error("Order is not approved");
++  error.status = 409;
++  error.code = "not_approved";
++  return error;
++}
++
++function captureIdFrom(body) {
++  const id = body && body.purchase_units && body.purchase_units[0]
++    && body.purchase_units[0].payments
++    && body.purchase_units[0].payments.captures
++    && body.purchase_units[0].payments.captures[0]
++    && body.purchase_units[0].payments.captures[0].id;
++  return typeof id === "string" && id ? id : null;
++}
++
++function normalizeBase(env) {
++  const raw = String(env.PAYPAL_BASE_URL ?? "").trim() || DEFAULT_BASE;
++  const stripped = raw.replace(/\/+$/, "");
++  assertSandboxBaseUrl(stripped);
++  const parsed = new URL(stripped);
++  const path = parsed.pathname.replace(/\/+$/, "");
++  return parsed.origin + (path === "/" ? "" : path);
++}
++
++async function readJson(res) {
++  let text = "";
++  try {
++    text = await res.text();
++  } catch {
++    return null;
++  }
++  if (!text) return null;
++  try {
++    return JSON.parse(text);
++  } catch {
++    return null;
++  }
++}
++
++export function createRestPort(env = {}, { fetchImpl = globalThis.fetch, now = Date.now } = {}) {
++  const base = normalizeBase(env);
++  const clientId = String(env.PAYPAL_CLIENT_ID ?? "").trim();
++  const clientSecret = String(env.PAYPAL_CLIENT_SECRET ?? "").trim();
++  if (!clientId) throw new Error("PAYPAL_CLIENT_ID is required for the rest adapter");
++  if (!clientSecret) throw new Error("PAYPAL_CLIENT_SECRET is required for the rest adapter");
++
++  const returnUrl = String(env.PAYPAL_RETURN_URL ?? "").trim() || DEFAULT_RETURN;
++  const cancelUrl = String(env.PAYPAL_CANCEL_URL ?? "").trim() || `${DEFAULT_RETURN}?cancel=1`;
++  const timeoutMs = () => {
++    const configured = Number(env.PAYPAL_TIMEOUT_MS);
++    return Number.isFinite(configured) && configured > 0 ? configured : 10000;
++  };
++
++  let cached = null;
++  let inflight = null;
++
++  async function requestToken() {
++    let res;
++    try {
++      res = await fetchImpl(base + "/v1/oauth2/token", {
++        method: "POST",
++        headers: {
++          authorization: "Basic " + Buffer.from(`${clientId}:${clientSecret}`, "utf8").toString("base64"),
++          "content-type": "application/x-www-form-urlencoded"
++        },
++        body: "grant_type=client_credentials",
++        signal: AbortSignal.timeout(timeoutMs())
++      });
++    } catch {
++      throw paypalError(502, null);
++    }
++    const body = await readJson(res);
++    if (!res.ok) throw paypalError(res.status, body);
++    if (!body || typeof body.access_token !== "string" || !body.access_token) throw paypalError(502, null);
++    return body;
++  }
++
++  function getToken() {
++    if (cached && now() < cached.expiresAt) return Promise.resolve(cached.token);
++    if (!inflight) {
++      inflight = requestToken()
++        .then((body) => {
++          const expiresIn = Number(body.expires_in);
++          const skew = Number.isFinite(expiresIn) ? expiresIn : 0;
++          cached = {
++            token: body.access_token,
++            expiresAt: now() + (skew - 60) * 1000
++          };
++          return cached.token;
++        })
++        .finally(() => {
++          inflight = null;
++        });
++    }
++    return inflight;
++  }
++
++  async function paypalRequest(method, path, { json, requestId, prefer } = {}) {
++    let refreshed = false;
++    for (;;) {
++      const token = await getToken();
++      const headers = { authorization: `Bearer ${token}` };
++      if (json !== undefined) headers["content-type"] = "application/json";
++      if (requestId) headers["PayPal-Request-Id"] = requestId;
++      if (prefer) headers.prefer = prefer;
++      let res;
++      try {
++        res = await fetchImpl(base + path, {
++          method,
++          headers,
++          body: json === undefined ? undefined : JSON.stringify(json),
++          signal: AbortSignal.timeout(timeoutMs())
++        });
++      } catch {
++        throw paypalError(502, null);
++      }
++      if ((res.status === 401 || res.status === 403) && !refreshed) {
++        try { await res.text(); } catch { /* discard body */ }
++        cached = null;
++        refreshed = true;
++        continue;
++      }
++      const body = await readJson(res);
++      return { status: res.status, body };
++    }
++  }
++
++  function mapFailure(status, body) {
++    const issues = issueList(body);
++    if (status === 422 && (issues.includes("ORDER_NOT_APPROVED") || issues.includes("PAYER_ACTION_REQUIRED"))) {
++      return notApproved();
++    }
++    return paypalError(status, body);
++  }
++
++  async function createOrder({ item, amount, currency, payeeEmail, referenceId } = {}) {
++    const code = String(currency ?? "").trim().toUpperCase();
++    if (!CURRENCIES.has(code)) {
++      const error = new Error("currency must be DKK, EUR, or USD");
++      error.status = 400;
++      error.code = "bad_request";
++      throw error;
++    }
++    const value = formatAmount(amount);
++    const unit = {
++      reference_id: referenceId ? String(referenceId) : randomUUID(),
++      description: String(item ?? "").slice(0, 127),
++      amount: { currency_code: code, value }
++    };
++    const email = payeeEmail ? String(payeeEmail).trim() : "";
++    if (email) unit.payee = { email_address: email };
++    const requestId = randomUUID();
++    const { status, body } = await paypalRequest("POST", "/v2/checkout/orders", {
++      json: {
++        intent: "CAPTURE",
++        purchase_units: [unit],
++        payment_source: {
++          paypal: {
++            experience_context: {
++              return_url: returnUrl,
++              cancel_url: cancelUrl,
++              user_action: "PAY_NOW",
++              shipping_preference: "NO_SHIPPING",
++              brand_name: "PayBrake demo"
++            }
++          }
++        }
++      },
++      requestId,
++      prefer: "return=representation"
++    });
++    if (status < 200 || status >= 300) throw mapFailure(status, body);
++    return {
++      orderId: body && body.id,
++      status: body && body.status,
++      approveUrl: pickApproveUrl(body && body.links)
++    };
++  }
++
++  async function getOrder(id) {
++    const { status, body } = await paypalRequest("GET", "/v2/checkout/orders/" + encodeURIComponent(id));
++    if (status === 404) return null;
++    if (status < 200 || status >= 300) throw mapFailure(status, body);
++    return {
++      orderId: body && body.id,
++      status: body && body.status,
++      captureId: captureIdFrom(body),
++      approveUrl: pickApproveUrl(body && body.links)
++    };
++  }
++
++  async function captureOrder(id) {
++    const requestId = randomUUID();
++    const path = "/v2/checkout/orders/" + encodeURIComponent(id) + "/capture";
++    const { status, body } = await paypalRequest("POST", path, { json: {}, requestId });
++    if (status === 404) return null;
++    const issues = issueList(body);
++    if (status === 422 && (issues.includes("ORDER_NOT_APPROVED") || issues.includes("PAYER_ACTION_REQUIRED"))) {
++      throw notApproved();
++    }
++    if (status === 422 && issues.includes("ORDER_ALREADY_CAPTURED")) {
++      const existing = await getOrder(id);
++      if (!existing) return null;
++      return { orderId: existing.orderId, status: existing.status, captureId: existing.captureId };
++    }
++    if (status < 200 || status >= 300) throw mapFailure(status, body);
++    return {
++      orderId: body && body.id,
++      status: body && body.status,
++      captureId: captureIdFrom(body)
++    };
++  }
++
++  return { mode: "rest", createOrder, getOrder, captureOrder };
++}
+diff --git a/backend/src/paypal-toolkit.js b/backend/src/paypal-toolkit.js
+new file mode 100644
+index 0000000..8c7a38d
+--- /dev/null
++++ b/backend/src/paypal-toolkit.js
+@@ -0,0 +1,142 @@
++// @paypal/agent-toolkit@1.11.0 is not imported: create_order has no payee, currencyCode is USD only,
++// and the package pulls ai, openai, langchain, axios, and the server SDK. Tool calls run through rest.
++// Swap in the real client once a payee is accepted, or if USD-only is acceptable:
++// new PayPalAgentToolkit({ clientId, clientSecret, configuration: { actions: { orders: { create: true, get: true, capture: true } }, context: { sandbox: true } } })
++import { createRestPort } from "./paypal-rest.js";
++import { assertSandbox } from "./paypal.js";
++
++const CURRENCIES = ["DKK", "EUR", "USD"];
++
++const orderItem = {
++  type: "object",
++  properties: {
++    name: { type: "string" },
++    quantity: { type: "number" },
++    description: { type: "string" },
++    itemCost: { type: "number" },
++    taxPercent: { type: "number" },
++    itemTotal: { type: "number" }
++  },
++  required: ["name", "quantity", "itemCost", "taxPercent", "itemTotal"]
++};
++
++export const TOOLKIT_TOOLS = [
++  {
++    type: "function",
++    function: {
++      name: "create_order",
++      description: "Create a PayPal sandbox order. payeeEmail and currencyCode DKK/EUR are PayBrake extensions; the published toolkit schema is USD only and has no payee.",
++      parameters: {
++        type: "object",
++        properties: {
++          currencyCode: {
++            type: "string",
++            enum: CURRENCIES,
++            description: "PayBrake extension. The published toolkit enum is USD only."
++          },
++          items: { type: "array", items: orderItem },
++          discount: { type: "number" },
++          shippingCost: { type: "number" },
++          shippingAddress: { type: "object" },
++          notes: { type: "string" },
++          returnUrl: { type: "string" },
++          cancelUrl: { type: "string" },
++          payeeEmail: {
++            type: "string",
++            description: "PayBrake extension. The published create_order schema has no payee field."
++          },
++          referenceId: { type: "string" }
++        },
++        required: ["currencyCode", "items"]
++      }
++    }
++  },
++  {
++    type: "function",
++    function: {
++      name: "get_order",
++      description: "Get a PayPal order by id.",
++      parameters: {
++        type: "object",
++        properties: { id: { type: "string" } },
++        required: ["id"]
++      }
++    }
++  },
++  {
++    type: "function",
++    function: {
++      name: "pay_order",
++      description: "Capture a PayPal order by id.",
++      parameters: {
++        type: "object",
++        properties: { id: { type: "string" } },
++        required: ["id"]
++      }
++    }
++  }
++];
++
++function bad(message) {
++  const error = new Error(message);
++  error.status = 400;
++  error.code = "bad_request";
++  throw error;
++}
++
++function lineValue(item) {
++  if (!item || typeof item !== "object") return NaN;
++  if (item.itemTotal != null && item.itemTotal !== "") return Number(item.itemTotal);
++  const qty = item.quantity == null || item.quantity === "" ? 1 : Number(item.quantity);
++  return Number(item.itemCost) * qty;
++}
++
++function extra(value) {
++  if (value == null || value === "") return 0;
++  return Number(value);
++}
++
++export function toolkitArgsToOrder(args = {}) {
++  const items = Array.isArray(args.items) ? args.items : [];
++  const name = items[0] && items[0].name != null ? String(items[0].name).trim() : "";
++  if (!name) bad("items[0].name is required");
++  let sum = 0;
++  for (const item of items) {
++    const line = lineValue(item);
++    if (!Number.isFinite(line)) bad("item amount is invalid");
++    sum += line;
++  }
++  const shipping = extra(args.shippingCost);
++  const discount = extra(args.discount);
++  if (!Number.isFinite(shipping) || !Number.isFinite(discount)) bad("amount is invalid");
++  const amount = Math.round((sum + shipping - discount) * 100) / 100;
++  if (!Number.isFinite(amount)) bad("amount is invalid");
++  return {
++    item: name,
++    amount,
++    currency: String(args.currencyCode ?? "").trim().toUpperCase(),
++    payeeEmail: args.payeeEmail ? String(args.payeeEmail).trim() : "",
++    referenceId: args.referenceId ? String(args.referenceId) : undefined
++  };
++}
++
++export function createToolkitPort(env = {}, deps = {}) {
++  assertSandbox(env);
++  const rest = createRestPort(env, deps);
++
++  async function runTool(name, args) {
++    if (name === "create_order") return rest.createOrder(toolkitArgsToOrder(args || {}));
++    if (name === "get_order") return rest.getOrder(args && args.id);
++    if (name === "pay_order") return rest.captureOrder(args && args.id);
++    bad("unknown tool");
++  }
++
++  return {
++    mode: "toolkit",
++    tools: TOOLKIT_TOOLS,
++    runTool,
++    createOrder: (order) => rest.createOrder(order),
++    getOrder: (id) => rest.getOrder(id),
++    captureOrder: (id) => rest.captureOrder(id)
++  };
++}
+diff --git a/backend/src/paypal.js b/backend/src/paypal.js
+index 2a9ad78..96b97cb 100644
+--- a/backend/src/paypal.js
++++ b/backend/src/paypal.js
+@@ -1,8 +1,9 @@
+-// OrdersPort. Mock adapter ships in this build.
+-// rest and toolkit are Christopher's: see docs/BACKEND-CONTRACT.md.
++// OrdersPort. Mock when there is no client id. rest calls the sandbox API.
++// toolkit exposes toolkit-shaped tools and executes them through rest.
+ import { randomUUID } from "node:crypto";
++import { createRestPort } from "./paypal-rest.js";
++import { createToolkitPort } from "./paypal-toolkit.js";
+ 
+-const NOT_READY = "not implemented yet: see docs/BACKEND-CONTRACT.md";
+ const DEMO_RETURN = "http://localhost:8080/demo/checkout-return.html";
+ 
+ export function formatAmount(value) {
+@@ -77,10 +78,12 @@ export function createMockPort() {
+   };
+ }
+ 
+-export function createOrdersPort(env = {}) {
++export function createOrdersPort(env = {}, deps = {}) {
+   assertSandbox(env);
+   const adapter = String(env.PAYPAL_ADAPTER || "").trim().toLowerCase();
+   const hasId = String(env.PAYPAL_CLIENT_ID || "").trim().length > 0;
+   if (!hasId || adapter === "mock") return createMockPort();
+-  throw new Error(NOT_READY);
++  if (adapter === "toolkit") return createToolkitPort(env, deps);
++  if (adapter === "rest" || adapter === "") return createRestPort(env, deps);
++  throw new Error("Unknown PAYPAL_ADAPTER");
+ }
+diff --git a/backend/src/server.js b/backend/src/server.js
+index c8b11d3..a7a1a39 100644
+--- a/backend/src/server.js
++++ b/backend/src/server.js
+@@ -5,7 +5,7 @@ import path from "node:path";
+ import { fileURLToPath, pathToFileURL } from "node:url";
+ import { createOrdersPort } from "./paypal.js";
+ import { protectDeal } from "./agent.js";
+-import { classifyText } from "./classify.js";
++import { classifyText, resolveLlm } from "./classify.js";
+ import { NAME } from "./brand.js";
+ 
+ export const BODY_LIMIT = 16 * 1024;
+@@ -109,12 +109,23 @@ function logStatus(id, status) {
+   console.log(`order ${id} ${status}`);
+ }
+ 
++function publicMessage(error) {
++  const message = String((error && error.message) || "");
++  if (!message) return "bad_request";
++  if (/authorization|bearer |access_token|client_secret/i.test(message)) return "bad_request";
++  return message;
++}
++
+ function fail(res, error) {
+   if (error && error.status === 413) return send(res, 413, { error: "payload_too_large" });
+-  if (error && error.status === 400) return send(res, 400, { error: "bad_request", message: error.message });
++  if (error && error.status === 404) return send(res, 404, { error: "not_found" });
++  if (error && error.status === 400) return send(res, 400, { error: "bad_request", message: publicMessage(error) });
+   if (error && error.status === 409) return send(res, 409, { error: error.code || "conflict" });
+   if (error && (error.code === "llm_off" || error.status === 503)) return send(res, 503, { error: "llm_off" });
+-  if (error && error.status === 502) return send(res, 502, { error: "llm_error" });
++  if (error && error.status === 502) {
++    const code = error.code === "paypal_error" || error.code === "paypal_auth" ? error.code : "llm_error";
++    return send(res, 502, { error: code });
++  }
+   return send(res, 500, { error: "internal" });
+ }
+ 
+@@ -124,8 +135,9 @@ function createHandler(env = {}, deps = {}) {
+       ALLOWED_ORIGINS: "http://localhost:8080,http://127.0.0.1:8080"
+     });
+   }
+-  const orders = deps.orders || createOrdersPort(env);
++  const orders = deps.orders || createOrdersPort(env, { fetchImpl: deps.fetchImpl, now: deps.now });
+   const fetchImpl = deps.fetchImpl || globalThis.fetch;
++  const llm = resolveLlm(env);
+ 
+   return async (req, res) => {
+     applyCors(req, res, env);
+@@ -143,7 +155,8 @@ function createHandler(env = {}, deps = {}) {
+           name: NAME,
+           env: "sandbox",
+           paypal: orders.mode,
+-          llm: String(env.LLM_BASE_URL || "").trim() ? "configured" : "off"
++          llm: llm.configured ? "configured" : "off",
++          llmProvider: llm.configured ? llm.provider : "off"
+         });
+         return;
+       }
+@@ -151,7 +164,7 @@ function createHandler(env = {}, deps = {}) {
+       if (req.method === "POST" && pathname === "/api/classify") {
+         const body = await readJson(req);
+         if (typeof body.text !== "string") bad("text is required");
+-        if (!String(env.LLM_BASE_URL || "").trim()) {
++        if (!llm.configured) {
+           send(res, 503, { error: "llm_off" });
+           return;
+         }
+@@ -211,13 +224,13 @@ function createHandler(env = {}, deps = {}) {
+ 
+       if (req.method === "GET" && (pathname === "/return" || pathname === "/cancel")) {
+         const token = url.searchParams.get("token") || "";
+-        if (pathname === "/return" && token && typeof orders.approve === "function") {
++        if (pathname === "/return" && token && orders.mode === "mock" && typeof orders.approve === "function") {
+           const approved = await orders.approve(token);
+           if (approved) logStatus(approved.orderId, approved.status);
+         }
+         const dest = new URL(DEMO_RETURN);
+         if (token) dest.searchParams.set("token", token);
+-        dest.searchParams.set("mock", "1");
++        if (orders.mode === "mock") dest.searchParams.set("mock", "1");
+         if (pathname === "/cancel") dest.searchParams.set("cancel", "1");
+         res.writeHead(302, { location: dest.toString() });
+         res.end();
+diff --git a/backend/test/classify-provider.test.mjs b/backend/test/classify-provider.test.mjs
+new file mode 100644
+index 0000000..a85cda3
+--- /dev/null
++++ b/backend/test/classify-provider.test.mjs
+@@ -0,0 +1,359 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import { classifyText, resolveLlm } from "../src/classify.js";
++import { createServer } from "../src/server.js";
++
++const KEY = "test-openrouter-key-not-real";
++const INPUT = "Send 500 kr deposit via PayPal Friends & Family";
++const SYSTEM = "You judge whether a marketplace chat asks for a risky payment. Reply with JSON only: {risky:boolean, level:\"high\"|\"medium\"|\"none\", reason:string<=120, evidence:string[], item:string|null, amount:number|null, currency:string|null}. Every evidence string must be a verbatim substring of the user text. Do not promise a refund.";
++
++function chat(content) {
++  return {
++    ok: true,
++    status: 200,
++    async text() {
++      return JSON.stringify({ choices: [{ message: { content } }] });
++    }
++  };
++}
++
++function verdictJson(extra = {}) {
++  return JSON.stringify({
++    risky: true,
++    level: "high",
++    reason: "Friends & Family plus a deposit is hard to recover.",
++    evidence: ["Friends & Family"],
++    item: null,
++    amount: null,
++    currency: null,
++    ...extra
++  });
++}
++
++async function listen(env, deps) {
++  const server = createServer(env, deps);
++  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
++  const { port } = server.address();
++  return { server, url: `http://127.0.0.1:${port}` };
++}
++
++async function close(server) {
++  await new Promise((resolve) => server.close(resolve));
++}
++
++test("resolveLlm covers openrouter, openai-compatible, back-compat, and off", () => {
++  const openrouter = resolveLlm({ LLM_PROVIDER: "openrouter", OPENROUTER_API_KEY: KEY });
++  assert.equal(openrouter.configured, true);
++  assert.equal(openrouter.provider, "openrouter");
++  assert.equal(openrouter.baseUrl, "https://openrouter.ai/api/v1");
++  assert.equal(openrouter.apiKey, KEY);
++  assert.equal(openrouter.model, "openai/gpt-4o-mini");
++  assert.equal(openrouter.timeoutMs, 8000);
++
++  const missing = resolveLlm({ LLM_PROVIDER: "openrouter", LLM_BASE_URL: "https://openrouter.ai/api/v1" });
++  assert.equal(missing.configured, false);
++  assert.equal(missing.provider, "off");
++  assert.equal(missing.apiKey, "");
++  assert.equal(missing.baseUrl, "");
++
++  const fallback = resolveLlm({
++    LLM_PROVIDER: " OpenRouter ",
++    LLM_API_KEY: KEY,
++    LLM_BASE_URL: "https://openrouter.ai/api/v1/",
++    LLM_MODEL: "custom/model",
++    LLM_TIMEOUT_MS: "2500"
++  });
++  assert.equal(fallback.configured, true);
++  assert.equal(fallback.provider, "openrouter");
++  assert.equal(fallback.baseUrl, "https://openrouter.ai/api/v1");
++  assert.equal(fallback.apiKey, KEY);
++  assert.equal(fallback.model, "custom/model");
++  assert.equal(fallback.timeoutMs, 2500);
++
++  const prefersOpenRouterKey = resolveLlm({
++    LLM_PROVIDER: "openrouter",
++    OPENROUTER_API_KEY: KEY,
++    LLM_API_KEY: "other-llm-key"
++  });
++  assert.equal(prefersOpenRouterKey.apiKey, KEY);
++
++  const local = resolveLlm({
++    LLM_PROVIDER: "openai-compatible",
++    LLM_BASE_URL: "http://127.0.0.1:11434/v1/",
++    LLM_TIMEOUT_MS: "1500"
++  });
++  assert.equal(local.configured, true);
++  assert.equal(local.provider, "openai-compatible");
++  assert.equal(local.baseUrl, "http://127.0.0.1:11434/v1");
++  assert.equal(local.apiKey, "");
++  assert.equal(local.model, "gpt-4o-mini");
++  assert.equal(local.timeoutMs, 1500);
++
++  const localOff = resolveLlm({ LLM_PROVIDER: "openai-compatible", LLM_API_KEY: KEY });
++  assert.equal(localOff.configured, false);
++  assert.equal(localOff.provider, "off");
++  assert.equal(localOff.apiKey, "");
++
++  const backCompat = resolveLlm({
++    LLM_BASE_URL: "http://llm.test/v1",
++    OPENROUTER_API_KEY: KEY,
++    LLM_API_KEY: "local-key"
++  });
++  assert.equal(backCompat.configured, true);
++  assert.equal(backCompat.provider, "openai-compatible");
++  assert.equal(backCompat.baseUrl, "http://llm.test/v1");
++  assert.equal(backCompat.apiKey, "local-key");
++  assert.equal(backCompat.model, "gpt-4o-mini");
++
++  const alone = resolveLlm({ OPENROUTER_API_KEY: `  ${KEY}  ` });
++  assert.equal(alone.configured, true);
++  assert.equal(alone.provider, "openrouter");
++  assert.equal(alone.baseUrl, "https://openrouter.ai/api/v1");
++  assert.equal(alone.apiKey, KEY);
++  assert.equal(alone.model, "openai/gpt-4o-mini");
++
++  const off = resolveLlm({
++    LLM_PROVIDER: "off",
++    OPENROUTER_API_KEY: KEY,
++    LLM_API_KEY: KEY,
++    LLM_BASE_URL: "http://llm.test/v1"
++  });
++  assert.equal(off.configured, false);
++  assert.equal(off.provider, "off");
++  assert.equal(off.apiKey, "");
++  assert.equal(off.baseUrl, "");
++  assert.equal(off.model, "");
++
++  const empty = resolveLlm({});
++  assert.equal(empty.configured, false);
++  assert.equal(empty.provider, "off");
++  assert.equal(empty.timeoutMs, 8000);
++  assert.equal(empty.apiKey, "");
++});
++
++test("openrouter classify sends bearer, referer, title, temperature 0, and json_object", async () => {
++  let seen;
++  const fetchImpl = async (url, init) => {
++    seen = { url, init };
++    return chat(verdictJson());
++  };
++  const result = await classifyText(INPUT, { LLM_PROVIDER: "openrouter", OPENROUTER_API_KEY: KEY }, fetchImpl);
++  assert.equal(seen.url, "https://openrouter.ai/api/v1/chat/completions");
++  assert.equal(seen.init.method, "POST");
++  assert.equal(seen.init.headers.authorization, `Bearer ${KEY}`);
++  assert.equal(seen.init.headers["HTTP-Referer"], "https://github.com/lamapony/paybrake");
++  assert.equal(seen.init.headers["X-Title"], "PayBrake");
++  assert.ok(seen.init.signal instanceof AbortSignal);
++  const body = JSON.parse(seen.init.body);
++  assert.equal(body.temperature, 0);
++  assert.deepEqual(body.response_format, { type: "json_object" });
++  assert.equal(body.model, "openai/gpt-4o-mini");
++  assert.equal(body.messages[0].content, SYSTEM);
++  assert.equal(body.messages[1].content, INPUT);
++  assert.equal(result.risky, true);
++  assert.equal(result.level, "high");
++  assert.deepEqual(result.evidence, ["Friends & Family"]);
++});
++
++test("openai-compatible omits bearer and OpenRouter headers when no key is set", async () => {
++  let init;
++  const fetchImpl = async (url, options) => {
++    init = options;
++    assert.equal(url, "http://llm.test/v1/chat/completions");
++    return chat(verdictJson({ risky: false, evidence: [] }));
++  };
++  const result = await classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1/" }, fetchImpl);
++  assert.equal(init.headers.authorization, undefined);
++  assert.equal(init.headers["HTTP-Referer"], undefined);
++  assert.equal(init.headers["X-Title"], undefined);
++  assert.equal(JSON.parse(init.body).model, "gpt-4o-mini");
++  assert.equal(result.risky, false);
++});
++
++test("openrouter without a key is 503 and does not call fetch", async () => {
++  let calls = 0;
++  await assert.rejects(
++    () => classifyText(INPUT, { LLM_PROVIDER: "openrouter" }, () => { calls += 1; }),
++    (error) => error.status === 503 && error.code === "llm_off"
++  );
++  assert.equal(calls, 0);
++});
++
++test("fabricated evidence forces risky false", async () => {
++  const fetchImpl = async () => chat(verdictJson({ evidence: ["invented quote"], level: "high" }));
++  const result = await classifyText(INPUT, { LLM_PROVIDER: "openrouter", OPENROUTER_API_KEY: KEY }, fetchImpl);
++  assert.equal(result.risky, false);
++  assert.equal(result.level, "none");
++  assert.deepEqual(result.evidence, []);
++  assert.equal(result.reason, "");
++});
++
++test("a non-high level stays medium when the evidence guard passes", async () => {
++  const fetchImpl = async () => chat(verdictJson({ level: "critical" }));
++  const result = await classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1" }, fetchImpl);
++  assert.equal(result.risky, true);
++  assert.equal(result.level, "medium");
++});
++
++test("fenced JSON content parses", async () => {
++  const fenced = "```json\n" + verdictJson({ level: "medium", item: "bike", amount: 500, currency: "DKK" }) + "\n```";
++  const fetchImpl = async () => chat(fenced);
++  const result = await classifyText(INPUT, { LLM_PROVIDER: "openrouter", OPENROUTER_API_KEY: KEY }, fetchImpl);
++  assert.equal(result.risky, true);
++  assert.equal(result.level, "medium");
++  assert.equal(result.item, "bike");
++  assert.equal(result.amount, 500);
++  assert.equal(result.currency, "DKK");
++  assert.deepEqual(result.evidence, ["Friends & Family"]);
++});
++
++test("provider 500 does not echo the key in the error or the HTTP body", async () => {
++  const fetchImpl = async () => ({
++    ok: false,
++    status: 500,
++    async text() {
++      return `upstream failed key=${KEY} prompt=${INPUT}`;
++    }
++  });
++  await assert.rejects(
++    () => classifyText(INPUT, { LLM_PROVIDER: "openrouter", OPENROUTER_API_KEY: KEY }, fetchImpl),
++    (error) => {
++      assert.equal(error.status, 502);
++      assert.equal(error.code, "llm_error");
++      assert.equal(error.message, "llm 500");
++      assert.equal(error.message.includes(KEY), false);
++      assert.equal(error.message.includes(INPUT), false);
++      return true;
++    }
++  );
++
++  const env = {
++    PAYPAL_ENV: "sandbox",
++    PAYPAL_CLIENT_ID: "",
++    PAYPAL_ADAPTER: "mock",
++    LLM_PROVIDER: "openrouter",
++    OPENROUTER_API_KEY: KEY
++  };
++  const { server, url } = await listen(env, { fetchImpl });
++  try {
++    const res = await fetch(url + "/api/classify", {
++      method: "POST",
++      headers: { "content-type": "application/json" },
++      body: JSON.stringify({ text: INPUT })
++    });
++    const raw = await res.text();
++    assert.equal(res.status, 502);
++    assert.deepEqual(JSON.parse(raw), { error: "llm_error" });
++    assert.equal(raw.includes(KEY), false);
++    assert.equal(raw.includes(INPUT), false);
++  } finally {
++    await close(server);
++  }
++});
++
++test("a thrown fetch is 502 and the message omits the transport text", async () => {
++  const fetchImpl = async () => {
++    throw new Error(`timeout while calling provider with ${KEY}`);
++  };
++  await assert.rejects(
++    () => classifyText(INPUT, {
++      LLM_PROVIDER: "openai-compatible",
++      LLM_BASE_URL: "http://llm.test/v1",
++      LLM_API_KEY: KEY
++    }, fetchImpl),
++    (error) => {
++      assert.equal(error.status, 502);
++      assert.equal(error.code, "llm_error");
++      assert.equal(error.message, "llm error");
++      assert.equal(error.message.includes(KEY), false);
++      assert.equal(error.message.includes("timeout"), false);
++      return true;
++    }
++  );
++});
++
++test("non-JSON provider output is 502 and drops the body", async () => {
++  const fetchImpl = async () => ({
++    ok: true,
++    status: 200,
++    async text() {
++      return `not-json ${KEY}`;
++    }
++  });
++  await assert.rejects(
++    () => classifyText(INPUT, { LLM_BASE_URL: "http://llm.test/v1", LLM_API_KEY: KEY }, fetchImpl),
++    (error) => error.status === 502 && error.code === "llm_error" && error.message === "llm 200" && !error.message.includes(KEY)
++  );
++});
++
++test("text longer than 4000 characters is 400 and does not call fetch", async () => {
++  let calls = 0;
++  const env = {
++    PAYPAL_ENV: "sandbox",
++    PAYPAL_CLIENT_ID: "",
++    LLM_BASE_URL: "http://llm.test/v1"
++  };
++  await assert.rejects(
++    () => classifyText("a".repeat(4001), env, () => { calls += 1; }),
++    (error) => error.status === 400 && error.code === "bad_request" && error.message === "text is too long"
++  );
++  assert.equal(calls, 0);
++
++  const { server, url } = await listen(env, { fetchImpl: () => { calls += 1; } });
++  try {
++    const res = await fetch(url + "/api/classify", {
++      method: "POST",
++      headers: { "content-type": "application/json" },
++      body: JSON.stringify({ text: "b".repeat(4001) })
++    });
++    assert.equal(res.status, 400);
++    assert.deepEqual(await res.json(), { error: "bad_request", message: "text is too long" });
++    assert.equal(calls, 0);
++  } finally {
++    await close(server);
++  }
++});
++
++test("health with only OPENROUTER_API_KEY reports openrouter and omits the key", async () => {
++  const env = {
++    PAYPAL_ENV: "sandbox",
++    PAYPAL_CLIENT_ID: "",
++    OPENROUTER_API_KEY: KEY
++  };
++  const { server, url } = await listen(env);
++  try {
++    const res = await fetch(url + "/health");
++    const raw = await res.text();
++    assert.equal(res.status, 200);
++    const body = JSON.parse(raw);
++    assert.equal(body.llm, "configured");
++    assert.equal(body.llmProvider, "openrouter");
++    assert.equal(body.paypal, "mock");
++    assert.equal(raw.includes(KEY), false);
++    assert.equal(raw.includes("openai/gpt-4o-mini"), false);
++  } finally {
++    await close(server);
++  }
++});
++
++test("POST /api/classify is 503 when no provider key is configured", async () => {
++  let calls = 0;
++  const env = {
++    PAYPAL_ENV: "sandbox",
++    PAYPAL_CLIENT_ID: "",
++    LLM_PROVIDER: "openrouter"
++  };
++  const { server, url } = await listen(env, { fetchImpl: () => { calls += 1; } });
++  try {
++    const res = await fetch(url + "/api/classify", {
++      method: "POST",
++      headers: { "content-type": "application/json" },
++      body: JSON.stringify({ text: INPUT })
++    });
++    assert.equal(res.status, 503);
++    assert.deepEqual(await res.json(), { error: "llm_off" });
++    assert.equal(calls, 0);
++  } finally {
++    await close(server);
++  }
++});
+diff --git a/backend/test/paypal-rest.test.mjs b/backend/test/paypal-rest.test.mjs
+new file mode 100644
+index 0000000..3dca516
+--- /dev/null
++++ b/backend/test/paypal-rest.test.mjs
+@@ -0,0 +1,490 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import {
++  assertSandboxBaseUrl,
++  createRestPort,
++  paypalError,
++  pickApproveUrl
++} from "../src/paypal-rest.js";
++
++const CLIENT_ID = "test-client-id";
++const CLIENT_SECRET = "test-secret-not-real";
++const ACCESS_TOKEN = "A-TEST-TOKEN";
++const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
++
++function restEnv(extra = {}) {
++  return {
++    PAYPAL_CLIENT_ID: CLIENT_ID,
++    PAYPAL_CLIENT_SECRET: CLIENT_SECRET,
++    PAYPAL_BASE_URL: "https://api-m.sandbox.paypal.com",
++    ...extra
++  };
++}
++
++function tokenResponse(expiresIn = 3600) {
++  return new Response(JSON.stringify({ access_token: ACCESS_TOKEN, expires_in: expiresIn }), { status: 200 });
++}
++
++function createdOrder(links) {
++  return new Response(JSON.stringify({
++    id: "ORDER-1",
++    status: "CREATED",
++    links: links === undefined ? [{ rel: "payer-action", href: "https://www.sandbox.paypal.com/checkoutnow?token=ORDER-1" }] : links
++  }), { status: 200 });
++}
++
++const bike = {
++  item: "Used road bike",
++  amount: 1800,
++  currency: "DKK",
++  payeeEmail: "jonas.holm@example.com",
++  referenceId: "bike-ref-1"
++};
++
++function recorded(handler) {
++  const calls = [];
++  const fetchImpl = async (url, init = {}) => {
++    const call = {
++      url: String(url),
++      method: init.method || "GET",
++      headers: init.headers || {},
++      body: init.body,
++      signal: init.signal
++    };
++    calls.push(call);
++    return handler(call, calls);
++  };
++  return { calls, fetchImpl };
++}
++
++function isToken(call) {
++  return call.url.endsWith("/v1/oauth2/token");
++}
++
++function isCreate(call) {
++  return call.method === "POST" && call.url.endsWith("/v2/checkout/orders");
++}
++
++test("token is fetched once and reused across two createOrder calls", async () => {
++  const { calls, fetchImpl } = recorded(async (call) => {
++    if (isToken(call)) return tokenResponse();
++    return createdOrder();
++  });
++  const port = createRestPort(restEnv(), { fetchImpl });
++  await port.createOrder(bike);
++  await port.createOrder({ ...bike, referenceId: "bike-ref-2" });
++  assert.equal(calls.filter(isToken).length, 1);
++  assert.equal(calls.filter(isCreate).length, 2);
++});
++
++test("token is refetched after expires_in minus 60 seconds", async () => {
++  let clock = 5_000;
++  const expiresIn = 120;
++  const { calls, fetchImpl } = recorded(async (call) => {
++    if (isToken(call)) return tokenResponse(expiresIn);
++    return createdOrder();
++  });
++  const port = createRestPort(restEnv(), { fetchImpl, now: () => clock });
++  await port.createOrder(bike);
++  clock = 5_000 + (expiresIn - 60) * 1000 - 1;
++  await port.createOrder({ ...bike, referenceId: "bike-ref-2" });
++  assert.equal(calls.filter(isToken).length, 1);
++  clock = 5_000 + (expiresIn - 60) * 1000;
++  await port.createOrder({ ...bike, referenceId: "bike-ref-3" });
++  assert.equal(calls.filter(isToken).length, 2);
++});
++
++test("concurrent createOrder calls share one in-flight token request", async () => {
++  let release;
++  const gate = new Promise((resolve) => {
++    release = resolve;
++  });
++  let tokenCalls = 0;
++  const fetchImpl = async (url) => {
++    if (String(url).endsWith("/v1/oauth2/token")) {
++      tokenCalls += 1;
++      await gate;
++      return tokenResponse();
++    }
++    return createdOrder();
++  };
++  const port = createRestPort(restEnv(), { fetchImpl });
++  const first = port.createOrder(bike);
++  const second = port.createOrder({ ...bike, referenceId: "bike-ref-2" });
++  assert.equal(tokenCalls, 1);
++  release();
++  await Promise.all([first, second]);
++  assert.equal(tokenCalls, 1);
++});
++
++test("token request uses Basic auth and the client-credentials fo

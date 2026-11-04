@@ -1,0 +1,15 @@
+PR #13: Do not veto when the seller says to skip checkout
+mergeable=CONFLICTING state=DIRTY
+checks=
+## Summary
+- Checkout vetoes only saw a negation stuck to the match. `Don't use the checkout`, `Ignore the marketplace checkout`, and `Do not pay through the checkout` still vetoed, so a Friends and Family ask plus `I ship tomorrow` stayed silent.
+- Those three now warn at level high, signals `friends_family` and `ship_before_meet`, with no `pay_on_collection` hit. `Pay through the marketplace checkout when you pick it up. No deposit.` stays a silent veto with no signals.
+- A real checkout ask in another sentence (`Don't worry, use the checkout`, `Pay through the checkout` after a period) still vetoes. `pay-risk.js` and the pickup regex are unchanged.
+
+## Checks
+- `node --test tests/*.mjs backend/test/*.mjs` on Node 24: 64 pass. (`npm test` is still the old directory script; the fix for that is PR #9 and is not in this branch.)
+- `npm run eval`: precision 1, recall 1, false alarms 0 (16 risk, 14 silent). `safe-checkout` and `safe-tracked` stay silent vetoes.
+- No build script in this repo.
+
+This repo has no GitHub Actions. Not merged.
+

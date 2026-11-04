@@ -1,0 +1,187 @@
+diff --git a/docs/adr/0001-silent-unless-evidenced.md b/docs/adr/0001-silent-unless-evidenced.md
+index 56d85e4..57bc0cf 100644
+--- a/docs/adr/0001-silent-unless-evidenced.md
++++ b/docs/adr/0001-silent-unless-evidenced.md
+@@ -16,7 +16,8 @@ The card stays hidden unless a regex atom matches a concrete span in the text.
+ - Weak atoms (hurry, ship-before-you-meet) never open a card alone.
+ - One strong atom, plus a pay word or an amount in that same message, is medium.
+ - Two strong atoms, or one strong and one weak, is high.
+-- Any veto (pay on collection, checkout, or Goods & Services that the seller actually agreed to) hides the card even if a strong atom also fired.
++- Checkout, or Goods & Services that the seller actually agreed to, hides the card even if a strong atom also fired.
++- Pay on collection hides the card when the thread is not also asking for an upfront payment. It does not hide Friends & Family, MobilePay, or another strong ask that also offers collection. A sentence that says not to send the money is not that ask.
+ - Text under 20 characters is silent. The model is not called for short text, no atom, weak-only, or a veto.
+ - When a model is configured it may confirm the hit or lower it. It cannot raise the level. Every quote it returns must be a whitespace-normalized substring. A fabricated quote, a `risky: false`, or a transport error never becomes a new card. An error caps a high hit at medium and labels `llm: "error"`.
+ 
+diff --git a/extension/lib/pay-risk.js b/extension/lib/pay-risk.js
+index 55b1cf6..2a37409 100644
+--- a/extension/lib/pay-risk.js
++++ b/extension/lib/pay-risk.js
+@@ -91,6 +91,40 @@ function baseOffsets(text, messages) {
+   return messages.map((message) => text.indexOf(message.text));
+ }
+ 
++const PROHIBITION = /(?:never|do\s+not|don't|dont)\s+(?:send|pay|use)|aldrig\s+(?:send|betal|brug)|send\s+aldrig|betal\s+aldrig/iu;
++const ASK_PIVOT = /,\s*(?:just\s+)?(?:send|pay|betal|transfer|wire)\b/iu;
++
++function sentenceStart(text, index) {
++  const source = String(text ?? "");
++  let start = 0;
++  const upto = Math.max(0, Math.min(index, source.length));
++  for (let i = upto - 1; i >= 0; i--) {
++    const ch = source[i];
++    if (ch === "." || ch === "!" || ch === "?" || ch === "\n") {
++      start = i + 1;
++      break;
++    }
++  }
++  return start;
++}
++
++function prohibitedAsk(text, hitStart) {
++  const source = String(text ?? "");
++  const before = source.slice(sentenceStart(source, hitStart), hitStart);
++  const match = before.match(PROHIBITION);
++  if (!match || match.index == null) return false;
++  const afterCue = before.slice(match.index + match[0].length);
++  return !ASK_PIVOT.test(afterCue);
++}
++
++function barePickPhrase(hit) {
++  return /^(?:pay\s+)?when\s+you\s+pick$/iu.test(String(hit.text || ""));
++}
++
++function checkoutPhrase(hit) {
++  return /checkout/iu.test(String(hit.text || ""));
++}
++
+ function silent(reason, extra) {
+   return {
+     kind: "silent",
+@@ -163,16 +197,28 @@ async function detect(text, ctx = {}, options = {}) {
+   const messages = messagesOf(raw, ctx);
+   const offsets = baseOffsets(raw, messages);
+   const perMessage = messages.map((message, index) => {
++    const base = offsets[index];
+     const hits = api.findAtoms(message.text).map((hit) => ({
+       ...hit,
+-      start: offsets[index] >= 0 ? offsets[index] + hit.start : hit.start,
+-      end: offsets[index] >= 0 ? offsets[index] + hit.end : hit.end
++      prohibited: hit.role === "act" && prohibitedAsk(message.text, hit.start),
++      start: base >= 0 ? base + hit.start : hit.start,
++      end: base >= 0 ? base + hit.end : hit.end
+     }));
+     return { ...message, hits, amounts: extract.parseAmounts ? extract.parseAmounts(message.text) : [] };
+   });
+ 
+   const goods = api.goodsHit(messages);
+-  const vetoHit = goods || perMessage.flatMap((message) => message.hits).find((hit) => hit.role === "veto");
++  const vetoes = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "veto");
++  const checkout = vetoes.some((hit) => checkoutPhrase(hit));
++  const barePick = vetoes.some((hit) => barePickPhrase(hit));
++  const collection = vetoes.some((hit) => hit.atom === "pay_on_collection" && !checkoutPhrase(hit) && !barePickPhrase(hit));
++  const liveStrong = perMessage.some((message) =>
++    message.hits.some((hit) => hit.role === "act" && hit.strength === "strong" && !hit.prohibited)
++  );
++  // Collection does not hide an upfront ask. "Never send" is not an ask. A bare "when you pick" still vetoes.
++  // Checkout and agreed Goods & Services still hide the card.
++  const collectionHides = collection ? !liveStrong : barePick;
++  const vetoHit = goods || checkout || collectionHides;
+   const actHits = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "act");
+   const signals = api.ATOMS.map((atom) => atom.id).filter((id) => actHits.some((hit) => hit.atom === id));
+   const strong = [...new Set(actHits.filter((hit) => hit.strength === "strong").map((hit) => hit.atom))];
+diff --git a/tests/pay-risk.test.mjs b/tests/pay-risk.test.mjs
+index 653a157..900da9e 100644
+--- a/tests/pay-risk.test.mjs
++++ b/tests/pay-risk.test.mjs
+@@ -40,9 +40,89 @@ test("weak atoms alone are silent and do not ask the model", async () => {
+   assert.equal(state.calls, 0);
+ });
+ 
+-test("a veto is silent and does not ask the model", async () => {
+-  const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["Friends"] }));
++test("Friends and Family still warns when cash on pickup is also offered", async () => {
+   const text = "Send 500 kr via Friends & Family, or cash on pickup if you prefer to wait.";
++  const verdict = await detect(text);
++  assert.equal(verdict.kind, "risk");
++  assert.equal(verdict.level, "medium");
++  assert.ok(verdict.signals.includes("friends_family"));
++  assert.equal(verdict.signals.includes("pay_on_collection"), false);
++  assert.equal(verdict.deal.amount, 500);
++  for (const span of verdict.evidence) assert.equal(text.slice(span.start, span.end), span.text);
++});
++
++test("a Friends and Family deposit plus pickup still warns", async () => {
++  const forward = "Send 500 kr deposit via PayPal Friends and Family today. Or you can pay when you pick it up.";
++  const reverse = "Or you can pay when you pick it up. Send 500 kr deposit via PayPal Friends and Family today.";
++  for (const text of [forward, reverse]) {
++    const verdict = await detect(text);
++    assert.equal(verdict.kind, "risk", text);
++    assert.equal(verdict.level, "high", text);
++    assert.ok(verdict.signals.includes("friends_family"), text);
++    assert.ok(verdict.signals.includes("upfront_deposit"), text);
++    assert.equal(verdict.deal.amount, 500, text);
++    assert.equal(verdict.deal.depositAmount, 500, text);
++  }
++});
++
++test("a MobilePay deposit plus afhentning still warns", async () => {
++  const text = "Send 500 kr depositum på MobilePay nu. Eller betal ved afhentning.";
++  const verdict = await detect(text);
++  assert.equal(verdict.kind, "risk");
++  assert.equal(verdict.level, "high");
++  assert.ok(verdict.signals.includes("upfront_deposit"));
++  assert.ok(verdict.signals.includes("off_platform"));
++  assert.equal(verdict.deal.amount, 500);
++  assert.equal(verdict.deal.depositAmount, 500);
++});
++
++test("a deposit ask in one message and pickup in the next still warns", async () => {
++  const messages = [
++    { from: "seller", text: "Send 500 kr deposit via PayPal Friends and Family today." },
++    { from: "seller", text: "Or you can pay when you pick it up." }
++  ];
++  const text = messages.map((message) => message.text).join("\n");
++  const verdict = await detect(text, { messages });
++  assert.equal(verdict.kind, "risk");
++  assert.equal(verdict.level, "high");
++  assert.ok(verdict.signals.includes("friends_family"));
++  assert.ok(verdict.signals.includes("upfront_deposit"));
++  assert.equal(verdict.deal.amount, 500);
++});
++
++test("Friends and Family deposit without a pickup offer stays high", async () => {
++  const text = "Please send 500 kr deposit via PayPal Friends and Family now, I ship tomorrow.";
++  const verdict = await detect(text);
++  assert.equal(verdict.kind, "risk");
++  assert.equal(verdict.level, "high");
++  assert.ok(verdict.signals.includes("friends_family"));
++  assert.ok(verdict.signals.includes("upfront_deposit"));
++  assert.ok(verdict.signals.includes("ship_before_meet"));
++  assert.equal(verdict.deal.amount, 500);
++});
++
++test("pay on collection alone is silent and does not ask the model", async () => {
++  const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["pickup"] }));
++  const text = "You can pay cash when you pick it up. No deposit needed before we meet.";
++  const verdict = await detect(text, {}, { askLlm });
++  assert.equal(verdict.kind, "silent");
++  assert.equal(verdict.silentReason, "veto");
++  assert.deepEqual(verdict.signals, []);
++  assert.equal(state.calls, 0);
++});
++
++test("telling the buyer not to send Friends and Family, then pay on pickup, stays silent", async () => {
++  const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["Friends"] }));
++  const text = "Never send a deposit via PayPal Friends and Family. Pay only when you pick it up.";
++  const verdict = await detect(text, {}, { askLlm });
++  assert.equal(verdict.kind, "silent");
++  assert.equal(verdict.silentReason, "veto");
++  assert.equal(state.calls, 0);
++});
++
++test("checkout still vetoes an upfront Friends and Family ask", async () => {
++  const { askLlm, state } = countingAsk(async () => ({ risky: true, evidence: ["Friends"] }));
++  const text = "Send 500 kr via Friends and Family, or pay through the marketplace checkout.";
+   const verdict = await detect(text, {}, { askLlm });
+   assert.equal(verdict.kind, "silent");
+   assert.equal(verdict.silentReason, "veto");
