@@ -238,6 +238,10 @@ const RULES = [
   { id: "overpayment_refund", re: "(?:too\\s+much|instead\\s+of)[^\\n]{0,40}?(?:by\\s+mistake|mistake)", gate: "overpay" },
   { id: "overpayment_refund", re: "betalt[^\\n]{0,30}?for\\s+meget|overf\u00f8rt[^\\n]{0,30}?for\\s+meget", gate: "overpay" },
 
+  // Pre-freeze additions (5 Nov). Kept together so open rule PRs still apply cleanly.
+  // "Wire 500 USD first", "betal 500 kr først": an amount sent first. The span must name the amount.
+  { id: "pay_before_see", re: `(?:send|transfer|wire|pay|betal|overfør)(?:[ \\t]+(?!(?:first|først)(?![\\p{L}\\p{N}]))${GAP_TOKEN}){1,5}[ \\t]+(?:first|først)(?![\\p{L}\\p{N}])(?![ \\t]+thing)`, gate: "first-amount" },
+
   // "a time" is a schedule. Bare "pay when you pick" is still the handover.
   { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?!\\s+a\\s+time\\b)(?:\\s+it\\s+up)?", gate: "none" },
   // "it", "them", or one word ("the lamp") may sit between pick and up.
@@ -1052,6 +1056,13 @@ function allow(rule, text, start, end) {
   }
   // "Payment first? No, you pay when you see it." answers the question with a refusal.
   if (rule.gate === "pay-first") return !negatedBefore(text, start) && !refusedAfterQuestion(text.slice(end));
+  // A named method in the gap ("by Swish first") is already the rail's own hit.
+  if (rule.gate === "first-amount") {
+    const span = text.slice(start, end);
+    if (/(?<!\d)[,;](?!\d)/u.test(span)) return false;
+    if (/(?<![\p{L}\p{N}])(?:via|by|on|with|through|på|med|gennem)(?![\p{L}\p{N}])/iu.test(span)) return false;
+    return wireAmountOk(text, start, end);
+  }
   if (rule.gate === "ship") {
     if (PICKUP_ALT.test(text)) return false;
     return true;

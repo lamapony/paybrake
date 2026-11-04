@@ -150,3 +150,21 @@ test("bank transfer or Revolut at the handover stays quiet", async () => {
   ];
   for (const text of risky) await assertRisk(seller(text), text, "off_platform");
 });
+
+// 9. "Wire 500 USD first and I'll ship it": an amount sent first is pay-before-see.
+test("an amount sent or paid first warns", async () => {
+  const risky = [
+    "Wire 500 USD first and I'll ship it.",
+    "You pay the shipping 200 kr first and I send the bike.",
+    "Send 500 kr first, then I post it.",
+    "Betal 500 kr først, så sender jeg den."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text, "pay_before_see");
+  const quiet = [
+    "Send me two more photos first, then I'll decide.",
+    "I'll transfer the 500 kr first thing on Monday when I pick it up.",
+    "Never send 500 kr first to someone you haven't met.",
+    "Pay 500 kr when you pick it up, but have a look at it first."
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+});
