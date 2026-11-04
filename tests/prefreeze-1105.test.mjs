@@ -197,11 +197,9 @@ test("Danish betal forud warns", async () => {
 
 // 12. Seller-side scam: "I paid you, now pay the courier fee".
 test("a courier or insurance fee after a fake payment warns", async () => {
-  const risky = [
-    "I have paid you via PayPal, check your email for the confirmation and send the 300 kr courier fee.",
-    "Send me your email so I can pay with PayPal, my courier will pick it up. Please pay the 200 kr insurance fee first."
-  ];
-  for (const text of risky) await assertRisk(seller(text), text, "fee_via_link");
+  await assertRisk(seller("I have paid you via PayPal, check your email for the confirmation and send the 300 kr courier fee."), "paid you + fee", "fee_via_link");
+  // Caught as an amount paid first (fix 9); "my courier" alone is not fee context.
+  await assertRisk(seller("Send me your email so I can pay with PayPal, my courier will pick it up. Please pay the 200 kr insurance fee first."), "insurance fee first");
   await assertSilent(seller("The courier fee is 60 kr, it's included in the checkout price."), "courier fee in checkout");
   await assertSilent(seller("The courier fee is 60 kr, you can also pick it up for free."), "courier fee price");
   await assertSilent(seller("I've already paid the shipping fee, you pay 900 kr at pickup."), "seller paid shipping");
@@ -241,4 +239,60 @@ test("a past purchase paid by bank transfer stays quiet", async () => {
   await assertSilent(seller("I paid by bank transfer when I bought it, here is the receipt photo."), "history");
   await assertSilent(seller("We paid 900 kr via Revolut for it last year, now 450 kr."), "history revolut");
   await assertRisk(seller("Pay 450 kr by bank transfer today, I bought a new one so I ship tomorrow."), "ask + bought", "off_platform");
+});
+
+// 16. Independent review of fixes 1–15: inputs that main got right and an
+// earlier version of this branch got wrong. Each must match main again.
+test("review: ordinary chats the earlier fixes flagged stay quiet", async () => {
+  const quiet = [
+    "It comes with 2 years as a guarantee from Elgiganten, 1200 kr cash on pickup.",
+    "The receipt works as a guarantee, it's 2 months old. 800 kr, pay at pickup.",
+    "Works as a security camera too, 450 kr, pick up in Valby.",
+    "I'm employed as security at the airport so I can only meet after 18. Price 300 kr.",
+    "Leave your passport as collateral while you test drive it, price 5000 euro cash.",
+    "Shipping with DAO, courier fee is 65 kr, so 465 kr total. Check your email for the tracking.",
+    "I'll send it by courier, courier fee is 60 kr. Check your inbox, I sent the invoice.",
+    "My courier will pick it up Friday. Courier fee 70 kr is on me, pay me 500 kr in cash.",
+    "Du kan hente den nu og betale med Vipps ved afhentning, 250 kr.",
+    "Prisen er 400 kr nu og du betaler med Venmo ved afhentning.",
+    "Kom først og se den og betal med Vipps når du henter den, 300 kr.",
+    "Du betaler når du henter den, ingen grund til at betale noget forud.",
+    "Vil du betale forud eller ved afhentning? Begge dele går.",
+    "Lots of people here only use friends and family which is risky. Cash at pickup for me, 200 kr.",
+    "We only use friends and family for the kids' clothes swap group, but for you it's cash on pickup.",
+    "Honestly I only do friends and family deals on this stuff, otherwise it's full price 300.",
+    "Is it a present? I can wrap it and mark it as a gift for 20 kr extra, you pay with PayPal or cash.",
+    "It was marked as gift in the PayPal order from the shop, so the price isn't shown. Send 250 kr cash on pickup."
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+});
+
+test("review: scams the earlier fixes silenced warn again", async () => {
+  const risky = [
+    "Please MobilePay 400 kr to 22334455 to secure it, then pick it up on Saturday when we meet.",
+    "Betal 200 kr med MobilePay inden fredag, så holder jeg den. Resten på stedet.",
+    "Bank transfer of 2000 kr tonight please and you can collect it when we meet tomorrow.",
+    "Pay via Revolut, 80 euro, I'll keep it aside for you and you pick it up on the spot Saturday.",
+    "Overfør 400 kr via bankoverførsel, så afleverer jeg den på stedet.",
+    "Send me 200 kr on MobilePay and I'll hold it for you, rest when you pick it up.",
+    "Payment first? No exceptions, 400 kr to my account and I post it.",
+    "Pay first? No refunds after that, send 300 eur and I ship Monday.",
+    "Payment first? Nope, that's just how I do it, transfer 500 kr and I post it.",
+    "I don't need a deposit, but send 300 kr today to hold it.",
+    "I'll hold it for you without deposit if you send 300 kr today.",
+    "Bankoverførsel 3000 kr i dag, så kan du hente den ved afhentning i weekenden.",
+    "Send a 100 kr deposit for the crates and I'll put them aside for you."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text);
+  const high = await seller("Send me 200 kr on MobilePay and I'll hold it for you, rest when you pick it up.");
+  assert.equal(high.level, "high", JSON.stringify(high));
+  const full = await seller("I don't charge a deposit, just pay the 1500 kr in full now via Revolut and it's yours.");
+  assert.equal(full.level, "high", JSON.stringify(full));
+});
+
+test("review: hold rules stay fast on a long repetitive chat", async () => {
+  const text = "hold it for you when you pick it up ".repeat(560); // about 20 KB
+  const t0 = performance.now();
+  await seller(text);
+  assert.ok(performance.now() - t0 < 2000, "took " + Math.round(performance.now() - t0) + " ms");
 });

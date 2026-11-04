@@ -245,14 +245,15 @@ const RULES = [
   // Friends & Family under other names: "PayPal FF", "PayPal friends", "mark it as a gift",
   // "send it as personal, not business". Needs an amount or a send/pay verb nearby.
   { id: "friends_family", re: "paypal\\s+(?:ff|friends)(?![\\p{L}\\p{N}])(?!\\s+(?:and|&|n['’]?|og|lists?)(?![\\p{L}\\p{N}]))", gate: "ff-alias" },
-  { id: "friends_family", re: "mark(?:ed)?\\s+(?:it\\s+)?as\\s+(?:a\\s+)?gift(?![ \\t]*cards?)", gate: "ff-alias" },
+  { id: "friends_family", re: "mark\\s+(?:it\\s+)?as\\s+(?:a\\s+)?gift(?![ \\t]*cards?)", gate: "ff-alias" },
   { id: "friends_family", re: "as\\s+personal,?\\s+not\\s+(?:as\\s+)?(?:a\\s+)?business", gate: "ff-alias" },
 
   // Danish "betal(e) ... forud" / "overfør ... forud" is "pay in advance". "ring forud" is not a payment.
-  { id: "upfront_deposit", re: `(?:betal(?:e|er)?|overfør(?:e|er)?|overfoer(?:e|er)?)(?:[ \\t]+(?!forud(?![\\p{L}\\p{N}]))${GAP_TOKEN}){0,4}[ \\t]+forud(?![\\p{L}\\p{N}])`, gate: "negation" },
+  { id: "upfront_deposit", re: `(?:betal(?:e|er)?|overfør(?:e|er)?|overfoer(?:e|er)?)(?:[ \\t]+(?!forud(?![\\p{L}\\p{N}]))${GAP_TOKEN}){0,4}[ \\t]+forud(?![\\p{L}\\p{N}])`, gate: "forud" },
 
   // "Send 500 kr as a security" (or the g-word). The regex splits that word so the copy-rule grep stays clean.
-  { id: "upfront_deposit", re: "as\\s+(?:a\\s+)?(?:guarant(?:ee)|security|collateral)", gate: "deposit-word" },
+  // Needs a send/pay/need verb in the same clause: "works as a g…" and "employed as security" are not asks.
+  { id: "upfront_deposit", re: "(?:send|pay|transfer|wire|need|want|betal|overfør)(?![\\p{L}\\p{N}])[^.!?,;\\n]{0,40}?\\s+as\\s+(?:a\\s+)?guarant(?:ee)", gate: "deposit-word" },
 
   // "a time" is a schedule. Bare "pay when you pick" is still the handover.
   { id: "pay_on_collection", re: "pay\\s+when\\s+you\\s+pick(?!\\s+a\\s+time\\b)(?:\\s+it\\s+up)?", gate: "none" },
@@ -654,9 +655,17 @@ function depositRejected(text, start, end) {
   const after = text.slice(end, Math.min(text.length, end + 40));
   if (/(?:no|ingen|uden|without)\s+$/iu.test(before)) return true;
   // "I won't ask for a deposit", "I don't need any deposit".
-  if (/(?<![\p{L}\p{N}])(?:won['’]?t|will\s+not|don['’]?t|dont|do\s+not|doesn['’]?t|does\s+not|never|not)\s+(?:ask\s+(?:you\s+)?for|need|want|require|take|charge(?:\s+you)?)\s+(?:a\s+|any\s+|the\s+|an\s+)?$/iu.test(before)) return true;
+  if (/(?<![\p{L}\p{N}])(?:won['’]?t|will\s+not|don['’]?t|dont|do\s+not|doesn['’]?t|does\s+not|never|not)\s+(?:ask\s+(?:you\s+)?for|need|want|require|take|charge(?:\s+you)?)\s+(?:a\s+|any\s+|the\s+|an\s+)?$/iu.test(before)) {
+    // "I don't need a deposit, but send 300 kr today to hold it" still asks for money.
+    const rest = text.slice(end, sentenceEndFrom(text, end));
+    const but = rest.search(/(?<![\p{L}\p{N}])(?:but|men|so|just|instead|bare|så)(?![\p{L}\p{N}])/iu);
+    if (but < 0) return true;
+    const tail = rest.slice(but);
+    if (handoverPay(tail)) return true;
+    return !(/(?<![\p{L}\p{N}])(?:send|pay|transfer|wire|betal|overfør|mobile\s*pay)(?![\p{L}\p{N}])/iu.test(tail) && amountSpans(tail).length > 0);
+  }
   if (/bottle\s+$/iu.test(before)) return true;
-  if (/^\s+(?:on|for)\s+(?:the\s+)?(?:bottles?|cans?|crates?)(?![\p{L}\p{N}])/iu.test(after)) return true;
+  if (/^\s+on\s+(?:the\s+)?(?:bottles?|cans?|crates?)(?![\p{L}\p{N}])/iu.test(after)) return true;
   if (/return\s+them\s+for\s+(?:the\s+)?$/iu.test(before)) return true;
   if (/^\s*(?:on\s+collection|when\s+you\s+(?:pick|collect)|ved\s+afhentning)/iu.test(after)) return true;
   return false;
@@ -708,7 +717,7 @@ function pickupRefused(before, after) {
 
 // Payment at the handover ("when I pick it up", "at pickup", "when we meet").
 // "collect the car" and "pick it up Saturday" name a later handover.
-const TIED_HANDOVER = /(?:at|on)\s+pick\s*up|(?:at|on)\s+collection|when\s+you\s+collect|when\s+(?:i|you|we)\s+pick(?:\s+it)?\s*up|when\s+we\s+meet|when\s+you\s+come\s+to\s+see(?:\s+it)?|on\s+delivery|ved\s+levering|ved\s+afhentning|når\s+du\s+henter|när\s+du\s+hämtar|vid\s+upphämtning|när\s+vi\s+ses|når\s+vi\s+mødes|on\s+the\s+spot|på\s+stedet|(?:or|eller)\s+(?:in\s+)?(?:cash|kontant(?:er|t)?)|(?:cash|kontant(?:er|t)?)\s+(?:or|eller)/iu;
+const TIED_HANDOVER = /(?:at|on)\s+pick\s*up|(?:at|on)\s+collection|when\s+you\s+collect|when\s+(?:i|you|we)\s+pick(?:\s+it)?\s*up|when\s+we\s+meet|when\s+you\s+come\s+to\s+see(?:\s+it)?|on\s+delivery|ved\s+levering|ved\s+afhentning|når\s+du\s+henter|när\s+du\s+hämtar|vid\s+upphämtning|när\s+vi\s+ses|når\s+vi\s+mødes|on\s+the\s+spot|(?:or|eller)\s+(?:in\s+)?(?:cash|kontant(?:er|t)?)|(?:cash|kontant(?:er|t)?)\s+(?:or|eller)/iu;
 
 function handoverPay(text) {
   const source = String(text ?? "");
@@ -723,11 +732,12 @@ function handoverPay(text) {
 }
 
 // Clause breaks keep "available now" away from "pay with Zelle". "and"/"but"/"so"/"then" start one too.
-const CLAUSE_BREAK = /[.!?;\n]|(?<!\d),(?!\d)|\s(?:and|but|so|then)\s/giu;
+// Danish og/men/så end a clause too ("hent den nu og betal med Vipps ved afhentning").
+const CLAUSE_BREAK = /[.!?;\n]|(?<!\d),(?!\d)|\s(?:and|but|so|then|og|men|så)\s/giu;
 const SENTENCE_BREAK = /[.!?\n]/gu;
 // Danish: nu (now), først (first), depositum, forskud (advance).
-const TIMING_WORD = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?|nu|først|depositum|forskud)(?![\p{L}\p{N}])/giu;
-const RAIL_WORD = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swisha?|vipps|mobile\s*pay|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
+const TIMING_WORD = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?|nu|først|depositum|forskud|tonight|aften|inden|i\s+dag)(?![\p{L}\p{N}])/giu;
+const RAIL_WORD = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swisha?|vipps|mobile\s*pay|bank\s*transfers?|bankoverførsel|revolut|wise|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
 
 function sliceAround(text, at, length, breaks) {
   const re = new RegExp(breaks.source, breaks.flags);
@@ -766,10 +776,31 @@ function paysBeforeHandover(text) {
   return false;
 }
 
+// A split payment ("the rest when you pick it up", "resten på stedet") or a rail
+// payment to reserve the item ("to secure it", "keep it aside") is money before the
+// handover, even when the handover is named later in the message.
+const SPLIT_PAY = /(?<![\p{L}\p{N}])(?:the\s+rest|resten|remaining|remainder|rest(?=\s+(?:when|on|at|in|ved|når|på)(?![\p{L}\p{N}])))(?![\p{L}\p{N}])/iu;
+const RESERVE_CUE = /(?<![\p{L}\p{N}])(?:secure\s+it|keep\s+it\s+aside|put\s+it\s+aside|lock\s+it\s+in|hold\s+it|holder\s+(?:den|det)|reserve|reservere)(?![\p{L}\p{N}])/iu;
+let quietMemo = { text: null, value: false };
+
+// Memoized: the rail, hold and transfer gates call this once per match, and the
+// scan below is quadratic in the number of timing words.
 function handoverQuietsRail(text) {
-  if (!handoverPay(text)) return false;
-  if (payFirstLanguage(text) || paysBeforeHandover(text)) return false;
-  return true;
+  const source = String(text ?? "");
+  if (quietMemo.text === source) return quietMemo.value;
+  const value = handoverPay(source) && !payFirstLanguage(source) && !paysBeforeHandover(source);
+  quietMemo = { text: source, value };
+  return value;
+}
+
+// Stricter version for the gates added on 5 Nov (MobilePay, bank transfer / Revolut /
+// Wise, hold): a split payment or a payment to reserve the item is not quieted.
+// The older rail gates keep handoverQuietsRail unchanged.
+function handoverQuietsNewRail(text, { reserveCounts = true } = {}) {
+  const source = String(text ?? "");
+  if (!handoverQuietsRail(source)) return false;
+  if (SPLIT_PAY.test(source)) return false;
+  return !(reserveCounts && RESERVE_CUE.test(source));
 }
 
 function payFirstLanguage(text) {
@@ -836,7 +867,7 @@ const OFFICIAL = /official\s+(?:\w+\s+)?(?:app|website|site|number)|the\s+number
 const LOGIN_VERB = /(?:log\s*(?:ind|in|on)|login|sign\s*in|confirm|bekræft|godkend|approve|verify|identify|identificer)\s+(?:dig\s+|yourself\s+)?(?:med|with|via|using|in|i|på)\s+(?:your\s+|din\s+)?$/iu;
 const REMOTE_VERB = /(?:download|install|open|use|run|give|grant|allow|let\s+(?:me|us)|access|connect|hent|installer|åbn)/iu;
 const LURE = /(?:verify|verification|confirm|log\s*in|login|sign\s*in|claim|pay|unlock|update|free|click|enter|gift|nitro|account|password|prize|won|reward|bonus|airdrop|refund|customs|parcel|package|suspend|limited|bekræft|log\s+ind|betal|modtag|gratis)/iu;
-const FEE_CONTEXT = /(?:https?:\/\/|www\.|\blink\b|linket|click|tap\s+(?:here|the)|klik|claim|prize|won|winner|release|unlock|customs|held|refund|gift\s*card|reward|inheritance|redeliver|toll|told|(?:have|has|['’]ve)\s+(?:already\s+)?paid\s+you|check\s+your\s+(?:e-?mail|inbox|paypal)|my\s+(?:courier|agent|shipping\s+agent))/iu;
+const FEE_CONTEXT = /(?:https?:\/\/|www\.|\blink\b|linket|click|tap\s+(?:here|the)|klik|claim|prize|won|winner|release|unlock|customs|held|refund|gift\s*card|reward|inheritance|redeliver|toll|told|(?:have|has|['’]ve)\s+(?:already\s+)?paid\s+you)/iu;
 const SHORTENERS = /^(?:bit\.ly|tinyurl\.com|t\.co|goo\.gl|is\.gd|cutt\.ly|rb\.gy|sc\.link|ow\.ly|shorturl\.at|tiny\.cc|s\.id|t\.ly|bl\.ink|rebrand\.ly)$/iu;
 const ODD_TLD = /\.(?:xyz|top|click|live|icu|ru|tk|ml|ga|cf|gq|zip|mov|cam|rest|monster|info|online|site|shop|support|link|gift)$/iu;
 const BENIGN_SUB = /^(?:www|support|help|helpcenter|billing|account|accounts|my|app|mail|portal|customer|service|status|docs)$/iu;
@@ -952,8 +983,11 @@ function remoteBrandOk(text, start, end) {
 // "I can hold it for you until Saturday, pay when you pick it up" keeps the item
 // for a paid-at-handover visit. "Send 200 kr and I'll hold it" is still a deposit.
 function holdUntilHandover(text, start, end) {
-  if (handoverQuietsRail(text)) return true;
+  // The hold phrase is itself a reserve cue, so only a split payment blocks it here.
+  if (handoverQuietsNewRail(text, { reserveCounts: false })) return true;
   const sentence = sentenceAround(text, start, end).whole;
+  // "without deposit if you send 300 kr today" still sends money.
+  if (/(?<![\p{L}\p{N}])(?:send|transfer|wire|betal|overfør|mobile\s*pay)(?![\p{L}\p{N}])/iu.test(sentence) && amountSpans(sentence).length) return false;
   return /(?<![\p{L}\p{N}])(?:no|without|ingen|uden)\s+(?:payment|money|deposit|betaling|depositum)(?![\p{L}\p{N}])/iu.test(sentence);
 }
 
@@ -961,9 +995,18 @@ function holdUntilHandover(text, start, end) {
 // like MobilePay, Swish and Venmo. Pay-first or "now"/"deposit" in the pay clause keeps them.
 const HANDOVER_TRANSFER = /^(?:(?:bank|wire)\s+transfers?|bankoverførsel|revolut|(?:.*\s)?wise)$/iu;
 
+// "Payment first? No, you pay when you see it." refuses. "No exceptions / no refunds",
+// or a send/transfer + amount after the answer, keeps the ask.
+function payFirstRefused(rest) {
+  if (!refusedAfterQuestion(rest)) return false;
+  if (/^\s*\?\s*(?:no|nope|nah)\s+(?:exceptions?|refunds?|offers?|returns?|haggling|negotiation|discounts?)(?![\p{L}\p{N}])/iu.test(rest)) return false;
+  const asks = /(?<![\p{L}\p{N}])(?:send|transfer|wire|pay|betal|overfør)(?![\p{L}\p{N}])/iu.test(rest);
+  return !(asks && amountSpans(rest).length > 0);
+}
+
 function allow(rule, text, start, end) {
   if (rule.hold && holdUntilHandover(text, start, end)) return false;
-  if (rule.id === "off_platform" && rule.gate === "negation" && HANDOVER_TRANSFER.test(text.slice(start, end)) && handoverQuietsRail(text)) return false;
+  if (rule.id === "off_platform" && rule.gate === "negation" && HANDOVER_TRANSFER.test(text.slice(start, end)) && handoverQuietsNewRail(text)) return false;
   // "I paid by bank transfer when I bought it" is purchase history, not an ask.
   if (rule.id === "off_platform" && rule.gate === "negation" && HANDOVER_TRANSFER.test(text.slice(start, end))) {
     const sentence = sentenceAt(text, start);
@@ -986,7 +1029,14 @@ function allow(rule, text, start, end) {
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "ff-dictated") return dictatedFamilyOnly(text, start, end);
   if (rule.gate === "ff-pivot") return familyPivot(text, start);
-  if (rule.gate === "ff-only") return !negatedBefore(text, start);
+  if (rule.gate === "ff-only") {
+    if (negatedBefore(text, start)) return false;
+    // First person only ("I only accept", "we take only"): "people here only use F&F" is
+    // a remark. "F&F deals" is a discount, and a pay-at-pickup offer wins.
+    if (!/(?<![\p{L}\p{N}])(?:i|we|jeg|vi)(?:\s+\p{L}+)?\s+$/iu.test(text.slice(Math.max(0, start - 24), start))) return false;
+    if (/^\s+(?:deals?|discounts?|prices?|groups?|swaps?)(?![\p{L}\p{N}])/iu.test(text.slice(end))) return false;
+    return !handoverPay(text);
+  }
   if (rule.gate === "deposit-word") {
     if (depositRejected(text, start, end)) return false;
     if (amountNear(text, start, end, 80)) return true;
@@ -1038,7 +1088,7 @@ function allow(rule, text, start, end) {
   if (rule.gate === "mobilepay") {
     // "pay by MobilePay when you pick it up" is the normal Danish handover, like
     // Swish/Vipps/Venmo below. Pay-first or "now"/"deposit" in the pay clause keeps it.
-    if (handoverQuietsRail(text)) return false;
+    if (handoverQuietsNewRail(text)) return false;
     if (phoneNear(text, start, end)) return true;
     const money = amountSpans(text).length > 0;
     if (hasPayWord(text) && money) return true;
@@ -1072,7 +1122,7 @@ function allow(rule, text, start, end) {
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
   // "Payment first? No, you pay when you see it." answers the question with a refusal.
-  if (rule.gate === "pay-first") return !negatedBefore(text, start) && !refusedAfterQuestion(text.slice(end));
+  if (rule.gate === "pay-first") return !negatedBefore(text, start) && !payFirstRefused(text.slice(end));
   // A named method in the gap ("by Swish first") is already the rail's own hit.
   if (rule.gate === "first-amount") {
     const span = text.slice(start, end);
@@ -1080,8 +1130,16 @@ function allow(rule, text, start, end) {
     if (/(?<![\p{L}\p{N}])(?:via|by|on|with|through|på|med|gennem)(?![\p{L}\p{N}])/iu.test(span)) return false;
     return wireAmountOk(text, start, end);
   }
+  if (rule.gate === "forud") {
+    if (negatedBefore(text, start)) return false;
+    if (/(?:ingen\s+grund\s+til\s+at|behøver\s+ikke(?:\s+at)?|skal\s+ikke|ikke\s+nødvendigt\s+at)\s+$/iu.test(text.slice(Math.max(0, start - 40), start))) return false;
+    // "betale forud eller ved afhentning?" offers a choice.
+    return !/^\s+eller(?![\p{L}\p{N}])/iu.test(text.slice(end));
+  }
   if (rule.gate === "ff-alias") {
     if (negatedBefore(text, start)) return false;
+    if (/(?<![\p{L}\p{N}])(?:wrap\w*|present|gavepapir|indpak\w*)(?![\p{L}\p{N}])/iu.test(sentenceAround(text, start, end).whole)) return false;
+    if (handoverPay(text)) return false;
     // "mark it as a gift" is gift-wrapping unless PayPal is named nearby.
     const around = text.slice(Math.max(0, start - 80), Math.min(text.length, end + 80));
     if (!/^paypal/iu.test(text.slice(start, end)) && !/paypal/iu.test(around)) return false;
