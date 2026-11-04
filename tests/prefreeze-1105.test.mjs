@@ -341,3 +341,60 @@ test("review 2: purchase history followed by an ask still warns", async () => {
   await assertRisk(seller("We paid with Wise when we bought it, pay with Wise too: 300 EUR now"), "wise history + ask", "off_platform");
   await assertRisk(seller("We paid with bank transfer last week, so you must pay the same way: transfer 1500 kr now"), "transfer history + ask", "off_platform");
 });
+
+// 18. Third independent review. The older rail gates now use the v4 helpers
+// unchanged; only the 5 Nov gates use the extended v5 handover helpers.
+test("review 3: scams main catches still warn", async () => {
+  const risky = [
+    "Venmo me $50 and I'll hold it for you, then pay the balance when you pick it up.",
+    "Send 200 kr and I'll hold it for you, the other 700 kr when you pick it up.",
+    "I'll hold it for you, Zelle me $50 so I know you're serious, pay at pickup",
+    "I'll hold it for you, just send 200 kr as a reservation and pay when you pick it up.",
+    "I'll hold the bike for you, Zelle $50 and you pay $400 when you pick it up.",
+    "Jeg holder den til dig hvis du sender 200 kr, og 700 kr når du henter den.",
+    "Zelle me $500 and I'll bring it over, you can check it on the spot.",
+    "Venmo me $80 to lock it in, the rest on the spot.",
+    "Pay the delivery guy on the spot, but Venmo me $80 for the item first.",
+    "Betal 500 kr med Vipps og så holder jeg den, du henter den når vi mødes",
+    "I don't need a deposit. Send the full 1500 kr and I ship.",
+    "I don't want a deposit, I want the whole 2000 kr up front.",
+    "I don't need a deposit, just send the money and I ship it.",
+    "I won't ask for a deposit; transfer the full 900 kr and I ship.",
+    "Kontant eller MobilePay, men overfør 100 kr i forvejen for at holde den.",
+    "I don't need a deposit, the full 900 kr before shipping is enough.",
+    "I won't ask for a deposit, I want full payment before shipping, 900 kr.",
+    "Hold it for you till friday, send 25 dollars to confirm, pay at pickup",
+    "I'll hold it for you for a 100 kr fee, pay 800 kr when you pick it up",
+    "Betal først? Nej tak til byttehandler, 500 kr på konto og jeg sender."
+  ];
+  for (const text of risky) await assertRisk(seller(text), text);
+});
+
+test("review 3: ordinary chats stay quiet", async () => {
+  const quiet = [
+    "You can pay with Venmo tonight when you pick it up, $200.",
+    "Pay with Zelle tonight when we meet, $300.",
+    "Du kan betale med Vipps i aften når du henter den, 300 kr.",
+    "Du kan betale med Vipps nu når du henter den, 300 kr.",
+    "Betal med Swish i dag vid upphämtning, 400 kr.",
+    "Betal med Vipps inden du går, når du henter den. 200 kr.",
+    "Price-wise I can't go lower today, pay with Zelle when you pick it up, $300",
+    "It's wise to come today and pay with Venmo when you pick it up, $80.",
+    "Du betaler selvfølgelig ikke forud, 450 kr når du henter.",
+    "Du betaler intet forud, 450 kr ved afhentning.",
+    "Betale forud? Nej tak, 450 kr ved afhentning.",
+    "Should I send 500 kr first? No, just pay when you pick it up.",
+    "Pay 500 kr first? No way, pay when you pick it up.",
+    "You can pay 900 kr after testing it first.",
+    "You don't need to send anything as a guarantee, pay 500 kr when you pick it up.",
+    "I'd never ask you to send money as a guarantee, 500 kr at pickup",
+    "PayPal FF? No, cash only. 900 kr",
+    "I have paid you, now please send me the tracking. Shipping fee was 50 kr.",
+    "I've paid you now. Please send the shipping fee receipt.",
+    "Do you want me to transfer 500 kr first? Not needed, pay at pickup.",
+    "Betale forud? Det gør jeg ikke, du betaler ved afhentning.",
+    "Should I send 200 kr as a guarantee? Not needed, pay when you pick it up.",
+    "I only use PayPal FF with my family, you pay cash, 300 kr"
+  ];
+  for (const text of quiet) await assertSilent(seller(text), text);
+});
