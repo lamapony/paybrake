@@ -213,3 +213,10 @@ test("money as a guarantee or security warns", async () => {
   await assertRisk(seller("I need 500 kr first as a guarantee that you'll come."), "need as guarantee", "upfront_deposit");
   await assertSilent(seller("The bike comes with the receipt as a guarantee it's not stolen."), "receipt");
 });
+
+// The background cache keys verdicts by RULES_VERSION for 24 hours, so a build
+// with changed verdicts needs a new version or testers keep the old cards.
+test("rules version is bumped past v4 for the pre-freeze fixes", async () => {
+  const verdict = await seller("I won't ask for a deposit, pay when you pick it up.");
+  assert.ok(verdict.rulesVersion >= 5, JSON.stringify(verdict));
+});

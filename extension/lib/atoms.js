@@ -2,7 +2,7 @@
 // Load order in the extension: brand.js, tidy.js, atoms.js, extract.js, pay-risk.js.
 // Patterns are case-insensitive and Unicode-aware. A hit is a concrete span.
 
-const RULES_VERSION = 4;
+const RULES_VERSION = 5;
 
 function wordBound(pattern, flags = "giu") {
   const tidy = globalThis.pbTidy;
