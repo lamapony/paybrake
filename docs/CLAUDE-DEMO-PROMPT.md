@@ -11,7 +11,7 @@ Requirements
   - badge "High risk payment request", "Checked just now"
   - one line: "Friends & Family + upfront deposit: if the bike never arrives, you may have no way to get your money back."
   - "Detected signals" chips: Friends & Family · Upfront deposit · Ships before meeting
-  - primary button `id="pb-protect"`: "Move to protected PayPal order"; secondary `id="pb-anyway"`: "Pay anyway"
+  - primary button `id="pb-protect"`: "Switch to a PayPal order"; secondary `id="pb-anyway"`: "Pay anyway"
   - footer: "PayBrake · AI check · only you can see this"
 - Side panel "Protected order preview" with a "SANDBOX DEMO" tag, text-only "PayPal" wordmark (plain text, no logo image), item, payee "jonas.holm@example.com", payment type "Goods & Services", amount 1,800 kr, and the row **Buyer Protection: "may be eligible"** (pill reads "may be eligible*"). Footnote: "*Eligibility depends on PayPal terms and the transaction. Sandbox demo, no real payment is made." NEVER say protection is guaranteed, never a bare "eligible" or "protected" claim.
 - Below the chat, a second smaller "safe chat" example (another fictional seller, e.g. "Mette Lund", selling a lamp, 250 kr, "Pick up Saturday, pay on collection with MobilePay is fine" is RISKY, so instead use: "Sure, pay through the Marketplace checkout or cash when you pick it up") with a quiet note "PayBrake stayed silent: no risky payment request" to show no false alarm.

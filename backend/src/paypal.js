@@ -1,27 +1,13 @@
-// OrdersPort. Mock adapter ships in this build.
-// rest and toolkit are Christopher's: see docs/BACKEND-CONTRACT.md.
+// OrdersPort. Mock when there is no client id. rest calls the sandbox API.
+// toolkit exposes toolkit-shaped tools and executes them through rest.
 import { randomUUID } from "node:crypto";
+import { assertSandbox, formatAmount } from "./paypal-shared.js";
+import { createRestPort } from "./paypal-rest.js";
+import { createToolkitPort } from "./paypal-toolkit.js";
 
-const NOT_READY = "not implemented yet: see docs/BACKEND-CONTRACT.md";
+export { assertSandbox, formatAmount };
+
 const DEMO_RETURN = "http://localhost:8080/demo/checkout-return.html";
-
-export function formatAmount(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) {
-    const error = new Error("amount must be a number");
-    error.status = 400;
-    error.code = "bad_request";
-    throw error;
-  }
-  return (Math.round(n * 100) / 100).toFixed(2);
-}
-
-export function assertSandbox(env = {}) {
-  const paypalEnv = String(env.PAYPAL_ENV || "").trim().toLowerCase();
-  if (paypalEnv !== "sandbox") {
-    throw new Error("Refusing to start unless PAYPAL_ENV=sandbox");
-  }
-}
 
 export function createMockPort() {
   const orders = new Map();
@@ -77,10 +63,12 @@ export function createMockPort() {
   };
 }
 
-export function createOrdersPort(env = {}) {
+export function createOrdersPort(env = {}, deps = {}) {
   assertSandbox(env);
   const adapter = String(env.PAYPAL_ADAPTER || "").trim().toLowerCase();
   const hasId = String(env.PAYPAL_CLIENT_ID || "").trim().length > 0;
   if (!hasId || adapter === "mock") return createMockPort();
-  throw new Error(NOT_READY);
+  if (adapter === "toolkit") return createToolkitPort(env, deps);
+  if (adapter === "rest" || adapter === "") return createRestPort(env, deps);
+  throw new Error("Unknown PAYPAL_ADAPTER");
 }
