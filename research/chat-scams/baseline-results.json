@@ -1,0 +1,318 @@
+{
+  "seed": "data/chat-scams/seed.jsonl",
+  "n": 37,
+  "n_scam": 18,
+  "n_benign": 19,
+  "by_scam_type": {
+    "benign": 19,
+    "fake_bank": 2,
+    "fake_buyer": 3,
+    "fake_seller": 2,
+    "friend_impersonation": 1,
+    "hi_mum": 3,
+    "investment": 3,
+    "job_mule": 2,
+    "romance": 2
+  },
+  "by_lang_label": {
+    "da_benign": 9,
+    "da_scam": 9,
+    "en_benign": 10,
+    "en_scam": 9
+  },
+  "protocol": "5-fold stratified CV, seed 1105. Vocabulary and IDF fit on each training fold only. Word unigrams and bigrams with document frequency at least 2, TF-IDF, L2 logistic regression (L2=0.05, 800 steps, class-balanced), decision threshold 0.5. Stage tags are not features.",
+  "tfidf_full_chat": {
+    "metrics": {
+      "tp": 11,
+      "fp": 8,
+      "fn": 7,
+      "tn": 11,
+      "precision": 0.579,
+      "recall": 0.611,
+      "f1": 0.595,
+      "false_positive_rate": 0.421
+    },
+    "errors": [
+      {
+        "id": "cs-da-himom-messenger",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.488,
+        "scam_type": "hi_mum",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-da-friend-mule",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.475,
+        "scam_type": "friend_impersonation",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-da-fake-seller",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.487,
+        "scam_type": "fake_seller",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-en-himom-whatsapp",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.45,
+        "scam_type": "hi_mum",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-en-romance-crypto",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.494,
+        "scam_type": "romance",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-en-overpay-check",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.496,
+        "scam_type": "fake_buyer",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-en-fake-bank",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.494,
+        "scam_type": "fake_bank",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-da-pickup",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.519,
+        "scam_type": "benign",
+        "confusable_with": "fake_seller"
+      },
+      {
+        "id": "cs-da-tickets",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.523,
+        "scam_type": "benign",
+        "confusable_with": "friend_impersonation"
+      },
+      {
+        "id": "cs-da-bank-forward",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.554,
+        "scam_type": "benign",
+        "confusable_with": "fake_bank"
+      },
+      {
+        "id": "cs-da-flea",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.5,
+        "scam_type": "benign",
+        "confusable_with": "fake_seller"
+      },
+      {
+        "id": "cs-en-birthday-card",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.5,
+        "scam_type": "benign",
+        "confusable_with": "romance"
+      },
+      {
+        "id": "cs-en-interview",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.503,
+        "scam_type": "benign",
+        "confusable_with": "job_mule"
+      },
+      {
+        "id": "cs-en-crypto-friends",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.536,
+        "scam_type": "benign",
+        "confusable_with": "investment"
+      },
+      {
+        "id": "cs-en-photo-only",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.507,
+        "scam_type": "benign",
+        "confusable_with": "fake_seller"
+      }
+    ]
+  },
+  "tfidf_first_two_counterparty_turns": {
+    "metrics": {
+      "tp": 9,
+      "fp": 6,
+      "fn": 9,
+      "tn": 13,
+      "precision": 0.6,
+      "recall": 0.5,
+      "f1": 0.545,
+      "false_positive_rate": 0.316
+    },
+    "errors": [
+      {
+        "id": "cs-da-himom-messenger",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.478,
+        "scam_type": "hi_mum",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-da-friend-mule",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.473,
+        "scam_type": "friend_impersonation",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-da-fake-seller",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.485,
+        "scam_type": "fake_seller",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-da-fake-bank",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.486,
+        "scam_type": "fake_bank",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-en-himom-whatsapp",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.469,
+        "scam_type": "hi_mum",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-en-overpay-check",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.443,
+        "scam_type": "fake_buyer",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-en-fake-bank",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.465,
+        "scam_type": "fake_bank",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-en-job-gift",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.487,
+        "scam_type": "job_mule",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-en-verify-code",
+        "label": "scam",
+        "predicted": "benign",
+        "p_scam": 0.478,
+        "scam_type": "fake_buyer",
+        "confusable_with": ""
+      },
+      {
+        "id": "cs-da-pickup",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.5,
+        "scam_type": "benign",
+        "confusable_with": "fake_seller"
+      },
+      {
+        "id": "cs-da-tickets",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.506,
+        "scam_type": "benign",
+        "confusable_with": "friend_impersonation"
+      },
+      {
+        "id": "cs-da-bank-forward",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.549,
+        "scam_type": "benign",
+        "confusable_with": "fake_bank"
+      },
+      {
+        "id": "cs-en-crypto-friends",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.533,
+        "scam_type": "benign",
+        "confusable_with": "investment"
+      },
+      {
+        "id": "cs-en-wrong-number",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.514,
+        "scam_type": "benign",
+        "confusable_with": "investment"
+      },
+      {
+        "id": "cs-en-photo-only",
+        "label": "benign",
+        "predicted": "scam",
+        "p_scam": 0.519,
+        "scam_type": "benign",
+        "confusable_with": "fake_seller"
+      }
+    ]
+  },
+  "lexicon_at_least_two_hits": {
+    "metrics": {
+      "tp": 9,
+      "fp": 0,
+      "fn": 9,
+      "tn": 19,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.667,
+      "false_positive_rate": 0.0
+    },
+    "rule": "counterparty text contains at least two distinct phrases from a fixed list",
+    "missed_scam_ids": [
+      "cs-da-himom-messenger",
+      "cs-da-friend-mule",
+      "cs-da-fake-seller",
+      "cs-da-fake-buyer",
+      "cs-da-invest",
+      "cs-da-recovery",
+      "cs-en-romance-crypto",
+      "cs-en-fake-seller",
+      "cs-en-verify-code"
+    ],
+    "false_positive_ids": []
+  },
+  "caveat": "Every row is synthetic. The lexicon was written from the same playbook, and the benign rows were written so they would not contain two lexicon hits, so its precision is not a live-traffic estimate. The TF-IDF model does not see stage labels. Neither number is performance on UCI SMS, ScamGuardBench, or a real inbox."
+}
