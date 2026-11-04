@@ -1,5 +1,5 @@
 // Classic content script and a Node ESM side-effect module. No import/export.
-// Amounts: "500 kr", "kr 500", "DKK 1.800", "1,800 kr", "€45", "45 EUR", "$120".
+// Amounts: "500 kr", "kr 500", "DKK 1.800", "1,800 kr", "€45", "45 EUR", "$120", "1500 NOK", "1500 SEK".
 
 function parseLocalizedNumber(raw) {
   const s = String(raw).replace(/\s/g, "");
@@ -16,11 +16,15 @@ function currencyOf(raw) {
   if (/€|eur|euro/i.test(raw)) return "EUR";
   if (/\$|usd/i.test(raw)) return "USD";
   if (/£|gbp|pound/i.test(raw)) return "GBP";
+  // The amount span is only the matched token ("1500 NOK"), so a later Danish
+  // "er nok" never reaches this. A bare number still does not match CUR.
+  if (/nok/i.test(raw)) return "NOK";
+  if (/sek/i.test(raw)) return "SEK";
   return "DKK";
 }
 
 const NUM = String.raw`\d{1,3}(?:[ .,]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?`;
-const CUR = String.raw`kr\.?|kroner|dkk|eur|euro|usd|€|\$|£|gbp|pounds?`;
+const CUR = String.raw`kr\.?|kroner|dkk|nok|sek|eur|euro|usd|€|\$|£|gbp|pounds?`;
 const AMOUNT_RE = new RegExp(
   String.raw`(?<![\p{L}\p{N}])(?:(?:${CUR})\s*(${NUM})|(${NUM})\s*(?:${CUR}))(?![\p{L}\p{N}])`,
   "giu"

@@ -56,7 +56,7 @@ const WIRE_BANK_GAP = "(?:\\$?\\d+(?:[.,]\\d+)+|[^\\s.,;!?]+)";
 const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family", gate: "ff-phrase" },
   { id: "friends_family", re: "venner\\s+(?:og|&)\\s+familie", gate: "ff-phrase" },
-  { id: "friends_family", re: "F&F", gate: "none" },
+  { id: "friends_family", re: "F&F", gate: "ff-token" },
   { id: "friends_family", re: "FnF", gate: "none" },
   { id: "friends_family", re: "family\\s+(?:and|&)\\s+friends", gate: "ff-phrase" },
   { id: "friends_family", re: "familie\\s+(?:og|&)\\s+venner", gate: "ff-phrase" },
@@ -71,6 +71,9 @@ const RULES = [
   // "gift card" / "gavekort" stay off-platform.
   { id: "friends_family", re: `send(?:er|e)?(?![\\p{L}\\p{N}])(?:[ \\t]+(?!as(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+as[ \\t]+(?:a[ \\t]+)?gift(?![\\p{L}\\p{N}])(?![ \\t]*cards?(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   { id: "friends_family", re: `(?:send(?:er|e)?|betal(?:e|ing)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!som(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
+  // Amount between the verb and "som gave". "overfør billederne som gave" has
+  // no amount, and "overførte" does not match the verb.
+  { id: "friends_family", re: `(?:overfør(?:er)?|overfoer(?:er)?|mobile\\s*pay)(?![\\p{L}\\p{N}])[ \\t]+\\d+(?:[.,]\\d+)?[ \\t]+(?:kr\\.?|kroner)[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   { id: "friends_family", re: "personal\\s+(?:paypal\\s+)?payment", gate: "none" },
 
   { id: "upfront_deposit", re: "hold\\s+it\\s+for\\s+you", gate: "deposit-specific" },
@@ -96,10 +99,12 @@ const RULES = [
   { id: "off_platform", re: "(?:safe|secure|holding|new)\\s+(?:bank\\s+)?account", gate: "iban" },
   { id: "off_platform", re: "bank\\s+transfers?", gate: "negation" },
   { id: "off_platform", re: "wire\\s+transfers?", gate: "negation" },
-  // "wire/transfer … to my bank" or "to my bank account". Still open:
-  // "to our bank", "to the bank account", "to your account", and
-  // Danish/Swedish "overfør" / "överför … til min konto".
+  // "wire/transfer … to my bank" stays the next rule, unchanged. The two rules
+  // after it cover "our bank", "the bank account", "your account", and
+  // overfør/överför til min konto. Those require a parsed amount in the span.
   { id: "off_platform", re: `(?<![\\p{L}\\p{N}])(?:wire|transfer)(?:[ \\t]+(?!to\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+to[ \\t]+(?:my[ \\t]+)?bank(?:[ \\t]+account)?`, gate: "wire-bank", flags: "giu" },
+  { id: "off_platform", re: `(?:wire|transfer)(?:[ \\t]+(?!to\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+to[ \\t]+(?:our[ \\t]+bank|the[ \\t]+bank[ \\t]+account|your[ \\t]+account)`, gate: "wire-amount" },
+  { id: "off_platform", re: `(?:overfør(?:er)?|overfoer(?:er)?|överför(?:er)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!(?:til|till)\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+til(?:l)?[ \\t]+mi(?:n|tt)[ \\t]+konto`, gate: "wire-amount" },
   { id: "off_platform", re: "bankoverførsel", gate: "negation" },
   { id: "off_platform", re: "reg\\.?\\s*nr", gate: "negation" },
   { id: "off_platform", re: "registreringsnummer", gate: "negation" },
@@ -111,6 +116,9 @@ const RULES = [
   { id: "off_platform", re: "revolut", gate: "negation" },
   { id: "off_platform", re: "(?:transferwise|wise\\.com|\\b(?:via|on|with|til|through|på)\\s+wise\\b|\\bwise\\s+transfer\\b)", gate: "negation" },
   { id: "off_platform", re: "bitcoin|bitcoins|\\bbtc\\b|ethereum|\\busdt\\b|crypto(?:currency)?", gate: "negation" },
+  // Not the negation gate above: a bare "USDC" topic must not leave a signal.
+  // A number on the token ("500 USDC") counts even though USDC is not a currency code.
+  { id: "off_platform", re: "usdc", gate: "usdc" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
   // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
   { id: "off_platform", re: "(?:steam|google\\s*play|itunes|apple|amazon|ebay)\\s+(?:gift\\s+)?cards?", gate: "giftcard" },
@@ -452,7 +460,8 @@ function amountNear(text, start, end, window) {
 // now / today / the end of the sentence. "2 photos" and "10 more photos" do not.
 // "payment details" and "payment link" name a thing, not the money. "paid ...
 // ago", "paid ... last month", "paid ... in 2022", "paid ... when I bought",
-// and "I paid for the service" are history, not an ask.
+// "I paid for the service", "I paid upfront", and "we paid ... upfront"
+// with no amount are history, not an ask.
 const MONEY_WORD = /(?<![\p{L}\p{N}])(?:money|cash|funds|fees?|deposits?|depositum|kroner|dollars?|euros?|amounts?|half)(?![\p{L}\p{N}])/iu;
 const BARE_AMOUNT = /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?(?:\s*%)?(?![\p{L}\p{N}])/iu;
 const PAST_PAY = /(?<![\p{L}\p{N}])(?:ago|last[ \t]+(?:night|week|month|year)|bought|purchased|in[ \t]+(?:19|20)\d{2})(?![\p{L}\p{N}])/iu;
@@ -495,8 +504,24 @@ function paymentNamesThing(text, wordStart) {
 function paidHistory(text, start) {
   const sentence = sentenceAt(text, start);
   if (PAST_PAY.test(sentence)) return true;
-  // "I paid for the service upfront." A past purchase with no amount.
-  if (/^\s*I\s+paid\s+for\b/iu.test(sentence) && !amountSpans(sentence).length && !bareAmountCounts(sentence)) return true;
+  // A past purchase with no amount: "I paid for the service upfront.",
+  // "I paid upfront for the service.", "We paid for the repair upfront.",
+  // "I already paid the deposit". Naming an amount keeps it an ask.
+  if (amountSpans(sentence).length || bareAmountCounts(sentence)) return false;
+  return /^\s*(?:i|we)\s+(?:already\s+)?paid\b/iu.test(sentence);
+}
+
+// "paid" in a past sentence is not the pay word that unlocks "deposit".
+// send/pay/via still count. An amount is handled by the caller.
+function payWordNearLive(text, start, end, window) {
+  const from = Math.max(0, start - window);
+  const to = Math.min(text.length, end + window);
+  const re = new RegExp(PAY_WORD.source, "giu");
+  for (const match of text.slice(from, to).matchAll(re)) {
+    const at = from + (match.index ?? 0);
+    if (/^paid$/iu.test(match[0]) && paidHistory(text, at)) continue;
+    return true;
+  }
   return false;
 }
 
@@ -814,6 +839,29 @@ function linkAllowed(text, start, end) {
   return LURE.test(near);
 }
 
+// "I won't take PayPal F&F" refuses the rail. "Never send … via F&F" stays a
+// hit so the prohibition layer can quiet it; that sentence is not "take".
+function ffTokenOk(text, start) {
+  if (negatedBefore(text, start)) return false;
+  const before = text.slice(Math.max(0, start - 48), start);
+  return !/(?<![\p{L}\p{N}])(?:won['’]?t|wont|will\s+not|don['’]?t|dont|do\s+not|never|not)\s+take(?:\s+[\p{L}\p{N}]+){0,4}\s+$/iu.test(before);
+}
+
+// The span has to contain a parsed amount. "transfer the file …" has none.
+function wireAmountOk(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  return amountSpans(text).some((amount) => amount.start < end && amount.end > start);
+}
+
+// A parsed amount nearby, or a bare number on the token ("500 USDC").
+// "Send the USDC whitepaper" has neither.
+function usdcAsk(text, start, end) {
+  if (negatedBefore(text, start)) return false;
+  if (amountNear(text, start, end, 32)) return true;
+  const before = text.slice(Math.max(0, start - 16), start);
+  return /(?<![\p{L}\p{N}])\d+(?:[.,]\d+)?\s*$/u.test(before);
+}
+
 function allow(rule, text, start, end) {
   if (rule.gate === "gift-ask") return giftAskOk(text, start, end);
   if (rule.gate === "upfront-window") return upfrontWindowOk(text, start, end);
@@ -824,12 +872,14 @@ function allow(rule, text, start, end) {
   if (rule.gate === "none" || rule.gate === "deposit-specific") return !negatedBefore(text, start);
   if (rule.gate === "chat-pay") return paymentViaChat(text, start, end);
   if (rule.gate === "negation") return !negatedBefore(text, start);
+  if (rule.gate === "ff-token") return ffTokenOk(text, start);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "ff-dictated") return dictatedFamilyOnly(text, start, end);
   if (rule.gate === "ff-pivot") return familyPivot(text, start);
   if (rule.gate === "deposit-word") {
     if (depositRejected(text, start, end)) return false;
-    return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
+    if (amountNear(text, start, end, 80)) return true;
+    return payWordNearLive(text, start, end, 80);
   }
   if (rule.gate === "reserve") {
     if (depositRejected(text, start, end)) return false;
@@ -840,6 +890,8 @@ function allow(rule, text, start, end) {
     if (negatedBefore(text, start)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
+  if (rule.gate === "wire-amount") return wireAmountOk(text, start, end);
+  if (rule.gate === "usdc") return usdcAsk(text, start, end);
   if (rule.gate === "acct") {
     // "Your account number: XXXX" on a bill or receipt is the reader's own account, not a payee.
     // Otherwise this stays as wide as the old negation gate, so a transfer plus an amount still fires.

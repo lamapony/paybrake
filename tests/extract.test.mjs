@@ -34,6 +34,27 @@ test("1,800 kr", () => {
   assert.equal(amount.currency, "DKK");
 });
 
+test("1500 NOK and 1500 SEK", () => {
+  const nok = one("Send 1500 NOK upfront to hold it.");
+  assert.equal(nok.value, 1500);
+  assert.equal(nok.currency, "NOK");
+  const sek = one("Send 1500 SEK upfront to hold it.");
+  assert.equal(sek.value, 1500);
+  assert.equal(sek.currency, "SEK");
+});
+
+test("kr stays DKK and a bare number or a Danish nok is not a new amount", () => {
+  const kr = one("Send 1500 kr upfront to hold it.");
+  assert.equal(kr.value, 1500);
+  assert.equal(kr.currency, "DKK");
+  assert.equal(parseAmounts("NOK is the currency code I learned in school yesterday.").length, 0);
+  assert.equal(parseAmounts("Send me 500 for the bike in advance.").length, 0);
+  assert.equal(parseAmounts("Send 2 photos in advance of the bike.").length, 0);
+  const enough = parseAmounts("Send 1500 kr er nok upfront to hold it.");
+  assert.equal(enough.length, 1);
+  assert.equal(enough[0].currency, "DKK");
+});
+
 test("€45 and 45 EUR and $120", () => {
   assert.deepEqual(one("It is €45 now").value, 45);
   assert.equal(one("It is €45 now").currency, "EUR");
