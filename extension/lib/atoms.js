@@ -164,6 +164,8 @@ const RULES = [
   { id: "off_platform", re: "klarna", gate: "amount-near" },
   // Afterpay. Same gate: pay-or-amount would fire with no sum. alipay and wechat do not match.
   { id: "off_platform", re: "afterpay", gate: "amount-near" },
+  // Payoneer. Same gate: paid and via are already pay words. paytm, alipay and wechat do not match.
+  { id: "off_platform", re: "payoneer", gate: "amount-near" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "none" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "none" },
