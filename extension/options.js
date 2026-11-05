@@ -39,6 +39,7 @@ async function load() {
   $("backend").value = opts.backendUrl || DEFAULT_BACKEND;
   // Demo build: the AI check on all chats is ON unless the user turned it off.
   $("aiAll").checked = typeof opts.aiAll === "boolean" ? opts.aiAll : true;
+  $("localModel").checked = typeof opts.localModel === "boolean" ? opts.localModel : true;
   $("debug").checked = Boolean(opts.debug);
   renderLog(await readLog());
   showAiStatus($("backend").value);
@@ -71,6 +72,7 @@ $("opts").addEventListener("submit", async (event) => {
     pb_opts: {
       backendUrl,
       aiAll: $("aiAll").checked,
+      localModel: $("localModel").checked,
       debug: $("debug").checked
     }
   });

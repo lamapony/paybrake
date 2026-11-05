@@ -11,6 +11,13 @@ importScripts(
   "lib/ask-llm.js",
   "lib/chat-state.js"
 );
+// On-device scam model. Loaded on its own so a missing or broken weights file leaves the
+// rules running: pbScamModel.score() then returns null and detect() skips the model.
+try {
+  importScripts("lib/scam-model-weights.js", "lib/scam-model.js");
+} catch (error) {
+  console.warn("PayBrake: on-device model not loaded, rules only", error && error.message);
+}
 
 const LOG_MAX = 200;
 const TTL_MS = 24 * 60 * 60 * 1000;
@@ -25,9 +32,14 @@ function rulesVersion() {
   return (globalThis.pbAtoms && globalThis.pbAtoms.RULES_VERSION) || 1;
 }
 
-// One cache row per chat text (hash), rules version and check mode ("rules" or "ai").
-function cacheKey(hash, mode) {
-  return `pb:${hash}:r${rulesVersion()}:${mode}`;
+function modelTag(opts) {
+  const m = opts && opts.localModel && globalThis.pbScamModel && globalThis.pbScamModel.info();
+  return m ? m.version : "nomodel";
+}
+
+// One cache row per chat text (hash), rules version, model version and check mode ("rules" or "ai").
+function cacheKey(hash, mode, opts) {
+  return `pb:${hash}:r${rulesVersion()}:${modelTag(opts)}:${mode}`;
 }
 
 const AI_TIMEOUT_MS = 6000;
@@ -49,6 +61,8 @@ async function getOpts() {
   return {
     backendUrl: String(opts.backendUrl || DEFAULT_BACKEND).replace(/\/$/, ""),
     aiAll: aiAllFrom(opts),
+    // The on-device model defaults ON: it never sends anything, and it only adds medium cards.
+    localModel: typeof opts.localModel === "boolean" ? opts.localModel : true,
     debug: Boolean(opts.debug)
   };
 }
@@ -57,8 +71,8 @@ function cacheable(verdict) {
   return !!(verdict && verdict.llm !== "error" && verdict.llm !== "unavailable");
 }
 
-async function readCache(hash, mode) {
-  const key = cacheKey(hash, mode);
+async function readCache(hash, mode, opts) {
+  const key = cacheKey(hash, mode, opts);
   const mem = memory.get(key);
   if (mem && fresh(mem) && cacheable(mem.verdict)) return mem;
   const stored = await chrome.storage.local.get(key);
@@ -70,10 +84,10 @@ async function readCache(hash, mode) {
   return null;
 }
 
-async function writeCache(hash, verdict, mode) {
+async function writeCache(hash, verdict, mode, opts) {
   // Only the verdict is stored, never the chat text.
   const row = { verdict, ts: Date.now() };
-  const key = cacheKey(hash, mode);
+  const key = cacheKey(hash, mode, opts);
   if (!cacheable(verdict)) return;
   memory.set(key, row);
   await chrome.storage.local.set({ [key]: row });
@@ -155,20 +169,21 @@ async function health() {
 
 async function runDetect(text, context, opts, phase, info) {
   const payRisk = globalThis.pbPayRisk;
-  if (phase !== "ai" || !opts.aiAll) return payRisk.detect(text, context, {});
+  const local = { localModel: !!opts.localModel };
+  if (phase !== "ai" || !opts.aiAll) return payRisk.detect(text, context, local);
   if (!info) {
-    const rules = await payRisk.detect(text, context, {});
+    const rules = await payRisk.detect(text, context, local);
     return Object.assign({}, rules, { llm: "unavailable" });
   }
   if (info.llm !== "configured") {
     // No AI provider on this server (the hosted test server runs in mock mode):
-    // nothing is sent, the rules verdict stands, and the card says so.
-    const rules = await payRisk.detect(text, context, {});
+    // nothing is sent, the rules (and on-device model) verdict stands, and the card says so.
+    const rules = await payRisk.detect(text, context, local);
     return Object.assign({}, rules, { llm: "off_server" });
   }
   // detect() redacts emails, phones, card numbers, IBANs and codes before askLlm sees the text.
   const ask = (payload) => globalThis.pbAskLlm.askLlm(payload, { baseUrl: opts.backendUrl, timeoutMs: AI_TIMEOUT_MS });
-  return payRisk.detect(text, context, { askLlm: ask, llmMode: "all", timeoutMs: AI_TIMEOUT_MS + 250 });
+  return payRisk.detect(text, context, { ...local, askLlm: ask, llmMode: "all", timeoutMs: AI_TIMEOUT_MS + 250 });
 }
 
 async function onDetect(message, opts) {
@@ -178,7 +193,7 @@ async function onDetect(message, opts) {
   const phase = message.phase === "ai" && opts.aiAll ? "ai" : "rules";
   const info = await health();
   const base = { ok: true, debug: opts.debug, mode: info && info.paypal, aiOn: opts.aiAll, aiServer: info ? info.llm : "unreachable" };
-  const cached = hash ? await readCache(hash, phase) : null;
+  const cached = hash ? await readCache(hash, phase, opts) : null;
   let verdict;
   let fromCache = false;
   if (cached) {
@@ -197,7 +212,7 @@ async function onDetect(message, opts) {
       inflight.delete(key);
     }
     if (hash) {
-      await writeCache(hash, verdict, phase);
+      await writeCache(hash, verdict, phase, opts);
       await rememberDeal(hash, { verdict, context, text: text.slice(0, 500) });
     }
   }

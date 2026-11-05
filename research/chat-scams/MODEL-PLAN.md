@@ -1,5 +1,7 @@
 # Plan for a small on-device chat-scam classifier
 
+> Update 2026-11-05: step 2 (hashed character n-grams + logistic regression) is built and wired into the extension behind the rules. See `train-model.mjs`, `model-results.json`, and the README section "On-device scam model". The model adds a medium card only when the rules found no ask, as this plan required. The plan text below is unchanged.
+
 The detector should run in the browser, on the chat the user already has open, and should stay quiet on ordinary payment talk. This note is a plan and a smoke test. It does not change the extension, and it does not train a model for deployment.
 
 `baseline_tfidf.py` is the smoke test. It reads `data/chat-scams/seed.jsonl` (37 synthetic chats, 18 scam and 19 benign, Danish and English) and writes `baseline-results.json`.

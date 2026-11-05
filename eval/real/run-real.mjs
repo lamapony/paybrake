@@ -4,12 +4,13 @@
 //   node eval/real/download.mjs
 //   node eval/real/run-real.mjs                 # rules only, all sampled rows
 //   node eval/real/run-real.mjs --llm --llm-n=200   # + rules+LLM and LLM-alone on a test-split subsample
+//   node eval/real/run-real.mjs --model             # rules + on-device model (extension/lib/scam-model.js)
 //
 // Writes eval/real/results/rules-v<RULES_VERSION>.json (+ llm-v<N>.json). No message text is written to results/.
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { payRisk, atoms } from "../../extension/lib/index.js";
+import { payRisk, atoms, scamModel } from "../../extension/lib/index.js";
 import { loadAll } from "./load.mjs";
 import { sampleBalanced, mulberry32, shuffle } from "./sample.mjs";
 import { metrics, groupMetrics, printSummary } from "./metrics.mjs";
@@ -39,7 +40,8 @@ async function runOne(item, options = {}) {
     silentReason: v.silentReason || null,
     signals: v.signals || [],
     evidence: (v.evidence || []).map((e) => e.text).slice(0, 4),
-    llm: v.llm || "off"
+    llm: v.llm || "off",
+    ...(v.modelScore ? { modelP: v.modelScore.p, source: v.source } : {})
   };
 }
 
@@ -65,15 +67,16 @@ async function main() {
   const rows = [];
   const local = [];
   for (const item of sample) {
-    const res = await runOne(item);
+    const res = await runOne(item, flag("model") ? { localModel: true } : {});
     const row = { id: item.id, dataset: item.dataset, split: item.split, label: item.label, subtype: item.subtype, payAsk: item.payAsk, nMessages: item.messages.length, ...res };
     rows.push(row);
     local.push({ ...row, text: textOf(item).slice(0, 1500) });
   }
   const g = groupMetrics(rows);
-  printSummary(`rules v${atoms.RULES_VERSION} (seed ${SEED})`, g);
+  const modelTag = flag("model") && scamModel.info() ? " + model " + scamModel.info().version : "";
+  printSummary(`rules v${atoms.RULES_VERSION}${modelTag} (seed ${SEED})`, g);
   mkdirSync(resultsDir, { recursive: true });
-  const tag = opt("tag", "rules-v" + atoms.RULES_VERSION);
+  const tag = opt("tag", "rules-v" + atoms.RULES_VERSION + (modelTag ? "-model" : ""));
   writeFileSync(path.join(resultsDir, tag + ".json"), JSON.stringify({ rulesVersion: atoms.RULES_VERSION, seed: SEED, at: new Date().toISOString(), metrics: g, rows }, null, 1) + "\n");
   writeFileSync(path.join(localDir, tag + ".local.json"), JSON.stringify(local, null, 1));
   console.log("wrote results/" + tag + ".json");

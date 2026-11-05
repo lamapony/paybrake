@@ -1,0 +1,10696 @@
+{
+ "at": "2026-11-05T07:48:31.484Z",
+ "rulesVersion": 4,
+ "featureVersion": 1,
+ "config": {
+  "bits": 18,
+  "epochs": 12,
+  "l2": 0.000001,
+  "lr": 0.5,
+  "fprBudget": 0.005,
+  "sampleSeed": 20261026
+ },
+ "threshold": 0.922,
+ "trainRows": 1480,
+ "trainByDataset": {
+  "scam_dialogue": 1098,
+  "scamguardbench": 185,
+  "seed": 37,
+  "train_synth": 160
+ },
+ "weightsBytesBase64": 349528,
+ "outOfFold": {
+  "all": {
+   "n": 1480,
+   "tp": 674,
+   "fp": 2,
+   "fn": 48,
+   "tn": 756,
+   "precision": 0.997,
+   "recall": 0.934,
+   "f1": 0.964,
+   "fpr": 0.003
+  },
+  "seed": {
+   "n": 37,
+   "tp": 9,
+   "fp": 0,
+   "fn": 9,
+   "tn": 19,
+   "precision": 1,
+   "recall": 0.5,
+   "f1": 0.667,
+   "fpr": 0
+  }
+ },
+ "test": {
+  "pooled": {
+   "rules": {
+    "n": 1573,
+    "tp": 325,
+    "fp": 8,
+    "fn": 388,
+    "tn": 852,
+    "precision": 0.976,
+    "recall": 0.456,
+    "f1": 0.621,
+    "fpr": 0.009
+   },
+   "model": {
+    "n": 1573,
+    "tp": 334,
+    "fp": 2,
+    "fn": 379,
+    "tn": 858,
+    "precision": 0.994,
+    "recall": 0.468,
+    "f1": 0.637,
+    "fpr": 0.002
+   },
+   "rules_or_model": {
+    "n": 1573,
+    "tp": 362,
+    "fp": 10,
+    "fn": 351,
+    "tn": 850,
+    "precision": 0.973,
+    "recall": 0.508,
+    "f1": 0.667,
+    "fpr": 0.012
+   }
+  },
+  "byDataset": {
+   "sms_spam": {
+    "rules": {
+     "n": 500,
+     "tp": 0,
+     "fp": 0,
+     "fn": 250,
+     "tn": 250,
+     "precision": null,
+     "recall": 0,
+     "f1": 0,
+     "fpr": 0
+    },
+    "model": {
+     "n": 500,
+     "tp": 4,
+     "fp": 0,
+     "fn": 246,
+     "tn": 250,
+     "precision": 1,
+     "recall": 0.016,
+     "f1": 0.031,
+     "fpr": 0
+    },
+    "rules_or_model": {
+     "n": 500,
+     "tp": 4,
+     "fp": 0,
+     "fn": 246,
+     "tn": 250,
+     "precision": 1,
+     "recall": 0.016,
+     "f1": 0.031,
+     "fpr": 0
+    }
+   },
+   "discord": {
+    "rules": {
+     "n": 388,
+     "tp": 32,
+     "fp": 1,
+     "fn": 106,
+     "tn": 249,
+     "precision": 0.97,
+     "recall": 0.232,
+     "f1": 0.374,
+     "fpr": 0.004
+    },
+    "model": {
+     "n": 388,
+     "tp": 9,
+     "fp": 2,
+     "fn": 129,
+     "tn": 248,
+     "precision": 0.818,
+     "recall": 0.065,
+     "f1": 0.121,
+     "fpr": 0.008
+    },
+    "rules_or_model": {
+     "n": 388,
+     "tp": 36,
+     "fp": 3,
+     "fn": 102,
+     "tn": 247,
+     "precision": 0.923,
+     "recall": 0.261,
+     "f1": 0.407,
+     "fpr": 0.012
+    }
+   },
+   "scam_dialogue": {
+    "rules": {
+     "n": 500,
+     "tp": 225,
+     "fp": 2,
+     "fn": 25,
+     "tn": 248,
+     "precision": 0.991,
+     "recall": 0.9,
+     "f1": 0.943,
+     "fpr": 0.008
+    },
+    "model": {
+     "n": 500,
+     "tp": 249,
+     "fp": 0,
+     "fn": 1,
+     "tn": 250,
+     "precision": 1,
+     "recall": 0.996,
+     "f1": 0.998,
+     "fpr": 0
+    },
+    "rules_or_model": {
+     "n": 500,
+     "tp": 250,
+     "fp": 2,
+     "fn": 0,
+     "tn": 248,
+     "precision": 0.992,
+     "recall": 1,
+     "f1": 0.996,
+     "fpr": 0.008
+    }
+   },
+   "scamguardbench": {
+    "rules": {
+     "n": 185,
+     "tp": 68,
+     "fp": 5,
+     "fn": 7,
+     "tn": 105,
+     "precision": 0.932,
+     "recall": 0.907,
+     "f1": 0.919,
+     "fpr": 0.045
+    },
+    "model": {
+     "n": 185,
+     "tp": 72,
+     "fp": 0,
+     "fn": 3,
+     "tn": 110,
+     "precision": 1,
+     "recall": 0.96,
+     "f1": 0.98,
+     "fpr": 0
+    },
+    "rules_or_model": {
+     "n": 185,
+     "tp": 72,
+     "fp": 5,
+     "fn": 3,
+     "tn": 105,
+     "precision": 0.935,
+     "recall": 0.96,
+     "f1": 0.947,
+     "fpr": 0.045
+    }
+   }
+  }
+ },
+ "heldout": {
+  "all": {
+   "rules": {
+    "n": 100,
+    "tp": 19,
+    "fp": 3,
+    "fn": 21,
+    "tn": 57,
+    "precision": 0.864,
+    "recall": 0.475,
+    "f1": 0.613,
+    "fpr": 0.05
+   },
+   "model": {
+    "n": 100,
+    "tp": 28,
+    "fp": 0,
+    "fn": 12,
+    "tn": 60,
+    "precision": 1,
+    "recall": 0.7,
+    "f1": 0.824,
+    "fpr": 0
+   },
+   "rules_or_model": {
+    "n": 100,
+    "tp": 33,
+    "fp": 3,
+    "fn": 7,
+    "tn": 57,
+    "precision": 0.917,
+    "recall": 0.825,
+    "f1": 0.868,
+    "fpr": 0.05
+   }
+  },
+  "da": {
+   "rules": {
+    "n": 65,
+    "tp": 10,
+    "fp": 2,
+    "fn": 15,
+    "tn": 38,
+    "precision": 0.833,
+    "recall": 0.4,
+    "f1": 0.541,
+    "fpr": 0.05
+   },
+   "model": {
+    "n": 65,
+    "tp": 19,
+    "fp": 0,
+    "fn": 6,
+    "tn": 40,
+    "precision": 1,
+    "recall": 0.76,
+    "f1": 0.864,
+    "fpr": 0
+   },
+   "rules_or_model": {
+    "n": 65,
+    "tp": 22,
+    "fp": 2,
+    "fn": 3,
+    "tn": 38,
+    "precision": 0.917,
+    "recall": 0.88,
+    "f1": 0.898,
+    "fpr": 0.05
+   }
+  },
+  "en": {
+   "rules": {
+    "n": 35,
+    "tp": 9,
+    "fp": 1,
+    "fn": 6,
+    "tn": 19,
+    "precision": 0.9,
+    "recall": 0.6,
+    "f1": 0.72,
+    "fpr": 0.05
+   },
+   "model": {
+    "n": 35,
+    "tp": 9,
+    "fp": 0,
+    "fn": 6,
+    "tn": 20,
+    "precision": 1,
+    "recall": 0.6,
+    "f1": 0.75,
+    "fpr": 0
+   },
+   "rules_or_model": {
+    "n": 35,
+    "tp": 11,
+    "fp": 1,
+    "fn": 4,
+    "tn": 19,
+    "precision": 0.917,
+    "recall": 0.733,
+    "f1": 0.815,
+    "fpr": 0.05
+   }
+  }
+ },
+ "marketplaceCases": {
+  "all": {
+   "rules": {
+    "n": 35,
+    "tp": 18,
+    "fp": 0,
+    "fn": 0,
+    "tn": 17,
+    "precision": 1,
+    "recall": 1,
+    "f1": 1,
+    "fpr": 0
+   },
+   "model": {
+    "n": 35,
+    "tp": 5,
+    "fp": 0,
+    "fn": 13,
+    "tn": 17,
+    "precision": 1,
+    "recall": 0.278,
+    "f1": 0.435,
+    "fpr": 0
+   },
+   "rules_or_model": {
+    "n": 35,
+    "tp": 18,
+    "fp": 0,
+    "fn": 0,
+    "tn": 17,
+    "precision": 1,
+    "recall": 1,
+    "f1": 1,
+    "fpr": 0
+   }
+  },
+  "da": {
+   "rules": {
+    "n": 10,
+    "tp": 5,
+    "fp": 0,
+    "fn": 0,
+    "tn": 5,
+    "precision": 1,
+    "recall": 1,
+    "f1": 1,
+    "fpr": 0
+   },
+   "model": {
+    "n": 10,
+    "tp": 2,
+    "fp": 0,
+    "fn": 3,
+    "tn": 5,
+    "precision": 1,
+    "recall": 0.4,
+    "f1": 0.571,
+    "fpr": 0
+   },
+   "rules_or_model": {
+    "n": 10,
+    "tp": 5,
+    "fp": 0,
+    "fn": 0,
+    "tn": 5,
+    "precision": 1,
+    "recall": 1,
+    "f1": 1,
+    "fpr": 0
+   }
+  },
+  "en": {
+   "rules": {
+    "n": 25,
+    "tp": 13,
+    "fp": 0,
+    "fn": 0,
+    "tn": 12,
+    "precision": 1,
+    "recall": 1,
+    "f1": 1,
+    "fpr": 0
+   },
+   "model": {
+    "n": 25,
+    "tp": 3,
+    "fp": 0,
+    "fn": 10,
+    "tn": 12,
+    "precision": 1,
+    "recall": 0.231,
+    "f1": 0.375,
+    "fpr": 0
+   },
+   "rules_or_model": {
+    "n": 25,
+    "tp": 13,
+    "fp": 0,
+    "fn": 0,
+    "tn": 12,
+    "precision": 1,
+    "recall": 1,
+    "f1": 1,
+    "fpr": 0
+   }
+  }
+ },
+ "rows": {
+  "test": [
+   {
+    "id": "sms_spam:650",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3182
+   },
+   {
+    "id": "sms_spam:3425",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4601
+   },
+   {
+    "id": "sms_spam:3893",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0287
+   },
+   {
+    "id": "sms_spam:2160",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0211
+   },
+   {
+    "id": "sms_spam:4407",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4688
+   },
+   {
+    "id": "sms_spam:1463",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1416
+   },
+   {
+    "id": "sms_spam:1378",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.026
+   },
+   {
+    "id": "sms_spam:2295",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0449
+   },
+   {
+    "id": "sms_spam:1414",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1153
+   },
+   {
+    "id": "sms_spam:5278",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7696
+   },
+   {
+    "id": "sms_spam:2818",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0356
+   },
+   {
+    "id": "sms_spam:117",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2239
+   },
+   {
+    "id": "sms_spam:515",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.014
+   },
+   {
+    "id": "sms_spam:1122",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0213
+   },
+   {
+    "id": "sms_spam:1374",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1062
+   },
+   {
+    "id": "sms_spam:420",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2673
+   },
+   {
+    "id": "sms_spam:12",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2601
+   },
+   {
+    "id": "sms_spam:962",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8229
+   },
+   {
+    "id": "sms_spam:531",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0329
+   },
+   {
+    "id": "sms_spam:2670",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0005
+   },
+   {
+    "id": "sms_spam:3483",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0181
+   },
+   {
+    "id": "sms_spam:123",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0664
+   },
+   {
+    "id": "sms_spam:2770",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.256
+   },
+   {
+    "id": "sms_spam:2100",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5916
+   },
+   {
+    "id": "sms_spam:3571",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0107
+   },
+   {
+    "id": "sms_spam:4896",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0063
+   },
+   {
+    "id": "sms_spam:4112",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6516
+   },
+   {
+    "id": "sms_spam:4676",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1583
+   },
+   {
+    "id": "sms_spam:1778",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3796
+   },
+   {
+    "id": "sms_spam:8",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9842
+   },
+   {
+    "id": "sms_spam:2",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0218
+   },
+   {
+    "id": "sms_spam:3556",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2581
+   },
+   {
+    "id": "sms_spam:717",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.091
+   },
+   {
+    "id": "sms_spam:4543",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2991
+   },
+   {
+    "id": "sms_spam:910",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0419
+   },
+   {
+    "id": "sms_spam:2708",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0119
+   },
+   {
+    "id": "sms_spam:3860",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.026
+   },
+   {
+    "id": "sms_spam:2556",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4916
+   },
+   {
+    "id": "sms_spam:2207",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1251
+   },
+   {
+    "id": "sms_spam:878",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.244
+   },
+   {
+    "id": "sms_spam:4297",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9305
+   },
+   {
+    "id": "sms_spam:1263",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1043
+   },
+   {
+    "id": "sms_spam:1653",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1277
+   },
+   {
+    "id": "sms_spam:529",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2035
+   },
+   {
+    "id": "sms_spam:3067",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0023
+   },
+   {
+    "id": "sms_spam:1444",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0981
+   },
+   {
+    "id": "sms_spam:2420",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5252
+   },
+   {
+    "id": "sms_spam:1613",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.186
+   },
+   {
+    "id": "sms_spam:305",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.043
+   },
+   {
+    "id": "sms_spam:4258",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4757
+   },
+   {
+    "id": "sms_spam:1500",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0438
+   },
+   {
+    "id": "sms_spam:3164",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2944
+   },
+   {
+    "id": "sms_spam:844",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0292
+   },
+   {
+    "id": "sms_spam:1635",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3073
+   },
+   {
+    "id": "sms_spam:4329",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3005
+   },
+   {
+    "id": "sms_spam:349",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0102
+   },
+   {
+    "id": "sms_spam:120",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0719
+   },
+   {
+    "id": "sms_spam:225",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0197
+   },
+   {
+    "id": "sms_spam:1097",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0378
+   },
+   {
+    "id": "sms_spam:2804",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3461
+   },
+   {
+    "id": "sms_spam:2871",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2873
+   },
+   {
+    "id": "sms_spam:1853",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3002
+   },
+   {
+    "id": "sms_spam:1930",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1033
+   },
+   {
+    "id": "sms_spam:2209",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2564
+   },
+   {
+    "id": "sms_spam:525",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.032
+   },
+   {
+    "id": "sms_spam:34",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.36
+   },
+   {
+    "id": "sms_spam:2374",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6216
+   },
+   {
+    "id": "sms_spam:3397",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4308
+   },
+   {
+    "id": "sms_spam:2581",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0078
+   },
+   {
+    "id": "sms_spam:5377",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2395
+   },
+   {
+    "id": "sms_spam:579",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.011
+   },
+   {
+    "id": "sms_spam:2343",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0558
+   },
+   {
+    "id": "sms_spam:1318",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.026
+   },
+   {
+    "id": "sms_spam:3906",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0025
+   },
+   {
+    "id": "sms_spam:1904",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0618
+   },
+   {
+    "id": "sms_spam:375",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0077
+   },
+   {
+    "id": "sms_spam:1598",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7696
+   },
+   {
+    "id": "sms_spam:463",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0602
+   },
+   {
+    "id": "sms_spam:4647",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0032
+   },
+   {
+    "id": "sms_spam:3801",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0282
+   },
+   {
+    "id": "sms_spam:2514",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3484
+   },
+   {
+    "id": "sms_spam:2826",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3896
+   },
+   {
+    "id": "sms_spam:2438",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3765
+   },
+   {
+    "id": "sms_spam:4149",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.049
+   },
+   {
+    "id": "sms_spam:2402",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.419
+   },
+   {
+    "id": "sms_spam:3792",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0226
+   },
+   {
+    "id": "sms_spam:4206",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3581
+   },
+   {
+    "id": "sms_spam:42",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0233
+   },
+   {
+    "id": "sms_spam:2830",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2673
+   },
+   {
+    "id": "sms_spam:4643",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0431
+   },
+   {
+    "id": "sms_spam:611",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0843
+   },
+   {
+    "id": "sms_spam:4069",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0101
+   },
+   {
+    "id": "sms_spam:3460",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2019
+   },
+   {
+    "id": "sms_spam:876",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0525
+   },
+   {
+    "id": "sms_spam:840",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1167
+   },
+   {
+    "id": "sms_spam:3587",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0389
+   },
+   {
+    "id": "sms_spam:2328",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2408
+   },
+   {
+    "id": "sms_spam:3972",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0717
+   },
+   {
+    "id": "sms_spam:3720",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0196
+   },
+   {
+    "id": "sms_spam:2612",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6554
+   },
+   {
+    "id": "sms_spam:1895",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4873
+   },
+   {
+    "id": "sms_spam:4968",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0732
+   },
+   {
+    "id": "sms_spam:881",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0239
+   },
+   {
+    "id": "sms_spam:3141",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1898
+   },
+   {
+    "id": "sms_spam:1221",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1257
+   },
+   {
+    "id": "sms_spam:67",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1712
+   },
+   {
+    "id": "sms_spam:3991",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0808
+   },
+   {
+    "id": "sms_spam:1699",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0063
+   },
+   {
+    "id": "sms_spam:2525",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.413
+   },
+   {
+    "id": "sms_spam:1407",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4857
+   },
+   {
+    "id": "sms_spam:1874",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5212
+   },
+   {
+    "id": "sms_spam:1807",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0453
+   },
+   {
+    "id": "sms_spam:4048",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.034
+   },
+   {
+    "id": "sms_spam:4047",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6532
+   },
+   {
+    "id": "sms_spam:2094",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0373
+   },
+   {
+    "id": "sms_spam:2430",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3016
+   },
+   {
+    "id": "sms_spam:2267",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3839
+   },
+   {
+    "id": "sms_spam:3463",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0816
+   },
+   {
+    "id": "sms_spam:4355",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.295
+   },
+   {
+    "id": "sms_spam:3891",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0778
+   },
+   {
+    "id": "sms_spam:3568",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2354
+   },
+   {
+    "id": "sms_spam:907",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0732
+   },
+   {
+    "id": "sms_spam:813",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9133
+   },
+   {
+    "id": "sms_spam:3002",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.051
+   },
+   {
+    "id": "sms_spam:5041",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7758
+   },
+   {
+    "id": "sms_spam:4985",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2294
+   },
+   {
+    "id": "sms_spam:3998",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3109
+   },
+   {
+    "id": "sms_spam:3620",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5784
+   },
+   {
+    "id": "sms_spam:5027",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4442
+   },
+   {
+    "id": "sms_spam:823",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6707
+   },
+   {
+    "id": "sms_spam:3905",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.019
+   },
+   {
+    "id": "sms_spam:1741",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.378
+   },
+   {
+    "id": "sms_spam:5073",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2204
+   },
+   {
+    "id": "sms_spam:1229",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5448
+   },
+   {
+    "id": "sms_spam:5178",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.027
+   },
+   {
+    "id": "sms_spam:3548",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0221
+   },
+   {
+    "id": "sms_spam:4673",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5329
+   },
+   {
+    "id": "sms_spam:3631",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0161
+   },
+   {
+    "id": "sms_spam:648",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0335
+   },
+   {
+    "id": "sms_spam:4243",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1053
+   },
+   {
+    "id": "sms_spam:4134",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0466
+   },
+   {
+    "id": "sms_spam:2620",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1101
+   },
+   {
+    "id": "sms_spam:576",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.278
+   },
+   {
+    "id": "sms_spam:4086",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3757
+   },
+   {
+    "id": "sms_spam:4728",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0261
+   },
+   {
+    "id": "sms_spam:4200",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7712
+   },
+   {
+    "id": "sms_spam:54",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0656
+   },
+   {
+    "id": "sms_spam:1307",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.015
+   },
+   {
+    "id": "sms_spam:418",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1361
+   },
+   {
+    "id": "sms_spam:2386",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0913
+   },
+   {
+    "id": "sms_spam:593",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0329
+   },
+   {
+    "id": "sms_spam:4834",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0153
+   },
+   {
+    "id": "sms_spam:424",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7761
+   },
+   {
+    "id": "sms_spam:856",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.045
+   },
+   {
+    "id": "sms_spam:5250",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1121
+   },
+   {
+    "id": "sms_spam:1970",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2973
+   },
+   {
+    "id": "sms_spam:3059",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2049
+   },
+   {
+    "id": "sms_spam:879",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.002
+   },
+   {
+    "id": "sms_spam:3780",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2685
+   },
+   {
+    "id": "sms_spam:4823",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3618
+   },
+   {
+    "id": "sms_spam:3419",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0268
+   },
+   {
+    "id": "sms_spam:1350",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3445
+   },
+   {
+    "id": "sms_spam:3864",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0644
+   },
+   {
+    "id": "sms_spam:2115",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0231
+   },
+   {
+    "id": "sms_spam:1718",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0374
+   },
+   {
+    "id": "sms_spam:2910",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7761
+   },
+   {
+    "id": "sms_spam:2074",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1253
+   },
+   {
+    "id": "sms_spam:1430",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1188
+   },
+   {
+    "id": "sms_spam:1628",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1723
+   },
+   {
+    "id": "sms_spam:1064",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0807
+   },
+   {
+    "id": "sms_spam:673",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2922
+   },
+   {
+    "id": "sms_spam:433",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3496
+   },
+   {
+    "id": "sms_spam:4616",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0255
+   },
+   {
+    "id": "sms_spam:2145",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4333
+   },
+   {
+    "id": "sms_spam:5482",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6664
+   },
+   {
+    "id": "sms_spam:264",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7142
+   },
+   {
+    "id": "sms_spam:1017",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0481
+   },
+   {
+    "id": "sms_spam:4652",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8466
+   },
+   {
+    "id": "sms_spam:385",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0953
+   },
+   {
+    "id": "sms_spam:3642",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0086
+   },
+   {
+    "id": "sms_spam:401",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0737
+   },
+   {
+    "id": "sms_spam:4376",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6672
+   },
+   {
+    "id": "sms_spam:4410",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3381
+   },
+   {
+    "id": "sms_spam:935",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0463
+   },
+   {
+    "id": "sms_spam:748",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.009
+   },
+   {
+    "id": "sms_spam:227",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0479
+   },
+   {
+    "id": "sms_spam:684",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1296
+   },
+   {
+    "id": "sms_spam:1460",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0193
+   },
+   {
+    "id": "sms_spam:731",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0685
+   },
+   {
+    "id": "sms_spam:4183",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1791
+   },
+   {
+    "id": "sms_spam:4514",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1679
+   },
+   {
+    "id": "sms_spam:167",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6
+   },
+   {
+    "id": "sms_spam:4088",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0329
+   },
+   {
+    "id": "sms_spam:3222",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.034
+   },
+   {
+    "id": "sms_spam:1875",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0181
+   },
+   {
+    "id": "sms_spam:4863",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0192
+   },
+   {
+    "id": "sms_spam:2965",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0043
+   },
+   {
+    "id": "sms_spam:2834",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0245
+   },
+   {
+    "id": "sms_spam:1942",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1302
+   },
+   {
+    "id": "sms_spam:3742",
+    "y": 1,
+    "rules": "short",
+    "p": 0.1073
+   },
+   {
+    "id": "sms_spam:869",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8432
+   },
+   {
+    "id": "sms_spam:191",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1063
+   },
+   {
+    "id": "sms_spam:3501",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0743
+   },
+   {
+    "id": "sms_spam:803",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0352
+   },
+   {
+    "id": "sms_spam:2663",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2584
+   },
+   {
+    "id": "sms_spam:5079",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0021
+   },
+   {
+    "id": "sms_spam:824",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5784
+   },
+   {
+    "id": "sms_spam:2664",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0451
+   },
+   {
+    "id": "sms_spam:4629",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2486
+   },
+   {
+    "id": "sms_spam:5004",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9691
+   },
+   {
+    "id": "sms_spam:5200",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9625
+   },
+   {
+    "id": "sms_spam:2119",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6419
+   },
+   {
+    "id": "sms_spam:5098",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0005
+   },
+   {
+    "id": "sms_spam:4658",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0335
+   },
+   {
+    "id": "sms_spam:3064",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6538
+   },
+   {
+    "id": "sms_spam:2626",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0403
+   },
+   {
+    "id": "sms_spam:4725",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1402
+   },
+   {
+    "id": "sms_spam:3679",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1064
+   },
+   {
+    "id": "sms_spam:1573",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3557
+   },
+   {
+    "id": "sms_spam:2309",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1891
+   },
+   {
+    "id": "sms_spam:2850",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2873
+   },
+   {
+    "id": "sms_spam:1073",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0349
+   },
+   {
+    "id": "sms_spam:1060",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4267
+   },
+   {
+    "id": "sms_spam:3897",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.685
+   },
+   {
+    "id": "sms_spam:2730",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1539
+   },
+   {
+    "id": "sms_spam:3862",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1853
+   },
+   {
+    "id": "sms_spam:2248",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2031
+   },
+   {
+    "id": "sms_spam:296",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0624
+   },
+   {
+    "id": "sms_spam:4102",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2193
+   },
+   {
+    "id": "sms_spam:3750",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0012
+   },
+   {
+    "id": "sms_spam:592",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5868
+   },
+   {
+    "id": "sms_spam:3299",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.051
+   },
+   {
+    "id": "sms_spam:2699",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0644
+   },
+   {
+    "id": "sms_spam:831",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1251
+   },
+   {
+    "id": "sms_spam:5205",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0076
+   },
+   {
+    "id": "sms_spam:761",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0135
+   },
+   {
+    "id": "sms_spam:4901",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0161
+   },
+   {
+    "id": "sms_spam:2693",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4989
+   },
+   {
+    "id": "sms_spam:270",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0712
+   },
+   {
+    "id": "sms_spam:1663",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0353
+   },
+   {
+    "id": "sms_spam:4768",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2445
+   },
+   {
+    "id": "sms_spam:4061",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2192
+   },
+   {
+    "id": "sms_spam:4298",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0091
+   },
+   {
+    "id": "sms_spam:415",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0282
+   },
+   {
+    "id": "sms_spam:3574",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3793
+   },
+   {
+    "id": "sms_spam:2250",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0146
+   },
+   {
+    "id": "sms_spam:2574",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.266
+   },
+   {
+    "id": "sms_spam:3819",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1907
+   },
+   {
+    "id": "sms_spam:5030",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.116
+   },
+   {
+    "id": "sms_spam:2297",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0651
+   },
+   {
+    "id": "sms_spam:759",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0338
+   },
+   {
+    "id": "sms_spam:5298",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5274
+   },
+   {
+    "id": "sms_spam:1672",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1214
+   },
+   {
+    "id": "sms_spam:3371",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1528
+   },
+   {
+    "id": "sms_spam:1314",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0109
+   },
+   {
+    "id": "sms_spam:2853",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.162
+   },
+   {
+    "id": "sms_spam:3841",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0309
+   },
+   {
+    "id": "sms_spam:2105",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2564
+   },
+   {
+    "id": "sms_spam:4734",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0014
+   },
+   {
+    "id": "sms_spam:1240",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0043
+   },
+   {
+    "id": "sms_spam:606",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1754
+   },
+   {
+    "id": "sms_spam:4317",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2411
+   },
+   {
+    "id": "sms_spam:3078",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0678
+   },
+   {
+    "id": "sms_spam:4971",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0158
+   },
+   {
+    "id": "sms_spam:3146",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1828
+   },
+   {
+    "id": "sms_spam:1819",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4235
+   },
+   {
+    "id": "sms_spam:168",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.084
+   },
+   {
+    "id": "sms_spam:563",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.887
+   },
+   {
+    "id": "sms_spam:771",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1197
+   },
+   {
+    "id": "sms_spam:1335",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5671
+   },
+   {
+    "id": "sms_spam:2426",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0583
+   },
+   {
+    "id": "sms_spam:5493",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1128
+   },
+   {
+    "id": "sms_spam:2173",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1413
+   },
+   {
+    "id": "sms_spam:5450",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6045
+   },
+   {
+    "id": "sms_spam:3980",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.708
+   },
+   {
+    "id": "sms_spam:3753",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0085
+   },
+   {
+    "id": "sms_spam:3703",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1756
+   },
+   {
+    "id": "sms_spam:3977",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7499
+   },
+   {
+    "id": "sms_spam:4969",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0148
+   },
+   {
+    "id": "sms_spam:2286",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0159
+   },
+   {
+    "id": "sms_spam:681",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5367
+   },
+   {
+    "id": "sms_spam:4641",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0039
+   },
+   {
+    "id": "sms_spam:4973",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0033
+   },
+   {
+    "id": "sms_spam:1357",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.117
+   },
+   {
+    "id": "sms_spam:5311",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1919
+   },
+   {
+    "id": "sms_spam:60",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0655
+   },
+   {
+    "id": "sms_spam:2913",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0051
+   },
+   {
+    "id": "sms_spam:4844",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.8115
+   },
+   {
+    "id": "sms_spam:4010",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3485
+   },
+   {
+    "id": "sms_spam:5210",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.8192
+   },
+   {
+    "id": "sms_spam:1806",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0149
+   },
+   {
+    "id": "sms_spam:3500",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0314
+   },
+   {
+    "id": "sms_spam:536",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0166
+   },
+   {
+    "id": "sms_spam:1941",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0132
+   },
+   {
+    "id": "sms_spam:1262",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.003
+   },
+   {
+    "id": "sms_spam:549",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.835
+   },
+   {
+    "id": "sms_spam:904",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.332
+   },
+   {
+    "id": "sms_spam:5515",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0838
+   },
+   {
+    "id": "sms_spam:2182",
+    "y": 0,
+    "rules": "short",
+    "p": 0.1395
+   },
+   {
+    "id": "sms_spam:2025",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.154
+   },
+   {
+    "id": "sms_spam:2321",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1372
+   },
+   {
+    "id": "sms_spam:1285",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.172
+   },
+   {
+    "id": "sms_spam:2760",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0236
+   },
+   {
+    "id": "sms_spam:3412",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4467
+   },
+   {
+    "id": "sms_spam:2418",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1117
+   },
+   {
+    "id": "sms_spam:1557",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0278
+   },
+   {
+    "id": "sms_spam:1075",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0201
+   },
+   {
+    "id": "sms_spam:3643",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7177
+   },
+   {
+    "id": "sms_spam:3931",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1231
+   },
+   {
+    "id": "sms_spam:1171",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0281
+   },
+   {
+    "id": "sms_spam:4787",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0938
+   },
+   {
+    "id": "sms_spam:1698",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0283
+   },
+   {
+    "id": "sms_spam:3659",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0191
+   },
+   {
+    "id": "sms_spam:3657",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0193
+   },
+   {
+    "id": "sms_spam:3961",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2472
+   },
+   {
+    "id": "sms_spam:404",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0126
+   },
+   {
+    "id": "sms_spam:1131",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0065
+   },
+   {
+    "id": "sms_spam:354",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3365
+   },
+   {
+    "id": "sms_spam:5430",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0232
+   },
+   {
+    "id": "sms_spam:4686",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0236
+   },
+   {
+    "id": "sms_spam:3068",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5486
+   },
+   {
+    "id": "sms_spam:1965",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.359
+   },
+   {
+    "id": "sms_spam:2292",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0381
+   },
+   {
+    "id": "sms_spam:3615",
+    "y": 0,
+    "rules": "short",
+    "p": 0.3932
+   },
+   {
+    "id": "sms_spam:2362",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0887
+   },
+   {
+    "id": "sms_spam:4684",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0682
+   },
+   {
+    "id": "sms_spam:5268",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.023
+   },
+   {
+    "id": "sms_spam:25",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0247
+   },
+   {
+    "id": "sms_spam:4944",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0775
+   },
+   {
+    "id": "sms_spam:430",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5223
+   },
+   {
+    "id": "sms_spam:3103",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0329
+   },
+   {
+    "id": "sms_spam:3976",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0279
+   },
+   {
+    "id": "sms_spam:1790",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1171
+   },
+   {
+    "id": "sms_spam:394",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0095
+   },
+   {
+    "id": "sms_spam:192",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0816
+   },
+   {
+    "id": "sms_spam:3953",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2395
+   },
+   {
+    "id": "sms_spam:3647",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0223
+   },
+   {
+    "id": "sms_spam:567",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0061
+   },
+   {
+    "id": "sms_spam:5263",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0204
+   },
+   {
+    "id": "sms_spam:1545",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0595
+   },
+   {
+    "id": "sms_spam:852",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0982
+   },
+   {
+    "id": "sms_spam:2748",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.59
+   },
+   {
+    "id": "sms_spam:1515",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1441
+   },
+   {
+    "id": "sms_spam:387",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.328
+   },
+   {
+    "id": "sms_spam:687",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0667
+   },
+   {
+    "id": "sms_spam:1278",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.126
+   },
+   {
+    "id": "sms_spam:1558",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0184
+   },
+   {
+    "id": "sms_spam:2815",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0032
+   },
+   {
+    "id": "sms_spam:1702",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5217
+   },
+   {
+    "id": "sms_spam:4114",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1173
+   },
+   {
+    "id": "sms_spam:1843",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1341
+   },
+   {
+    "id": "sms_spam:2567",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.121
+   },
+   {
+    "id": "sms_spam:1901",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.16
+   },
+   {
+    "id": "sms_spam:1011",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0968
+   },
+   {
+    "id": "sms_spam:399",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0005
+   },
+   {
+    "id": "sms_spam:3840",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0811
+   },
+   {
+    "id": "sms_spam:4554",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.015
+   },
+   {
+    "id": "sms_spam:5123",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0495
+   },
+   {
+    "id": "sms_spam:468",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0186
+   },
+   {
+    "id": "sms_spam:3257",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0648
+   },
+   {
+    "id": "sms_spam:1754",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7075
+   },
+   {
+    "id": "sms_spam:4151",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0727
+   },
+   {
+    "id": "sms_spam:1946",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0257
+   },
+   {
+    "id": "sms_spam:2489",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2402
+   },
+   {
+    "id": "sms_spam:377",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0095
+   },
+   {
+    "id": "sms_spam:2710",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2047
+   },
+   {
+    "id": "sms_spam:3026",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.844
+   },
+   {
+    "id": "sms_spam:4143",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.002
+   },
+   {
+    "id": "sms_spam:1435",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0184
+   },
+   {
+    "id": "sms_spam:4826",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.098
+   },
+   {
+    "id": "sms_spam:1391",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0419
+   },
+   {
+    "id": "sms_spam:559",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0099
+   },
+   {
+    "id": "sms_spam:4331",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0078
+   },
+   {
+    "id": "sms_spam:3902",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0787
+   },
+   {
+    "id": "sms_spam:362",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0502
+   },
+   {
+    "id": "sms_spam:5158",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5721
+   },
+   {
+    "id": "sms_spam:4941",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0536
+   },
+   {
+    "id": "sms_spam:116",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.296
+   },
+   {
+    "id": "sms_spam:2331",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2425
+   },
+   {
+    "id": "sms_spam:643",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0168
+   },
+   {
+    "id": "sms_spam:1416",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0122
+   },
+   {
+    "id": "sms_spam:3170",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0788
+   },
+   {
+    "id": "sms_spam:5544",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0493
+   },
+   {
+    "id": "sms_spam:544",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5833
+   },
+   {
+    "id": "sms_spam:3866",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4942
+   },
+   {
+    "id": "sms_spam:2751",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6869
+   },
+   {
+    "id": "sms_spam:4423",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1149
+   },
+   {
+    "id": "sms_spam:1878",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5136
+   },
+   {
+    "id": "sms_spam:3896",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0075
+   },
+   {
+    "id": "sms_spam:2179",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0276
+   },
+   {
+    "id": "sms_spam:570",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6218
+   },
+   {
+    "id": "sms_spam:2563",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0149
+   },
+   {
+    "id": "sms_spam:4530",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.032
+   },
+   {
+    "id": "sms_spam:1506",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.715
+   },
+   {
+    "id": "sms_spam:1255",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0907
+   },
+   {
+    "id": "sms_spam:5255",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0435
+   },
+   {
+    "id": "sms_spam:5059",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2024
+   },
+   {
+    "id": "sms_spam:2093",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0234
+   },
+   {
+    "id": "sms_spam:4145",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0399
+   },
+   {
+    "id": "sms_spam:3190",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0029
+   },
+   {
+    "id": "sms_spam:1834",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0354
+   },
+   {
+    "id": "sms_spam:4770",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1463
+   },
+   {
+    "id": "sms_spam:248",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2276
+   },
+   {
+    "id": "sms_spam:2435",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.657
+   },
+   {
+    "id": "sms_spam:4351",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0247
+   },
+   {
+    "id": "sms_spam:4294",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1536
+   },
+   {
+    "id": "sms_spam:2600",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0268
+   },
+   {
+    "id": "sms_spam:2465",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0758
+   },
+   {
+    "id": "sms_spam:4567",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0234
+   },
+   {
+    "id": "sms_spam:1539",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0221
+   },
+   {
+    "id": "sms_spam:4271",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0186
+   },
+   {
+    "id": "sms_spam:4205",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0231
+   },
+   {
+    "id": "sms_spam:4304",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0324
+   },
+   {
+    "id": "sms_spam:3096",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1161
+   },
+   {
+    "id": "sms_spam:2666",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0393
+   },
+   {
+    "id": "sms_spam:1928",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5344
+   },
+   {
+    "id": "sms_spam:1365",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2896
+   },
+   {
+    "id": "sms_spam:4806",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0791
+   },
+   {
+    "id": "sms_spam:3706",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0982
+   },
+   {
+    "id": "sms_spam:1538",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0569
+   },
+   {
+    "id": "sms_spam:5251",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3891
+   },
+   {
+    "id": "sms_spam:3414",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1815
+   },
+   {
+    "id": "sms_spam:176",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0166
+   },
+   {
+    "id": "sms_spam:4878",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.004
+   },
+   {
+    "id": "sms_spam:4071",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0044
+   },
+   {
+    "id": "sms_spam:2039",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0268
+   },
+   {
+    "id": "sms_spam:4431",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3251
+   },
+   {
+    "id": "sms_spam:1281",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.509
+   },
+   {
+    "id": "sms_spam:3253",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0259
+   },
+   {
+    "id": "sms_spam:4761",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0083
+   },
+   {
+    "id": "sms_spam:561",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0152
+   },
+   {
+    "id": "sms_spam:4224",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0294
+   },
+   {
+    "id": "sms_spam:3062",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0261
+   },
+   {
+    "id": "sms_spam:276",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0062
+   },
+   {
+    "id": "sms_spam:1113",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0606
+   },
+   {
+    "id": "sms_spam:3716",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0959
+   },
+   {
+    "id": "sms_spam:1661",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5341
+   },
+   {
+    "id": "sms_spam:317",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0346
+   },
+   {
+    "id": "sms_spam:3567",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1059
+   },
+   {
+    "id": "sms_spam:1912",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0995
+   },
+   {
+    "id": "sms_spam:552",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4113
+   },
+   {
+    "id": "sms_spam:2127",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1077
+   },
+   {
+    "id": "sms_spam:1636",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0261
+   },
+   {
+    "id": "sms_spam:142",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0633
+   },
+   {
+    "id": "sms_spam:5139",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0284
+   },
+   {
+    "id": "sms_spam:950",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0257
+   },
+   {
+    "id": "sms_spam:1727",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0683
+   },
+   {
+    "id": "sms_spam:4442",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1187
+   },
+   {
+    "id": "sms_spam:3653",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1939
+   },
+   {
+    "id": "sms_spam:1223",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0028
+   },
+   {
+    "id": "sms_spam:1098",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3795
+   },
+   {
+    "id": "sms_spam:1448",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1147
+   },
+   {
+    "id": "sms_spam:1053",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0123
+   },
+   {
+    "id": "sms_spam:2497",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1165
+   },
+   {
+    "id": "sms_spam:1520",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0088
+   },
+   {
+    "id": "sms_spam:55",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0071
+   },
+   {
+    "id": "sms_spam:2555",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1123
+   },
+   {
+    "id": "sms_spam:5211",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0914
+   },
+   {
+    "id": "sms_spam:131",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0232
+   },
+   {
+    "id": "sms_spam:1936",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.001
+   },
+   {
+    "id": "sms_spam:4986",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3261
+   },
+   {
+    "id": "sms_spam:1141",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0538
+   },
+   {
+    "id": "sms_spam:5399",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6474
+   },
+   {
+    "id": "sms_spam:682",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0031
+   },
+   {
+    "id": "sms_spam:4546",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0499
+   },
+   {
+    "id": "sms_spam:2658",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1334
+   },
+   {
+    "id": "sms_spam:5153",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3119
+   },
+   {
+    "id": "sms_spam:4401",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0869
+   },
+   {
+    "id": "sms_spam:2187",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0654
+   },
+   {
+    "id": "sms_spam:152",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2466
+   },
+   {
+    "id": "sms_spam:5509",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.8378
+   },
+   {
+    "id": "sms_spam:1772",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0209
+   },
+   {
+    "id": "sms_spam:1799",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0091
+   },
+   {
+    "id": "sms_spam:5559",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3381
+   },
+   {
+    "id": "sms_spam:942",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5722
+   },
+   {
+    "id": "sms_spam:2744",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0413
+   },
+   {
+    "id": "sms_spam:2633",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.031
+   },
+   {
+    "id": "sms_spam:2506",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4686
+   },
+   {
+    "id": "sms_spam:1275",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0157
+   },
+   {
+    "id": "sms_spam:3061",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7082
+   },
+   {
+    "id": "sms_spam:3887",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1221
+   },
+   {
+    "id": "sms_spam:4722",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0065
+   },
+   {
+    "id": "sms_spam:4043",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1471
+   },
+   {
+    "id": "sms_spam:3640",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0132
+   },
+   {
+    "id": "sms_spam:957",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.689
+   },
+   {
+    "id": "sms_spam:2310",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0102
+   },
+   {
+    "id": "sms_spam:3986",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1708
+   },
+   {
+    "id": "sms_spam:2238",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5104
+   },
+   {
+    "id": "sms_spam:1749",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0107
+   },
+   {
+    "id": "sms_spam:4674",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0262
+   },
+   {
+    "id": "sms_spam:2268",
+    "y": 0,
+    "rules": "short",
+    "p": 0.1139
+   },
+   {
+    "id": "sms_spam:4520",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4049
+   },
+   {
+    "id": "sms_spam:2828",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0148
+   },
+   {
+    "id": "sms_spam:2080",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3705
+   },
+   {
+    "id": "sms_spam:1006",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2369
+   },
+   {
+    "id": "sms_spam:5532",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1341
+   },
+   {
+    "id": "sms_spam:4229",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4169
+   },
+   {
+    "id": "sms_spam:1085",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0565
+   },
+   {
+    "id": "sms_spam:3109",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6129
+   },
+   {
+    "id": "sms_spam:4608",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0584
+   },
+   {
+    "id": "discord:920",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8027
+   },
+   {
+    "id": "discord:520",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1265
+   },
+   {
+    "id": "discord:316",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8975
+   },
+   {
+    "id": "discord:1251",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5208
+   },
+   {
+    "id": "discord:115",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.4777
+   },
+   {
+    "id": "discord:33",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0458
+   },
+   {
+    "id": "discord:402",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2546
+   },
+   {
+    "id": "discord:703",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7313
+   },
+   {
+    "id": "discord:57",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0977
+   },
+   {
+    "id": "discord:1241",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1841
+   },
+   {
+    "id": "discord:1519",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.184
+   },
+   {
+    "id": "discord:976",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2297
+   },
+   {
+    "id": "discord:850",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7491
+   },
+   {
+    "id": "discord:500",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.116
+   },
+   {
+    "id": "discord:1250",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0905
+   },
+   {
+    "id": "discord:162",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4583
+   },
+   {
+    "id": "discord:234",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.641
+   },
+   {
+    "id": "discord:412",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2889
+   },
+   {
+    "id": "discord:395",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9248
+   },
+   {
+    "id": "discord:624",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2487
+   },
+   {
+    "id": "discord:902",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0462
+   },
+   {
+    "id": "discord:1431",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3536
+   },
+   {
+    "id": "discord:1920",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1019
+   },
+   {
+    "id": "discord:1977",
+    "y": 1,
+    "rules": "weak_only",
+    "p": 0.9619
+   },
+   {
+    "id": "discord:429",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.7751
+   },
+   {
+    "id": "discord:313",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2315
+   },
+   {
+    "id": "discord:1404",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9378
+   },
+   {
+    "id": "discord:522",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4598
+   },
+   {
+    "id": "discord:897",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7153
+   },
+   {
+    "id": "discord:1063",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4107
+   },
+   {
+    "id": "discord:1907",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0117
+   },
+   {
+    "id": "discord:1256",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.6616
+   },
+   {
+    "id": "discord:1413",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6412
+   },
+   {
+    "id": "discord:1183",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0468
+   },
+   {
+    "id": "discord:1737",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5085
+   },
+   {
+    "id": "discord:1490",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.957
+   },
+   {
+    "id": "discord:974",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5386
+   },
+   {
+    "id": "discord:751",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1809
+   },
+   {
+    "id": "discord:127",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0412
+   },
+   {
+    "id": "discord:1295",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0145
+   },
+   {
+    "id": "discord:1426",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.4378
+   },
+   {
+    "id": "discord:1499",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.202
+   },
+   {
+    "id": "discord:446",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1352
+   },
+   {
+    "id": "discord:152",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1447
+   },
+   {
+    "id": "discord:91",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0388
+   },
+   {
+    "id": "discord:1880",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9026
+   },
+   {
+    "id": "discord:1610",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.623
+   },
+   {
+    "id": "discord:1628",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.2975
+   },
+   {
+    "id": "discord:1651",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.309
+   },
+   {
+    "id": "discord:1917",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0077
+   },
+   {
+    "id": "discord:1356",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2419
+   },
+   {
+    "id": "discord:121",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0133
+   },
+   {
+    "id": "discord:292",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1557
+   },
+   {
+    "id": "discord:1442",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4603
+   },
+   {
+    "id": "discord:260",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1707
+   },
+   {
+    "id": "discord:1054",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7305
+   },
+   {
+    "id": "discord:353",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0458
+   },
+   {
+    "id": "discord:1149",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2487
+   },
+   {
+    "id": "discord:1296",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0091
+   },
+   {
+    "id": "discord:1341",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7846
+   },
+   {
+    "id": "discord:440",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.6491
+   },
+   {
+    "id": "discord:1925",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4121
+   },
+   {
+    "id": "discord:1941",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9832
+   },
+   {
+    "id": "discord:1889",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.623
+   },
+   {
+    "id": "discord:1130",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.145
+   },
+   {
+    "id": "discord:1471",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.7575
+   },
+   {
+    "id": "discord:165",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.7575
+   },
+   {
+    "id": "discord:669",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7583
+   },
+   {
+    "id": "discord:889",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5704
+   },
+   {
+    "id": "discord:50",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1819
+   },
+   {
+    "id": "discord:517",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6839
+   },
+   {
+    "id": "discord:1805",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5217
+   },
+   {
+    "id": "discord:984",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2284
+   },
+   {
+    "id": "discord:329",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.3694
+   },
+   {
+    "id": "discord:674",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.852
+   },
+   {
+    "id": "discord:540",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2451
+   },
+   {
+    "id": "discord:249",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3859
+   },
+   {
+    "id": "discord:526",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.7152
+   },
+   {
+    "id": "discord:333",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4587
+   },
+   {
+    "id": "discord:1620",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0559
+   },
+   {
+    "id": "discord:1634",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6446
+   },
+   {
+    "id": "discord:1292",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7987
+   },
+   {
+    "id": "discord:912",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8482
+   },
+   {
+    "id": "discord:706",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0317
+   },
+   {
+    "id": "discord:274",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0156
+   },
+   {
+    "id": "discord:822",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0709
+   },
+   {
+    "id": "discord:154",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7444
+   },
+   {
+    "id": "discord:143",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2056
+   },
+   {
+    "id": "discord:999",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7601
+   },
+   {
+    "id": "discord:1050",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3799
+   },
+   {
+    "id": "discord:1310",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.2753
+   },
+   {
+    "id": "discord:1467",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5928
+   },
+   {
+    "id": "discord:761",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2199
+   },
+   {
+    "id": "discord:890",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1505
+   },
+   {
+    "id": "discord:1630",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0104
+   },
+   {
+    "id": "discord:1022",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2606
+   },
+   {
+    "id": "discord:1459",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0474
+   },
+   {
+    "id": "discord:557",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7112
+   },
+   {
+    "id": "discord:1767",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0224
+   },
+   {
+    "id": "discord:1371",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8098
+   },
+   {
+    "id": "discord:1962",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5217
+   },
+   {
+    "id": "discord:497",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0875
+   },
+   {
+    "id": "discord:564",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9445
+   },
+   {
+    "id": "discord:413",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0044
+   },
+   {
+    "id": "discord:567",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.5959
+   },
+   {
+    "id": "discord:289",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9953
+   },
+   {
+    "id": "discord:607",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1448
+   },
+   {
+    "id": "discord:403",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.939
+   },
+   {
+    "id": "discord:947",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0163
+   },
+   {
+    "id": "discord:1695",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.81
+   },
+   {
+    "id": "discord:1337",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8109
+   },
+   {
+    "id": "discord:1672",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1734
+   },
+   {
+    "id": "discord:1826",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.2702
+   },
+   {
+    "id": "discord:1049",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6688
+   },
+   {
+    "id": "discord:468",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4793
+   },
+   {
+    "id": "discord:1724",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6436
+   },
+   {
+    "id": "discord:612",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0558
+   },
+   {
+    "id": "discord:1904",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.1195
+   },
+   {
+    "id": "discord:445",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.4187
+   },
+   {
+    "id": "discord:592",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.7507
+   },
+   {
+    "id": "discord:595",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0999
+   },
+   {
+    "id": "discord:1503",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0521
+   },
+   {
+    "id": "discord:1290",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.4866
+   },
+   {
+    "id": "discord:1109",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8703
+   },
+   {
+    "id": "discord:1057",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9821
+   },
+   {
+    "id": "discord:1603",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.6058
+   },
+   {
+    "id": "discord:1311",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0478
+   },
+   {
+    "id": "discord:461",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3423
+   },
+   {
+    "id": "discord:98",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.829
+   },
+   {
+    "id": "discord:106",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.164
+   },
+   {
+    "id": "discord:1637",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0099
+   },
+   {
+    "id": "discord:263",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.1022
+   },
+   {
+    "id": "discord:963",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.631
+   },
+   {
+    "id": "discord:71",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0449
+   },
+   {
+    "id": "discord:543",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3684
+   },
+   {
+    "id": "discord:1348",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2735
+   },
+   {
+    "id": "discord:149",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.3085
+   },
+   {
+    "id": "discord:1981",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7577
+   },
+   {
+    "id": "discord:1747",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.001
+   },
+   {
+    "id": "discord:2",
+    "y": 0,
+    "rules": "short",
+    "p": 0.267
+   },
+   {
+    "id": "discord:1660",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3545
+   },
+   {
+    "id": "discord:373",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3018
+   },
+   {
+    "id": "discord:457",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0507
+   },
+   {
+    "id": "discord:684",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1503
+   },
+   {
+    "id": "discord:454",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7379
+   },
+   {
+    "id": "discord:232",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7998
+   },
+   {
+    "id": "discord:105",
+    "y": 0,
+    "rules": "short",
+    "p": 0.1144
+   },
+   {
+    "id": "discord:1169",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5123
+   },
+   {
+    "id": "discord:419",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0422
+   },
+   {
+    "id": "discord:1053",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1956
+   },
+   {
+    "id": "discord:1952",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2844
+   },
+   {
+    "id": "discord:1340",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0401
+   },
+   {
+    "id": "discord:1818",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.661
+   },
+   {
+    "id": "discord:1249",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7121
+   },
+   {
+    "id": "discord:1810",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0613
+   },
+   {
+    "id": "discord:711",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "discord:717",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1873
+   },
+   {
+    "id": "discord:1215",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.82
+   },
+   {
+    "id": "discord:1114",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0114
+   },
+   {
+    "id": "discord:84",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0544
+   },
+   {
+    "id": "discord:1281",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0335
+   },
+   {
+    "id": "discord:879",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0749
+   },
+   {
+    "id": "discord:1006",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1081
+   },
+   {
+    "id": "discord:1720",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.052
+   },
+   {
+    "id": "discord:1268",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0057
+   },
+   {
+    "id": "discord:1541",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0811
+   },
+   {
+    "id": "discord:1000",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2191
+   },
+   {
+    "id": "discord:1194",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6897
+   },
+   {
+    "id": "discord:988",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0828
+   },
+   {
+    "id": "discord:265",
+    "y": 0,
+    "rules": "short",
+    "p": 0.8498
+   },
+   {
+    "id": "discord:1959",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0139
+   },
+   {
+    "id": "discord:693",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0016
+   },
+   {
+    "id": "discord:1718",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0076
+   },
+   {
+    "id": "discord:1577",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6625
+   },
+   {
+    "id": "discord:849",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0164
+   },
+   {
+    "id": "discord:1934",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1008
+   },
+   {
+    "id": "discord:1317",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0447
+   },
+   {
+    "id": "discord:1231",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1686
+   },
+   {
+    "id": "discord:1118",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.1706
+   },
+   {
+    "id": "discord:377",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2665
+   },
+   {
+    "id": "discord:1715",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0915
+   },
+   {
+    "id": "discord:1559",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.235
+   },
+   {
+    "id": "discord:1929",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0321
+   },
+   {
+    "id": "discord:701",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5091
+   },
+   {
+    "id": "discord:1683",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0512
+   },
+   {
+    "id": "discord:689",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.898
+   },
+   {
+    "id": "discord:1707",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0093
+   },
+   {
+    "id": "discord:1729",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0505
+   },
+   {
+    "id": "discord:1612",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2407
+   },
+   {
+    "id": "discord:424",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.169
+   },
+   {
+    "id": "discord:1492",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4747
+   },
+   {
+    "id": "discord:1079",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1593
+   },
+   {
+    "id": "discord:3",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.9294
+   },
+   {
+    "id": "discord:1491",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0325
+   },
+   {
+    "id": "discord:141",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1412
+   },
+   {
+    "id": "discord:1392",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7144
+   },
+   {
+    "id": "discord:1548",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.234
+   },
+   {
+    "id": "discord:69",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2593
+   },
+   {
+    "id": "discord:47",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4727
+   },
+   {
+    "id": "discord:301",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4198
+   },
+   {
+    "id": "discord:1795",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.8789
+   },
+   {
+    "id": "discord:485",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0063
+   },
+   {
+    "id": "discord:1890",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1912
+   },
+   {
+    "id": "discord:1485",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0714
+   },
+   {
+    "id": "discord:766",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0814
+   },
+   {
+    "id": "discord:1236",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0009
+   },
+   {
+    "id": "discord:1856",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0959
+   },
+   {
+    "id": "discord:1308",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5194
+   },
+   {
+    "id": "discord:322",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1399
+   },
+   {
+    "id": "discord:1654",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0151
+   },
+   {
+    "id": "discord:960",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.198
+   },
+   {
+    "id": "discord:1463",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.58
+   },
+   {
+    "id": "discord:164",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0263
+   },
+   {
+    "id": "discord:553",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0749
+   },
+   {
+    "id": "discord:1100",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.571
+   },
+   {
+    "id": "discord:286",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.8629
+   },
+   {
+    "id": "discord:1989",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0815
+   },
+   {
+    "id": "discord:997",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1014
+   },
+   {
+    "id": "discord:1511",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4261
+   },
+   {
+    "id": "discord:868",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0666
+   },
+   {
+    "id": "discord:1430",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5171
+   },
+   {
+    "id": "discord:584",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4597
+   },
+   {
+    "id": "discord:1462",
+    "y": 0,
+    "rules": "short",
+    "p": 0.0395
+   },
+   {
+    "id": "discord:662",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1476
+   },
+   {
+    "id": "discord:170",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0347
+   },
+   {
+    "id": "discord:195",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0729
+   },
+   {
+    "id": "discord:537",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0897
+   },
+   {
+    "id": "discord:85",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.591
+   },
+   {
+    "id": "discord:1756",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0612
+   },
+   {
+    "id": "discord:1069",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0196
+   },
+   {
+    "id": "discord:1325",
+    "y": 0,
+    "rules": "short",
+    "p": 0.1525
+   },
+   {
+    "id": "discord:321",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0236
+   },
+   {
+    "id": "discord:936",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0702
+   },
+   {
+    "id": "discord:159",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0506
+   },
+   {
+    "id": "discord:334",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2251
+   },
+   {
+    "id": "discord:1864",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.138
+   },
+   {
+    "id": "discord:242",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0666
+   },
+   {
+    "id": "discord:1080",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2571
+   },
+   {
+    "id": "discord:417",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4127
+   },
+   {
+    "id": "discord:1609",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.818
+   },
+   {
+    "id": "discord:659",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0834
+   },
+   {
+    "id": "discord:1385",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0348
+   },
+   {
+    "id": "discord:716",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0287
+   },
+   {
+    "id": "discord:682",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.074
+   },
+   {
+    "id": "discord:1262",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.105
+   },
+   {
+    "id": "discord:655",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0972
+   },
+   {
+    "id": "discord:299",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1021
+   },
+   {
+    "id": "discord:1932",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6174
+   },
+   {
+    "id": "discord:1750",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.165
+   },
+   {
+    "id": "discord:1139",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0266
+   },
+   {
+    "id": "discord:1531",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1036
+   },
+   {
+    "id": "discord:839",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0588
+   },
+   {
+    "id": "discord:1131",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0233
+   },
+   {
+    "id": "discord:314",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7795
+   },
+   {
+    "id": "discord:257",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5765
+   },
+   {
+    "id": "discord:1158",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0904
+   },
+   {
+    "id": "discord:221",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0432
+   },
+   {
+    "id": "discord:204",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0097
+   },
+   {
+    "id": "discord:1213",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0411
+   },
+   {
+    "id": "discord:0",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6056
+   },
+   {
+    "id": "discord:1540",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0203
+   },
+   {
+    "id": "discord:1473",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1974
+   },
+   {
+    "id": "discord:51",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5873
+   },
+   {
+    "id": "discord:892",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0476
+   },
+   {
+    "id": "discord:808",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0352
+   },
+   {
+    "id": "discord:1886",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0439
+   },
+   {
+    "id": "discord:138",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0414
+   },
+   {
+    "id": "discord:1421",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6124
+   },
+   {
+    "id": "discord:1769",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5687
+   },
+   {
+    "id": "discord:122",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0043
+   },
+   {
+    "id": "discord:1287",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0105
+   },
+   {
+    "id": "discord:157",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0953
+   },
+   {
+    "id": "discord:426",
+    "y": 0,
+    "rules": "short",
+    "p": 0.7806
+   },
+   {
+    "id": "discord:134",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2637
+   },
+   {
+    "id": "discord:1393",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2425
+   },
+   {
+    "id": "discord:1433",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1777
+   },
+   {
+    "id": "discord:628",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.9026
+   },
+   {
+    "id": "discord:545",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0084
+   },
+   {
+    "id": "discord:1709",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4465
+   },
+   {
+    "id": "discord:1136",
+    "y": 0,
+    "rules": "short",
+    "p": 0.2277
+   },
+   {
+    "id": "discord:949",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.021
+   },
+   {
+    "id": "discord:531",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0267
+   },
+   {
+    "id": "discord:794",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.337
+   },
+   {
+    "id": "discord:1734",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3682
+   },
+   {
+    "id": "discord:1103",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4825
+   },
+   {
+    "id": "discord:484",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.074
+   },
+   {
+    "id": "discord:1380",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0135
+   },
+   {
+    "id": "discord:1374",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1196
+   },
+   {
+    "id": "discord:1399",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5772
+   },
+   {
+    "id": "discord:1453",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1508
+   },
+   {
+    "id": "discord:1229",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.9226
+   },
+   {
+    "id": "discord:1763",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5586
+   },
+   {
+    "id": "discord:393",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2918
+   },
+   {
+    "id": "discord:962",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0664
+   },
+   {
+    "id": "discord:1580",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0192
+   },
+   {
+    "id": "discord:629",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0603
+   },
+   {
+    "id": "discord:1914",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1088
+   },
+   {
+    "id": "discord:1312",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0307
+   },
+   {
+    "id": "discord:1015",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0593
+   },
+   {
+    "id": "discord:668",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0106
+   },
+   {
+    "id": "discord:579",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0383
+   },
+   {
+    "id": "discord:251",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2348
+   },
+   {
+    "id": "discord:166",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3794
+   },
+   {
+    "id": "discord:552",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1954
+   },
+   {
+    "id": "discord:1781",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1195
+   },
+   {
+    "id": "discord:488",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1049
+   },
+   {
+    "id": "discord:1832",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2794
+   },
+   {
+    "id": "discord:133",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0045
+   },
+   {
+    "id": "discord:168",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0236
+   },
+   {
+    "id": "discord:785",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0148
+   },
+   {
+    "id": "discord:225",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.02
+   },
+   {
+    "id": "discord:1427",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0009
+   },
+   {
+    "id": "discord:1646",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3213
+   },
+   {
+    "id": "discord:72",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2469
+   },
+   {
+    "id": "discord:1180",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0403
+   },
+   {
+    "id": "discord:1343",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0505
+   },
+   {
+    "id": "discord:1979",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0059
+   },
+   {
+    "id": "discord:1957",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0054
+   },
+   {
+    "id": "discord:900",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2616
+   },
+   {
+    "id": "discord:1078",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5835
+   },
+   {
+    "id": "discord:453",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0938
+   },
+   {
+    "id": "discord:544",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0376
+   },
+   {
+    "id": "discord:1760",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.245
+   },
+   {
+    "id": "discord:1363",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1723
+   },
+   {
+    "id": "discord:1167",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1881
+   },
+   {
+    "id": "discord:1417",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1768
+   },
+   {
+    "id": "discord:729",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1462
+   },
+   {
+    "id": "discord:458",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6517
+   },
+   {
+    "id": "discord:1155",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0216
+   },
+   {
+    "id": "discord:652",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7736
+   },
+   {
+    "id": "discord:1313",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0852
+   },
+   {
+    "id": "discord:1481",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0019
+   },
+   {
+    "id": "discord:1748",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.007
+   },
+   {
+    "id": "discord:952",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6596
+   },
+   {
+    "id": "discord:1382",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0057
+   },
+   {
+    "id": "discord:1938",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3592
+   },
+   {
+    "id": "discord:950",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0698
+   },
+   {
+    "id": "discord:1958",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3838
+   },
+   {
+    "id": "discord:869",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0106
+   },
+   {
+    "id": "discord:1389",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6528
+   },
+   {
+    "id": "discord:1666",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1126
+   },
+   {
+    "id": "discord:1171",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5827
+   },
+   {
+    "id": "discord:863",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1483
+   },
+   {
+    "id": "discord:210",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1019
+   },
+   {
+    "id": "discord:1476",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1493
+   },
+   {
+    "id": "discord:1940",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2107
+   },
+   {
+    "id": "discord:1789",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4267
+   },
+   {
+    "id": "discord:1228",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.104
+   },
+   {
+    "id": "discord:516",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0406
+   },
+   {
+    "id": "discord:1350",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0734
+   },
+   {
+    "id": "discord:1434",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.026
+   },
+   {
+    "id": "discord:1614",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0179
+   },
+   {
+    "id": "discord:339",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6767
+   },
+   {
+    "id": "discord:1370",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4451
+   },
+   {
+    "id": "discord:805",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0351
+   },
+   {
+    "id": "discord:1175",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1334
+   },
+   {
+    "id": "discord:486",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4307
+   },
+   {
+    "id": "discord:1224",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1464
+   },
+   {
+    "id": "discord:1584",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3118
+   },
+   {
+    "id": "discord:1762",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6448
+   },
+   {
+    "id": "discord:1140",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2311
+   },
+   {
+    "id": "discord:222",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3282
+   },
+   {
+    "id": "discord:1772",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0048
+   },
+   {
+    "id": "discord:885",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0825
+   },
+   {
+    "id": "discord:101",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0095
+   },
+   {
+    "id": "discord:1408",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0093
+   },
+   {
+    "id": "discord:847",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.002
+   },
+   {
+    "id": "discord:1302",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0471
+   },
+   {
+    "id": "discord:559",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.723
+   },
+   {
+    "id": "discord:61",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1128
+   },
+   {
+    "id": "discord:554",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.058
+   },
+   {
+    "id": "discord:1765",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0095
+   },
+   {
+    "id": "discord:1052",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.05
+   },
+   {
+    "id": "discord:646",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3845
+   },
+   {
+    "id": "discord:1839",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0867
+   },
+   {
+    "id": "discord:948",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0084
+   },
+   {
+    "id": "discord:132",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0809
+   },
+   {
+    "id": "discord:814",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0523
+   },
+   {
+    "id": "discord:800",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0383
+   },
+   {
+    "id": "discord:698",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6593
+   },
+   {
+    "id": "discord:1094",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2372
+   },
+   {
+    "id": "discord:430",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0665
+   },
+   {
+    "id": "discord:309",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1831
+   },
+   {
+    "id": "discord:1425",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0475
+   },
+   {
+    "id": "discord:972",
+    "y": 0,
+    "rules": "short",
+    "p": 0.1293
+   },
+   {
+    "id": "discord:137",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0733
+   },
+   {
+    "id": "discord:1549",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3141
+   },
+   {
+    "id": "discord:1808",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.004
+   },
+   {
+    "id": "scam_dialogue:443",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:473",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:165",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:188",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:496",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:282",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:242",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:30",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:194",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:29",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:535",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:352",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9992
+   },
+   {
+    "id": "scam_dialogue:428",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:697",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9993
+   },
+   {
+    "id": "scam_dialogue:482",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:120",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:595",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:313",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:590",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:613",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:95",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:538",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9979
+   },
+   {
+    "id": "scam_dialogue:763",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:647",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9991
+   },
+   {
+    "id": "scam_dialogue:255",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9967
+   },
+   {
+    "id": "scam_dialogue:735",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:755",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:573",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:615",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:584",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:2",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:461",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:342",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:636",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:665",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scam_dialogue:155",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:786",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9882
+   },
+   {
+    "id": "scam_dialogue:701",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:180",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:729",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:253",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:17",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scam_dialogue:531",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:240",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:666",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:274",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:657",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:785",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:413",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:744",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:453",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:230",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:141",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:335",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:170",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:250",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:364",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:520",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:474",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:506",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:599",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:118",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:498",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:354",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:598",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:589",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:175",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:559",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:389",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:424",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:691",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:138",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:459",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:796",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:376",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:208",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:288",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:719",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:391",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9992
+   },
+   {
+    "id": "scam_dialogue:718",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:784",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scam_dialogue:81",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:218",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:741",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:345",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:567",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:285",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:420",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:629",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:635",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:344",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9996
+   },
+   {
+    "id": "scam_dialogue:795",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:375",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:295",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:315",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:769",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:82",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:553",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:220",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:568",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:65",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:193",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:726",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scam_dialogue:671",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:563",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:764",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:512",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:83",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:437",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:444",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:63",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:685",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:596",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:84",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:582",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:331",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:334",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9991
+   },
+   {
+    "id": "scam_dialogue:724",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9996
+   },
+   {
+    "id": "scam_dialogue:41",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:284",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:580",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:565",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scam_dialogue:603",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9977
+   },
+   {
+    "id": "scam_dialogue:243",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:586",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:4",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:751",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9989
+   },
+   {
+    "id": "scam_dialogue:207",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9916
+   },
+   {
+    "id": "scam_dialogue:674",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:690",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:18",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:296",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:45",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:708",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:400",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scam_dialogue:304",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:163",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:145",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:410",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:101",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:66",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:503",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:244",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:593",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:152",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:539",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:142",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:426",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:179",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:350",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.997
+   },
+   {
+    "id": "scam_dialogue:631",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:673",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:442",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:186",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:447",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:490",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:788",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9996
+   },
+   {
+    "id": "scam_dialogue:696",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:365",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:702",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:104",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:529",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:419",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:489",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:570",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:658",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:70",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:210",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:491",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:246",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:495",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:90",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:387",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:294",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:547",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:64",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:357",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9967
+   },
+   {
+    "id": "scam_dialogue:621",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:85",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:227",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9994
+   },
+   {
+    "id": "scam_dialogue:149",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:217",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:213",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:324",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:260",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:340",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:317",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:532",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9996
+   },
+   {
+    "id": "scam_dialogue:236",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:59",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:362",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:754",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:404",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:742",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9978
+   },
+   {
+    "id": "scam_dialogue:499",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:116",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:551",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:130",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:386",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:232",
+    "y": 1,
+    "rules": "weak_only",
+    "p": 0.9984
+   },
+   {
+    "id": "scam_dialogue:638",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scam_dialogue:209",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:23",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:323",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:103",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:69",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:789",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:681",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:721",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:21",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:470",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:278",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:743",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:455",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:501",
+    "y": 1,
+    "rules": "weak_only",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:715",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:494",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:114",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:48",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:380",
+    "y": 1,
+    "rules": "weak_only",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:704",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:436",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9993
+   },
+   {
+    "id": "scam_dialogue:527",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:119",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:349",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:173",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:270",
+    "y": 1,
+    "rules": "weak_only",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:368",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:308",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:640",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:390",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:117",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:655",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:667",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9988
+   },
+   {
+    "id": "scam_dialogue:756",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:178",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:660",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:581",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:717",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:137",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:705",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9977
+   },
+   {
+    "id": "scam_dialogue:99",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:273",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scam_dialogue:703",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:111",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:198",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:321",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.922
+   },
+   {
+    "id": "scam_dialogue:484",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:34",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scam_dialogue:652",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scam_dialogue:949",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0009
+   },
+   {
+    "id": "scam_dialogue:931",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:995",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:898",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1409",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1532",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1499",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1291",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:880",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0036
+   },
+   {
+    "id": "scam_dialogue:1361",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:867",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1179",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:984",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0005
+   },
+   {
+    "id": "scam_dialogue:1434",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:969",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1215",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0019
+   },
+   {
+    "id": "scam_dialogue:915",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1418",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1560",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1385",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1492",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:803",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.001
+   },
+   {
+    "id": "scam_dialogue:1571",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1503",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0007
+   },
+   {
+    "id": "scam_dialogue:1416",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1241",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1515",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1249",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1552",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1579",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1085",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1406",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1310",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1350",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1430",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1190",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1413",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1221",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:939",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1354",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0025
+   },
+   {
+    "id": "scam_dialogue:802",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1394",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0007
+   },
+   {
+    "id": "scam_dialogue:1408",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1248",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1165",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1320",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1008",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0008
+   },
+   {
+    "id": "scam_dialogue:1338",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1080",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1598",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1233",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0036
+   },
+   {
+    "id": "scam_dialogue:1214",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0015
+   },
+   {
+    "id": "scam_dialogue:876",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0957
+   },
+   {
+    "id": "scam_dialogue:857",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:862",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:877",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1428",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1091",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1358",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1356",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1419",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1327",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1127",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1048",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1380",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1386",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1220",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1331",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1207",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:923",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1271",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0016
+   },
+   {
+    "id": "scam_dialogue:838",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0008
+   },
+   {
+    "id": "scam_dialogue:1067",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1212",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1117",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0005
+   },
+   {
+    "id": "scam_dialogue:1299",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:897",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1253",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1454",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1475",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1524",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1581",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1040",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1498",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1363",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1314",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1569",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0013
+   },
+   {
+    "id": "scam_dialogue:1512",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1175",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1149",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1020",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1590",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1033",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1027",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1237",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0007
+   },
+   {
+    "id": "scam_dialogue:1404",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1373",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:904",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:809",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0014
+   },
+   {
+    "id": "scam_dialogue:1395",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0031
+   },
+   {
+    "id": "scam_dialogue:957",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0006
+   },
+   {
+    "id": "scam_dialogue:1095",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1230",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:944",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1195",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1047",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1012",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1028",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1490",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1259",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.004
+   },
+   {
+    "id": "scam_dialogue:1353",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0004
+   },
+   {
+    "id": "scam_dialogue:925",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:810",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1529",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1587",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1397",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1482",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1460",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1368",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:906",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:911",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.001
+   },
+   {
+    "id": "scam_dialogue:1426",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0008
+   },
+   {
+    "id": "scam_dialogue:1372",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:885",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0014
+   },
+   {
+    "id": "scam_dialogue:1384",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1037",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0006
+   },
+   {
+    "id": "scam_dialogue:1580",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:929",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:832",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0007
+   },
+   {
+    "id": "scam_dialogue:1347",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:820",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1312",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:964",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1059",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1263",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1308",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:849",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0005
+   },
+   {
+    "id": "scam_dialogue:1410",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:848",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.036
+   },
+   {
+    "id": "scam_dialogue:1511",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1111",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1113",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1297",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1039",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1146",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1118",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1546",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1083",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1079",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1574",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:800",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0063
+   },
+   {
+    "id": "scam_dialogue:1000",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1300",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1417",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1032",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:890",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:829",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1022",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1509",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1547",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:875",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1402",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1030",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:852",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0037
+   },
+   {
+    "id": "scam_dialogue:900",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1575",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1224",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1218",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1436",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1411",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1420",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1377",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1318",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1485",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1348",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1120",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1088",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:975",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:1084",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:870",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:812",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1298",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:901",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0067
+   },
+   {
+    "id": "scam_dialogue:891",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1520",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0035
+   },
+   {
+    "id": "scam_dialogue:913",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0036
+   },
+   {
+    "id": "scam_dialogue:1044",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1383",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0021
+   },
+   {
+    "id": "scam_dialogue:1023",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1412",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0004
+   },
+   {
+    "id": "scam_dialogue:1303",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1387",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1087",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1072",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0011
+   },
+   {
+    "id": "scam_dialogue:1013",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1108",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1090",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1178",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1002",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:952",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1066",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1518",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1031",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:881",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:895",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1559",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0004
+   },
+   {
+    "id": "scam_dialogue:1450",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:893",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1276",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1257",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1493",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1551",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1128",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:886",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0012
+   },
+   {
+    "id": "scam_dialogue:1288",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.0196
+   },
+   {
+    "id": "scam_dialogue:823",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0007
+   },
+   {
+    "id": "scam_dialogue:1045",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1427",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1071",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1206",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:864",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0035
+   },
+   {
+    "id": "scam_dialogue:1157",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1138",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:813",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:1340",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:863",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0009
+   },
+   {
+    "id": "scam_dialogue:971",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:805",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:953",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:940",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0009
+   },
+   {
+    "id": "scam_dialogue:1014",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scam_dialogue:954",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1049",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1056",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1121",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1019",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1130",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0763
+   },
+   {
+    "id": "scam_dialogue:1301",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:882",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:912",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scam_dialogue:966",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0.0005
+   },
+   {
+    "id": "scam_dialogue:1540",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0004
+   },
+   {
+    "id": "scam_dialogue:1026",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:963",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0004
+   },
+   {
+    "id": "scam_dialogue:1251",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scam_dialogue:1240",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1100",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:804",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:1456",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scam_dialogue:879",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scamguardbench:syn:5c5c2b191c5156df",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:6df3f2bb7e8129ff",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:e47df7c1928f2954",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scamguardbench:syn:b9c158faee57c413",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:f59f39d60c5defd4",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:8f953cf2262768ee",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9959
+   },
+   {
+    "id": "scamguardbench:syn:31ad23995417b2c1",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9996
+   },
+   {
+    "id": "scamguardbench:syn:b7ecc0984b29bd5a",
+    "y": 1,
+    "rules": "weak_only",
+    "p": 0.9965
+   },
+   {
+    "id": "scamguardbench:syn:94f2faf7050f6689",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9979
+   },
+   {
+    "id": "scamguardbench:syn:bcbebd75ebe9daa9",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9963
+   },
+   {
+    "id": "scamguardbench:syn:e101105e199894ea",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scamguardbench:syn:774cc672189fc343",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8605
+   },
+   {
+    "id": "scamguardbench:syn:22d6f87947f89883",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:e5bea3ff2860c898",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-04787",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.0567
+   },
+   {
+    "id": "scamguardbench:syn:7c82120e0325c040",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scamguardbench:syn:e7d16563b3870387",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9938
+   },
+   {
+    "id": "scamguardbench:syn:3011db851c8b8c5b",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9994
+   },
+   {
+    "id": "scamguardbench:syn:3a13604f42e29002",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9871
+   },
+   {
+    "id": "scamguardbench:syn:5d24a57379733802",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9981
+   },
+   {
+    "id": "scamguardbench:syn:e3631025045f9d98",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:46244ae290cf4c49",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scamguardbench:syn:0ce8a1e99e4b2be6",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9883
+   },
+   {
+    "id": "scamguardbench:syn:b3b22a55bf13e700",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scamguardbench:syn:66ee89de3d73c5f8",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9982
+   },
+   {
+    "id": "scamguardbench:syn:c93980def0ac2fa0",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9664
+   },
+   {
+    "id": "scamguardbench:syn:845299d11204a283",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:f39c12000fd98d85",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:64c4f9b3e84ad640",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scamguardbench:syn:30b9e008c0e41024",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:2b67aadbef4e452b",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:da51c301100e0a86",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9964
+   },
+   {
+    "id": "scamguardbench:syn:841b51b1f07d1ec9",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9974
+   },
+   {
+    "id": "scamguardbench:syn:101db8547becb7a1",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scamguardbench:syn:da79fd1312055dc3",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:10892aea1dc882f9",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "scamguardbench:syn:66191b05ee3bde37",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9963
+   },
+   {
+    "id": "scamguardbench:syn:fa6bef856b44d28a",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:2dfa45b7fcf1b631",
+    "y": 1,
+    "rules": "weak_only",
+    "p": 0.9929
+   },
+   {
+    "id": "scamguardbench:syn:1ce0c4418ed7e386",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9988
+   },
+   {
+    "id": "scamguardbench:syn:274581f8ee28a42d",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scamguardbench:syn:16bea7a65fbe463d",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:12975509a5e8016e",
+    "y": 1,
+    "rules": "weak_only",
+    "p": 0.9997
+   },
+   {
+    "id": "scamguardbench:syn:bf0e5d45d8f9b327",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:267c1f3408351763",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scamguardbench:syn:37a11587ae1c2227",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:0be5278028973e18",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:c89087a09668235c",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9964
+   },
+   {
+    "id": "scamguardbench:syn:744bf000a062babf",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9673
+   },
+   {
+    "id": "scamguardbench:syn:03080845ee31cc68",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9989
+   },
+   {
+    "id": "scamguardbench:syn:8a76a0b0cae907d4",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:79211372abaf206e",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9998
+   },
+   {
+    "id": "scamguardbench:syn:3dd6d4cbc24c140a",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:cefd6056716bde0b",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9996
+   },
+   {
+    "id": "scamguardbench:syn:6b3065b862b9e60e",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:04d3b22aca73b15e",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:8ba8a57782ac63a7",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scamguardbench:syn:d9629c34aa93c801",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9984
+   },
+   {
+    "id": "scamguardbench:syn:6aee8fd387d14225",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:356347de282a788f",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:860abda6892ab664",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.963
+   },
+   {
+    "id": "scamguardbench:syn:035aa2b60cba0dd1",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9997
+   },
+   {
+    "id": "scamguardbench:syn:6bcbe2d098982853",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:e5f63e16b13702d9",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9973
+   },
+   {
+    "id": "scamguardbench:syn:ba7600b7a4b5a780",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9991
+   },
+   {
+    "id": "scamguardbench:syn:7ef1e062119aac67",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9983
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-04578",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8201
+   },
+   {
+    "id": "scamguardbench:syn:4df5bf430226135a",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9983
+   },
+   {
+    "id": "scamguardbench:syn:d1bc0f58892f662c",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9937
+   },
+   {
+    "id": "scamguardbench:syn:a957646be4fd874c",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9994
+   },
+   {
+    "id": "scamguardbench:syn:ae65cabf4dcdfe34",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9802
+   },
+   {
+    "id": "scamguardbench:syn:78a27982e792ccf6",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.982
+   },
+   {
+    "id": "scamguardbench:syn:a88235251930f760",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:e879f8742ff3b0cf",
+    "y": 1,
+    "rules": "risk",
+    "p": 1
+   },
+   {
+    "id": "scamguardbench:syn:fb782bd9132b5ee4",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9999
+   },
+   {
+    "id": "scamguardbench:syn:6dad485b8dc2a119",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0039
+   },
+   {
+    "id": "scamguardbench:phishing_email:phishing_email-07218",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3375
+   },
+   {
+    "id": "scamguardbench:phishing_email:phishing_email-18462",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0068
+   },
+   {
+    "id": "scamguardbench:syn:d62391debbb0d520",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0056
+   },
+   {
+    "id": "scamguardbench:syn:33f0f27b1e124176",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0.0023
+   },
+   {
+    "id": "scamguardbench:syn:94d9f95cec5b1938",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.003
+   },
+   {
+    "id": "scamguardbench:syn:523aaa4c52744301",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0.0022
+   },
+   {
+    "id": "scamguardbench:syn:0ddf523fb4be0c4e",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0184
+   },
+   {
+    "id": "scamguardbench:syn:1a35392a14fdf5b7",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-02847",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2623
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-03443",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0846
+   },
+   {
+    "id": "scamguardbench:syn:952aaf843bb1e5d6",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0007
+   },
+   {
+    "id": "scamguardbench:syn:c3701341198fdbee",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scamguardbench:syn:7f78dad93978568b",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0026
+   },
+   {
+    "id": "scamguardbench:syn:7610f02e9db1026a",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0046
+   },
+   {
+    "id": "scamguardbench:syn:e0f6645aca85cdf8",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:1becb4ff021f4a53",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.001
+   },
+   {
+    "id": "scamguardbench:syn:88ff1679565a745e",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0006
+   },
+   {
+    "id": "scamguardbench:syn:ec1958a240e42c92",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0006
+   },
+   {
+    "id": "scamguardbench:enron_ham:enron_ham-6938",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0943
+   },
+   {
+    "id": "scamguardbench:syn:7a40973b66197cdd",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scamguardbench:syn:947184f3ae5750c4",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.0189
+   },
+   {
+    "id": "scamguardbench:syn:f74f9c0739ade0e9",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0049
+   },
+   {
+    "id": "scamguardbench:syn:7dc9f8ba56b46a09",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0126
+   },
+   {
+    "id": "scamguardbench:syn:6347fab412a8c8c9",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0054
+   },
+   {
+    "id": "scamguardbench:syn:aa1ae05ce0f4f544",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0184
+   },
+   {
+    "id": "scamguardbench:syn:69e5a2e703fd307e",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0009
+   },
+   {
+    "id": "scamguardbench:syn:a4588d029d71048c",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0.0042
+   },
+   {
+    "id": "scamguardbench:syn:7cf7b88df69911ce",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scamguardbench:enron_ham:enron_ham-14111",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0316
+   },
+   {
+    "id": "scamguardbench:syn:17769613e61f31dc",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0055
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-02660",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1259
+   },
+   {
+    "id": "scamguardbench:syn:5acf8ee6e6588de6",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0028
+   },
+   {
+    "id": "scamguardbench:syn:7acf373a55616b8a",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:08dee2da7b8e81ca",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0361
+   },
+   {
+    "id": "scamguardbench:syn:6c620887e946c5a1",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0005
+   },
+   {
+    "id": "scamguardbench:syn:a2135b19dea58e2c",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0093
+   },
+   {
+    "id": "scamguardbench:syn:193543a6bbf545fc",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0014
+   },
+   {
+    "id": "scamguardbench:syn:1bd06d1481f76d44",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0108
+   },
+   {
+    "id": "scamguardbench:syn:c910ec39c454bb63",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.0143
+   },
+   {
+    "id": "scamguardbench:syn:10c19f47fddb04e1",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0.0069
+   },
+   {
+    "id": "scamguardbench:syn:f70f10a54b81edd4",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scamguardbench:syn:27495c85d5546e7a",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0198
+   },
+   {
+    "id": "scamguardbench:syn:094dffedde8da27d",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.027
+   },
+   {
+    "id": "scamguardbench:syn:6d8fe6292eb34589",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scamguardbench:syn:d7cd7dccd1b5b729",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0005
+   },
+   {
+    "id": "scamguardbench:syn:1ff6a05d1e3be54e",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0079
+   },
+   {
+    "id": "scamguardbench:syn:9b5221654bd3df97",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0059
+   },
+   {
+    "id": "scamguardbench:syn:db9b4850c12e249e",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0.002
+   },
+   {
+    "id": "scamguardbench:syn:250b1f59a8ef4d66",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0209
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-03864",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5344
+   },
+   {
+    "id": "scamguardbench:syn:468c76cf77e87cef",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.002
+   },
+   {
+    "id": "scamguardbench:syn:c2bf0d22b2c79a84",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0004
+   },
+   {
+    "id": "scamguardbench:syn:b2fb2e654bfca891",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.0013
+   },
+   {
+    "id": "scamguardbench:phishing_email:phishing_email-00585",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0015
+   },
+   {
+    "id": "scamguardbench:syn:002a94cb8dbcfa2d",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.0004
+   },
+   {
+    "id": "scamguardbench:syn:a2c751ba43430a74",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0013
+   },
+   {
+    "id": "scamguardbench:phishing_email:phishing_email-11469",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0195
+   },
+   {
+    "id": "scamguardbench:syn:362641eba6e75592",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.002
+   },
+   {
+    "id": "scamguardbench:syn:404062c5c3c97f7a",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.004
+   },
+   {
+    "id": "scamguardbench:syn:aa82966c39eee868",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0087
+   },
+   {
+    "id": "scamguardbench:syn:97282b91fdb4ef69",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0171
+   },
+   {
+    "id": "scamguardbench:syn:1da2d9950f496eef",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:2ce9e4854c0b980b",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:d0c843758705141d",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0049
+   },
+   {
+    "id": "scamguardbench:syn:40a03553279d5993",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0
+   },
+   {
+    "id": "scamguardbench:syn:476133032be0f93c",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:f249604d57d0d2db",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0045
+   },
+   {
+    "id": "scamguardbench:syn:e6a6c5ec27a47b26",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "scamguardbench:syn:1dcb7fff2ba05a94",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0009
+   },
+   {
+    "id": "scamguardbench:syn:8fd8a855150e4db4",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:591ed5f67be7ce07",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0033
+   },
+   {
+    "id": "scamguardbench:phishing_email:phishing_email-14552",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.8242
+   },
+   {
+    "id": "scamguardbench:syn:a05492faf1f4092b",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scamguardbench:phishing_email:phishing_email-06288",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0256
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-01006",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0021
+   },
+   {
+    "id": "scamguardbench:syn:ed752202652a3483",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scamguardbench:enron_ham:enron_ham-23356",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0569
+   },
+   {
+    "id": "scamguardbench:syn:cb35ffc9588b18e0",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2876
+   },
+   {
+    "id": "scamguardbench:enron_ham:enron_ham-9430",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0533
+   },
+   {
+    "id": "scamguardbench:syn:46baeaa048ee3193",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0286
+   },
+   {
+    "id": "scamguardbench:syn:310891a9947dc97d",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0388
+   },
+   {
+    "id": "scamguardbench:syn:ecf5471e9a58b5f2",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:a8969c541c9639f8",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:ac39c315c2c2c544",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.066
+   },
+   {
+    "id": "scamguardbench:syn:5f4415a33b0b9d00",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scamguardbench:syn:b5bdf00e4daf5864",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0007
+   },
+   {
+    "id": "scamguardbench:enron_ham:enron_ham-11163",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0304
+   },
+   {
+    "id": "scamguardbench:syn:09ef5882190be215",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.0002
+   },
+   {
+    "id": "scamguardbench:syn:4abe581c706d0f07",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:8932ffafe7e407f0",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0063
+   },
+   {
+    "id": "scamguardbench:enron_ham:enron_ham-28221",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0998
+   },
+   {
+    "id": "scamguardbench:syn:140a2b5525102f70",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scamguardbench:syn:d0d9eecb37cc45e2",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0003
+   },
+   {
+    "id": "scamguardbench:syn:f716cdadc29fb666",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0006
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-05238",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0361
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-03270",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0499
+   },
+   {
+    "id": "scamguardbench:syn:35326ca6297ab00a",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0006
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-01214",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3139
+   },
+   {
+    "id": "scamguardbench:enron_ham:enron_ham-2007",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0011
+   },
+   {
+    "id": "scamguardbench:syn:fad9f16daae490b6",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:8f5b920ecf722db3",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "scamguardbench:syn:694dc35417d9ad43",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:68cc1b8065f665db",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0023
+   },
+   {
+    "id": "scamguardbench:syn:16dcca27e03b72c1",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   },
+   {
+    "id": "scamguardbench:syn:06a124430a339d82",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0023
+   },
+   {
+    "id": "scamguardbench:syn:a6c66e02d4559c5d",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0056
+   },
+   {
+    "id": "scamguardbench:uci_sms:uci_sms-00619",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0635
+   },
+   {
+    "id": "scamguardbench:syn:9d22df29c42c8b45",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1144
+   },
+   {
+    "id": "scamguardbench:syn:07a3151a4fdb07c6",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0001
+   }
+  ],
+  "heldout": [
+   {
+    "id": "ho-da-sofa-afhentning",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0943
+   },
+   {
+    "id": "ho-da-cykel-prut",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0012
+   },
+   {
+    "id": "ho-da-bank-koden-venner",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.003
+   },
+   {
+    "id": "ho-da-middag-delt",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0681
+   },
+   {
+    "id": "ho-da-pakke-paa-vej",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4354
+   },
+   {
+    "id": "ho-da-lommepenge-mor",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0304
+   },
+   {
+    "id": "ho-da-foedselsdag-gavekort",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4874
+   },
+   {
+    "id": "ho-da-tandlaege-paamindelse",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0472
+   },
+   {
+    "id": "ho-da-barnevogn-salg",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1271
+   },
+   {
+    "id": "ho-da-flere-billeder",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0789
+   },
+   {
+    "id": "ho-da-jakke-forsendelse",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0601
+   },
+   {
+    "id": "ho-da-nyt-nummer-ven",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.4814
+   },
+   {
+    "id": "ho-da-laan-mobilepay-tilbage",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0068
+   },
+   {
+    "id": "ho-da-faktura-vvs",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0161
+   },
+   {
+    "id": "ho-da-sengen-pris",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0265
+   },
+   {
+    "id": "ho-da-spisebord-kontant",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0476
+   },
+   {
+    "id": "ho-da-bank-aldrig-kode",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2983
+   },
+   {
+    "id": "ho-da-kontingent-klub",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.1594
+   },
+   {
+    "id": "ho-da-husleje-paamindelse",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2
+   },
+   {
+    "id": "ho-da-hoveddoer-kode",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0619
+   },
+   {
+    "id": "ho-da-sommerhus-depositum",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2541
+   },
+   {
+    "id": "ho-da-ps5-muligt-kontant",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0334
+   },
+   {
+    "id": "ho-da-brugt-skrivebord-mail",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0188
+   },
+   {
+    "id": "ho-da-bil-klar-garage",
+    "y": 0,
+    "rules": "veto",
+    "p": 0.0036
+   },
+   {
+    "id": "ho-da-skolefest-penge",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.028
+   },
+   {
+    "id": "ho-da-bank-app-opdatering",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0116
+   },
+   {
+    "id": "ho-da-sms-kode-streaming",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0062
+   },
+   {
+    "id": "ho-da-nyt-bankkort",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3785
+   },
+   {
+    "id": "ho-da-hundepasning-betaling",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0303
+   },
+   {
+    "id": "ho-da-loen-tilbage",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3312
+   },
+   {
+    "id": "ho-da-rejsekort-saldo",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6835
+   },
+   {
+    "id": "ho-da-jul-kaffe-gavekort",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0929
+   },
+   {
+    "id": "ho-da-kvittering-webshop",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0553
+   },
+   {
+    "id": "ho-da-skatte-mail-hjaelp",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0317
+   },
+   {
+    "id": "ho-da-tennisketcher-bytte",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6132
+   },
+   {
+    "id": "ho-da-konsol-tjek-betaling",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0658
+   },
+   {
+    "id": "ho-da-tog-billetter-delt",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.5187
+   },
+   {
+    "id": "ho-da-hjemmeside-fakturaer",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0368
+   },
+   {
+    "id": "ho-da-vaskemaskine-mobilepay",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0107
+   },
+   {
+    "id": "ho-da-kort-spaerret-mig-selv",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.7909
+   },
+   {
+    "id": "en-fb-couch-pickup",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0128
+   },
+   {
+    "id": "en-craig-bike-haggle",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0726
+   },
+   {
+    "id": "en-venmo-dinner-split",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.016
+   },
+   {
+    "id": "en-landlord-rent-reminder",
+    "y": 0,
+    "rules": "risk",
+    "p": 0.0186
+   },
+   {
+    "id": "en-package-out-for-delivery",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0067
+   },
+   {
+    "id": "en-coworker-cover-lunch",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0059
+   },
+   {
+    "id": "en-bank-never-asks-code",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0002
+   },
+   {
+    "id": "en-new-number-friend",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0108
+   },
+   {
+    "id": "en-dentist-reminder",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.054
+   },
+   {
+    "id": "en-stroller-marketplace",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0486
+   },
+   {
+    "id": "en-desk-more-photos",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0067
+   },
+   {
+    "id": "en-zelle-rent-share",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0382
+   },
+   {
+    "id": "en-birthday-gift-card",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0013
+   },
+   {
+    "id": "en-apartment-deposit-lease",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2087
+   },
+   {
+    "id": "en-concert-refund-notice",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0582
+   },
+   {
+    "id": "en-allowance-venmo",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1991
+   },
+   {
+    "id": "en-garage-sale-cash",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0166
+   },
+   {
+    "id": "en-airbnb-checkin-code",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0007
+   },
+   {
+    "id": "en-card-statement-ready",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0075
+   },
+   {
+    "id": "en-plumber-invoice",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3429
+   },
+   {
+    "id": "ho-da-hej-mor-nyt-nummer",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9404
+   },
+   {
+    "id": "ho-da-hej-far-telefon",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9948
+   },
+   {
+    "id": "ho-da-koeber-betalingslink",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9961
+   },
+   {
+    "id": "ho-da-koeber-mitid-kode",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9933
+   },
+   {
+    "id": "ho-da-saelger-mobilepay-forskud",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9854
+   },
+   {
+    "id": "ho-da-saelger-bankoverfoersel",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.8292
+   },
+   {
+    "id": "ho-da-bank-sikker-konto",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9853
+   },
+   {
+    "id": "ho-da-politi-sikker-konto",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9948
+   },
+   {
+    "id": "ho-da-krypto-garanteret-afkast",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.939
+   },
+   {
+    "id": "ho-da-investering-kursus",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9835
+   },
+   {
+    "id": "ho-da-romance-billet-flyver",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9323
+   },
+   {
+    "id": "ho-da-romance-hospital",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9725
+   },
+   {
+    "id": "ho-da-job-pakker-videresend",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9899
+   },
+   {
+    "id": "ho-da-job-penge-videresend",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9947
+   },
+   {
+    "id": "ho-da-pakke-gebyr-postnord",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9979
+   },
+   {
+    "id": "ho-da-skat-refusion",
+    "y": 1,
+    "rules": "weak_only",
+    "p": 0.984
+   },
+   {
+    "id": "ho-da-mitid-verifikation-sms",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9927
+   },
+   {
+    "id": "ho-da-mobilepay-godkend",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.559
+   },
+   {
+    "id": "ho-da-lejer-depositum-bolig",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.856
+   },
+   {
+    "id": "ho-da-kurer-faktura-fb",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.6751
+   },
+   {
+    "id": "ho-da-lotteri-gebyr",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9897
+   },
+   {
+    "id": "ho-da-krypto-app-indbetaling",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9935
+   },
+   {
+    "id": "ho-da-bank-kortspaerring-link",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9994
+   },
+   {
+    "id": "ho-da-bilsalg-udland-transport",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.2103
+   },
+   {
+    "id": "ho-da-falsk-betalingsbillede",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.7013
+   },
+   {
+    "id": "en-zelle-deposit-item",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9561
+   },
+   {
+    "id": "en-overpay-check-refund",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9783
+   },
+   {
+    "id": "en-gift-card-fees",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9733
+   },
+   {
+    "id": "en-bank-fraud-code",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9129
+   },
+   {
+    "id": "en-hi-mum-new-number",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.5345
+   },
+   {
+    "id": "en-romance-flight-ticket",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.756
+   },
+   {
+    "id": "en-crypto-guaranteed",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.999
+   },
+   {
+    "id": "en-check-cashing-job",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9958
+   },
+   {
+    "id": "en-venmo-shipping-friends",
+    "y": 1,
+    "rules": "veto",
+    "p": 0.8367
+   },
+   {
+    "id": "en-romance-medical-emergency",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.9997
+   },
+   {
+    "id": "en-usps-redelivery-fee",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9224
+   },
+   {
+    "id": "en-tech-support-remote",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9995
+   },
+   {
+    "id": "en-crypto-atm-verify",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.6355
+   },
+   {
+    "id": "en-sweepstakes-tax-fee",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9996
+   },
+   {
+    "id": "en-rental-deposit-wire",
+    "y": 1,
+    "rules": "no_atom",
+    "p": 0.8785
+   }
+  ],
+  "cases": [
+   {
+    "id": "en-ff-deposit",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.6694
+   },
+   {
+    "id": "en-ff-urgency",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.4598
+   },
+   {
+    "id": "en-mobilepay-deposit",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0341
+   },
+   {
+    "id": "en-iban",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.7892
+   },
+   {
+    "id": "en-bank-abroad",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.8653
+   },
+   {
+    "id": "en-gift-card",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9718
+   },
+   {
+    "id": "en-crypto",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.1431
+   },
+   {
+    "id": "en-whatsapp",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.7166
+   },
+   {
+    "id": "en-pay-first",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9501
+   },
+   {
+    "id": "en-reservation-fee",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0913
+   },
+   {
+    "id": "en-revolut",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.8707
+   },
+   {
+    "id": "en-courier",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.7857
+   },
+   {
+    "id": "da-venner-depositum",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.8573
+   },
+   {
+    "id": "da-mobilepay-forskud",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.0606
+   },
+   {
+    "id": "da-bankoverfoersel",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.619
+   },
+   {
+    "id": "da-betal-foerst",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.9873
+   },
+   {
+    "id": "hn-friends-family",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.8433
+   },
+   {
+    "id": "hn-bottle-deposit",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.1358
+   },
+   {
+    "id": "hn-iban-serial",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0187
+   },
+   {
+    "id": "hn-ship-or-pickup",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.078
+   },
+   {
+    "id": "hn-urgency-only",
+    "y": 0,
+    "rules": "weak_only",
+    "p": 0.0558
+   },
+   {
+    "id": "hn-no-deposit-pickup",
+    "y": 0,
+    "rules": "veto",
+    "p": 0.0418
+   },
+   {
+    "id": "hn-gs-agreed",
+    "y": 0,
+    "rules": "veto",
+    "p": 0.0203
+   },
+   {
+    "id": "safe-checkout",
+    "y": 0,
+    "rules": "veto",
+    "p": 0.0061
+   },
+   {
+    "id": "safe-normal",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0584
+   },
+   {
+    "id": "safe-tracked",
+    "y": 0,
+    "rules": "veto",
+    "p": 0.691
+   },
+   {
+    "id": "da-afhentning",
+    "y": 0,
+    "rules": "veto",
+    "p": 0.0422
+   },
+   {
+    "id": "da-venner-nonpay",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.6941
+   },
+   {
+    "id": "da-ingen-depositum",
+    "y": 0,
+    "rules": "veto",
+    "p": 0.008
+   },
+   {
+    "id": "da-normal",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0846
+   },
+   {
+    "id": "en-send-as-gift",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.981
+   },
+   {
+    "id": "da-som-gave",
+    "y": 1,
+    "rules": "risk",
+    "p": 0.936
+   },
+   {
+    "id": "hn-gift-photos",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "hn-gift-address",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   },
+   {
+    "id": "hn-sender-som-gave",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0
+   }
+  ]
+ },
+ "version": "lr-h18-f1-2026-11-05"
+}
