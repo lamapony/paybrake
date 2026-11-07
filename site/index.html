@@ -129,7 +129,7 @@ footer p{margin:0}
       <li>Open <code>chrome://extensions</code>, turn on Developer mode, click Load unpacked and pick the unzipped <code>paybrake-extension</code> folder.</li>
       <li>Open the <a href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">live demo</a>. PayBrake shows a card under the risky message in the bike chat.</li>
     </ol>
-    <p class="note">The test build runs on the hosted demo page, and on localhost or a local file. It does not run on real marketplace sites. The zip on that link is the file the demo server is serving: rules version 3. The language notes and the accuracy numbers below are rules version 4 in this source tree, not a measurement of that zip. The source repo is private until judging, so this page does not link to GitHub, the README or issues.</p>
+    <p class="note">The test build runs on the hosted demo page, and on localhost or a local file. It does not run on real marketplace sites. The zip on that link is the file the demo server is serving: rules version 3. The language notes and the accuracy numbers below are rules version 4 in this source tree, not a measurement of that zip. This page does not link to the source code; see the project's submission for where the source is available.</p>
   </section>
 
   <section aria-labelledby="acc-h">
@@ -144,7 +144,7 @@ footer p{margin:0}
   <section aria-labelledby="priv-h">
     <h2 id="priv-h">Privacy</h2>
     <p>The rules run in your browser. AI check on all chats is on by default in this build. Turn it off in the extension's Settings and no chat text leaves the browser.</p>
-    <p>With it on, PayBrake masks emails, phone numbers, card numbers, IBANs (all but the last 4 characters), ID numbers and one-time codes before anything is sent. Names, addresses and other free text are not masked. Only the other person's messages can raise a card, and your newest message is included for context. The masked chat goes to the server in Settings (the free test server by default). That server masks it again, passes it to Typesafe <code>jev-1.14.0</code>, and keeps nothing. It does not send the chat to a second provider. On your own server, <code>LLM_FALLBACK=openrouter</code> does: a Typesafe failure other than a rejected request (a bad key or any other 4xx) sends the same masked chat to OpenRouter. On a server with no AI provider, nothing is sent and the card says AI check off (mock server).</p>
+    <p>With it on, PayBrake masks emails, phone numbers, card numbers, IBANs (all but the last 4 characters), ID numbers and one-time codes before anything is sent. Names, addresses and other free text are not masked. Only the other person's messages can raise a card, and your newest message is included for context. The masked chat goes to the server in Settings (the free test server by default). That server masks it again and passes it to Typesafe <code>jev-1.14.0</code>. Its code does not store the chat text. It does store a per-IP daily request counter for rate limiting, and, if you press Switch to a PayPal order, the mock order (item, amount, currency, payee email) for about a day. What the hosting platform and Typesafe log on their side is outside this code. It does not send the chat to a second provider. On your own server, <code>LLM_FALLBACK=openrouter</code> does: a Typesafe failure other than a rejected request (a bad key or any other 4xx) sends the same masked chat to OpenRouter. On a server with no AI provider, nothing is sent and the card says AI check off (mock server).</p>
     <p>PayBrake never types or clicks in the chat. If the AI does not answer within 6 seconds, the card says AI check unavailable and the rules result stands.</p>
   </section>
 
@@ -162,7 +162,7 @@ footer p{margin:0}
         <li>Not a full Swedish or Norwegian ruleset. Coverage is English and Danish, plus those phrases. The test build runs on the hosted demo page, and on localhost or a local file. It does not run on real marketplace sites.</li>
         <li>The numbers above are the rules-only remeasure on public datasets, so real marketplace accuracy is unknown. The 26 Oct rules-plus-AI run was not repeated after later detectors.</li>
       </ul>
-      <p style="margin:.75rem 0 0">Install steps and server status are on the <a href="https://paybrake-demo.spbabinov.workers.dev/">public demo</a>. The source repo stays private until judging.</p>
+      <p style="margin:.75rem 0 0">Install steps and server status are on the <a href="https://paybrake-demo.spbabinov.workers.dev/">public demo</a>.</p>
     </div>
   </details>
 </main>

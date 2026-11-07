@@ -4,7 +4,7 @@ Static one-page site for the PayPal AI Hackathon submission. No build step: open
 
 The page is one narrow column: a one-line description, one screenshot, "Try PayBrake in 2 minutes" (demo link, public zip, 3 install steps), rules-only accuracy numbers, a privacy note, one collapsed "Details" block and a footer. One typeface (system stack), one accent (the logo orange `#fd9a1c`).
 
-Draft only. It does not link to GitHub while the repo is private. The download is the public zip on the demo worker.
+Draft only. It does not link to the source code. The download is the public zip on the demo worker.
 
 ## Images
 
