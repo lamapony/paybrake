@@ -55,6 +55,21 @@ test("kr stays DKK and a bare number or a Danish nok is not a new amount", () =>
   assert.equal(enough[0].currency, "DKK");
 });
 
+test("Danish nok before a number is not NOK, a capital NOK 1500 is", () => {
+  const probably = parseAmounts("Det bliver nok 500 kr.");
+  assert.equal(probably.length, 1);
+  assert.equal(probably[0].value, 500);
+  assert.equal(probably[0].currency, "DKK");
+  assert.equal(parseAmounts("Den er nok 2 år gammel").length, 0);
+  assert.equal(parseAmounts("Jeg tager nok 300 for den").length, 0);
+  const code = one("Send NOK 1500 upfront to hold it.");
+  assert.equal(code.value, 1500);
+  assert.equal(code.currency, "NOK");
+  assert.equal(one("send 1500 nok first").currency, "NOK");
+  const both = parseAmounts("SEK 300 now, then 200 kr later");
+  assert.deepEqual(both.map((a) => [a.value, a.currency]), [[300, "SEK"], [200, "DKK"]]);
+});
+
 test("€45 and 45 EUR and $120", () => {
   assert.deepEqual(one("It is €45 now").value, 45);
   assert.equal(one("It is €45 now").currency, "EUR");

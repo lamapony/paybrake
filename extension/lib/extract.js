@@ -24,17 +24,31 @@ function currencyOf(raw) {
 }
 
 const NUM = String.raw`\d{1,3}(?:[ .,]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?`;
-const CUR = String.raw`kr\.?|kroner|dkk|nok|sek|eur|euro|usd|€|\$|£|gbp|pounds?`;
+// Danish "nok" means "probably" and often sits before a number ("Det bliver nok
+// 500 kr", "Den er nok 2 år"). So nok/sek count before a number only in capitals
+// ("NOK 1500"); after a number ("1500 nok") any case is fine.
+const CUR_PRE = String.raw`kr\.?|kroner|dkk|eur|euro|usd|€|\$|£|gbp|pounds?`;
+const CUR = String.raw`${CUR_PRE}|nok|sek`;
 const AMOUNT_RE = new RegExp(
-  String.raw`(?<![\p{L}\p{N}])(?:(?:${CUR})\s*(${NUM})|(${NUM})\s*(?:${CUR}))(?![\p{L}\p{N}])`,
+  String.raw`(?<![\p{L}\p{N}])(?:(?:${CUR_PRE})\s*(${NUM})|(${NUM})\s*(?:${CUR}))(?![\p{L}\p{N}])`,
   "giu"
 );
+// Case-sensitive on purpose (no "i" flag): only a capital NOK/SEK code.
+const CODE_FIRST_RE = new RegExp(String.raw`(?<![\p{L}\p{N}])(?:NOK|SEK)\s*(${NUM})(?![\p{L}\p{N}])`, "gu");
+
+function amountMatches(text) {
+  const main = [...text.matchAll(AMOUNT_RE)];
+  const extra = [...text.matchAll(CODE_FIRST_RE)].filter((m) =>
+    main.every((n) => m.index + m[0].length <= n.index || n.index + n[0].length <= m.index)
+  );
+  return extra.length ? [...main, ...extra].sort((a, b) => a.index - b.index) : main;
+}
 
 function parseAmounts(input) {
   const text = String(input ?? "");
   const out = [];
   AMOUNT_RE.lastIndex = 0;
-  for (const match of text.matchAll(AMOUNT_RE)) {
+  for (const match of amountMatches(text)) {
     const raw = match[0];
     const num = match[1] || match[2];
     const value = parseLocalizedNumber(num);
