@@ -562,11 +562,17 @@ function sentenceAt(text, start) {
   return head + (cut === -1 ? rest : rest.slice(0, cut));
 }
 
+// Issue #21: a preposition right after the number ("Send 500 for the bike in
+// advance", "500 via Vipps", "300, then I ship") still means money; only a noun
+// ("2 photos") makes it a count. "2 thousand" is money too. Trade-off: "Send 2 to
+// my email in advance" now counts as money (the item is unnamed either way).
+const BARE_AMOUNT_NEXT = /^(?:[ \t]+(?:thousand|tusind|grand))?[ \t]*[,:]?[ \t]*(?:(?:up[ \t]*front|in[ \t]+advance|now|today|for|to|via|as|first|before|then)\b|[.!?]?$)/iu;
+
 function bareAmountCounts(span) {
   const re = new RegExp(BARE_AMOUNT.source, "giu");
   for (const match of span.matchAll(re)) {
     const after = span.slice((match.index ?? 0) + match[0].length);
-    if (/^[ \t]*[,:]?[ \t]*(?:(?:up[ \t]*front|in[ \t]+advance|now|today)\b|[.!?]?$)/iu.test(after)) return true;
+    if (BARE_AMOUNT_NEXT.test(after)) return true;
   }
   return false;
 }
