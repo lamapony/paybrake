@@ -341,7 +341,9 @@ async function detect(text, ctx = {}, options = {}) {
   const vetoHit = hardVeto || collectionVeto;
 
   let rules = rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal, messages });
-  // On-device model (opt-in, scam-model.js). It runs before the server AI, so the AI can
+  // On-device model (scam-model.js). detect() runs it only when the caller passes
+  // options.localModel; the extension passes it by default (background.js, Options page
+  // toggle "On-device scam model", on by default). It runs before the server AI, so the AI can
   // confirm a model card or remove it, exactly as it treats a rules card.
   if (options && options.localModel) rules = withLocalModel(rules, raw, messages, ctx);
   const ask = options && options.askLlm;
