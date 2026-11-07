@@ -2,6 +2,12 @@
 
 Deferred work. Open pull requests stay open until someone reviews them. This list does not merge or close anything.
 
+> **Status on 7 Nov 2026 (main `4255fce`).** Parts of this list are out of date:
+> - #23, #24, #26 and #28 are merged. #27 and #29 are closed. #25, #30 and #31 are still open. Their wide gates were narrowed on 7 Nov: Signal/Messenger asks now need the amount or "pay me" before "on <app>", and "half up front"/"50% now" need a live pay word.
+> - `hn-paid-flat-deposit` is now silent on main. #32 makes it a normal test, not a todo. `hn-refuse-ff-checkout` still flags on main; #37 fixes it.
+> - Issue #21: all three "I paid … upfront" lines are silent on main. The bare-number gap is fixed on #56. The NOK gap is fixed on #35.
+> - Issue #22: three of the five rail-first lines flag on main now. "Zelle now, when you collect it's yours." and "When we meet, Venmo me now…" stay silent.
+
 ## Contested detector pulls
 
 #23–#31 are open against `main`. Grok reviews contested each one. A wrong card is worse than a miss (`docs/adr/0001-silent-unless-evidenced.md`).
