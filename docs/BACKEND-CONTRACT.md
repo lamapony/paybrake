@@ -53,14 +53,14 @@ Base URL: `PAYPAL_BASE_URL` with trailing slashes removed, or `https://api-m.san
 
 Timeout: `PAYPAL_TIMEOUT_MS` when it is a number above 0, otherwise 10000. Each call uses `AbortSignal.timeout`. A thrown fetch becomes 502 `paypal_error`. The error text does not include the transport message.
 
-OAuth: `POST {base}/v1/oauth2/token` with `content-type: application/x-www-form-urlencoded`, body `grant_type=client_credentials`, and `authorization: Basic` of `clientId:clientSecret`. The access token is cached until `expires_in - 60` seconds. A missing or non-numeric `expires_in` is treated as 0, so the next call fetches again. Concurrent callers share one in-flight token request. The token is kept in memory on this process.
+OAuth: `POST {base}/v1/oauth2/token` with `content-type: application/x-www-form-urlencoded`, body `grant_type=client_credentials`, and `authorization: Basic` of `clientId:clientSecret`. The access token is cached until `expires_in - 60` seconds when that remainder is still positive. A positive `expires_in` of 60 seconds or less is cached for the full `expires_in`. A missing, non-numeric, or non-positive `expires_in` is cached for 300 seconds. Concurrent callers share one in-flight token request. The token is kept in memory on this process.
 
-Orders calls send `authorization: Bearer …`. Create and capture also send a new `PayPal-Request-Id` UUID. A 401 or 403 clears the cache and retries that same call once, with the same request id. A second 401 or 403 is 502 `paypal_auth`. The token endpoint itself is not retried; a 401 or 403 from it is already `paypal_auth`.
+Orders calls send `authorization: Bearer …`. Create sends a `PayPal-Request-Id` UUID derived from the raw `referenceId` (or a new UUID when the caller omits it), not from the `reference_id` string PayPal stores. Capture sends a UUID derived from the order id. Repeating the same reference, or capturing the same order, sends the same id, including the single 401 retry. A 401 clears the cache and retries that call once. A second 401 is 502 `paypal_auth`. A 403 does not clear the cache and is not retried; it is 502 `paypal_auth` on that response. The token endpoint itself is not retried; a 401 or 403 from it is already `paypal_auth`.
 
 `POST /v2/checkout/orders` with `prefer: return=representation` and this JSON:
 
 - `intent`: `"CAPTURE"`
-- `purchase_units[0].reference_id`: the given id, or a new UUID
+- `purchase_units[0].reference_id`: the caller's id when it is already 1-256 printable ASCII characters (space through `~`), otherwise the sha256 hex of that raw id (64 characters). A missing id becomes a new UUID, which is sent as itself. The extension protect seed joins the chat hash, item, amount, currency, and payee email with a unit separator, so PayPal receives the hex. The item and the email stay out of this field. `PayPal-Request-Id` still uses the raw seed, so the same seed retries the same create.
 - `purchase_units[0].description`: the item, cut at 127 characters
 - `purchase_units[0].amount`: `{ currency_code, value }` with the two-decimal string
 - `purchase_units[0].payee`: `{ email_address }` when the email is non-blank after trim. A blank email omits `payee`
@@ -74,7 +74,7 @@ The approve URL is the link with `rel` `payer-action`. If that href is missing, 
 
 `GET /v2/checkout/orders/{id}` returns null on PayPal 404. The id is URL-encoded. A 2xx body maps to `{ orderId, status, captureId, approveUrl }`. `captureId` is `purchase_units[0].payments.captures[0].id` when that string is non-empty, otherwise null.
 
-`POST /v2/checkout/orders/{id}/capture` sends a JSON object `{}` and a new `PayPal-Request-Id`. PayPal 404 returns null. A 422 whose `details[].issue` is `ORDER_NOT_APPROVED` or `PAYER_ACTION_REQUIRED` throws 409 `not_approved`. A 422 `ORDER_ALREADY_CAPTURED` loads the order with GET and returns `{ orderId, status, captureId }`. Other failures use the map below.
+`POST /v2/checkout/orders/{id}/capture` sends a JSON object `{}` and a `PayPal-Request-Id` derived from the order id. PayPal 404 returns null. A 422 whose `details[].issue` is `ORDER_NOT_APPROVED` or `PAYER_ACTION_REQUIRED` throws 409 `not_approved`. A 422 `ORDER_ALREADY_CAPTURED` loads the order with GET and returns `{ orderId, status, captureId }`. Other failures use the map below.
 
 PayPal error mapping (`paypalError` plus the 422 cases above):
 
@@ -84,7 +84,8 @@ PayPal error mapping (`paypalError` plus the 422 cases above):
 | 422 `ORDER_NOT_APPROVED` or `PAYER_ACTION_REQUIRED` | 409 `not_approved` |
 | 422 `ORDER_ALREADY_CAPTURED` on capture | the existing capture from GET |
 | other 400 or 422 | 400 `bad_request`. Message is `PayPal rejected the order` or `PayPal rejected the order: ISSUE`. `ISSUE` is the first `details[].issue` that matches `^[A-Z][A-Z0-9_]*$`, otherwise `name` if it matches. PayPal's `message` and `description` are dropped |
-| 401 or 403 | one refresh, then 502 `paypal_auth` |
+| 401 | one refresh, then 502 `paypal_auth` |
+| 403 | 502 `paypal_auth`, no token refresh |
 | anything else, including 5xx, 429, a thrown fetch, or a token body with no `access_token` | 502 `paypal_error` |
 
 HTTP bodies for 502 are `{ "error": "paypal_auth" }` or `{ "error": "paypal_error" }`. They do not include the token, the secret, or the PayPal body.
@@ -151,17 +152,17 @@ Request: `{ "text": "Send 500 kr via Friends & Family", "rulesLevel": "medium" }
 
 `text` must be a string. The local backend limit is 4000 characters (`TEXT_LIMIT` in `backend/src/classify.js`): longer than that is **400** `{ "error": "bad_request", "message": "text is too long" }`. Fetch is not called. The hosted Worker is stricter: 2000 characters, **413** `{ "error": "text_too_long", "max": 2000 }`. The extension sends at most the latest 1900 characters, which both accept.
 
-When `resolveLlm` is not configured, respond **503** `{ "error": "llm_off" }` and do not call a provider. That includes an empty env, `LLM_PROVIDER=off` (even if keys are set), an unknown provider name, `LLM_PROVIDER=openrouter` with no key, and `LLM_PROVIDER=openai-compatible` with no `LLM_BASE_URL`.
+When `resolveLlm` is not configured, respond **503** `{ "error": "llm_off" }` and do not call a provider. That includes an empty env, `LLM_PROVIDER=off` (even if keys are set), `LLM_PROVIDER=openrouter` with no key, and `LLM_PROVIDER=openai-compatible` with no `LLM_BASE_URL`. A value other than `typesafe`, `openrouter`, `openai-compatible`, or `off` throws `Unknown LLM_PROVIDER` from `resolveLlm`. `createHandler` calls that at startup, so the process does not listen.
 
 When it is configured, `classifyText` POSTs to `{baseUrl}/chat/completions` with `temperature: 0`, `response_format: { "type": "json_object" }`, and the system prompt in `backend/src/classify.js`.
 
 | Provider | How it is chosen | Base URL | Model when `LLM_MODEL` is empty | Authorization |
 |---|---|---|---|---|
-| `openrouter` | `LLM_PROVIDER=openrouter`, or provider empty and `OPENROUTER_API_KEY` is set (and `LLM_BASE_URL` is empty) | `LLM_BASE_URL` or `https://openrouter.ai/api/v1` | `openai/gpt-4o-mini` | Bearer of `OPENROUTER_API_KEY`, or `LLM_API_KEY` if the OpenRouter key is empty. Also sends `HTTP-Referer: https://github.com/lamapony/paybrake` and `X-Title: PayBrake` |
+| `openrouter` | `LLM_PROVIDER=openrouter`, or provider empty and `OPENROUTER_API_KEY` is set (and `LLM_BASE_URL` is empty) | `https://openrouter.ai/api/v1`. `LLM_BASE_URL` is used only when it is `https` and the host is `openrouter.ai` or a subdomain of it. Any other value is ignored | `openai/gpt-4o-mini` | Bearer of `OPENROUTER_API_KEY`, or `LLM_API_KEY` if the OpenRouter key is empty. Also sends `HTTP-Referer: https://github.com/lamapony/paybrake` and `X-Title: PayBrake` |
 | `openai-compatible` | `LLM_PROVIDER=openai-compatible`, or provider empty and `LLM_BASE_URL` is set | `LLM_BASE_URL` (required) | `gpt-4o-mini` | Bearer of `LLM_API_KEY` only when that value is non-empty |
-| `typesafe` | `LLM_PROVIDER=typesafe`, or provider empty, `LLM_BASE_URL` empty and `TYPESAFE_API_KEY` (or the var named by `TYPESAFE_API_KEY_NAME`) is set. Wins over OpenRouter | `TYPESAFE_BASE_URL` or `https://api.typesafe.ai`; requests go to `/v1/systemone` | `TYPESAFE_MODEL` or `jev-1.14.0` | Bearer of the Typesafe key |
+| `typesafe` | `LLM_PROVIDER=typesafe`, or provider empty, `LLM_BASE_URL` empty, no `OPENROUTER_API_KEY`, and `TYPESAFE_API_KEY` (or a var whose name starts with `TYPESAFE_`) is set. OpenRouter wins when both keys are set and the provider is empty | `TYPESAFE_BASE_URL` or `https://api.typesafe.ai`; requests go to `/v1/systemone` | `TYPESAFE_MODEL` or `jev-1.14.0` | Bearer of the Typesafe key |
 
-Typesafe is a decision model, not a chat model. `classifyText` sends the redacted chat as `state` with three questions: `risky` (yes/no probability), `signal` (choice of the signal ids) and, for chats with more than one Them line, `evidence` (choice of one Them line). The evidence is that line verbatim, `reason` is empty (the extension uses its own card text), `confidence` is p(risky) for a risky verdict and 1 − p for a safe one, and the response carries `addConfidence` (`TYPESAFE_ADD_CONFIDENCE`, default 0.5) which the extension uses as its add bar. `LLM_FALLBACK=openrouter` retries a failed Typesafe call on OpenRouter.
+Typesafe is a decision model, not a chat model. `classifyText` sends the redacted chat as `state` with three questions: `risky` (yes/no probability), `signal` (choice of the signal ids) and, for chats with more than one Them message, `evidence` (choice of one Them message). Lines after a `Them:` label that do not start with `Them:` or `Me:` are part of that message, so a multi-line ask stays one evidence choice. The evidence is that message verbatim, `reason` is empty (the extension uses its own card text), `confidence` is p(risky) for a risky verdict and 1 − p for a safe one, and the response carries `addConfidence` (`TYPESAFE_ADD_CONFIDENCE`, default 0.5) which the extension uses as its add bar. `TYPESAFE_API_KEY_NAME` is used only when it starts with `TYPESAFE_`; any other name is ignored and the key is read from `TYPESAFE_API_KEY`. `LLM_FALLBACK=openrouter` retries a Typesafe call on OpenRouter after a network error, a 5xx, or a bad response shape. A 4xx is not retried, so a bad key does not send the chat to OpenRouter.
 
 Provider empty and both `LLM_BASE_URL` and `OPENROUTER_API_KEY` set: openai-compatible wins, and the bearer is `LLM_API_KEY`. Trailing slashes on the base URL are removed. `LLM_TIMEOUT_MS` defaults to 8000 when empty, not a number, or not above 0.
 
@@ -231,7 +232,7 @@ In rest or toolkit mode, `GET /return` does not approve anything. PayPal is wher
 | 409 | `{ "error": "not_approved" }` | capture before approval, including PayPal issues `ORDER_NOT_APPROVED` and `PAYER_ACTION_REQUIRED` |
 | 413 | `{ "error": "payload_too_large" }` | body over 16 kB |
 | 502 | `{ "error": "paypal_error" }` | PayPal transport failure, 5xx, 429, or other non-auth PayPal failure |
-| 502 | `{ "error": "paypal_auth" }` | PayPal 401 or 403 after one token refresh |
+| 502 | `{ "error": "paypal_auth" }` | PayPal 401 after one token refresh, or PayPal 403 with no refresh |
 | 502 | `{ "error": "llm_error" }` | classify provider failure. Also the fallback when a 502 code is neither `paypal_error` nor `paypal_auth` |
 | 503 | `{ "error": "llm_off" }` | classify while `resolveLlm` is not configured |
 | 500 | `{ "error": "internal" }` | anything else. No stack in the body |
@@ -285,7 +286,7 @@ See `backend/.env.example`. `backend/src/server.js` loads `backend/.env` with a 
 | `LLM_PROVIDER` | `typesafe`, `openrouter`, `openai-compatible`, or `off`. Empty auto-selects as in the classify section |
 | `TYPESAFE_API_KEY` | Typesafe key. Never commit a value. `TYPESAFE_API_KEY_NAME`, `TYPESAFE_BASE_URL`, `TYPESAFE_MODEL`, `TYPESAFE_ADD_CONFIDENCE` and `LLM_FALLBACK` are described in `backend/.env.example` |
 | `OPENROUTER_API_KEY` | OpenRouter key. A key alone counts as configured. Never commit a value |
-| `LLM_BASE_URL` | base for openai-compatible, or an override of the OpenRouter base. Empty and no OpenRouter key means 503 |
+| `LLM_BASE_URL` | base for openai-compatible. For openrouter, used only on `https` `openrouter.ai`; any other host is ignored. Empty, with no Typesafe key and no OpenRouter key, means 503 |
 | `LLM_API_KEY` | bearer for openai-compatible. Fallback OpenRouter key when `OPENROUTER_API_KEY` is empty. Omitted from the request when empty |
 | `LLM_MODEL` | overrides the provider default |
 | `LLM_TIMEOUT_MS` | milliseconds. Empty, zero, or not a number uses 8000 |
@@ -321,8 +322,8 @@ Offline, no credentials, no network (`node --test backend/test/` and `npm test`)
 - classify is 503 `{ "error": "llm_off" }` when no provider is configured
 - CORS reflects the demo origin and any `chrome-extension://` origin, and omits the header for other origins
 - evidence quotes must be substrings; the fetch wrapper sends `temperature: 0`
-- OAuth token is cached until `expires_in - 60` seconds, and concurrent creates share one token request
-- create-order body: `intent: "CAPTURE"`, payee email, 2-decimal amount, currency, experience context, `PayPal-Request-Id`
+- OAuth token is cached until `expires_in - 60` seconds, for the full life when that is 60 seconds or less, and for 300 seconds when `expires_in` is missing. Concurrent creates share one token request
+- create-order body: `intent: "CAPTURE"`, payee email, 2-decimal amount, currency, experience context, `PayPal-Request-Id` derived from the raw `referenceId`. A `reference_id` that is longer than 256 characters, or that is not printable ASCII, is sent as sha256 hex.
 - approve link is the `payer-action` rel, with `approve` as fallback
 - capture, `ORDER_ALREADY_CAPTURED`, and 4xx/5xx mapping (`paypal_auth`, `paypal_error`, 409 `not_approved`)
 - PayPal 404 on get and capture becomes null
@@ -332,11 +333,11 @@ Offline, no credentials, no network (`node --test backend/test/` and `npm test`)
 
 ## TODO for the rest adapter
 
-- [x] OAuth `POST /v1/oauth2/token` (client credentials) and cache the token until `expires_in - 60s`
+- [x] OAuth `POST /v1/oauth2/token` (client credentials) and cache the token until `expires_in - 60s`, or for its full life / 300s when that window would be empty
 - [x] `POST /v2/checkout/orders` with `intent: "CAPTURE"`
 - [x] `purchase_units[0]`: `reference_id`, `description` = item, `amount.currency_code`, `amount.value` with two decimals, `payee.email_address`
 - [x] `payment_source.paypal.experience_context`: `return_url`, `cancel_url`, `user_action: "PAY_NOW"` (also `shipping_preference: "NO_SHIPPING"` and `brand_name: "PayBrake demo"`)
-- [x] Send a new `PayPal-Request-Id` UUID on POSTs
+- [x] Send a `PayPal-Request-Id` UUID on POSTs, derived from the reference id on create and the order id on capture
 - [x] Approve URL = link `rel` `payer-action`, else `approve`
 - [x] `GET /v2/checkout/orders/{id}` and `POST /v2/checkout/orders/{id}/capture`
 - [x] Support DKK, EUR, and USD

@@ -1,8 +1,36 @@
 # PayBrake on real scam messages: results
 
+Remeasured 3 Nov 2026 on rules v4 (`RULES_VERSION` in `extension/lib/atoms.js`): the detector on main after the named-rail detectors, the v3 signals, and the later QA fixes. Same harness, same seed `20261026`, same 3,147 sampled messages. Rules only. No model was called. Per-row predictions are in `results/rules-v4.json` (ids, labels, signals, short evidence spans; no message bodies).
+
+**Current headline (rules v4, test split, 1,573 messages):** precision 0.976, recall 0.456, F1 0.621, false-positive rate 0.009 (8 false alarms out of 860 legit). All 3,147 messages: precision 0.982, recall 0.458, F1 0.624, 12 false alarms out of 1,720 legit.
+
+The sections under [Historical log (26 Oct 2026)](#historical-log-26-oct-2026) are the v1, v2, v3, and Typesafe runs from that day. They are not the current detector. The old Typesafe headline (precision 0.977, recall 0.846) was not re-run here.
+
+## Current rules (v4)
+
+| dataset | split | n | TP | FP | FN | TN | precision | recall | F1 | FPR |
+|---|---|---|---|---|---|---|---|---|---|---|
+| SMS spam (real) | test | 500 | 0 | 0 | 250 | 250 | n/a | 0 | 0 | 0 |
+| Discord (real) | test | 388 | 32 | 1 | 106 | 249 | 0.97 | 0.232 | 0.374 | 0.004 |
+| Scam dialogues | test | 500 | 225 | 2 | 25 | 248 | 0.991 | 0.9 | 0.943 | 0.008 |
+| ScamGuardBench | test | 185 | 68 | 5 | 7 | 105 | 0.932 | 0.907 | 0.919 | 0.045 |
+| **pooled** | **test** | **1573** | **325** | **8** | **388** | **852** | **0.976** | **0.456** | **0.621** | **0.009** |
+| pooled | dev | 1574 | 328 | 4 | 386 | 856 | 0.988 | 0.459 | 0.627 | 0.005 |
+| pooled | all | 3147 | 653 | 12 | 774 | 1708 | 0.982 | 0.458 | 0.624 | 0.007 |
+
+Dev is shown because that is where the older rules were designed. This remeasure did not change any rule.
+
+Money-asking scams, using ScamGuardBench's own tactic labels (`payAsk`): dev 24/24, test 29/31, all 53/55.
+
+Against the committed `results/rules-v3.json` predictions (the stored v3 run, not a fresh run of the old code), four rows changed verdict. Test true positives stay 325 because one reward phone scam now flags (`upfront_deposit`) and one romance / payment-redirect scam no longer does (only the weak `account_threat` atom). Test false alarms go from 7 to 8: one more family-money request flags as `off_platform`. Dev gains one false alarm, a subscription receipt, also `off_platform`.
+
+Real SMS, test split: no flags. Real Discord, test split: one false alarm (`credential_request` on a message the dataset calls clean). The synthetic rules eval (`npm run eval`) is still precision 1, recall 1, 0 false alarms.
+
+## Historical log (26 Oct 2026)
+
 Date: 26 Oct 2026. Branch `eval-real-scams` (from `tester-friendly`). Harness: `eval/real/`.
 
-**Latest (headline): rules v3 + Typesafe AI (jev-1.14.0) with the extra prize/premium/lure questions: test precision 0.977, recall 0.846,
+**Then, not current: rules v3 + Typesafe AI (jev-1.14.0) with the extra prize/premium/lure questions: test precision 0.977, recall 0.846,
 F1 0.907, false alarms 14 of 860 (1.6%) as labelled, of which 2 are spam that the dataset mislabeled as legit (see
 [the headline section](#headline-rules-v3--typesafe-with-extra-questions-adopted-26-oct)).** Before that: Typesafe with the risky question only
 (P 0.975, R 0.698, FA 1.5%, [Typesafe section](#v3--typesafe-ai-replaces-openrouter-as-the-ai-provider)), and rules v3 + OpenRouter
@@ -291,7 +319,9 @@ Date: 26 Oct 2026. Same rules v3, same test split, same redaction and speaker la
 `jev-latest` and `jev-preview` (both → `jev-1.14.0` today); `jev-1.13.0` is also accepted. Price: $0.042 per million input
 tokens, output free.
 
-**How PayBrake uses it** (`backend/src/classify.js`, `LLM_PROVIDER=typesafe` or just `TYPESAFE_API_KEY` set):
+This subsection describes the 26 Oct setup. Current selection is different: with `LLM_PROVIDER` empty, an OpenRouter key wins over a Typesafe key; `TYPESAFE_API_KEY_NAME` is used only when it starts with `TYPESAFE_`; `LLM_FALLBACK=openrouter` does not run after a 4xx; a multi-line Them message is one evidence choice.
+
+**How PayBrake uses it** (`backend/src/classify.js`, as of 26 Oct: `LLM_PROVIDER=typesafe` or just `TYPESAFE_API_KEY` set):
 - One call per chat with three questions: `risky` (yes/no, with the same "what counts as risky / not risky" text as the chat prompt),
   `signal` (choice of PayBrake's signal ids) and `evidence` (choice of one of Them's lines, by index).
 - The evidence is that line verbatim, so it always passes the quote guard and the model cannot invent a quote. The card text comes from

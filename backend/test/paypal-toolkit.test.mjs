@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { createServer } from "../src/server.js";
 import { createOrdersPort } from "../src/paypal.js";
 import { TOOLKIT_TOOLS, toolkitArgsToOrder } from "../src/paypal-toolkit.js";
@@ -169,6 +170,34 @@ test("create_order via runTool posts the Orders v2 body", async () => {
   const paid = await port.runTool("pay_order", { id: "ORDER-TOOL-1" });
   assert.equal(paid.status, "COMPLETED");
   assert.equal(paid.captureId, "CAP-1");
+});
+
+test("create_order sends a bounded reference_id when the seed is long or contains a unit separator", async () => {
+  const { calls, fetchImpl } = recorded();
+  const port = createOrdersPort(toolkitEnv(), { fetchImpl });
+  const longItem = "Vintage frame " + "y".repeat(300);
+  const longEmail = "seller@" + "e".repeat(40) + ".example";
+  const longRef = ["h".repeat(64), longItem, "1800", "DKK", longEmail].join("\u001f");
+  assert.ok(longRef.length > 256);
+  const args = {
+    currencyCode: "DKK",
+    items: [{ name: longItem, quantity: 1, itemCost: 1800, taxPercent: 0, itemTotal: 1800 }],
+    payeeEmail: longEmail,
+    referenceId: longRef
+  };
+  await port.runTool("create_order", args);
+  await port.runTool("create_order", args);
+  const longCreates = calls.filter((call) => call.method === "POST" && call.url.endsWith("/v2/checkout/orders"));
+  const longSent = JSON.parse(longCreates[0].body).purchase_units[0].reference_id;
+  assert.equal(longSent, createHash("sha256").update(longRef).digest("hex"));
+  assert.equal(JSON.parse(longCreates[1].body).purchase_units[0].reference_id, longSent);
+  assert.ok(longSent.length <= 256);
+  assert.match(longSent, /^[\x20-\x7E]+$/);
+  assert.equal(longSent.includes(longEmail), false);
+  assert.equal(longSent.includes("Vintage frame"), false);
+  assert.equal(longSent.includes("\u001f"), false);
+  assert.equal(longCreates[0].headers["PayPal-Request-Id"], longCreates[1].headers["PayPal-Request-Id"]);
+  assert.match(longCreates[0].headers["PayPal-Request-Id"], UUID);
 });
 
 test("unknown tool name is 400 and does not call fetch", async () => {

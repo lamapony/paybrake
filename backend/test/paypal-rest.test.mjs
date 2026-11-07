@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   assertSandboxBaseUrl,
   createRestPort,
@@ -90,6 +91,38 @@ test("token is refetched after expires_in minus 60 seconds", async () => {
   await port.createOrder({ ...bike, referenceId: "bike-ref-2" });
   assert.equal(calls.filter(isToken).length, 1);
   clock = 5_000 + (expiresIn - 60) * 1000;
+  await port.createOrder({ ...bike, referenceId: "bike-ref-3" });
+  assert.equal(calls.filter(isToken).length, 2);
+});
+
+test("a short expires_in is cached for its full life", async () => {
+  let clock = 1_000;
+  const { calls, fetchImpl } = recorded(async (call) => {
+    if (isToken(call)) return tokenResponse(30);
+    return createdOrder();
+  });
+  const port = createRestPort(restEnv(), { fetchImpl, now: () => clock });
+  await port.createOrder(bike);
+  clock = 1_000 + 30 * 1000 - 1;
+  await port.createOrder({ ...bike, referenceId: "bike-ref-2" });
+  assert.equal(calls.filter(isToken).length, 1);
+  clock = 1_000 + 30 * 1000;
+  await port.createOrder({ ...bike, referenceId: "bike-ref-3" });
+  assert.equal(calls.filter(isToken).length, 2);
+});
+
+test("a missing expires_in is cached for five minutes", async () => {
+  let clock = 10_000;
+  const { calls, fetchImpl } = recorded(async (call) => {
+    if (isToken(call)) return new Response(JSON.stringify({ access_token: ACCESS_TOKEN }), { status: 200 });
+    return createdOrder();
+  });
+  const port = createRestPort(restEnv(), { fetchImpl, now: () => clock });
+  await port.createOrder(bike);
+  clock = 10_000 + 300 * 1000 - 1;
+  await port.createOrder({ ...bike, referenceId: "bike-ref-2" });
+  assert.equal(calls.filter(isToken).length, 1);
+  clock = 10_000 + 300 * 1000;
   await port.createOrder({ ...bike, referenceId: "bike-ref-3" });
   assert.equal(calls.filter(isToken).length, 2);
 });
@@ -189,6 +222,85 @@ test("PayPal-Request-Id is a uuid and differs between creates", async () => {
   assert.match(ids[0], UUID);
   assert.match(ids[1], UUID);
   assert.notEqual(ids[0], ids[1]);
+});
+
+test("PayPal-Request-Id repeats for the same referenceId and the same capture", async () => {
+  const { calls, fetchImpl } = recorded(async (call) => {
+    if (isToken(call)) return tokenResponse();
+    if (call.method === "POST" && call.url.endsWith("/capture")) {
+      return new Response(JSON.stringify({
+        id: "ORDER-1",
+        status: "COMPLETED",
+        purchase_units: [{ payments: { captures: [{ id: "CAP-1" }] } }]
+      }), { status: 201 });
+    }
+    return createdOrder();
+  });
+  const port = createRestPort(restEnv(), { fetchImpl });
+  await port.createOrder(bike);
+  await port.createOrder(bike);
+  const createIds = calls.filter(isCreate).map((call) => call.headers["PayPal-Request-Id"]);
+  assert.equal(createIds[0], createIds[1]);
+  assert.match(createIds[0], UUID);
+  await port.captureOrder("ORDER-1");
+  await port.captureOrder("ORDER-1");
+  await port.captureOrder("ORDER-2");
+  const captureIds = calls
+    .filter((call) => call.method === "POST" && call.url.endsWith("/capture"))
+    .map((call) => call.headers["PayPal-Request-Id"]);
+  assert.equal(captureIds.length, 3);
+  assert.equal(captureIds[0], captureIds[1]);
+  assert.notEqual(captureIds[0], captureIds[2]);
+  assert.notEqual(captureIds[0], createIds[0]);
+  assert.match(captureIds[0], UUID);
+});
+
+test("a long or non-printable referenceId is a bounded reference_id and a stable PayPal-Request-Id", async () => {
+  const item = "Vintage frame " + "x".repeat(300);
+  const payeeEmail = "seller@" + "e".repeat(40) + ".example";
+  const referenceId = ["h".repeat(64), item, "1800", "DKK", payeeEmail].join("\u001f");
+  assert.ok(referenceId.length > 256);
+  const shortRef = ["abc123", "Bike", "50", "EUR", "a@b.co"].join("\u001f");
+  assert.ok(shortRef.length <= 256);
+
+  const { calls, fetchImpl } = recorded(async (call) => {
+    if (isToken(call)) return tokenResponse();
+    return createdOrder();
+  });
+  const port = createRestPort(restEnv(), { fetchImpl });
+  const order = { item, amount: 1800, currency: "DKK", payeeEmail, referenceId };
+  await port.createOrder(order);
+  await port.createOrder(order);
+
+  const creates = calls.filter(isCreate);
+  const sent = JSON.parse(creates[0].body).purchase_units[0].reference_id;
+  const digest = createHash("sha256").update(referenceId).digest("hex");
+  assert.equal(sent, digest);
+  assert.equal(JSON.parse(creates[1].body).purchase_units[0].reference_id, sent);
+  assert.ok(sent.length <= 256);
+  assert.match(sent, /^[\x20-\x7E]+$/);
+  assert.equal(sent.includes("\u001f"), false);
+  assert.equal(sent.includes(payeeEmail), false);
+  assert.equal(sent.includes("Vintage frame"), false);
+  assert.equal(creates[0].headers["PayPal-Request-Id"], creates[1].headers["PayPal-Request-Id"]);
+  assert.match(creates[0].headers["PayPal-Request-Id"], UUID);
+
+  await port.createOrder({ item: "Bike", amount: 50, currency: "EUR", payeeEmail: "a@b.co", referenceId: shortRef });
+  const shortSent = JSON.parse(calls.filter(isCreate)[2].body).purchase_units[0].reference_id;
+  assert.equal(shortSent, createHash("sha256").update(shortRef).digest("hex"));
+  assert.equal(shortSent.includes("a@b.co"), false);
+  assert.equal(shortSent.includes("\u001f"), false);
+  assert.match(calls.filter(isCreate)[2].headers["PayPal-Request-Id"], UUID);
+
+  const capped = "r".repeat(256);
+  await port.createOrder({ ...order, referenceId: capped });
+  assert.equal(JSON.parse(calls.filter(isCreate)[3].body).purchase_units[0].reference_id, capped);
+
+  const over = "r".repeat(257);
+  await port.createOrder({ ...order, referenceId: over });
+  const overCall = calls.filter(isCreate)[4];
+  assert.equal(JSON.parse(overCall.body).purchase_units[0].reference_id, createHash("sha256").update(over).digest("hex"));
+  assert.notEqual(overCall.headers["PayPal-Request-Id"], creates[0].headers["PayPal-Request-Id"]);
 });
 
 test("approve link prefers payer-action, then approve, else null", async () => {
@@ -357,6 +469,28 @@ test("a second 401 becomes 502 paypal_auth and does not retry again", async () =
   });
   assert.equal(orderAttempts, 2);
   assert.equal(calls.filter(isToken).length, 2);
+});
+
+test("403 on an orders call does not refresh the token or retry", async () => {
+  let orderAttempts = 0;
+  const { calls, fetchImpl } = recorded(async (call) => {
+    if (isToken(call)) return tokenResponse();
+    orderAttempts += 1;
+    if (orderAttempts === 1) return new Response(JSON.stringify({ name: "NOT_AUTHORIZED" }), { status: 403 });
+    return createdOrder();
+  });
+  const port = createRestPort(restEnv(), { fetchImpl });
+  await assert.rejects(() => port.createOrder(bike), (error) => {
+    assert.equal(error.status, 502);
+    assert.equal(error.code, "paypal_auth");
+    return true;
+  });
+  assert.equal(orderAttempts, 1);
+  assert.equal(calls.filter(isToken).length, 1);
+  const created = await port.createOrder({ ...bike, referenceId: "bike-ref-2" });
+  assert.equal(created.orderId, "ORDER-1");
+  assert.equal(orderAttempts, 2);
+  assert.equal(calls.filter(isToken).length, 1);
 });
 
 test("PayPal 500 maps to 502 paypal_error", async () => {

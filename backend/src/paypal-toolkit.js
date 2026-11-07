@@ -3,7 +3,7 @@
 // Swap in the real client once a payee is accepted, or if USD-only is acceptable:
 // new PayPalAgentToolkit({ clientId, clientSecret, configuration: { actions: { orders: { create: true, get: true, capture: true } }, context: { sandbox: true } } })
 import { createRestPort } from "./paypal-rest.js";
-import { assertSandbox } from "./paypal.js";
+import { assertSandbox } from "./paypal-shared.js";
 
 const CURRENCIES = ["DKK", "EUR", "USD"];
 
@@ -116,6 +116,8 @@ export function toolkitArgsToOrder(args = {}) {
     amount,
     currency: String(args.currencyCode ?? "").trim().toUpperCase(),
     payeeEmail: args.payeeEmail ? String(args.payeeEmail).trim() : "",
+    // Raw seed. rest createOrder stores a sha256 hex when this is not already
+    // a 1-256 character printable reference_id.
     referenceId: args.referenceId ? String(args.referenceId) : undefined
   };
 }

@@ -8,7 +8,8 @@ importScripts(
   "lib/extract.js",
   "lib/redact.js",
   "lib/pay-risk.js",
-  "lib/ask-llm.js"
+  "lib/ask-llm.js",
+  "lib/chat-state.js"
 );
 
 const LOG_MAX = 200;
@@ -178,24 +179,31 @@ async function onDetect(message, opts) {
   const info = await health();
   const base = { ok: true, debug: opts.debug, mode: info && info.paypal, aiOn: opts.aiAll, aiServer: info ? info.llm : "unreachable" };
   const cached = hash ? await readCache(hash, phase) : null;
-  if (cached) return Object.assign({ verdict: cached.verdict, cached: true }, base);
-  const key = hash + ":" + phase;
-  let job = hash ? inflight.get(key) : null;
-  if (!job) {
-    job = runDetect(text, context, opts, phase, info);
-    if (hash) inflight.set(key, job);
-  }
   let verdict;
-  try {
-    verdict = await job;
-  } finally {
-    inflight.delete(key);
+  let fromCache = false;
+  if (cached) {
+    verdict = cached.verdict;
+    fromCache = true;
+  } else {
+    const key = hash + ":" + phase;
+    let job = hash ? inflight.get(key) : null;
+    if (!job) {
+      job = runDetect(text, context, opts, phase, info);
+      if (hash) inflight.set(key, job);
+    }
+    try {
+      verdict = await job;
+    } finally {
+      inflight.delete(key);
+    }
+    if (hash) {
+      await writeCache(hash, verdict, phase);
+      await rememberDeal(hash, { verdict, context, text: text.slice(0, 500) });
+    }
   }
-  if (hash) {
-    await writeCache(hash, verdict, phase);
-    await rememberDeal(hash, { verdict, context, text: text.slice(0, 500) });
-  }
-  return Object.assign({ verdict }, base);
+  const response = Object.assign({ verdict }, base, fromCache ? { cached: true } : {});
+  const deal = hash ? await loadDeal(hash) : null;
+  return globalThis.pbChatState.withStored(response, deal);
 }
 
 async function onProtect(message) {
@@ -208,6 +216,9 @@ async function onProtect(message) {
   const amount = message.amount != null ? message.amount : deal.amount;
   const currency = message.currency || deal.currency || "";
   const payeeEmail = message.payeeEmail || deal.payeeEmail || context.sellerEmail || "";
+  const referenceId = hash
+    ? [hash, item, amount == null ? "" : String(amount), currency, payeeEmail].join("\u001f")
+    : undefined;
   const data = await backendFetch("/api/protect", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -216,6 +227,7 @@ async function onProtect(message) {
       amount,
       currency,
       payeeEmail,
+      referenceId,
       verdict: {
         level: verdict.level,
         signals: verdict.signals,
@@ -249,6 +261,9 @@ async function onProtect(message) {
 async function onStatus(message) {
   const id = encodeURIComponent(String(message.orderId || ""));
   const data = await backendFetch("/api/orders/" + id, { method: "GET" });
+  if (message.hash && data && data.status) {
+    await rememberDeal(String(message.hash), { status: data.status, orderId: data.orderId });
+  }
   return { ok: true, status: data.status, orderId: data.orderId };
 }
 
@@ -259,6 +274,9 @@ async function onCapture(message) {
     headers: { "content-type": "application/json" },
     body: "{}"
   });
+  if (message.hash && data && data.status) {
+    await rememberDeal(String(message.hash), { status: data.status, orderId: data.orderId });
+  }
   return { ok: true, status: data.status, orderId: data.orderId, captureId: data.captureId };
 }
 
@@ -298,6 +316,8 @@ async function handle(message) {
   if (message.type === "pb:mark") return onMark(message);
   return { ok: false, error: "Unknown message" };
 }
+
+globalThis.pbBackground = { handle };
 
 chrome.runtime.onMessage.addListener((message, _sender, respond) => {
   if (!message || typeof message.type !== "string" || message.type.indexOf("pb:") !== 0) return;
