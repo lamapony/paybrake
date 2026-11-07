@@ -163,10 +163,11 @@ function baseOffsets(text, messages) {
 // "kr." is not a break when the next word continues in lowercase ("kr. via").
 // "500 kr. Send…" is a new sentence.
 const ABBR_BEFORE_DOT = /(?:^|[^A-Za-z])(?:kr|dkk|eur|euro|usd|sek|gbp|nok)$/iu;
-const PROHIBITION = /(?:never|do\s+not|don['’]?t|dont)\s+(?:send|pay|use)|aldrig\s+(?:send|betal|brug|skicka)|(?:send|betal|skicka)\s+aldrig|(?:send|betal)\s+ikke|ikke\s+send|lad\s+være\s+med\s+at|betala\s+inte/iu;
+const PROHIBITION = /(?:never|do\s+not|don['’]?t|dont)\s+(?:send|pay|use)|avoid\s+(?:sending|paying|using)|aldrig\s+(?:send|betal|brug|skicka)|(?:send|betal|skicka)\s+aldrig|(?:send|betal)\s+ikke|ikke\s+send|lad\s+være\s+med\s+at|betala\s+inte/iu;
 // A clause break ends the prohibited object. The next clause still belongs
 // to it when it continues the object ("never send 500 kr, via F&F").
-const PROHIBITION_BREAK = /(?<!\d),(?!\d)|;|—|–|\s-\s/u;
+// ":" and a later "use"/"brug" start the next ask. Letter boundaries, not \b.
+const PROHIBITION_BREAK = /(?<!\d),(?!\d)|[;:]|—|–|\s-\s|(?<![\p{L}\p{N}])(?:use|brug)(?![\p{L}\p{N}])/u;
 // \b is ASCII-only, so "på" would not end the preposition. Use a letter boundary.
 const OBJECT_CONTINUATION = /^\s*(?:via|through|on|with|to|gennem|genom|på|paa|med|til|till)(?![\p{L}\p{N}])/iu;
 
@@ -199,15 +200,24 @@ function prohibitionBreakEnds(afterCue) {
     const next = afterCue.slice((match.index ?? 0) + match[0].length);
     if (!OBJECT_CONTINUATION.test(next)) return true;
   }
-  return false;
+  // "but send" / "men brug" / "i stedet" start a new ask. "rather large" does not.
+  // \b would stay ASCII under the u flag, so the boundary is a letter or digit.
+  const contrast = /(?<![\p{L}\p{N}])(?:but|instead|however|rather|men)(?![\p{L}\p{N}])\s+(?:just\s+|bare\s+)?(?:send|pay|use|betal|brug|transfer|wire)(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])i\s+stedet(?![\p{L}\p{N}])/iu;
+  return contrast.test(afterCue);
 }
 
-function prohibitionCovers(text, hitStart) {
+function prohibitionCovers(text, hitStart, hitEnd) {
   const source = String(text ?? "");
-  const before = source.slice(sentenceStart(source, hitStart), hitStart);
+  const end = Number.isFinite(hitEnd) ? hitEnd : hitStart;
+  const from = sentenceStart(source, hitStart);
+  const region = source.slice(from, Math.max(end, hitStart));
   const re = new RegExp(PROHIBITION.source, "giu");
-  for (const match of before.matchAll(re)) {
-    const afterCue = before.slice((match.index ?? 0) + match[0].length);
+  for (const match of region.matchAll(re)) {
+    const cueAt = from + (match.index ?? 0);
+    const cueEnd = cueAt + match[0].length;
+    // The verb of the cue can sit inside the hit ("Never send money on Telegram").
+    if (hitStart < cueEnd) return true;
+    const afterCue = source.slice(cueEnd, hitStart);
     if (!prohibitionBreakEnds(afterCue)) return true;
   }
   return false;
@@ -296,8 +306,8 @@ async function detect(text, ctx = {}, options = {}) {
     const base = offsets[index];
     const hits = api.findAtoms(message.text).map((hit) => ({
       ...hit,
-      prohibited: hit.role === "act" && prohibitionCovers(message.text, hit.start),
-      refused: collectionOffer(hit) && prohibitionCovers(message.text, hit.start),
+      prohibited: hit.role === "act" && prohibitionCovers(message.text, hit.start, hit.end),
+      refused: collectionOffer(hit) && prohibitionCovers(message.text, hit.start, hit.end),
       start: base >= 0 ? base + hit.start : hit.start,
       end: base >= 0 ? base + hit.end : hit.end
     }));
@@ -331,6 +341,8 @@ async function detect(text, ctx = {}, options = {}) {
   const rules = rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal, messages });
   const ask = options && options.askLlm;
   if (typeof ask !== "function") return rules;
+  // "all" already asks about a silent chat. A rules-only confirm still stays quiet
+  // on a prohibition: those tests require the model not to be called.
   if (options.llmMode === "all") return combineAll(rules, raw, messages, ask, options);
   if (rules.kind !== "risk") return rules;
   return confirmOnly(rules, raw, ask, options);
@@ -357,10 +369,16 @@ function rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak
     const transferUpfront = host && host.hits.some((hit) => (
       hit.atom === "upfront_deposit" && /(?<![\p{L}\p{N}])transfer(?![\p{L}\p{N}])/iu.test(hit.text)
     ));
-    // "Friends and Family only" after a refused checkout has no pay word and no amount.
-    const methodOnly = host && host.hits.some((hit) => hit.gate === "ff-dictated" && !hit.prohibited);
+    // "Friends and Family only", or "is fine" after a refused method, can lack a pay word.
+    const methodOnly = host && host.hits.some((hit) => (
+      (hit.gate === "ff-dictated" || hit.gate === "ff-pivot") && !hit.prohibited
+    ));
     const standalone = meta[strong[0]] && meta[strong[0]].standalone;
-    if (pay || money || transferUpfront || methodOnly || standalone) level = "medium";
+    // "Venmo me" has no pay word and no amount. The hit is already a direct ask.
+    const directRail = host && host.hits.some((hit) => (
+      hit.atom === strong[0] && hit.strength === "strong" && !hit.prohibited && hit.directAsk
+    ));
+    if (pay || money || transferUpfront || methodOnly || standalone || directRail) level = "medium";
   } else if (impersonationCombo) level = "medium";
   if (!level) return silent("no_atom", { signals, evidence, deal });
 

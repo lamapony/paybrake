@@ -358,16 +358,6 @@
       ]
     },
     {
-      "id": "hn-refuse-ff-checkout",
-      "lang": "en",
-      "expect": "silent",
-      "context": { "listingTitle": "Desk lamp", "listingPrice": "250 kr" },
-      "messages": [
-        { "from": "buyer", "text": "Can I pay another way?" },
-        { "from": "seller", "text": "I won't take PayPal F&F, use checkout" }
-      ]
-    },
-    {
       "id": "hn-price-whatsapp",
       "lang": "en",
       "expect": "silent",

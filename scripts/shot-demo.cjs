@@ -165,6 +165,7 @@ async function livePass(browser) {
     "extension/lib/redact.js",
     "extension/lib/pay-risk.js",
     "extension/lib/ask-llm.js",
+    "extension/lib/chat-state.js",
     "extension/content.js"
   ];
 
@@ -196,7 +197,8 @@ async function livePass(browser) {
   const phone = await openLive(390, 844, 2);
   const phoneText = await phone.locator("#pb-card").innerText();
   // Compact mobile card: a short headline plus the level, not the long desktop headline.
-  check(phoneText.includes("Payment risk") && phoneText.includes("High"), "live 390: card shows the compact headline and level");
+  // The level pill is "High" in the DOM and uppercase via text-transform, so innerText is "HIGH".
+  check(/payment risk/i.test(phoneText) && /\bhigh\b/i.test(phoneText), "live 390: card shows the compact headline and level");
   for (const id of ["#pb-protect", "#pb-anyway"]) {
     const box = await phone.locator(id).boundingBox();
     check(box && box.height >= 44, `live 390: ${id} is at least 44px tall (${box && box.height})`);

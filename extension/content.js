@@ -89,6 +89,59 @@
     const log = [];
     let mode = null;
 
+    function dealKey(hash) {
+      return "pbdeal:" + String(hash || "");
+    }
+
+    function demoPage() {
+      try {
+        const host = String(location.hostname || "");
+        return host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "[::1]"
+          || host === "paybrake-demo.spbabinov.workers.dev";
+      } catch {
+        return false;
+      }
+    }
+
+    function readDisk(hash) {
+      try {
+        if (!demoPage() || !hash || !globalThis.localStorage) return {};
+        const raw = localStorage.getItem(dealKey(hash));
+        const parsed = raw ? JSON.parse(raw) : null;
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function loadDeal(hash) {
+      if (!hash) return {};
+      return Object.assign({}, deals.get(hash) || {}, readDisk(hash));
+    }
+
+    function saveDeal(hash, patch) {
+      if (!hash) return patch || {};
+      const next = Object.assign({}, loadDeal(hash), patch || {}, { ts: Date.now() });
+      deals.set(hash, next);
+      try {
+        if (demoPage() && globalThis.localStorage) {
+          const api = globalThis.pbChatState;
+          const disk = api && typeof api.diskDeal === "function" ? api.diskDeal(next) : null;
+          if (disk) localStorage.setItem(dealKey(hash), JSON.stringify(disk));
+          else localStorage.removeItem(dealKey(hash));
+        }
+      } catch {
+        /* this page still has the in-memory deal */
+      }
+      return next;
+    }
+
+    function storedResponse(response, hash) {
+      const api = globalThis.pbChatState;
+      if (!api || typeof api.withStored !== "function") return response;
+      return api.withStored(response, loadDeal(hash));
+    }
+
     async function api(path, options) {
       const res = await fetch(backend + path, options);
       const data = await res.json().catch(() => null);
@@ -108,7 +161,11 @@
             ? (payload) => pbAskLlm.askLlm(payload, { baseUrl: backend })
             : null;
           const verdict = await pbPayRisk.detect(body.text || "", body.context || {}, ask ? { askLlm: ask } : {});
-          deals.set(body.hash, { verdict: verdict, context: body.context || {}, text: body.text || "" });
+          saveDeal(body.hash, {
+            verdict: verdict,
+            context: body.context || {},
+            text: String(body.text || "").slice(0, 500)
+          });
           try {
             const health = await Promise.race([
               api("/health", { method: "GET" }),
@@ -118,29 +175,44 @@
           } catch {
             mode = null;
           }
-          return { ok: true, verdict: verdict, debug: false, mode: mode };
+          return storedResponse({ ok: true, verdict: verdict, debug: false, mode: mode }, body.hash);
         }
         if (type === "pb:protect") {
-          const stored = deals.get(body.hash) || {};
+          const stored = loadDeal(body.hash);
           const verdict = body.verdict || stored.verdict || {};
           const deal = verdict.deal || {};
+          const item = body.item || deal.item;
+          const amount = body.amount != null ? body.amount : deal.amount;
+          const currency = body.currency || deal.currency;
+          const payeeEmail = body.payeeEmail || deal.payeeEmail || "";
+          const referenceId = body.referenceId || (body.hash
+            ? [body.hash, item || "", amount == null ? "" : String(amount), currency || "", payeeEmail].join("\u001f")
+            : undefined);
           const data = await api("/api/protect", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
-              item: body.item || deal.item,
-              amount: body.amount != null ? body.amount : deal.amount,
-              currency: body.currency || deal.currency,
-              payeeEmail: body.payeeEmail || deal.payeeEmail || "",
+              item,
+              amount,
+              currency,
+              payeeEmail,
+              referenceId,
               verdict: { level: verdict.level, signals: verdict.signals, reason: verdict.reason }
             })
           });
-          deals.set(body.hash, Object.assign({}, stored, data));
+          saveDeal(body.hash, {
+            orderId: data.orderId,
+            approveUrl: data.approveUrl,
+            mode: data.mode,
+            status: data.status,
+            verdict: verdict
+          });
           mode = data.mode || mode;
           return { ok: true, orderId: data.orderId, approveUrl: data.approveUrl, mode: data.mode, status: data.status };
         }
         if (type === "pb:status") {
           const data = await api("/api/orders/" + encodeURIComponent(body.orderId), { method: "GET" });
+          if (body.hash) saveDeal(body.hash, { status: data.status, orderId: data.orderId });
           return { ok: true, status: data.status, orderId: data.orderId };
         }
         if (type === "pb:capture") {
@@ -149,6 +221,7 @@
             headers: { "content-type": "application/json" },
             body: "{}"
           });
+          if (body.hash) saveDeal(body.hash, { status: data.status, orderId: data.orderId });
           return { ok: true, status: data.status, orderId: data.orderId, captureId: data.captureId };
         }
         if (type === "pb:override") {
@@ -160,6 +233,7 @@
             ts: Date.now(),
             head: String(body.head || "").slice(0, 160)
           });
+          saveDeal(body.hash, { override: true });
           return { ok: true };
         }
         if (type === "pb:mark") {
@@ -404,15 +478,16 @@
 
   function startPoll(session) {
     stopPoll(session);
-    session.poll = setInterval(async () => {
+    const tick = async () => {
       if (!session.orderId || session.state === "paid" || session.state === "override" || session.state === "dismissed") {
         stopPoll(session);
         return;
       }
-      const res = await send("pb:status", { orderId: session.orderId });
+      const res = await send("pb:status", { orderId: session.orderId, hash: session.hash });
       if (!res || !res.ok) return;
       if (res.status === "COMPLETED" && session.state !== "paid") {
         session.state = "paid";
+        session.approved = true;
         stopPoll(session);
         render(session);
         return;
@@ -421,7 +496,9 @@
         session.approved = true;
         render(session);
       }
-    }, 2000);
+    };
+    tick();
+    session.poll = setInterval(tick, 2000);
   }
 
   function render(session) {
@@ -642,7 +719,7 @@
   }
 
   async function captureOrder(session, foot) {
-    const res = await send("pb:capture", { orderId: session.orderId });
+    const res = await send("pb:capture", { orderId: session.orderId, hash: session.hash });
     if (!res || !res.ok) {
       if (foot) {
         foot.className = "pb-foot is-error";
@@ -747,7 +824,9 @@
     session.mode = (res && res.mode) || session.mode || null;
     session.aiPending = aiState.get(hash) === "pending";
     if (!session.state) session.state = "risk";
+    applyStored(session, res.stored);
     render(session);
+    if (session.state === "created") startPoll(session);
     updateHud("risk " + verdict.level + " · " + (verdict.signals || []).join(", ") + (verdict.llm ? " · ai " + verdict.llm : ""));
   }
 
@@ -814,6 +893,16 @@
     }
     showVerdict(thread, hash, text, res.verdict, res);
     if (res.aiOn) queueAi(thread, hash, text, context);
+  }
+
+  function applyStored(session, stored) {
+    const api = globalThis.pbChatState;
+    if (!api || typeof api.sessionPatch !== "function") return;
+    const patch = api.sessionPatch(stored);
+    if (!patch) return;
+    const mode = session.mode;
+    Object.assign(session, patch);
+    if (!session.mode) session.mode = mode || null;
   }
 
   async function scan() {

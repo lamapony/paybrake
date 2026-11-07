@@ -67,10 +67,11 @@ function timeoutMsOf(env) {
   return n;
 }
 
-// The env var that holds the Typesafe key. Configurable so a deployment can name its secret.
+// The env var that holds the Typesafe key. Only a name that starts with TYPESAFE_
+// is accepted, so this cannot be pointed at OPENROUTER_API_KEY or a PayPal secret.
 function typesafeKeyName(env) {
   const name = trim(env.TYPESAFE_API_KEY_NAME);
-  return /^[A-Z_][A-Z0-9_]*$/i.test(name) ? name : "TYPESAFE_API_KEY";
+  return /^TYPESAFE_[A-Z0-9_]+$/i.test(name) ? name : "TYPESAFE_API_KEY";
 }
 
 function offResult(timeoutMs) {
@@ -84,16 +85,35 @@ function offResult(timeoutMs) {
   };
 }
 
+const LLM_PROVIDERS = new Set(["typesafe", "openrouter", "openai-compatible"]);
+
+function openrouterBaseUrl(raw) {
+  const value = trim(raw).replace(/\/+$/, "");
+  if (!value) return OPENROUTER_BASE;
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return OPENROUTER_BASE;
+  }
+  const host = parsed.hostname.toLowerCase();
+  const onOpenRouter = host === "openrouter.ai" || host.endsWith(".openrouter.ai");
+  if (parsed.protocol !== "https:" || !onOpenRouter) return OPENROUTER_BASE;
+  return value;
+}
+
 export function resolveLlm(env = {}) {
   const timeoutMs = timeoutMsOf(env);
   const asked = trim(env.LLM_PROVIDER).toLowerCase();
   if (asked === "off") return offResult(timeoutMs);
+  if (asked && !LLM_PROVIDERS.has(asked)) throw new Error("Unknown LLM_PROVIDER");
 
   let provider = asked;
   if (!provider) {
+    // OpenRouter before Typesafe, so both keys and an empty provider do not switch where chats are sent.
     if (trim(env.LLM_BASE_URL)) provider = "openai-compatible";
-    else if (trim(env[typesafeKeyName(env)])) provider = "typesafe";
     else if (trim(env.OPENROUTER_API_KEY)) provider = "openrouter";
+    else if (trim(env[typesafeKeyName(env)])) provider = "typesafe";
     else return offResult(timeoutMs);
   }
 
@@ -116,7 +136,7 @@ export function resolveLlm(env = {}) {
   if (provider === "openrouter") {
     const apiKey = trim(env.OPENROUTER_API_KEY) || trim(env.LLM_API_KEY);
     if (!apiKey) return offResult(timeoutMs);
-    const baseUrl = (trim(env.LLM_BASE_URL) || OPENROUTER_BASE).replace(/\/+$/, "");
+    const baseUrl = openrouterBaseUrl(env.LLM_BASE_URL);
     const model = trim(env.LLM_MODEL) || "openai/gpt-4o-mini";
     return { configured: true, provider: "openrouter", baseUrl, apiKey, model, timeoutMs };
   }
@@ -137,10 +157,11 @@ export function resolveLlm(env = {}) {
   return offResult(timeoutMs);
 }
 
-function llmError(message, status = 502) {
+function llmError(message, status = 502, upstream = null) {
   const error = new Error(message);
   error.status = status;
   error.code = status === 503 ? "llm_off" : "llm_error";
+  if (upstream != null) error.upstream = upstream;
   return error;
 }
 
@@ -175,11 +196,17 @@ export async function classifyText(text, env = {}, fetchImpl = globalThis.fetch,
   return level === verdict.level ? verdict : { ...verdict, level };
 }
 
+function clientError(error) {
+  const status = Number(error && error.upstream);
+  return status >= 400 && status < 500;
+}
+
 async function classifyTypesafeCapped(source, llm, fetchImpl) {
   try {
     return await classifyTypesafe(source, llm, fetchImpl);
   } catch (error) {
-    if (!llm.fallback) throw error;
+    // A 4xx is a bad key or a rejected request. Do not send the chat on to the fallback.
+    if (!llm.fallback || clientError(error)) throw error;
     return classifyChat(source, llm.fallback, fetchImpl);
   }
 }
@@ -238,12 +265,32 @@ export const TYPESAFE_EXTRA = {
   }
 };
 
+// A line with no Them: or Me: label continues the message above it.
 function themLines(source) {
-  const lines = source.split(/\n+/).map((line) => line.trim()).filter(Boolean);
-  const them = lines.filter((line) => /^Them:/.test(line)).map((line) => normalizeWs(line.slice(5)));
-  // Raw text without speaker labels (a single message): every non-Me line is the sender's.
-  const out = (them.length ? them : lines.filter((line) => !/^Me:/.test(line)).map(normalizeWs)).filter(Boolean);
-  return out.slice(-MAX_CHOICES);
+  const raw = String(source).split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  const speaker = /^(Them|Me):\s*(.*)$/;
+  if (!raw.some((line) => speaker.test(line))) {
+    return raw.map(normalizeWs).filter(Boolean).slice(-MAX_CHOICES);
+  }
+  const messages = [];
+  let current = null;
+  for (const line of raw) {
+    const match = speaker.exec(line);
+    if (match) {
+      if (current) messages.push(current);
+      current = { who: match[1], parts: match[2] ? [match[2]] : [] };
+    } else if (current) {
+      current.parts.push(line);
+    } else {
+      current = { who: "Them", parts: [line] };
+    }
+  }
+  if (current) messages.push(current);
+  const them = messages
+    .filter((message) => message.who === "Them")
+    .map((message) => normalizeWs(message.parts.join(" ")))
+    .filter(Boolean);
+  return them.slice(-MAX_CHOICES);
 }
 
 export function typesafeQuestions(source) {
@@ -278,7 +325,8 @@ async function classifyTypesafe(source, llm, fetchImpl) {
   }
   if (!res.ok) {
     try { await res.text(); } catch { /* discard provider body */ }
-    throw llmError(`llm ${res.status}`, 502);
+    const status = Number(res.status);
+    throw llmError(`llm ${res.status}`, 502, Number.isFinite(status) ? status : null);
   }
   let body;
   try {
