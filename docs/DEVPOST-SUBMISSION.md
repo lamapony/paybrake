@@ -122,7 +122,7 @@ If you see a yellow **PayBrake is not running in this browser** box, the extensi
 
 ## Checks behind this text (branch `claude/pb-prefreeze-1105-lr6yf8`)
 
-- 7 Nov, after merging main and the issue #21/#22 fixes: `npm test` 342 tests, 341 pass, 0 fail, 1 skipped (the browser flow test, `CHROME_PATH` unset), Node 24 locally; CI runs Node 20 and 24.
+- 7 Nov, after merging main, the issue #21/#22 fixes and the buyer-veto fix: `npm test` 344 tests, 343 pass, 0 fail, 1 skipped (the browser flow test, `CHROME_PATH` unset), Node 24 locally; CI runs Node 20 and 24.
 - 5 Nov (earlier head): 334 pass, 0 fail with `CHROME_PATH` unset, on Node 20 and Node 22. With `CHROME_PATH` set, the browser flow test also passed. `npm run e2e` (extension smoke) passed then; it was not re-run on the 7 Nov head.
 - `npm run eval`: precision 1, recall 1, f1 1, false alarms 0 (tp 18, fp 0, fn 0, tn 17).
 - `eval/real` was **not** re-run for rules v5, because Hugging Face is not reachable from the environment that made these fixes. The v4 numbers above are from `eval/real/RESULTS.md` (3 Nov).
