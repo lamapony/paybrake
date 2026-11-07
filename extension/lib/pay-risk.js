@@ -235,11 +235,13 @@ function vetoHidesOnItsOwn(hit) {
 
 const ACCEPT = /^(?:yes|yeah|yep|sure|ok|okay|fine|agreed|deal|sounds\s+good|of\s+course|no\s+problem|ja|jo|gerne|fint|det\s+er\s+fint|det\s+kan\s+vi)(?![\p{L}\p{N}])/iu;
 
-// The next line from the other person accepts the buyer's proposal and raises no ask of its own.
+// The next line from the other person accepts the buyer's proposal, and no later line
+// from them raises an ask. "Sure." followed by "checkout is broken, send 500 kr via
+// PayPal F&F" must not let the buyer's question silence the F&F ask.
 function sellerAccepts(perMessage, index) {
-  const next = perMessage.slice(index + 1).find((message) => message.from !== "buyer");
-  if (!next || !ACCEPT.test(next.text.trim())) return false;
-  return !next.hits.some((hit) => hit.role === "act" && !hit.prohibited);
+  const later = perMessage.slice(index + 1).filter((message) => message.from !== "buyer");
+  if (!later.length || !ACCEPT.test(later[0].text.trim())) return false;
+  return !later.some((message) => message.hits.some((hit) => hit.role === "act" && !hit.prohibited));
 }
 
 function silent(reason, extra) {
