@@ -1703,8 +1703,8 @@ function threadVerdict(messages, context) {
   return detect(text, { ...context, messages });
 }
 
-// Stays todo until #37 lands: on main the refusal still flags friends_family.
-test("a seller who refuses PayPal F&F and says to use checkout stays silent", { todo: true }, async () => {
+// Fixed by #37 (ffTokenOk), merged into this branch. Depends on #37.
+test("a seller who refuses PayPal F&F and says to use checkout stays silent", async () => {
   const verdict = await threadVerdict([
     { from: "buyer", text: "Can I pay another way?" },
     { from: "seller", text: "I won't take PayPal F&F, use checkout" }
