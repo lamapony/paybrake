@@ -705,6 +705,11 @@ function paymentViaChat(text, start, end) {
 function railDirectAsk(text, start, end) {
   const after = text.slice(end, Math.min(text.length, end + 48));
   if (/^\s+me\b/iu.test(after)) return true;
+  // Issue #22: "Zelle now, when you collect it's yours." The rail opens its clause and
+  // "now"/"first" closes it. "Venmo now supports…", "Venmo first?" and "Zelle now, or
+  // cash" stay quiet; "I'll Venmo you when we meet" never opens a clause with the rail.
+  const clauseStart = /(?:^|[.!;:\n,]\s*)$/u.test(text.slice(Math.max(0, start - 3), start));
+  if (clauseStart && /^\s+(?:now|first|right\s+now)\s*(?:[,.!;]|$)(?!\s*or\b)/iu.test(after)) return true;
   return /^\s+(?:the|my|a)\s+(?:money|deposit|payment|funds)\b/iu.test(after);
 }
 
