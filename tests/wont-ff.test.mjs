@@ -49,6 +49,17 @@ test("checkout veto and a real F&F ask stay where they were", async () => {
   assert.deepEqual(use.signals, []);
 });
 
+test("refusing checkout and then asking for F&F still flags", async () => {
+  for (const text of ["I don't take checkout so pay F&F", "I do not take Marketplace checkout only PayPal F&F"]) {
+    const hits = findAtoms(text);
+    assert.ok(hits.some((hit) => hit.atom === "friends_family"), text);
+  }
+  const ask = await detect("I don't take checkout so pay F&F");
+  assert.equal(ask.kind, "risk");
+  const refusal = await detect("I don't take PayPal payments via F&F.");
+  assert.equal(refusal.kind, "silent");
+});
+
 test("never send via F&F is still a hit for the prohibition layer", () => {
   const hits = findAtoms("Never send 500 kr. via F&F for this bike.");
   assert.ok(hits.some((hit) => hit.atom === "friends_family"));

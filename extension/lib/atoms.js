@@ -833,10 +833,12 @@ function linkAllowed(text, start, end) {
 
 // "I won't take PayPal F&F" refuses the rail. "Never send … via F&F" stays a
 // hit so the prohibition layer can quiet it; that sentence is not "take".
+// Only rail words may sit between "take" and F&F: "I don't take checkout so
+// pay F&F" refuses checkout, not F&F, and stays a hit.
 function ffTokenOk(text, start) {
   if (negatedBefore(text, start)) return false;
   const before = text.slice(Math.max(0, start - 48), start);
-  return !/(?<![\p{L}\p{N}])(?:won['’]?t|wont|will\s+not|don['’]?t|dont|do\s+not|never|not)\s+take(?:\s+[\p{L}\p{N}]+){0,4}\s+$/iu.test(before);
+  return !/(?<![\p{L}\p{N}])(?:won['’]?t|wont|will\s+not|don['’]?t|dont|do\s+not|never|not)\s+take(?:\s+(?:paypal|pp|payments?|payment\s+via|via|through|with|over|on|any|the))*?\s+$/iu.test(before);
 }
 
 // "Do not install AnyDesk" refuses. The verb may sit between the negation and the brand.
