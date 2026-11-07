@@ -1563,6 +1563,20 @@ test("an amount next to Signal, Discord, or iMessage is off-platform", async () 
   assert.deepEqual(telegram.signals, ["off_platform", "ship_before_meet"]);
 });
 
+test("a price next to a Signal, Discord, or iMessage contact line stays silent", async () => {
+  const quiet = [
+    "It's 300 kr, text me on Signal for pics.",
+    "500 kr, I'm on Discord if you have questions.",
+    "Price is 400 kr, message me on iMessage.",
+    "Pris 400 kr, skriv på Signal."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
 test("a Signal chat or a photo without an amount stays off the rail", async () => {
   const chat = await detect("We can chat on Signal about the bike on Thursday.");
   assert.equal(chat.kind, "silent");
@@ -1577,4 +1591,163 @@ test("a Signal chat or a photo without an amount stays off the rail", async () =
   const address = await detect("Send the address via WhatsApp when you pick it up.");
   assert.equal(address.kind, "silent");
   assert.equal(address.silentReason, "veto");
+});
+
+test("F and F and Friends n Family need a pay word", async () => {
+  const high = [
+    "Please send 500 kr via PayPal F and F now, I ship tomorrow.",
+    "Please send 500 kr via PayPal Friends n Family, I ship tomorrow.",
+    "Please send 500 kr via PayPal Friends n' Family, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["friends_family", "ship_before_meet"], text);
+  }
+
+  const medium = [
+    "Please send 500 kr via PayPal F and F now.",
+    "Please send 500 kr via PayPal Friends n Family today.",
+    "Please send 500 kr via PayPal Friends n' Family today."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["friends_family"], text);
+  }
+});
+
+test("exact Friends and Family, F&F, and FnF stay high beside the new phrases", async () => {
+  const exact = [
+    "Please send 500 kr via PayPal Friends and Family now, I ship tomorrow.",
+    "Please send 500 kr via F&F now, I ship tomorrow.",
+    "Please send 500 kr via FnF now, I ship tomorrow."
+  ];
+  for (const text of exact) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["friends_family", "ship_before_meet"], text);
+  }
+
+  const quiet = [
+    "F and F is a furniture store I visited on Thursday.",
+    "My friends and family loved this lamp."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+
+test("Paysafecard and Paysafe with a pay ask are off-platform", async () => {
+  const medium = [
+    "Please send a Paysafecard of 500 kr today, the bike is ready.",
+    "Send 500 kr via Paysafe today, the bike is ready."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+
+  const high = [
+    "Please send a Paysafecard of 500 kr, I ship tomorrow.",
+    "Send 500 kr via Paysafe today, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const gift = await detect("Buy a gift card for 500 kr and I ship tomorrow.");
+  assert.equal(gift.kind, "risk");
+  assert.equal(gift.level, "high");
+  assert.deepEqual(gift.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a town called Paysafe and a safe card stay silent", async () => {
+  const quiet = [
+    "Paysafe is a town I visited last summer with my sister.",
+    "The card was safe in my bag on Thursday afternoon."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+
+test("down payment, booking fee, downpayment, and earnest money", async () => {
+  const pairs = [
+    ["Please send a down payment of 500 kr via PayPal today.", "Please send a down payment of 500 kr via PayPal today, I ship tomorrow."],
+    ["Please pay a booking fee of 500 kr via PayPal today.", "Please pay a booking fee of 500 kr via PayPal today, I ship tomorrow."],
+    ["Send 500 kr as a downpayment via PayPal today.", "Send 500 kr as a downpayment via PayPal, I ship tomorrow."],
+    ["Please send 500 kr as earnest money via PayPal today.", "Please send 500 kr as earnest money via PayPal today, I ship tomorrow."]
+  ];
+  for (const [mediumText, highText] of pairs) {
+    const medium = await detect(mediumText);
+    assert.equal(medium.kind, "risk", mediumText);
+    assert.equal(medium.level, "medium", mediumText);
+    assert.deepEqual(medium.signals, ["upfront_deposit"], mediumText);
+    const high = await detect(highText);
+    assert.equal(high.kind, "risk", highText);
+    assert.equal(high.level, "high", highText);
+    assert.deepEqual(high.signals, ["upfront_deposit", "ship_before_meet"], highText);
+  }
+});
+
+test("half now stays high, and a past down payment stays silent", async () => {
+  const half = await detect("Pay half now, 500 kr via PayPal, I ship tomorrow.");
+  assert.equal(half.kind, "risk");
+  assert.equal(half.level, "high");
+  assert.deepEqual(half.signals, ["upfront_deposit", "ship_before_meet"]);
+
+  const quiet = [
+    "The down payment on the tyres was 500 kr last year.",
+    "I am booking a table for four at the cafe tonight."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.equal(verdict.silentReason, "no_atom", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+
+  const pickup = await detect("You can pay cash when you pick it up. No deposit needed before we meet.");
+  assert.equal(pickup.kind, "silent");
+  assert.equal(pickup.silentReason, "veto");
+});
+
+
+test("hold the bike for you needs a pay ask or an amount", async () => {
+  const medium = await detect("I can hold the bike for you if you send 500 kr via PayPal today.");
+  assert.equal(medium.kind, "risk");
+  assert.equal(medium.level, "medium");
+  assert.deepEqual(medium.signals, ["upfront_deposit"]);
+
+  const high = await detect("I can hold the bike for you if you send 500 kr via PayPal today, I ship tomorrow.");
+  assert.equal(high.kind, "risk");
+  assert.equal(high.level, "high");
+  assert.deepEqual(high.signals, ["upfront_deposit", "ship_before_meet"]);
+
+  const exact = await detect("I can only hold it for you if you send a 300 kr deposit via PayPal Friends & Family today.");
+  assert.equal(exact.kind, "risk");
+  assert.equal(exact.level, "high");
+  assert.deepEqual(exact.signals, ["friends_family", "upfront_deposit"]);
+
+  const door = await detect("I can hold the door for you on Thursday.");
+  assert.equal(door.kind, "silent");
+  assert.equal(door.silentReason, "no_atom");
+  assert.deepEqual(door.signals, []);
 });
