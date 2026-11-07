@@ -1,0 +1,290 @@
+{
+ "mode": "train",
+ "at": "2026-11-07T12:22:28.562Z",
+ "snapshot": {
+  "files": {
+   "data/chat-scams/seed.jsonl": "e51b1ea9edd6cfe22d342484744c0baa5af7ccfd086b60bfe0479b88f642baad",
+   "data/chat-scams/train-synth.jsonl": "bcb07d1a3301849ce69bd79f7cb0e9862a27c6b15e3dd0866d2299ccdd7fafa5",
+   "data/chat-scams/heldout.jsonl": "a920d48257c1e023b611d756eb3576b9a6e882fb4cb7a8b0d95c442114554da0",
+   "eval/cases/pay-risk.json": "60390985749fa181731fb817599926f50be30adb3150def756cadd8d695936f0",
+   "data/chat-scams/train-synth-v2.jsonl": "9b182225a542c48e7f4341455c86e5a324c48d0fdd10d359208ce61a8c40ba75",
+   "data/chat-scams/dev-synth-v2.jsonl": "6d3ffdf581e98f21ebb63a316ad2fab31af64b8b5a4786f9ca7af46de5b318ac",
+   "data/chat-scams/holdout-v2.jsonl": "3e557bce582a481395b2842c4f8d8cc9a7efa63f9fdb4f53939348aed8eb85ca"
+  },
+  "realSplitSha256": "e903cc2c8ce9dbd06876b4a0723b22c27ecbc70535fe8dba95c448751440289e",
+  "realSplitRows": 3147,
+  "shippedWeightsSha256": "0b97249bbf43501433de3ce75428f044f45fcbc70338cecbd59c37c02f6a05d2"
+ },
+ "configs": [
+  {
+   "id": "C1-v2-default",
+   "epochs": 12,
+   "l2": 0.000001,
+   "legitWeight": 1
+  },
+  {
+   "id": "C2-legit1.5",
+   "epochs": 12,
+   "l2": 0.000001,
+   "legitWeight": 1.5
+  },
+  {
+   "id": "C3-reg-e8-l2e-5",
+   "epochs": 8,
+   "l2": 0.00001,
+   "legitWeight": 1
+  }
+ ],
+ "constraints": {
+  "discordDevExtraFP": 0,
+  "smsDevExtraFP": 1,
+  "synthDevExtraFPR": 0.03,
+  "minThreshold": 0.5
+ },
+ "margin": 0.02,
+ "trainSeed": 11,
+ "bits": 18,
+ "trainRows": 1535,
+ "trainByDataset": {
+  "scam_dialogue": 1098,
+  "scamguardbench": 176,
+  "seed": 37,
+  "train_synth": 160,
+  "train_synth_v2": 64
+ },
+ "trainV2DropIds": [],
+ "candidates": [
+  {
+   "order": 0,
+   "config": {
+    "id": "C1-v2-default",
+    "epochs": 12,
+    "l2": 0.000001,
+    "legitWeight": 1
+   },
+   "threshold": 0.987,
+   "feasible": true,
+   "constraintCheck": {
+    "discordDevExtraFP": "0/250",
+    "smsDevExtraFP": "1/250",
+    "synthDevExtraFP": "0/16",
+    "fragilityRealDev": 11
+   },
+   "synthDev": {
+    "rules": {
+     "n": 32,
+     "scamN": 16,
+     "legitN": 16,
+     "tp": 12,
+     "fp": 3,
+     "fn": 4,
+     "tn": 13,
+     "fpOfLegit": "3/16",
+     "precision": 0.8,
+     "recall": 0.75,
+     "fpr": 0.188
+    },
+    "model": {
+     "n": 32,
+     "scamN": 16,
+     "legitN": 16,
+     "tp": 2,
+     "fp": 0,
+     "fn": 14,
+     "tn": 16,
+     "fpOfLegit": "0/16",
+     "precision": 1,
+     "recall": 0.125,
+     "fpr": 0
+    },
+    "rules_or_model": {
+     "n": 32,
+     "scamN": 16,
+     "legitN": 16,
+     "tp": 12,
+     "fp": 3,
+     "fn": 4,
+     "tn": 13,
+     "fpOfLegit": "3/16",
+     "precision": 0.8,
+     "recall": 0.75,
+     "fpr": 0.188
+    }
+   },
+   "weightsFileBytes": 349865,
+   "weightsSha256": "e5d516aebe52577edc03cfd872ea261a47ed2aa5906c51210f3a88af2c3eefbb"
+  },
+  {
+   "order": 1,
+   "config": {
+    "id": "C2-legit1.5",
+    "epochs": 12,
+    "l2": 0.000001,
+    "legitWeight": 1.5
+   },
+   "threshold": 0.989,
+   "feasible": true,
+   "constraintCheck": {
+    "discordDevExtraFP": "0/250",
+    "smsDevExtraFP": "1/250",
+    "synthDevExtraFP": "0/16",
+    "fragilityRealDev": 10
+   },
+   "synthDev": {
+    "rules": {
+     "n": 32,
+     "scamN": 16,
+     "legitN": 16,
+     "tp": 12,
+     "fp": 3,
+     "fn": 4,
+     "tn": 13,
+     "fpOfLegit": "3/16",
+     "precision": 0.8,
+     "recall": 0.75,
+     "fpr": 0.188
+    },
+    "model": {
+     "n": 32,
+     "scamN": 16,
+     "legitN": 16,
+     "tp": 1,
+     "fp": 0,
+     "fn": 15,
+     "tn": 16,
+     "fpOfLegit": "0/16",
+     "precision": 1,
+     "recall": 0.063,
+     "fpr": 0
+    },
+    "rules_or_model": {
+     "n": 32,
+     "scamN": 16,
+     "legitN": 16,
+     "tp": 12,
+     "fp": 3,
+     "fn": 4,
+     "tn": 13,
+     "fpOfLegit": "3/16",
+     "precision": 0.8,
+     "recall": 0.75,
+     "fpr": 0.188
+    }
+   },
+   "weightsFileBytes": 349866,
+   "weightsSha256": "ea757c2539eab16bd31c1f8eba96cba3012cb87b490e08d6ab2dd084a32a83d3"
+  },
+  {
+   "order": 2,
+   "config": {
+    "id": "C3-reg-e8-l2e-5",
+    "epochs": 8,
+    "l2": 0.00001,
+    "legitWeight": 1
+   },
+   "threshold": 0.977,
+   "feasible": true,
+   "constraintCheck": {
+    "discordDevExtraFP": "0/250",
+    "smsDevExtraFP": "1/250",
+    "synthDevExtraFP": "0/16",
+    "fragilityRealDev": 8
+   },
+   "synthDev": {
+    "rules": {
+     "n": 32,
+     "scamN": 16,
+     "legitN": 16,
+     "tp": 12,
+     "fp": 3,
+     "fn": 4,
+     "tn": 13,
+     "fpOfLegit": "3/16",
+     "precision": 0.8,
+     "recall": 0.75,
+     "fpr": 0.188
+    },
+    "model": {
+     "n": 32,
+     "scamN": 16,
+     "legitN": 16,
+     "tp": 3,
+     "fp": 0,
+     "fn": 13,
+     "tn": 16,
+     "fpOfLegit": "0/16",
+     "precision": 1,
+     "recall": 0.188,
+     "fpr": 0
+    },
+    "rules_or_model": {
+     "n": 32,
+     "scamN": 16,
+     "legitN": 16,
+     "tp": 12,
+     "fp": 3,
+     "fn": 4,
+     "tn": 13,
+     "fpOfLegit": "3/16",
+     "precision": 0.8,
+     "recall": 0.75,
+     "fpr": 0.188
+    }
+   },
+   "weightsFileBytes": 349865,
+   "weightsSha256": "f1205717cfe7f5ee90ad057cb5506b818093c9c4019458dd3b60f6e1f868cfe6"
+  }
+ ],
+ "baseline": {
+  "version": "lr-h18-f1-2026-11-05",
+  "threshold": 0.922,
+  "synthDev": {
+   "rules": {
+    "n": 32,
+    "scamN": 16,
+    "legitN": 16,
+    "tp": 12,
+    "fp": 3,
+    "fn": 4,
+    "tn": 13,
+    "fpOfLegit": "3/16",
+    "precision": 0.8,
+    "recall": 0.75,
+    "fpr": 0.188
+   },
+   "model": {
+    "n": 32,
+    "scamN": 16,
+    "legitN": 16,
+    "tp": 4,
+    "fp": 0,
+    "fn": 12,
+    "tn": 16,
+    "fpOfLegit": "0/16",
+    "precision": 1,
+    "recall": 0.25,
+    "fpr": 0
+   },
+   "rules_or_model": {
+    "n": 32,
+    "scamN": 16,
+    "legitN": 16,
+    "tp": 12,
+    "fp": 3,
+    "fn": 4,
+    "tn": 13,
+    "fpOfLegit": "3/16",
+    "precision": 0.8,
+    "recall": 0.75,
+    "fpr": 0.188
+   }
+  }
+ },
+ "winner": "C1-v2-default",
+ "devVerdict": "no_improvement_on_synth_dev",
+ "frozen": {
+  "file": "frozen.json",
+  "weightsSha256": "e5d516aebe52577edc03cfd872ea261a47ed2aa5906c51210f3a88af2c3eefbb",
+  "threshold": 0.987
+ }
+}

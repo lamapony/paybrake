@@ -1,0 +1,137 @@
+{
+ "mode": "validate",
+ "at": "2026-11-07T12:27:45.154Z",
+ "snapshot": {
+  "files": {
+   "data/chat-scams/seed.jsonl": "e51b1ea9edd6cfe22d342484744c0baa5af7ccfd086b60bfe0479b88f642baad",
+   "data/chat-scams/train-synth.jsonl": "bcb07d1a3301849ce69bd79f7cb0e9862a27c6b15e3dd0866d2299ccdd7fafa5",
+   "data/chat-scams/heldout.jsonl": "a920d48257c1e023b611d756eb3576b9a6e882fb4cb7a8b0d95c442114554da0",
+   "eval/cases/pay-risk.json": "60390985749fa181731fb817599926f50be30adb3150def756cadd8d695936f0",
+   "data/chat-scams/train-synth-v2.jsonl": "9b182225a542c48e7f4341455c86e5a324c48d0fdd10d359208ce61a8c40ba75",
+   "data/chat-scams/dev-synth-v2.jsonl": "6d3ffdf581e98f21ebb63a316ad2fab31af64b8b5a4786f9ca7af46de5b318ac",
+   "data/chat-scams/holdout-v2.jsonl": "3e557bce582a481395b2842c4f8d8cc9a7efa63f9fdb4f53939348aed8eb85ca"
+  },
+  "code": {
+   "research/chat-scams/round-1107.mjs": "8b65c79d5e00c942cef2c9faf82fb680bfe60a50f98cdda033b4efc689c83a35",
+   "extension/lib/scam-model.js": "004547a8a08ed8a7afc223443150fe773b0c00db34142e8e98cb53052ddf5ec8",
+   "extension/lib/pay-risk.js": "b586844691f14cb16a14cb0b73fdf8f151c57a6141fd80ea3c47048dcb68ea4f"
+  },
+  "realSplitSha256": "e903cc2c8ce9dbd06876b4a0723b22c27ecbc70535fe8dba95c448751440289e",
+  "realSplitRows": 3147,
+  "shippedWeightsSha256": "0b97249bbf43501433de3ce75428f044f45fcbc70338cecbd59c37c02f6a05d2"
+ },
+ "ok": false,
+ "errors": [
+  "label separable by: train:turns,train:themTurns,dev:turns,dev:themTurns"
+ ],
+ "counts": {
+  "train": {
+   "n": 64,
+   "scam": 32,
+   "legit": 32,
+   "da": 38,
+   "en": 26
+  },
+  "dev": {
+   "n": 32,
+   "scam": 16,
+   "legit": 16,
+   "da": 19,
+   "en": 13
+  },
+  "holdout": {
+   "n": 40,
+   "scam": 20,
+   "legit": 20,
+   "da": 20,
+   "en": 20
+  }
+ },
+ "schemaErrors": 0,
+ "templateOverlap": [],
+ "familyOverlap": {
+  "train/dev": 12,
+  "train/holdout": 0,
+  "dev/holdout": 0
+ },
+ "exactDup": {
+  "train:within": 0,
+  "train:seed": 0,
+  "train:train_synth_v1": 0,
+  "train:heldout100": 0,
+  "train:pay_risk_cases": 0,
+  "train:real_sms_discord": 0,
+  "train:public_test": 0,
+  "train:dev_v2": 0,
+  "train:holdout_v2": 0,
+  "dev:within": 0,
+  "dev:seed": 0,
+  "dev:train_synth_v1": 0,
+  "dev:heldout100": 0,
+  "dev:pay_risk_cases": 0,
+  "dev:real_sms_discord": 0,
+  "dev:public_test": 0,
+  "dev:holdout_v2": 0,
+  "dev:train_v2": 0,
+  "holdout:within": 0,
+  "holdout:seed": 0,
+  "holdout:train_synth_v1": 0,
+  "holdout:heldout100": 0,
+  "holdout:pay_risk_cases": 0,
+  "holdout:real_sms_discord": 0,
+  "holdout:public_test": 0,
+  "holdout:dev_v2": 0,
+  "holdout:train_v2": 0
+ },
+ "nearDup": {
+  "train:seed": 0,
+  "train:train_synth_v1": 0,
+  "train:heldout100": 0,
+  "train:pay_risk_cases": 0,
+  "train:real_sms_discord": 0,
+  "train:public_test": 0,
+  "train:dev_v2": 0,
+  "train:holdout_v2": 0,
+  "dev:seed": 0,
+  "dev:train_synth_v1": 0,
+  "dev:heldout100": 0,
+  "dev:pay_risk_cases": 0,
+  "dev:real_sms_discord": 0,
+  "dev:public_test": 0,
+  "dev:holdout_v2": 0,
+  "dev:train_v2": 0,
+  "holdout:seed": 0,
+  "holdout:train_synth_v1": 0,
+  "holdout:heldout100": 0,
+  "holdout:pay_risk_cases": 0,
+  "holdout:real_sms_discord": 0,
+  "holdout:public_test": 0,
+  "holdout:dev_v2": 0,
+  "holdout:train_v2": 0
+ },
+ "holdoutFamiliesNotInTrain": [
+  "fake-charity-collection",
+  "job-equipment-advance",
+  "family-emergency-ask",
+  "bank-security-call",
+  "marketplace-fake-payment",
+  "discord-admin-fee",
+  "volunteer-accounting",
+  "gaming-tournament-prizes",
+  "rent-and-bills",
+  "marketplace-safe-trade",
+  "family-real-transfer",
+  "scam-warning-quote",
+  "discord-server-dues",
+  "bank-legit-notice",
+  "rental-deposit-scam",
+  "crypto-investment-push"
+ ],
+ "structuralShortcuts": [
+  "train:turns",
+  "train:themTurns",
+  "dev:turns",
+  "dev:themTurns"
+ ],
+ "trainV2DropIds": []
+}

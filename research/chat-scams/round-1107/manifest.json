@@ -1,0 +1,61 @@
+{
+ "producedByDriverRevision": {
+  "file": "research/chat-scams/round-1107.mjs",
+  "sha256": "f5565714d879361dc738814453c13d9f8be0074a55cf8b28d4f131da50fb8ef9"
+ },
+ "testsRevisionAtRun": {
+  "sha256": "6a84e8cfe5dc207f370ae0f914c98ce30d07933848013fdb51b950455dec3bfc"
+ },
+ "snapshot": {
+  "files": {
+   "data/chat-scams/seed.jsonl": "e51b1ea9edd6cfe22d342484744c0baa5af7ccfd086b60bfe0479b88f642baad",
+   "data/chat-scams/train-synth.jsonl": "bcb07d1a3301849ce69bd79f7cb0e9862a27c6b15e3dd0866d2299ccdd7fafa5",
+   "data/chat-scams/heldout.jsonl": "a920d48257c1e023b611d756eb3576b9a6e882fb4cb7a8b0d95c442114554da0",
+   "eval/cases/pay-risk.json": "60390985749fa181731fb817599926f50be30adb3150def756cadd8d695936f0",
+   "data/chat-scams/train-synth-v2.jsonl": "9b182225a542c48e7f4341455c86e5a324c48d0fdd10d359208ce61a8c40ba75",
+   "data/chat-scams/dev-synth-v2.jsonl": "6d3ffdf581e98f21ebb63a316ad2fab31af64b8b5a4786f9ca7af46de5b318ac",
+   "data/chat-scams/holdout-v2.jsonl": "3e557bce582a481395b2842c4f8d8cc9a7efa63f9fdb4f53939348aed8eb85ca"
+  },
+  "realSplitSha256": "e903cc2c8ce9dbd06876b4a0723b22c27ecbc70535fe8dba95c448751440289e",
+  "realSplitRows": 3147,
+  "shippedWeightsSha256": "0b97249bbf43501433de3ce75428f044f45fcbc70338cecbd59c37c02f6a05d2"
+ },
+ "frozenCandidate": {
+  "id": "C1-v2-default",
+  "threshold": 0.987,
+  "version": "lr-h18-f1-r1107-C1-v2-default",
+  "weightsBase64Sha256": "e5d516aebe52577edc03cfd872ea261a47ed2aa5906c51210f3a88af2c3eefbb",
+  "jsFileBytes": 350007,
+  "jsFileSha256": "11bd15fc64a31d9e2900f47c4de2672570105e3603abe37e1c01401d9cc4a557",
+  "includedInRepo": false
+ },
+ "shippedWeights": {
+  "file": "extension/lib/scam-model-weights.js",
+  "bytes": 349985,
+  "sha256": "9116b572a3d09a06908afd4c61a38afcba9342204dd5c81c9612c94a40fe5fb0",
+  "version": "lr-h18-f1-2026-11-05",
+  "threshold": 0.922,
+  "unchanged": true
+ },
+ "trainSizeCheckProbeBytes": [
+  {
+   "id": "C1-v2-default",
+   "bytes": 349865
+  },
+  {
+   "id": "C2-legit1.5",
+   "bytes": 349866
+  },
+  {
+   "id": "C3-reg-e8-l2e-5",
+   "bytes": 349865
+  }
+ ],
+ "testAccessLedger": [
+  {
+   "at": "2026-11-07T12:22:42.563Z",
+   "candidate": "C1-v2-default",
+   "weightsSha256": "e5d516aebe52577edc03cfd872ea261a47ed2aa5906c51210f3a88af2c3eefbb"
+  }
+ ]
+}
