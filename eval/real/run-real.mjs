@@ -68,9 +68,12 @@ async function main() {
   const local = [];
   for (const item of sample) {
     const res = await runOne(item, flag("model") ? { localModel: true } : {});
-    const row = { id: item.id, dataset: item.dataset, split: item.split, label: item.label, subtype: item.subtype, payAsk: item.payAsk, nMessages: item.messages.length, ...res };
+    // Evidence spans are message text (a model card quotes a whole line), so they go only to
+    // the gitignored .data/ file. results/ keeps the count, as the header promises.
+    const { evidence, ...kept } = res;
+    const row = { id: item.id, dataset: item.dataset, split: item.split, label: item.label, subtype: item.subtype, payAsk: item.payAsk, nMessages: item.messages.length, ...kept, evidenceCount: evidence.length };
     rows.push(row);
-    local.push({ ...row, text: textOf(item).slice(0, 1500) });
+    local.push({ ...row, evidence, text: textOf(item).slice(0, 1500) });
   }
   const g = groupMetrics(rows);
   const modelTag = flag("model") && scamModel.info() ? " + model " + scamModel.info().version : "";
