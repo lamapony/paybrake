@@ -29,7 +29,8 @@ function tokenResponse(expiresIn = 3600) {
 function createdOrder(links) {
   return new Response(JSON.stringify({
     id: "ORDER-1",
-    status: "CREATED",
+    // Live sandbox create on 2026-11-07 returned PAYER_ACTION_REQUIRED, not CREATED.
+    status: "PAYER_ACTION_REQUIRED",
     links: links === undefined ? [{ rel: "payer-action", href: "https://www.sandbox.paypal.com/checkoutnow?token=ORDER-1" }] : links
   }), { status: 200 });
 }
