@@ -124,14 +124,14 @@ test("promo: each listed message shows the verdict and marks the rules return", 
 });
 
 test("promo: every unit chart draws exactly the numbers in its label", () => {
-  const charts = [...html.matchAll(/<svg class="units"[^>]*aria-label="(\d+) of (\d+)[^"]*">([\s\S]*?)<\/svg>/g)];
-  assert.equal(charts.length, 6);
+  const charts = [...html.matchAll(/<svg class="units[^"]*"[^>]*aria-label="(\d+) of (\d+)[^"]*">([\s\S]*?)<\/svg>/g)];
+  assert.equal(charts.length, 8);   // the public set is drawn twice: 96 columns wide, 40 on a phone
   for (const [, flagged, total, body] of charts) {
     let hits = 0;
     let all = 0;
-    for (const [, w, h, state, small] of body.matchAll(/width="(\d+)" height="(\d+)" fill="url\(#u-(\w+?)(-s)?\)"/g)) {
-      const pitch = small ? 9 : 21;
-      const gap = small ? 2 : 3;
+    for (const [, w, h, state, field] of body.matchAll(/width="(\d+)" height="(\d+)" fill="url\(#u-(\w+?)(-f)?\)"/g)) {
+      const pitch = field ? 14 : 21;
+      const gap = 3;
       const cells = ((Number(w) + gap) / pitch) * ((Number(h) + gap) / pitch);
       all += cells;
       if (state === "flag" || state === "false") hits += cells;
@@ -145,6 +145,44 @@ test("promo: the copy avoids claims the product cannot make", () => {
   const copy = strip(html.slice(html.indexOf("<body")));
   assert.doesNotMatch(copy, /TF-IDF|AI-powered|seamless|guaranteed|protects you/i);
   assert.match(copy, /Buyer Protection may be eligible/);
+});
+
+test("promo: the chat thread uses the demo store's own lines and the rules' verdict", async () => {
+  const demo = decode(fs.readFileSync(path.join(root, "demo", "marketplace.html"), "utf8"));
+  const thread = html.match(/<a class="thread"[\s\S]*?<\/a>/)[0];
+  const hero = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow with GLS. The other 1,350 kr when it arrives.";
+  assert.equal(strip(thread.match(/<div class="t-b" data-thread-msg>([\s\S]*?)<\/div>/)[1]), hero);
+  for (const line of [
+    "Hi Jonas, is the Allez still for sale? Could I come and see it on Thursday after work? I live in Frederiksberg.",
+    "About: Specialized Allez road bike, 56 cm · 1,850 kr",
+    "Jonas Holm"
+  ]) {
+    assert.ok(strip(thread).includes(line), `not in the thread: ${line}`);
+    assert.ok(demo.includes(line), `not in the demo store: ${line}`);
+  }
+  const verdict = await payRisk.detect(hero, { from: "seller" }, {});
+  assert.deepEqual([...thread.matchAll(/<mark>([\s\S]*?)<\/mark>/g)].map((m) => strip(m[1])), verdict.evidence.map((e) => e.text));
+  assert.equal(strip(thread.match(/<div class="pb-explain">([\s\S]*?)<\/div>/)[1]), verdict.reason);
+  assert.deepEqual([...thread.matchAll(/<span class="chip">([\s\S]*?)<\/span>/g)].map((m) => strip(m[1])), receipts(verdict));
+});
+
+test("promo: the playground presets are real lines with the outcomes they demonstrate", async () => {
+  const expected = [["risk", "high"], ["risk", "medium"], ["silent", undefined]];
+  const presets = [...html.matchAll(/data-msg="([^"]+)"/g)].map((m) => decode(m[1]));
+  assert.equal(presets.length, expected.length);
+  for (const [i, message] of presets.entries()) {
+    const verdict = await payRisk.detect(message, { from: "seller" }, {});
+    assert.equal(verdict.kind, expected[i][0], message);
+    assert.equal(verdict.level, expected[i][1], message);
+  }
+});
+
+test("promo: the card keeps working links without JS and quotes the extension's collapsed state", () => {
+  assert.match(html, /<a class="pbtn primary" href="#order" data-brake>Switch to a PayPal order<\/a>/);
+  assert.match(html, /<a class="pbtn ghost" href="#anyway" data-anyway>Pay anyway<\/a>/);
+  const content = fs.readFileSync(path.join(root, "extension", "content.js"), "utf8");
+  const said = strip(html.match(/<p id="pb-said-text">([\s\S]*?)<\/p>/)[1]);
+  assert.ok(content.includes(`"${said}"`), said);
 });
 
 test("promo: the build copies the rules files the playground loads", () => {

@@ -29,8 +29,8 @@
     d.classList.add("read");
   })();
 </script>
-<link rel="stylesheet" href="promo.css?v=10">
-<script src="promo.js?v=10" defer></script>
+<link rel="stylesheet" href="promo.css?v=11">
+<script src="promo.js?v=11" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -64,88 +64,98 @@
       </figcaption>
 
       <blockquote class="bubble">
-        <p><span class="ln">Send 500&nbsp;kr <mark class="m1">deposit</mark> via PayPal </span><span class="ln"><mark class="m2">Friends &amp; Family</mark> to hold it, </span><span class="ln"><mark class="m3">I ship tomorrow</mark> with GLS. The other </span><span class="ln">1,350&nbsp;kr when it arrives.</span></p>
+        <p><span class="ln">Send 500&nbsp;kr <br class="pl"><mark class="m1">deposit</mark> via PayPal <br class="pl"></span><span class="ln"><mark class="m2">Friends &amp; Family</mark> <br class="pl">to&nbsp;hold&nbsp;it, <br class="pl"></span><span class="ln"><mark class="m3">I ship tomorrow</mark> <br class="pl">with&nbsp;GLS. <br class="pl">The&nbsp;other </span><span class="ln">1,350&nbsp;kr <br class="pl">when it arrives.</span></p>
       </blockquote>
       <p class="sr">PayBrake marked: deposit, Friends &amp; Family, I ship tomorrow.</p>
 
+      <div class="under">
       <div class="pb" role="group" aria-labelledby="pb-title">
-        <div class="pb-body">
-          <div class="pb-top">
-            <span class="risk-badge" id="pb-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 3 L22 20 H2 Z" fill="#f5a524" stroke="#b42318" stroke-width="1.6" stroke-linejoin="round"/>
-                <path d="M12 9.5v4.5" stroke="#1c2530" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="12" cy="17" r="1.2" fill="#1c2530"/>
-              </svg>
-              High risk payment request
-            </span>
-            <span class="pb-tag">Checked just now</span>
+        <div class="pb-full">
+          <div class="pb-body">
+            <div class="pb-top">
+              <span class="risk-badge" id="pb-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 3 L22 20 H2 Z" fill="#f5a524" stroke="#b42318" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M12 9.5v4.5" stroke="#1c2530" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="12" cy="17" r="1.2" fill="#1c2530"/>
+                </svg>
+                High risk payment request
+              </span>
+              <span class="pb-tag">Checked just now</span>
+            </div>
+            <p class="pb-explain">Friends &amp; Family + upfront deposit: if the item never arrives, you may have no way to get your money back.</p>
+            <p class="signals-label" id="sig">Detected signals</p>
+            <ul class="chips" aria-labelledby="sig">
+              <li class="chip">Friends &amp; Family</li>
+              <li class="chip">Upfront deposit</li>
+              <li class="chip">Ships before you meet</li>
+            </ul>
+            <div class="actions">
+              <a class="pbtn primary" href="#order" data-brake>Switch to a PayPal order</a>
+              <a class="pbtn ghost" href="#anyway" data-anyway>Pay anyway</a>
+            </div>
           </div>
-          <p class="pb-explain">Friends &amp; Family + upfront deposit: if the item never arrives, you may have no way to get your money back.</p>
-          <p class="signals-label" id="sig">Detected signals</p>
-          <ul class="chips" aria-labelledby="sig">
-            <li class="chip">Friends &amp; Family</li>
-            <li class="chip">Upfront deposit</li>
-            <li class="chip">Ships before you meet</li>
-          </ul>
-          <div class="actions">
-            <a class="pbtn primary" href="#order">Switch to a PayPal order</a>
-            <a class="pbtn ghost" href="#anyway">Pay anyway</a>
-          </div>
+          <div class="pb-foot"><span class="pb-dot" aria-hidden="true"></span>PayBrake · rules check · only you can see this</div>
         </div>
-        <div class="pb-foot"><span class="pb-dot" aria-hidden="true"></span>PayBrake · rules check · only you can see this</div>
+        <div class="pb-said" hidden>
+          <p id="pb-said-text">You chose to pay anyway. Logged on this device.</p>
+          <button type="button" class="again" data-restore aria-describedby="pb-said-text">Show the card again</button>
+        </div>
       </div>
 
-      <p class="note">Rebuilt in HTML from the extension’s card. The wording and the three signals are what the rules returned for this message on 9&nbsp;Nov&nbsp;2026. <span class="note-jump">On this page the two buttons jump to the part that explains them.</span> <button type="button" class="again" data-replay hidden>Read it again</button></p>
+      <p class="note">The card as the extension draws it for this message. <button type="button" class="again" data-replay hidden>Read it again</button></p>
+      </div>
     </figure>
 
     <div class="more">
-      <p class="lede">PayBrake is a Chrome extension for marketplace chats. When a seller asks for a deposit, Friends &amp; Family or a bank transfer, a card appears under the message, quotes the words that set it off, and offers a PayPal Goods &amp; Services order for the same item.</p>
+      <p class="lede">A Chrome extension for marketplace chats. When a seller asks for a deposit, Friends &amp; Family or a bank transfer, a card under the message quotes the words that set it off and offers a PayPal Goods &amp; Services order instead.</p>
       <div class="cta">
         <a class="btn" href="https://paybrake-demo.spbabinov.workers.dev/">Try the demo</a>
         <a class="link" href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip" download>Download the extension (.zip)</a>
       </div>
-      <p class="phone-note">The extension needs a desktop browser.</p>
-      <p class="fine">Hackathon build. Fictional names, PayPal sandbox, no real money. Not affiliated with PayPal or any marketplace.</p>
+      <p class="fine wide-only">Hackathon build. Fictional names, PayPal sandbox, no real money. Not affiliated with PayPal or any marketplace.</p>
+      <p class="fine phone-only">The extension runs in desktop Chrome, Edge or Brave. Hackathon build: fictional names, PayPal sandbox, no real money.</p>
     </div>
   </div>
 </section>
 
 <section id="order" class="field-order" aria-labelledby="order-h">
   <div class="frame">
-    <h2 id="order-h">Same bike, same price, a different way to pay.</h2>
+    <h2 id="order-h" tabindex="-1">Same bike, same price, a different way to pay.</h2>
 
     <table class="ledger" role="table" aria-labelledby="order-h">
       <thead role="rowgroup">
         <tr role="row">
           <td role="cell"></td>
-          <th role="columnheader" scope="col">What Jonas asked for</th>
-          <th role="columnheader" scope="col">The PayPal order</th>
+          <th role="columnheader" scope="col"><span class="wide-only">What Jonas asked for</span><span class="phone-only">Jonas asked</span></th>
+          <th role="columnheader" scope="col"><span class="wide-only">The PayPal order</span><span class="phone-only">PayPal order</span></th>
         </tr>
       </thead>
       <tbody role="rowgroup">
         <tr role="row" class="amounts" data-sweep>
           <th role="rowheader" scope="row">You pay now</th>
-          <td role="cell" data-l="Jonas asked"><span class="amt"><span class="struck">500</span><small>&nbsp;kr</small></span><span class="sr"> (crossed out)</span></td>
-          <td role="cell" data-l="PayPal order"><span class="amt">1,850<small>&nbsp;kr</small></span></td>
+          <td role="cell"><span class="amt"><span class="struck">500</span><small>&nbsp;kr</small></span><span class="sr"> (crossed out)</span></td>
+          <td role="cell"><span class="amt">1,850<small>&nbsp;kr</small></span></td>
         </tr>
         <tr role="row" data-sweep>
           <th role="rowheader" scope="row">Payment type</th>
-          <td role="cell" data-l="Jonas asked"><span class="val"><span class="struck">Friends &amp; Family</span></span><span class="sr"> (crossed out)</span></td>
-          <td role="cell" data-l="PayPal order"><span class="val">Goods &amp; Services</span></td>
+          <td role="cell"><span class="val"><span class="struck">Friends &amp; Family</span></span><span class="sr"> (crossed out)</span></td>
+          <td role="cell"><span class="val">Goods &amp; Services</span></td>
         </tr>
         <tr role="row" data-sweep>
           <th role="rowheader" scope="row">Deposit</th>
-          <td role="cell" data-l="Jonas asked"><span class="val"><span class="struck">500&nbsp;kr upfront</span></span><span class="sr"> (crossed out)</span></td>
-          <td role="cell" data-l="PayPal order"><span class="val">None</span></td>
+          <td role="cell"><span class="val"><span class="struck">500&nbsp;kr upfront</span></span><span class="sr"> (crossed out)</span></td>
+          <td role="cell"><span class="val">None</span></td>
         </tr>
         <tr role="row">
           <th role="rowheader" scope="row">If the bike never arrives</th>
-          <td role="cell" data-l="Jonas asked"><span class="val">You may have no way to get your money back</span></td>
-          <td role="cell" data-l="PayPal order"><span class="val">Buyer Protection may be eligible*</span></td>
+          <td role="cell"><span class="val">You may have no way to get your money back</span></td>
+          <td role="cell"><span class="val">Buyer Protection may be eligible*</span></td>
         </tr>
       </tbody>
     </table>
+
+    <p class="small note-order">*Eligibility depends on PayPal’s terms and the transaction.</p>
 
     <ol class="steps" aria-label="The steps in the card">
       <li><samp>Switch to a PayPal order</samp></li>
@@ -154,19 +164,18 @@
       <li><samp>Paid with PayPal Goods &amp; Services (sandbox)</samp></li>
     </ol>
 
+    <a class="btn btn-lg btn-paper btn-order" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the demo store</a>
+
     <div class="two">
       <div class="left">
         <p>The blue button builds one order for the item and the price in the chat. You approve it on PayPal’s page, come back to the chat and capture it. The card then reads: <samp>Paid with PayPal Goods &amp; Services (sandbox). Buyer Protection may be eligible; see PayPal terms.</samp></p>
         <p>This build runs on the PayPal sandbox or on a mock. Live PayPal is refused in code, and no real money moves.</p>
-        <p><a class="link" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the demo store</a></p>
       </div>
       <div class="right">
         <h3 id="anyway">Or pay anyway.</h3>
         <p><samp>Pay anyway</samp> closes the card and keeps one line in a log on your device: <samp>You chose to pay anyway. Logged on this device.</samp> PayBrake warns you once. The decision stays yours.</p>
       </div>
     </div>
-
-    <p class="small note-order">*Eligibility depends on PayPal terms and the transaction. Sandbox demo, no real payment is made.</p>
   </div>
 </section>
 
@@ -174,7 +183,7 @@
   <div class="frame">
     <div class="head">
       <h2 id="sentences-h">Five more messages.<br class="d"> Three get a card,<br class="d"> two get nothing.</h2>
-      <p class="intro">These lines come from the repo’s test cases and demo chats. The verdicts are what rules&nbsp;v5 returned on 9&nbsp;Nov&nbsp;2026. A wrong warning teaches people to ignore the next one, so PayBrake waits for a payment request it can quote.</p>
+      <p class="intro">These lines come from the repo’s test cases and demo chats. The verdicts are what the rules returned on 9&nbsp;Nov&nbsp;2026. A wrong warning teaches people to ignore the next one, so PayBrake waits for a payment request it can quote.</p>
     </div>
 
     <ol class="rows">
@@ -223,118 +232,108 @@
       </li>
     </ol>
 
-    <form class="row try" id="check" hidden data-rules-lib="" novalidate>
-      <div class="try-main">
-        <label class="ui-label" for="try-msg">Paste a message a seller sent you</label>
-        <div class="ta">
-          <div class="echo" id="try-echo" aria-hidden="true"></div>
-          <textarea id="try-msg" rows="2" maxlength="500" placeholder="Send 500 kr deposit via…" autocomplete="off" spellcheck="false"></textarea>
-        </div>
-        <div class="try-foot">
-          <button class="btn" type="submit">Check it</button>
-          <p class="small">Checked in this tab with the same rules file the extension ships. Nothing is sent anywhere. Rules only: the extension also runs its on-device model and, when it is switched on, the server AI check.</p>
-        </div>
-      </div>
-      <div class="verdict" id="try-verdict" aria-live="polite"><p class="small hint">The verdict appears here.</p></div>
-    </form>
-
     <p class="small key-marks"><mark class="strong">Filled</mark>: a payment signal. <mark class="weak">Amber underline</mark>: a weak signal that cannot raise a card on its own. <mark class="safe">Blue underline</mark>: a safe way to pay. In a real chat the extension gives every phrase it quotes the same highlight, as at the top of this page.</p>
   </div>
+
+  <form class="bench" id="check" hidden data-rules-lib="" novalidate aria-label="Check a message with the rules">
+    <div class="frame bench-grid">
+      <label class="bench-label" for="try-msg">Paste or type a message a seller sent you</label>
+      <div class="presets">
+        <span>Or load one:</span>
+        <button class="preset" type="button" aria-pressed="false" data-msg="Hej, kan du overføre depositum på 500 kr via MobilePay i dag? Jeg sender i morgen.">A Danish deposit</button>
+        <button class="preset" type="button" aria-pressed="false" data-msg="Send 4,150 kr on MobilePay to the number on my profile and I'll post it tonight. Bank transfer works too.">The camera seller</button>
+        <button class="preset" type="button" aria-pressed="false" data-msg="Send 500 kr via PayPal Goods &amp; Services and I ship tomorrow.">Goods &amp; Services</button>
+      </div>
+      <div class="ta">
+        <div class="echo" id="try-echo" aria-hidden="true"></div>
+        <textarea id="try-msg" rows="2" maxlength="500" placeholder="Send 500 kr deposit via…" autocomplete="off" spellcheck="false"></textarea>
+      </div>
+      <div class="verdict" id="try-verdict" aria-live="polite"><p class="small hint">The verdict appears here.</p></div>
+      <div class="try-foot">
+        <button class="btn" type="submit">Check it</button>
+        <p class="small">Checked in this tab with the same rules file the extension ships. Nothing is sent anywhere. Rules only: the extension also runs its on-device model and, when it is switched on, the server AI check.</p>
+      </div>
+    </div>
+  </form>
 </section>
 
 <section id="how" class="chapter" aria-labelledby="how-h">
   <div class="frame">
     <h2 id="how-h">Two checks run on your device. A third can run on a server.</h2>
 
-    <ol class="flow" aria-label="The path of a message through the checks">
-      <li>Message</li>
-      <li>Rules</li>
-      <li>On-device model</li>
-      <li class="opt">Server AI check</li>
-      <li>Card or nothing</li>
+    <ol class="path" data-sweep="tall" aria-label="The path of a message through the checks">
+      <li class="end start">Message</li>
+      <li class="rowlabels" aria-hidden="true"><span>Where it runs</span><span>What it reads</span><span>What it can do</span><span>What it cannot do</span></li>
+      <li class="check">
+        <h3>Rules</h3>
+        <p class="cell where"><span class="v">In the extension</span></p>
+        <p class="cell reads"><span class="lbl">Reads </span><span class="v">the other person’s lines, in English and Danish</span></p>
+        <p class="cell can"><span class="lbl">Can </span><span class="v">raise a card and quote the words that set it off</span></p>
+        <p class="cell cannot"><span class="lbl">Cannot </span><span class="v">react to your own messages</span></p>
+      </li>
+      <li class="check dashed">
+        <h3>On-device model</h3>
+        <p class="cell where"><span class="v">In the extension</span></p>
+        <p class="cell reads"><span class="lbl">Reads </span><span class="v">chats that have not asked for money yet</span></p>
+        <p class="cell can"><span class="lbl">Can </span><span class="v">add a medium card at most</span></p>
+        <p class="cell cannot"><span class="lbl">Cannot </span><span class="v">send anything anywhere</span></p>
+      </li>
+      <li class="check dashed server">
+        <h3>Server AI check</h3>
+        <p class="cell where"><span class="v">On the server, when the AI check is on</span></p>
+        <p class="cell reads"><span class="lbl">Reads </span><span class="v">a copy with emails, numbers, IBANs and codes masked</span></p>
+        <p class="cell can"><span class="lbl">Can </span><span class="v">confirm, lower or clear a rules card, or add a card where the rules found nothing</span></p>
+        <p class="cell cannot"><span class="lbl">Cannot </span><span class="v">raise a rules card’s level</span></p>
+      </li>
+      <li class="end last">Card or nothing</li>
     </ol>
-
-    <table class="matrix" role="table" aria-labelledby="how-h">
-      <thead role="rowgroup">
-        <tr role="row">
-          <td role="cell"></td>
-          <th role="columnheader" scope="col">Rules</th>
-          <th role="columnheader" scope="col">On-device model</th>
-          <th role="columnheader" scope="col">Server AI check</th>
-        </tr>
-      </thead>
-      <tbody role="rowgroup">
-        <tr role="row">
-          <th role="rowheader" scope="row">Where it runs</th>
-          <td role="cell" data-l="Where it runs">In the extension</td>
-          <td role="cell" data-l="Where it runs">In the extension</td>
-          <td role="cell" data-l="Where it runs">On the server, when the AI check is on</td>
-        </tr>
-        <tr role="row">
-          <th role="rowheader" scope="row">What it reads</th>
-          <td role="cell" data-l="What it reads">The other person’s lines, in English and Danish</td>
-          <td role="cell" data-l="What it reads">Chats that have not asked for money yet</td>
-          <td role="cell" data-l="What it reads">A copy with emails, numbers, IBANs and codes masked</td>
-        </tr>
-        <tr role="row">
-          <th role="rowheader" scope="row">What it can do</th>
-          <td role="cell" data-l="What it can do">Raise a card and quote the words that set it off</td>
-          <td role="cell" data-l="What it can do">Add a medium card at most</td>
-          <td role="cell" data-l="What it can do">Confirm, lower or clear a rules card, or add a card where the rules found nothing</td>
-        </tr>
-        <tr role="row">
-          <th role="rowheader" scope="row">What it cannot do</th>
-          <td role="cell" data-l="What it cannot do">React to your own messages</td>
-          <td role="cell" data-l="What it cannot do">Send anything anywhere</td>
-          <td role="cell" data-l="What it cannot do">Raise a rules card’s level</td>
-        </tr>
-      </tbody>
-    </table>
 
     <p class="after-matrix">The on-device model is a small logistic classifier over hashed n-grams, shipped inside the extension. If the server is down, the two checks on your device carry on.</p>
   </div>
 </section>
 
-<section id="numbers" class="chapter" aria-labelledby="numbers-h">
+<section id="numbers" class="ink" aria-labelledby="numbers-h">
   <div class="frame">
     <svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
       <defs>
-        <pattern id="u-flag" width="21" height="21" patternUnits="userSpaceOnUse"><rect width="18" height="18" fill="#14161A"/></pattern>
-        <pattern id="u-miss" width="21" height="21" patternUnits="userSpaceOnUse"><rect x=".75" y=".75" width="16.5" height="16.5" fill="none" stroke="#14161A" stroke-opacity=".45" stroke-width="1.5"/></pattern>
-        <pattern id="u-left" width="21" height="21" patternUnits="userSpaceOnUse"><rect width="18" height="18" fill="#EEF1F4"/></pattern>
-        <pattern id="u-false" width="21" height="21" patternUnits="userSpaceOnUse"><rect x=".5" y=".5" width="17" height="17" fill="#FFC629" stroke="#14161A"/></pattern>
-        <pattern id="u-flag-s" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#14161A"/></pattern>
-        <pattern id="u-miss-s" width="9" height="9" patternUnits="userSpaceOnUse"><rect x=".75" y=".75" width="5.5" height="5.5" fill="none" stroke="#14161A" stroke-opacity=".45" stroke-width="1.5"/></pattern>
-        <pattern id="u-left-s" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#EEF1F4"/></pattern>
-        <pattern id="u-false-s" width="9" height="9" patternUnits="userSpaceOnUse"><rect x=".5" y=".5" width="6" height="6" fill="#FFC629" stroke="#14161A"/></pattern>
+        <pattern id="u-flag" width="21" height="21" patternUnits="userSpaceOnUse"><rect width="18" height="18" fill="#fff"/></pattern>
+        <pattern id="u-miss" width="21" height="21" patternUnits="userSpaceOnUse"><rect x=".75" y=".75" width="16.5" height="16.5" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.5"/></pattern>
+        <pattern id="u-left" width="21" height="21" patternUnits="userSpaceOnUse"><rect width="18" height="18" fill="#fff" fill-opacity=".12"/></pattern>
+        <pattern id="u-false" width="21" height="21" patternUnits="userSpaceOnUse"><rect width="18" height="18" fill="#FFC629"/></pattern>
+        <pattern id="u-flag-f" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="11" height="11" fill="#fff"/></pattern>
+        <pattern id="u-miss-f" width="14" height="14" patternUnits="userSpaceOnUse"><rect x=".75" y=".75" width="9.5" height="9.5" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.5"/></pattern>
+        <pattern id="u-left-f" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="11" height="11" fill="#fff" fill-opacity=".12"/></pattern>
+        <pattern id="u-false-f" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="11" height="11" fill="#FFC629"/></pattern>
       </defs>
     </svg>
 
     <div class="head">
       <h2 id="numbers-h">What it caught and what it missed.</h2>
       <div class="intro">
-        <p>Three test sets, measured on 9&nbsp;Nov&nbsp;2026 with rules&nbsp;v5. The first is rules only; the other two add the on-device model. One square is one chat or one message.</p>
+        <p>Three test sets, measured on 9&nbsp;Nov&nbsp;2026 with rules&nbsp;v5. The 39 chats we wrote ourselves ran on the rules alone; the other two sets also use the on-device model. One square is one chat or one message.</p>
         <ul class="key">
-          <li><i class="sq flag" aria-hidden="true"></i>Black: flagged</li>
+          <li><i class="sq flag" aria-hidden="true"></i>White: flagged</li>
           <li><i class="sq miss" aria-hidden="true"></i>Outline: missed</li>
-          <li><i class="sq left" aria-hidden="true"></i>Grey: left alone</li>
+          <li><i class="sq left" aria-hidden="true"></i>Faint: left alone</li>
           <li><i class="sq false" aria-hidden="true"></i>Amber: false alarm</li>
         </ul>
       </div>
     </div>
 
-    <figure class="set">
+    <figure class="set lead">
       <figcaption>
-        <b>Our own 39 chats</b>
-        <span>We wrote this set ourselves, so it is a regression check. <code>npm run eval</code></span>
+        <b>Public test split, 1,573 messages</b>
+        <span>Four public datasets: real SMS, real Discord chat, synthetic phone dialogues and ScamGuardBench. About half the scams get through. Most SMS and Discord spam never asks for a payment, and a payment request is what the rules look for. <code>npm run eval:real:model</code></span>
       </figcaption>
       <div class="block scam">
-        <p class="count"><span>18 of 18</span> scam chats flagged</p>
-        <svg class="units" viewBox="0 0 420 21" style="--cols:20" role="img" aria-label="18 of 18 scam chats flagged, none missed"><rect x="0" y="0" width="375" height="18" fill="url(#u-flag)"/></svg>
+        <p class="count big"><span>362 <i>of</i> 713</span> scam messages flagged</p>
+        <div class="fieldbox wide-only" data-sweep="tall"><svg class="units field" viewBox="0 0 1344 112" role="img" aria-label="362 of 713 scam messages flagged, 351 missed"><rect x="0" y="0" width="1341" height="39" fill="url(#u-flag-f)"/><rect x="0" y="42" width="1033" height="11" fill="url(#u-flag-f)"/><rect x="1036" y="42" width="305" height="11" fill="url(#u-miss-f)"/><rect x="0" y="56" width="1341" height="39" fill="url(#u-miss-f)"/><rect x="0" y="98" width="571" height="11" fill="url(#u-miss-f)"/></svg></div>
+        <div class="fieldbox phone-only" data-sweep="tall"><svg class="units field" viewBox="0 0 560 252" role="img" aria-label="362 of 713 scam messages flagged, 351 missed"><rect x="0" y="0" width="557" height="123" fill="url(#u-flag-f)"/><rect x="0" y="126" width="25" height="11" fill="url(#u-flag-f)"/><rect x="28" y="126" width="529" height="11" fill="url(#u-miss-f)"/><rect x="0" y="140" width="557" height="95" fill="url(#u-miss-f)"/><rect x="0" y="238" width="459" height="11" fill="url(#u-miss-f)"/></svg></div>
       </div>
       <div class="block honest">
-        <p class="count"><span>0 of 21</span> honest chats flagged</p>
-        <svg class="units" viewBox="0 0 420 42" style="--cols:20" role="img" aria-label="0 of 21 honest chats flagged"><rect x="0" y="0" width="417" height="18" fill="url(#u-left)"/><rect x="0" y="21" width="18" height="18" fill="url(#u-left)"/></svg>
+        <p class="count"><span>11 <i>of</i> 860</span> honest messages flagged</p>
+        <div class="fieldbox wide-only" data-sweep="tall"><svg class="units field" viewBox="0 0 1344 126" role="img" aria-label="11 of 860 honest messages flagged as false alarms, 849 left alone"><rect x="0" y="0" width="151" height="11" fill="url(#u-false-f)"/><rect x="154" y="0" width="1187" height="11" fill="url(#u-left-f)"/><rect x="0" y="14" width="1341" height="95" fill="url(#u-left-f)"/><rect x="0" y="112" width="1285" height="11" fill="url(#u-left-f)"/></svg></div>
+        <div class="fieldbox phone-only" data-sweep="tall"><svg class="units field" viewBox="0 0 560 308" role="img" aria-label="11 of 860 honest messages flagged as false alarms, 849 left alone"><rect x="0" y="0" width="151" height="11" fill="url(#u-false-f)"/><rect x="154" y="0" width="403" height="11" fill="url(#u-left-f)"/><rect x="0" y="14" width="557" height="277" fill="url(#u-left-f)"/><rect x="0" y="294" width="277" height="11" fill="url(#u-left-f)"/></svg></div>
       </div>
     </figure>
 
@@ -344,27 +343,27 @@
         <span>Synthetic chats from a separate model run, never read while tuning. One chat moves recall by 2.5 points. <code>node research/chat-scams/train-model.mjs <span class="nb">--no-write</span></code></span>
       </figcaption>
       <div class="block scam">
-        <p class="count"><span>35 of 40</span> scam chats flagged</p>
+        <p class="count"><span>35 <i>of</i> 40</span> scam chats flagged</p>
         <svg class="units" viewBox="0 0 420 42" style="--cols:20" role="img" aria-label="35 of 40 scam chats flagged, 5 missed"><rect x="0" y="0" width="417" height="18" fill="url(#u-flag)"/><rect x="0" y="21" width="312" height="18" fill="url(#u-flag)"/><rect x="315" y="21" width="102" height="18" fill="url(#u-miss)"/></svg>
       </div>
       <div class="block honest">
-        <p class="count"><span>3 of 60</span> honest chats flagged</p>
+        <p class="count"><span>3 <i>of</i> 60</span> honest chats flagged</p>
         <svg class="units" viewBox="0 0 420 63" style="--cols:20" role="img" aria-label="3 of 60 honest chats flagged as false alarms, 57 left alone"><rect x="0" y="0" width="60" height="18" fill="url(#u-false)"/><rect x="63" y="0" width="354" height="18" fill="url(#u-left)"/><rect x="0" y="21" width="417" height="39" fill="url(#u-left)"/></svg>
       </div>
     </figure>
 
-    <figure class="set public">
+    <figure class="set">
       <figcaption>
-        <b>Public test split, 1,573 messages</b>
-        <span>Four public datasets: real SMS, real Discord chat, synthetic phone dialogues and ScamGuardBench. About half the scams get through. Most SMS and Discord spam never asks for a payment, and a payment request is what the rules look for. <code>npm run eval:real:model</code></span>
+        <b>Our own 39 chats</b>
+        <span>We wrote this set ourselves, so it is a regression check. <code>npm run eval</code></span>
       </figcaption>
       <div class="block scam">
-        <p class="count"><span>362 of 713</span> scam messages flagged</p>
-        <svg class="units" viewBox="0 0 432 135" style="--cols:48" role="img" aria-label="362 of 713 scam messages flagged, 351 missed"><rect x="0" y="0" width="430" height="61" fill="url(#u-flag-s)"/><rect x="0" y="63" width="232" height="7" fill="url(#u-flag-s)"/><rect x="234" y="63" width="196" height="7" fill="url(#u-miss-s)"/><rect x="0" y="72" width="430" height="52" fill="url(#u-miss-s)"/><rect x="0" y="126" width="367" height="7" fill="url(#u-miss-s)"/></svg>
+        <p class="count"><span>18 <i>of</i> 18</span> scam chats flagged</p>
+        <svg class="units" viewBox="0 0 420 21" style="--cols:20" role="img" aria-label="18 of 18 scam chats flagged, none missed"><rect x="0" y="0" width="375" height="18" fill="url(#u-flag)"/></svg>
       </div>
       <div class="block honest">
-        <p class="count"><span>11 of 860</span> honest messages flagged</p>
-        <svg class="units" viewBox="0 0 540 135" style="--cols:60" role="img" aria-label="11 of 860 honest messages flagged as false alarms, 849 left alone"><rect x="0" y="0" width="97" height="7" fill="url(#u-false-s)"/><rect x="99" y="0" width="439" height="7" fill="url(#u-left-s)"/><rect x="0" y="9" width="538" height="115" fill="url(#u-left-s)"/><rect x="0" y="126" width="178" height="7" fill="url(#u-left-s)"/></svg>
+        <p class="count"><span>0 <i>of</i> 21</span> honest chats flagged</p>
+        <svg class="units" viewBox="0 0 441 21" style="--cols:21" role="img" aria-label="0 of 21 honest chats flagged"><rect x="0" y="0" width="438" height="18" fill="url(#u-left)"/></svg>
       </div>
     </figure>
 
@@ -373,23 +372,67 @@
 </section>
 
 <section id="try" class="field-ask" aria-labelledby="try-h">
-  <div class="frame">
-    <div class="try-grid">
-      <div class="try-head">
-        <h2 id="try-h">Try it on the bike chat.</h2>
-        <p class="lede">About 2 minutes, nothing to run locally.</p>
+  <div class="frame try-grid">
+    <div class="try-head">
+      <h2 id="try-h">Try it on the bike chat.</h2>
+      <p class="lede">About 2 minutes, nothing to run locally.</p>
+    </div>
+
+    <ol class="howto">
+      <li>Download the extension zip and unzip it.</li>
+      <li>In Chrome, Edge or Brave open <code>chrome://extensions</code>, switch on Developer mode, click Load unpacked and pick the folder with <code>manifest.json</code>.</li>
+      <li>Open the demo store. The card appears under Jonas’s message.</li>
+    </ol>
+
+    <a class="thread" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">
+      <span class="sr">Open the demo store: the card under Jonas’s message in the bike chat</span>
+      <div class="t-head" aria-hidden="true">
+        <span class="t-av" aria-hidden="true">JH</span>
+        <div>
+          <div class="t-name">Jonas Holm</div>
+          <div class="t-sub">About: Specialized Allez road bike, 56&nbsp;cm&nbsp;· 1,850&nbsp;kr</div>
+        </div>
       </div>
-      <ol class="howto">
-        <li>Download the extension zip and unzip it.</li>
-        <li>In Chrome, Edge or Brave open <code>chrome://extensions</code>, switch on Developer mode, click Load unpacked and pick the folder with <code>manifest.json</code>.</li>
-        <li>Open the demo store. The card appears under Jonas’s message.</li>
-      </ol>
-      <div class="try-cta">
-        <a class="btn btn-lg" href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip" download>Download the extension</a>
-        <a class="btn btn-lg btn-ghost" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the demo store</a>
-        <p class="try-links"><a class="link" href="https://paybrake-demo.spbabinov.workers.dev/">Demo home</a><a class="link" href="https://github.com/lamapony/paybrake">GitHub</a></p>
-        <p class="phone-note">The extension needs a desktop browser.</p>
+      <div class="t-body" aria-hidden="true">
+        <div class="t-row out"><div class="t-b">Hi Jonas, is the Allez still for sale? Could I come and see it on Thursday after work? I live in Frederiksberg.</div><span class="t-time">19:41</span></div>
+        <div class="t-row in"><span class="t-av t-av-s" aria-hidden="true">JH</span><div class="t-b" data-thread-msg>Send 500&nbsp;kr <mark>deposit</mark> via PayPal <mark>Friends &amp; Family</mark> to hold it, <mark>I ship tomorrow</mark> with GLS. The other 1,350&nbsp;kr when it arrives.</div><span class="t-time">19:48</span></div>
+        <div class="pb t-card">
+          <div class="pb-body">
+            <div class="pb-top">
+              <span class="risk-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 3 L22 20 H2 Z" fill="#f5a524" stroke="#b42318" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M12 9.5v4.5" stroke="#1c2530" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="12" cy="17" r="1.2" fill="#1c2530"/>
+                </svg>
+                High risk payment request
+              </span>
+            </div>
+            <div class="pb-explain">Friends &amp; Family + upfront deposit: if the item never arrives, you may have no way to get your money back.</div>
+            <div class="chips">
+              <span class="chip">Friends &amp; Family</span>
+              <span class="chip">Upfront deposit</span>
+              <span class="chip">Ships before you meet</span>
+            </div>
+            <div class="actions">
+              <span class="pbtn primary">Switch to a PayPal order</span>
+              <span class="pbtn ghost">Pay anyway</span>
+            </div>
+          </div>
+        </div>
       </div>
+    </a>
+
+    <div class="try-cta">
+      <a class="btn btn-lg phone-only" href="https://paybrake-demo.spbabinov.workers.dev/">Try the demo</a>
+      <a class="btn btn-lg wide-only" href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip" download>Download the extension</a>
+      <a class="btn btn-lg btn-ghost" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">Open the demo store</a>
+      <p class="try-links">
+        <a class="link phone-only" href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip" download>Download the extension</a>
+        <a class="link wide-only" href="https://paybrake-demo.spbabinov.workers.dev/">Demo home</a>
+        <a class="link" href="https://github.com/lamapony/paybrake">GitHub</a>
+      </p>
+      <p class="phone-only try-note">The extension needs a desktop browser.</p>
     </div>
   </div>
 </section>
@@ -402,6 +445,7 @@
     <div class="foot-text">
       <p>Built for the PayPal AI Hackathon on Devpost by Dmitrii Babinov, Christopher Wang and David.</p>
       <p>Fictional names only. Not affiliated with PayPal or any marketplace. No real money moves in this build. <a class="link" href="https://github.com/lamapony/paybrake/blob/main/LICENSE">MIT license</a></p>
+      <p>The cards on this page are rebuilt in HTML from the extension’s card. The wording and the three signals are what the rules returned for Jonas’s message on 9&nbsp;Nov&nbsp;2026.</p>
       <nav aria-label="Footer" class="foot-nav">
         <a href="#how">How it decides</a>
         <a href="#numbers">Numbers</a>
