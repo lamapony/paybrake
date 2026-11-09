@@ -62,6 +62,51 @@ function json(status, body, extra = {}) {
   });
 }
 
+const NOT_FOUND_PAGE = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Page not found · PayBrake</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<style>
+  body { margin: 0; font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; background: #eef1f5; color: #1c2530; }
+  main { max-width: 680px; margin: 40px auto; padding: 0 20px 40px; }
+  .panel { background: #fff; border: 1px solid #dde3ea; border-radius: 14px; padding: 26px 28px; }
+  h1 { margin: 0; font-size: 28px; }
+  .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+  .btn { display: inline-block; background: #1f5fbf; color: #fff; text-decoration: none; font-weight: 700; padding: 13px 20px; border-radius: 10px; }
+  .btn.alt { background: #fff; color: #1f5fbf; border: 2px solid #1f5fbf; padding: 11px 18px; }
+</style>
+</head>
+<body>
+<main>
+  <section class="panel">
+    <div class="brand"><img src="/logo.svg" width="56" height="56" alt="PayBrake logo"><h1>This page doesn't exist</h1></div>
+    <p>The address may be incomplete. The PayBrake demo is still running.</p>
+    <p class="links"><a class="btn" href="/">Go to the demo home</a><a class="btn alt" href="/demo/marketplace.html?live=1">Open the demo store</a></p>
+  </section>
+</main>
+</body>
+</html>
+`;
+
+function notFoundPage() {
+  return new Response(NOT_FOUND_PAGE, {
+    status: 404,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "x-robots-tag": NOINDEX,
+      "referrer-policy": "no-referrer",
+      "x-content-type-options": "nosniff",
+      "cache-control": "no-store"
+    }
+  });
+}
+
 function cors(request) {
   const origin = request.headers.get("origin");
   if (!origin) return {};
@@ -347,6 +392,13 @@ async function api(request, env) {
     if (orders.mode === "mock") dest.searchParams.set("mock", "1");
     if (path === "/cancel") dest.searchParams.set("cancel", "1");
     return new Response(null, { status: 302, headers: { location: dest.toString(), "x-robots-tag": NOINDEX } });
+  }
+  const isApi = path === "/api" || path.startsWith("/api/");
+  if (!isApi && (request.method === "GET" || request.method === "HEAD")) {
+    if (path === "/demo" || path === "/demo/") {
+      return new Response(null, { status: 302, headers: { location: new URL("/", url.origin).toString(), "x-robots-tag": NOINDEX } });
+    }
+    return notFoundPage();
   }
   return json(404, { error: "not_found" });
 }
