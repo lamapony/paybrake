@@ -24,7 +24,10 @@
     "hosted:dev": "node scripts/build-hosted.mjs && cd hosted && npx wrangler dev",
     "e2e:hosted": "node tests/e2e/hosted-e2e.cjs",
     "eval:real:download": "node eval/real/download.mjs",
-    "eval:real": "node eval/real/run-real.mjs"
+    "eval:real": "node eval/real/run-real.mjs",
+    "eval:real:model": "node eval/real/run-real.mjs --model --report",
+    "train:model": "node research/chat-scams/train-model.mjs",
+    "e2e:model": "node tests/e2e/model-e2e.cjs"
   },
   "optionalDependencies": {
     "playwright-core": "1.63.0"

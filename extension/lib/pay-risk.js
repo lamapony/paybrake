@@ -32,6 +32,7 @@ const TEMPLATES = {
   link: "Suspicious link that asks you to log in or pay: open the real site yourself instead.",
   impersonation: "Claims to be a bank, authority or platform: contact them through their official app instead.",
   ai: "The AI check thinks this chat may be a scam. Do not pay or share codes until you have checked.",
+  model: "This chat reads like known scam chats. Do not pay or share codes until you have checked who this is.",
   generic: "Risky payment request: a direct transfer may be hard to get back if the item never arrives."
 };
 
@@ -42,7 +43,7 @@ const LEVEL_RANK = { none: 0, medium: 1, high: 2 };
 // bank or support impostor) has nothing to pay, so it offers different advice and no
 // "Switch to a PayPal order" button.
 const PAYMENT_SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_before_see", "fee_via_link", "overpayment_refund"];
-const GENERIC_SIGNALS = ["ai_other", "other"];
+const GENERIC_SIGNALS = ["ai_other", "other", "model_flag"];
 
 // The final level is the lower of the rules level and the AI level: the AI may lower a
 // rules card or leave it as it is, but it must never raise it above the rules level.
@@ -119,6 +120,7 @@ function templateFor(signals, tags) {
   else if (has("upfront_deposit")) reason = TEMPLATES.deposit;
   else if (has("impersonation")) reason = TEMPLATES.impersonation;
   else if (has("ai_other")) reason = TEMPLATES.ai;
+  else if (has("model_flag")) reason = TEMPLATES.model;
   if (reason.length > 120) reason = reason.slice(0, 119).trimEnd() + "…";
   return reason;
 }
@@ -356,7 +358,12 @@ async function detect(text, ctx = {}, options = {}) {
     : vetoes.find((hit) => collectionOffer(hit) && !hit.refused) || null;
   const vetoHit = hardVeto || collectionVeto;
 
-  const rules = rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal, messages });
+  let rules = rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal, messages });
+  // On-device model (scam-model.js). detect() runs it only when the caller passes
+  // options.localModel; the extension passes it by default (background.js, Options page
+  // toggle "On-device scam model", on by default). It runs before the server AI, so the AI can
+  // confirm a model card or remove it, exactly as it treats a rules card.
+  if (options && options.localModel) rules = withLocalModel(rules, raw, messages, ctx);
   const ask = options && options.askLlm;
   if (typeof ask !== "function") return rules;
   // "all" already asks about a silent chat. A rules-only confirm still stays quiet
@@ -364,6 +371,48 @@ async function detect(text, ctx = {}, options = {}) {
   if (options.llmMode === "all") return combineAll(rules, raw, messages, ask, options);
   if (rules.kind !== "risk") return rules;
   return confirmOnly(rules, raw, ask, options);
+}
+
+// The model never touches a veto (checkout, agreed Goods & Services) or a short chat, never
+// raises a rules card, and adds only a medium card. Without weights it does nothing.
+const MODEL_ADDS_ON = ["no_atom", "weak_only"];
+
+function withLocalModel(verdict, raw, messages, ctx) {
+  const model = globalThis.pbScamModel;
+  const scored = model && typeof model.score === "function" ? model.score(raw, { messages }) : null;
+  if (!scored) return { ...verdict, model: "unavailable" };
+  const info = { p: Math.round(scored.p * 1000) / 1000, threshold: scored.threshold, version: scored.version };
+  if (verdict.kind === "risk" || !scored.scam || !MODEL_ADDS_ON.includes(verdict.silentReason)) {
+    return { ...verdict, model: scored.scam ? "agrees" : "quiet", modelScore: info };
+  }
+  // Evidence: the other person's line the model scores highest, quoted verbatim from `raw`.
+  let best = null;
+  for (const message of messages) {
+    if (!message || message.from === "buyer") continue;
+    const one = model.score(message.text, {});
+    const at = raw.indexOf(message.text);
+    if (one && at >= 0 && (!best || one.p > best.p)) best = { p: one.p, text: message.text, start: at };
+  }
+  const evidence = best
+    ? [{ atom: "model", text: best.text.slice(0, 240), start: best.start, end: best.start + Math.min(240, best.text.length) }]
+    : [];
+  const signals = ["model_flag"];
+  return {
+    kind: "risk",
+    level: "medium",
+    reason: templateFor(signals, []),
+    signals,
+    rulesSignals: [],
+    tags: [],
+    evidence,
+    deal: verdict.deal || emptyDeal(),
+    llm: "off",
+    source: "model",
+    model: "added",
+    modelScore: info,
+    rulesSilentReason: verdict.silentReason,
+    rulesVersion: atomsApi().RULES_VERSION
+  };
 }
 
 function rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak, evidence, deal, messages }) {

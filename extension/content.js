@@ -276,6 +276,7 @@
   }
 
   function chipLabel(id) {
+    if (id === "model_flag") return "Reads like a scam chat";
     const atoms = globalThis.pbAtoms && pbAtoms.ATOMS;
     const atom = atoms && atoms.find((item) => item.id === id);
     return (atom && atom.receipt) || id;
@@ -292,8 +293,10 @@
 
   function aiNote(verdict, session) {
     const state = verdict && verdict.llm;
-    if (session && session.aiPending && (!state || state === "off")) return AI_NOTES.pending;
-    return AI_NOTES[state] || "rules check";
+    const note = session && session.aiPending && (!state || state === "off") ? AI_NOTES.pending : AI_NOTES[state] || "rules check";
+    // A card the on-device model added names it, so it is never mistaken for a rules hit.
+    if (verdict && verdict.source === "model") return note.replace(/^rules check/, "on-device model");
+    return note;
   }
 
   function footerText(verdict, session) {
@@ -318,7 +321,13 @@
 
   function field(thread, name) {
     const sel = "[" + name + "]";
-    const node = thread.matches(sel) ? thread : (thread.querySelector(sel) || document.querySelector(sel));
+    // A page-level attribute may serve every thread, but never one that belongs to another
+    // conversation: that would give this chat someone else's listing price.
+    const shared = () => [...document.querySelectorAll(sel)].find((node) => {
+      const owner = node.closest("[data-pb-thread]");
+      return !owner || owner === thread;
+    });
+    const node = thread.matches(sel) ? thread : (thread.querySelector(sel) || shared());
     if (!node) return "";
     const value = node.getAttribute(name);
     if (value) return value.trim();
@@ -569,6 +578,7 @@
     if (verdict.llm === "unavailable") top.append(el("span", "pb-tag ai-off", "AI check unavailable"));
     else if (verdict.llm === "off_server") top.append(el("span", "pb-tag ai-off", "AI check off (mock server)"));
     else if (verdict.llm === "added" || verdict.llm === "confirmed") top.append(el("span", "pb-tag ai", "AI checked"));
+    if (verdict.source === "model") top.append(el("span", "pb-tag ai", "On-device model"));
 
     // Collapsible details (chips, the seller-email field). Collapsed by default on a narrow
     // viewport so the card stays small; always shown on desktop.

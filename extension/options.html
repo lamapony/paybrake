@@ -37,6 +37,14 @@
     </div>
     <p class="hint" id="ai-status" role="status">Checking the server…</p>
     <label class="check">
+      <input id="localModel" name="localModel" type="checkbox" aria-describedby="model-help">
+      <span><b>On-device scam model</b> (on by default)</span>
+    </label>
+    <div class="hint" id="model-help">
+      <p>A small model (about 340 KB) that runs inside the extension and sends nothing anywhere. When the rules find no payment ask but the other person's messages read like known scam chats, it adds a medium card marked <b>On-device model</b>. It never raises a rules card and never overrides a checkout. If the AI check is on, the AI can confirm or clear that card.</p>
+      <p>Off: the rules decide alone. If the model file fails to load, PayBrake falls back to rules on its own.</p>
+    </div>
+    <label class="check">
       <input id="debug" name="debug" type="checkbox">
       <span>Debug HUD on chat pages</span>
     </label>
