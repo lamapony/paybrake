@@ -418,6 +418,15 @@ export default {
       else if (status === 429) res = json(429, { error: "busy", message: error.message });
       else res = json(500, { error: "internal" });
     }
+    // With run_worker_first, try static assets before the HTML 404 for unknown GETs.
+    if (res && res.status === 404 && env.ASSETS && (request.method === "GET" || request.method === "HEAD")) {
+      const path = new URL(request.url).pathname;
+      const isApi = path === "/api" || path.startsWith("/api/") || path === "/health" || path === "/return" || path === "/cancel";
+      if (!isApi) {
+        const asset = await env.ASSETS.fetch(request);
+        if (asset.status !== 404) res = asset;
+      }
+    }
     const out = new Response(res.body, res);
     for (const [k, v] of Object.entries(extra)) out.headers.set(k, v);
     return out;
