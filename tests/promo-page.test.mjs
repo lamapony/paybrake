@@ -215,3 +215,12 @@ test("promo: the build copies the rules files the playground loads", () => {
   assert.ok(html.includes('data-rules-lib=""'));
   assert.ok(build.includes(`.replace('data-rules-lib=""', 'data-rules-lib="lib/"')`));
 });
+
+test("promo: the #how heading reads as one sentence pair and splits into device and server fields", () => {
+  const m = html.match(/<h2 id="how-h">([\s\S]*?)<\/h2>/);
+  assert.ok(m, "#how heading present");
+  assert.equal(strip(m[1]), "Two checks run on your device. A third can run on a server.");
+  assert.match(m[1], /<span class="h-dev">Two checks run on your device\.<\/span>/);
+  assert.match(m[1], /<span class="h-srv">A third can run on a server\.<\/span>/);
+  assert.match(css, /#how::before\s*\{/, "server field is drawn");
+});

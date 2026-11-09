@@ -610,6 +610,18 @@ blockquote.msg p {
 
 .after-matrix { margin-top: 28px; max-width: 34em; }
 
+/* The server's field: the third check stands on mist behind a dashed edge, the two device checks on white.
+   Phone and tablet: the third group bleeds to both screen edges; its text and the flow line do not move. */
+.path .check.server {
+  margin: -14px calc(-1 * var(--m)) 0;
+  padding-top: 14px; padding-right: var(--m); padding-left: calc(var(--m) + 22px);
+  background:
+    repeating-linear-gradient(90deg, var(--ink) 0 4px, transparent 4px 9px) left top / 100% 1px no-repeat,
+    #e7ebf0;
+}
+.path .check.server::before { left: var(--m); top: 22px; }
+.path .check.server::after { left: calc(var(--m) + 4px); top: 0; }
+
 /* ---------- Chapter 5: numbers (ink) ---------- */
 
 .ink {
@@ -969,6 +981,8 @@ blockquote.msg p {
   .path { margin-top: clamp(40px, 5vw, 72px); }
   .path .check { padding-left: calc(22px + 32%); padding-bottom: 32px; min-height: 96px; }
   .path .check h3 { position: absolute; left: 22px; top: 0; width: 30%; font-size: var(--t-sub); }
+  .path .check.server { padding-left: calc(var(--m) + 22px + 32%); }
+  .path .check.server h3 { left: calc(var(--m) + 22px); top: 14px; width: calc((100% - 2 * var(--m)) * .3); }
   .after-matrix { margin-top: clamp(24px, 3vw, 40px); }
 
   /* Numbers */
@@ -1089,6 +1103,10 @@ blockquote.msg p {
   .path .end::after { left: 0; right: calc(-1 * var(--g)); top: auto; bottom: 0; width: auto; height: 1px; }
   .path .check::after { left: 0; right: calc(-1 * var(--g)); top: 0; bottom: auto; width: auto; height: 1px; }
   .path .check.server::after { right: 0; }
+  .path .check.server { margin: 0; padding: 0; background: none; }
+  .path .check.server::before { left: 0; top: -4px; }
+  .path .check.server::after { left: 0; top: 0; }
+  .path .check.server h3 { width: auto; }
   .path .dashed::after {
     background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 12px);
   }
@@ -1112,7 +1130,7 @@ blockquote.msg p {
   .path .check:nth-child(5) { grid-column: 10 / 13; }
   .path .check h3 {
     position: static; width: auto;
-    font-size: var(--t-quote); line-height: 1.1; letter-spacing: -.022em;
+    font-size: var(--t-quote); line-height: 1.1; letter-spacing: -.032em;  /* "On-device model" clears the dashed edge */
     padding: 16px 0 clamp(14px, 1.6vw, 24px);
     margin: 0;
   }
@@ -1120,7 +1138,7 @@ blockquote.msg p {
   .cell { display: block; position: relative; margin: 0; padding: 14px 16px 20px 0; font-size: var(--t-ui); line-height: 26px; }
   .cell::before, .rowlabels span::before {
     content: ""; position: absolute; left: 0; right: calc(-1 * var(--g)); top: 0;
-    height: 1px; background: var(--line);
+    height: 1px; background: rgba(20, 22, 26, .18);
   }
   .server .cell::before { right: 0; }
   .lbl {
@@ -1133,9 +1151,30 @@ blockquote.msg p {
 
   /* The trust argument of the chapter carries the weight. */
   .cannot::before, .rowlabels span:nth-child(4)::before { background: var(--ink); }
-  .cannot { padding: 14px 0 0; }
+  .cannot { padding: 14px 16px 0 0; }  /* same right inset as the other cells, clear of the dashed edge */
   .rowlabels span:nth-child(4) { padding-bottom: 0; }
   .cannot .v { font: 600 var(--t-sub)/1.25 var(--sans); letter-spacing: -.012em; }
+
+  /* The boundary the heading states: columns 10-12 and the right margin are the server's field,
+     full section height, behind a dashed edge on the right edge of column 9. */
+  #how { position: relative; isolation: isolate; }
+  #how::before {
+    content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; right: 0;
+    left: calc(max(0px, (100% - 1680px) / 2) + var(--m) + (min(100%, 1680px) - 2 * var(--m) - 11 * var(--g)) * .75 + 8 * var(--g));
+    background:
+      repeating-linear-gradient(180deg, var(--ink) 0 4px, transparent 4px 9px) left top / 1px 100% no-repeat,
+      #e7ebf0;  /* deeper than --mist so the field registers at thumbnail size */
+  }
+  #how h2 {
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--g);
+    align-items: first baseline;
+    max-width: none;
+  }
+  #how .h-dev { grid-column: 1 / 10; }
+  #how .h-srv {
+    grid-column: 10 / 13;
+    font-size: var(--t-quote); line-height: 1.15; letter-spacing: -.014em;
+  }
 
   /* Closing chapter: the thread rises out of the bottom edge of the field. */
   .try-grid {
