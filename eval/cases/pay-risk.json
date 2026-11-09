@@ -356,6 +356,46 @@
       "messages": [
         { "from": "buyer", "text": "Jeg sender den som gave til min mor." }
       ]
+    },
+    {
+      "id": "hn-refuse-ff-checkout",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Desk lamp", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "buyer", "text": "Can I pay another way?" },
+        { "from": "seller", "text": "I won't take PayPal F&F, use checkout" }
+      ]
+    },
+    {
+      "id": "hn-price-whatsapp",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Desk lamp", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "buyer", "text": "What do you want for the lamp?" },
+        { "from": "seller", "text": "price is 200, text me on WhatsApp" }
+      ]
+    },
+    {
+      "id": "hn-paid-flat-deposit",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Desk lamp", "listingPrice": "250 kr" },
+      "messages": [
+        { "from": "buyer", "text": "Are you moving?" },
+        { "from": "seller", "text": "I already paid the deposit for my flat" }
+      ]
+    },
+    {
+      "id": "hn-battery-50-now",
+      "lang": "en",
+      "expect": "silent",
+      "context": { "listingTitle": "Bluetooth speaker", "listingPrice": "600 kr" },
+      "messages": [
+        { "from": "buyer", "text": "How is the battery on the speaker?" },
+        { "from": "seller", "text": "battery is at 50% now" }
+      ]
     }
   ]
 }
