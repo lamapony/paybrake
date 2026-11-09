@@ -261,15 +261,20 @@ mark.safe, .msg mark.safe {
 /* Footnote references on the marked phrases: serif italic, PayBrake's annotating voice.
    Absolutely positioned in the word space so the bubble's metrics and line breaks never move. */
 .bubble mark { position: relative; }
-.bubble mark::after {
-  position: absolute; left: calc(100% + .02em); top: 12%;
-  font: italic 400 max(13px, .27em)/1 var(--serif);
+/* The highlight block starts 12.4% down the mark (80% tall at 62%); the numeral's figure top sits on that edge
+   (figure top is about .2em below the top of a line-height 1 box), a hair outside the highlight's right edge. */
+#scam .bubble mark::after {
+  position: absolute; left: calc(100% + .12em); top: calc(12.4% - .2em - var(--fn-raise, 0em));
+  font: italic 400 max(14px, .34em)/1 var(--serif);
+  font-variant-numeric: lining-nums;
   letter-spacing: 0; color: var(--ink);
 }
 .bubble mark.m1::after { content: "1"; content: "1" / ""; }
 .bubble mark.m2::after { content: "2"; content: "2" / ""; }
 .bubble mark.m3::after { content: "3"; content: "3" / ""; }
-@media (max-width: 479px) { .bubble mark::after { top: -.04em; } }  /* above the x-height of the next word */
+/* Lifted clear of the ascender of "to" (wide) and of the "v" of "via" (phones). */
+@media (min-width: 760px) { #scam .bubble mark.m2 { --fn-raise: .3em; } }
+@media (max-width: 759px) { #scam .bubble mark.m1 { --fn-raise: .2em; } }
 
 /* The card is the footnote to the message: a plain slip with the reason and the notes to 1, 2, 3.
    Sans for the product's own strings, serif italic for the numerals. Two sizes inside it: 24 and 17. */
@@ -293,7 +298,7 @@ mark.safe, .msg mark.safe {
   position: relative;
   list-style: none;
   margin: 14px 0 0; padding: 10px 0 0;
-  display: flex; flex-wrap: wrap; gap: 4px 24px;
+  display: flex; flex-wrap: wrap; gap: 4px 18px;
   font: 600 var(--t-ui)/1.4 var(--sans);
 }
 .pb-notes::before {
@@ -1035,6 +1040,15 @@ blockquote.msg p {
   .more { grid-column: 8 / -1; grid-row: 4; padding-top: 24px; display: flex; flex-direction: column; }
   .more .cta { order: -1; margin: 0 0 16px; }
   .more .lede { max-width: 26em; }
+}
+
+/* Short laptop screens (1366x768, 1280x800): the slip tightens so its button clears the fold. */
+@media (min-width: 900px) and (max-height: 820px) {
+  #scam .pb .pb-full { padding: 12px 28px 14px; }
+  #scam .pb .pb-title { margin-bottom: 4px; }
+  #scam .pb .pb-notes { margin-top: 10px; padding-top: 8px; row-gap: 2px; }
+  #scam .pb .actions { margin-top: 12px; }
+  #scam .pb .pbtn { min-height: 44px; }
 }
 
 /* On wide, short windows the height term sets the type: the bubble then wraps its text instead of filling the row. */
