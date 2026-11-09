@@ -233,6 +233,17 @@ function vetoHidesOnItsOwn(hit) {
   return !!hit && hit.role === "veto" && !collectionOffer(hit);
 }
 
+const ACCEPT = /^(?:yes|yeah|yep|sure|ok|okay|fine|agreed|deal|sounds\s+good|of\s+course|no\s+problem|ja|jo|gerne|fint|det\s+er\s+fint|det\s+kan\s+vi)(?![\p{L}\p{N}])/iu;
+
+// The next line from the other person accepts the buyer's proposal, and no later line
+// from them raises an ask. "Sure." followed by "checkout is broken, send 500 kr via
+// PayPal F&F" must not let the buyer's question silence the F&F ask.
+function sellerAccepts(perMessage, index) {
+  const later = perMessage.slice(index + 1).filter((message) => message.from !== "buyer");
+  if (!later.length || !ACCEPT.test(later[0].text.trim())) return false;
+  return !later.some((message) => message.hits.some((hit) => hit.role === "act" && !hit.prohibited));
+}
+
 function silent(reason, extra) {
   return {
     kind: "silent",
@@ -315,7 +326,14 @@ async function detect(text, ctx = {}, options = {}) {
   });
 
   const goods = api.goodsHit(messages);
-  const vetoes = perMessage.flatMap((message) => message.hits).filter((hit) => hit.role === "veto");
+  // The buyer's own line does not veto on its own: "Can I pay through the checkout?"
+  // is not the seller agreeing to it. It does when the seller's next line accepts it
+  // ("Sure thing.", "Ja, brug checkout.") and asks for nothing itself. Buyer-proposed
+  // Goods & Services that the seller accepts is handled by goodsHit.
+  const vetoes = perMessage
+    .filter((message, index) => message.from !== "buyer" || sellerAccepts(perMessage, index))
+    .flatMap((message) => message.hits)
+    .filter((hit) => hit.role === "veto");
   // A prohibited span is not an ask. The user's own line ("buyer") never raises one.
   const actHits = perMessage
     .filter((message) => message.from !== "buyer")
@@ -371,7 +389,7 @@ function rulesVerdict({ api, perMessage, vetoHit, actHits, signals, strong, weak
     ));
     // "Friends and Family only", or "is fine" after a refused method, can lack a pay word.
     const methodOnly = host && host.hits.some((hit) => (
-      (hit.gate === "ff-dictated" || hit.gate === "ff-pivot") && !hit.prohibited
+      (hit.gate === "ff-dictated" || hit.gate === "ff-pivot" || hit.gate === "ff-only") && !hit.prohibited
     ));
     const standalone = meta[strong[0]] && meta[strong[0]].standalone;
     // "Venmo me" has no pay word and no amount. The hit is already a direct ask.

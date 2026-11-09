@@ -80,9 +80,10 @@ test("qa r2 demo and mock: order, typos, advice, pay anyway", {
 
     await page.goto(origin + "/demo/marketplace.html?live=1");
     await page.evaluate(() => {
+      // The bike thread has three seller lines; blank every one so the real ask does not leak in.
       const sellers = document.querySelectorAll("#thread-bike [data-pb-msg][data-from='seller']");
+      sellers.forEach((node) => { node.textContent = "Hello."; });
       sellers[0].textContent = "Send 500 kr deposiit via PayPal frends and famliy now, I ship tomorrow.";
-      sellers[1].textContent = "Hello.";
     });
     await inject(page);
     const typoCard = page.locator("#thread-bike #pb-card");
@@ -95,7 +96,7 @@ test("qa r2 demo and mock: order, typos, advice, pay anyway", {
     await page.goto(origin + "/demo/marketplace.html?live=1");
     await page.evaluate(() => {
       const sellers = document.querySelectorAll("#thread-bike [data-pb-msg][data-from='seller']");
-      sellers[0].textContent = "Hello.";
+      sellers.forEach((node) => { node.textContent = "Hello."; });
       sellers[1].textContent = "Never send a deposit via PayPal Friends & Family. Beware of scams.";
     });
     await inject(page);
