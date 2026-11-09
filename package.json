@@ -27,6 +27,7 @@
     "eval:real": "node eval/real/run-real.mjs",
     "eval:real:model": "node eval/real/run-real.mjs --model --report",
     "train:model": "node research/chat-scams/train-model.mjs",
+    "rescore:model": "node research/chat-scams/rescore-cases.mjs",
     "e2e:model": "node tests/e2e/model-e2e.cjs"
   },
   "optionalDependencies": {

@@ -332,33 +332,33 @@
  "marketplaceCases": {
   "all": {
    "rules": {
-    "n": 35,
+    "n": 39,
     "tp": 18,
     "fp": 0,
     "fn": 0,
-    "tn": 17,
+    "tn": 21,
     "precision": 1,
     "recall": 1,
     "f1": 1,
     "fpr": 0
    },
    "model": {
-    "n": 35,
+    "n": 39,
     "tp": 5,
     "fp": 0,
     "fn": 13,
-    "tn": 17,
+    "tn": 21,
     "precision": 1,
     "recall": 0.278,
     "f1": 0.435,
     "fpr": 0
    },
    "rules_or_model": {
-    "n": 35,
+    "n": 39,
     "tp": 18,
     "fp": 0,
     "fn": 0,
-    "tn": 17,
+    "tn": 21,
     "precision": 1,
     "recall": 1,
     "f1": 1,
@@ -402,33 +402,33 @@
   },
   "en": {
    "rules": {
-    "n": 25,
+    "n": 29,
     "tp": 13,
     "fp": 0,
     "fn": 0,
-    "tn": 12,
+    "tn": 16,
     "precision": 1,
     "recall": 1,
     "f1": 1,
     "fpr": 0
    },
    "model": {
-    "n": 25,
+    "n": 29,
     "tp": 3,
     "fp": 0,
     "fn": 10,
-    "tn": 12,
+    "tn": 16,
     "precision": 1,
     "recall": 0.231,
     "f1": 0.375,
     "fpr": 0
    },
    "rules_or_model": {
-    "n": 25,
+    "n": 29,
     "tp": 13,
     "fp": 0,
     "fn": 0,
-    "tn": 12,
+    "tn": 16,
     "precision": 1,
     "recall": 1,
     "f1": 1,
@@ -10689,8 +10689,36 @@
     "y": 0,
     "rules": "no_atom",
     "p": 0
+   },
+   {
+    "id": "hn-refuse-ff-checkout",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.2441
+   },
+   {
+    "id": "hn-price-whatsapp",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.8056
+   },
+   {
+    "id": "hn-paid-flat-deposit",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.0762
+   },
+   {
+    "id": "hn-battery-50-now",
+    "y": 0,
+    "rules": "no_atom",
+    "p": 0.3892
    }
   ]
  },
- "version": "lr-h18-f1-2026-11-05"
+ "version": "lr-h18-f1-2026-11-05",
+ "casesRescored": {
+  "rulesVersion": 5,
+  "cases": 39
+ }
 }
