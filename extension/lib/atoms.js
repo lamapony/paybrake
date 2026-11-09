@@ -148,6 +148,9 @@ const RULES = [
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
   { id: "off_platform", re: "paysafecards?", gate: "deposit-word" },
   { id: "off_platform", re: "paysafe", gate: "deposit-word" },
+  // Same gate as WhatsApp/Telegram: the amount must be what is sent on the app.
+  // "It's 300 kr, text me on Signal" is a price and a contact line, not an ask.
+  { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:signal|discord|imessage)", gate: "chat-pay" },
   // Skrill and Interac. A bare name ("Skrill is a town") is not an ask.
   { id: "off_platform", re: "skrill", gate: "pay-or-amount" },
   { id: "off_platform", re: "interac", gate: "pay-or-amount" },
@@ -641,7 +644,8 @@ function depositRejected(text, start, end) {
 function paymentViaChat(text, start, end) {
   if (negatedBefore(text, start)) return false;
   const span = text.slice(start, end);
-  const prepAt = span.search(/\b(?:on|via|på)\s+(?:whatsapp|telegram)\s*$/iu);
+  // The rule regex already names the app; this finds where "on <app>" starts.
+  const prepAt = span.search(/\b(?:on|via|på)\s+\p{L}+(?:\s+pay)?\s*$/iu);
   if (prepAt < 0) return false;
   const gap = span.slice(0, prepAt);
   if (/^(?:pay|send|betal)\s+(?:me\s+)?$/iu.test(gap)) return true;

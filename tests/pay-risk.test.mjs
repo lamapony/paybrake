@@ -1539,6 +1539,60 @@ test("verification-code advice says never share the code", async () => {
 });
 
 
+test("an amount next to Signal, Discord, or iMessage is off-platform", async () => {
+  for (const rail of ["Signal", "Discord", "iMessage"]) {
+    const medium = await detect(`Send 500 kr via ${rail} today please.`);
+    assert.equal(medium.kind, "risk", rail);
+    assert.equal(medium.level, "medium", rail);
+    assert.deepEqual(medium.signals, ["off_platform"], rail);
+
+    const high = await detect(`Send 500 kr via ${rail} today, I ship tomorrow.`);
+    assert.equal(high.kind, "risk", rail);
+    assert.equal(high.level, "high", rail);
+    assert.deepEqual(high.signals, ["off_platform", "ship_before_meet"], rail);
+  }
+
+  const payMe = await detect("Pay me on Signal, 500 kr, I ship tomorrow.");
+  assert.equal(payMe.kind, "risk");
+  assert.equal(payMe.level, "high");
+  assert.deepEqual(payMe.signals, ["off_platform", "ship_before_meet"]);
+
+  const telegram = await detect("Pay me on Telegram, 500 kr, I ship tomorrow.");
+  assert.equal(telegram.kind, "risk");
+  assert.equal(telegram.level, "high");
+  assert.deepEqual(telegram.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a price next to a Signal, Discord, or iMessage contact line stays silent", async () => {
+  const quiet = [
+    "It's 300 kr, text me on Signal for pics.",
+    "500 kr, I'm on Discord if you have questions.",
+    "Price is 400 kr, message me on iMessage.",
+    "Pris 400 kr, skriv på Signal."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+test("a Signal chat or a photo without an amount stays off the rail", async () => {
+  const chat = await detect("We can chat on Signal about the bike on Thursday.");
+  assert.equal(chat.kind, "silent");
+  assert.equal(chat.silentReason, "no_atom");
+  assert.deepEqual(chat.signals, []);
+
+  const photo = await detect("Send a photo on Signal of the bike, I ship tomorrow.");
+  assert.equal(photo.kind, "silent");
+  assert.equal(photo.silentReason, "weak_only");
+  assert.deepEqual(photo.signals, ["ship_before_meet"]);
+
+  const address = await detect("Send the address via WhatsApp when you pick it up.");
+  assert.equal(address.kind, "silent");
+  assert.equal(address.silentReason, "veto");
+});
+
 test("F and F and Friends n Family need a pay word", async () => {
   const high = [
     "Please send 500 kr via PayPal F and F now, I ship tomorrow.",
