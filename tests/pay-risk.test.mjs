@@ -1697,3 +1697,43 @@ test("hold the bike for you needs a pay ask or an amount", async () => {
   assert.equal(door.silentReason, "no_atom");
   assert.deepEqual(door.signals, []);
 });
+
+function threadVerdict(messages, context) {
+  const text = messages.map((message) => message.text).join("\n");
+  return detect(text, { ...context, messages });
+}
+
+// Fixed by #37 (ffTokenOk), merged into this branch. Depends on #37.
+test("a seller who refuses PayPal F&F and says to use checkout stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "Can I pay another way?" },
+    { from: "seller", text: "I won't take PayPal F&F, use checkout" }
+  ], { listingTitle: "Desk lamp", listingPrice: "250 kr" });
+  assert.equal(verdict.kind, "silent");
+});
+
+test("a price next to WhatsApp with no payment ask stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "What do you want for the lamp?" },
+    { from: "seller", text: "price is 200, text me on WhatsApp" }
+  ], { listingTitle: "Desk lamp", listingPrice: "250 kr" });
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "no_atom");
+});
+
+test("past tense paid about a flat deposit stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "Are you moving?" },
+    { from: "seller", text: "I already paid the deposit for my flat" }
+  ], { listingTitle: "Desk lamp", listingPrice: "250 kr" });
+  assert.equal(verdict.kind, "silent");
+});
+
+test("battery at 50 percent now stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "How is the battery on the speaker?" },
+    { from: "seller", text: "battery is at 50% now" }
+  ], { listingTitle: "Bluetooth speaker", listingPrice: "600 kr" });
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "no_atom");
+});
