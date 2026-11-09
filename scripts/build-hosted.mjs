@@ -22,9 +22,17 @@ for (const name of fs.readdirSync(path.join(root, "demo"))) {
   html = html.replace(/<head>/i, (m) => m + "\n" + head);
   fs.writeFileSync(path.join(out, "demo", name), html);
 }
-for (const name of fs.readdirSync(path.join(root, "hosted", "static"))) {
-  fs.copyFileSync(path.join(root, "hosted", "static", name), path.join(out, name));
+// Recursive: hosted/static/promo/ (the promo page and its assets) has subfolders.
+fs.cpSync(path.join(root, "hosted", "static"), out, { recursive: true });
+// /promo lets a visitor run the extension's real rules in the tab, so the page needs these files. Loaded on demand.
+const promoLib = path.join(out, "promo", "lib");
+fs.mkdirSync(promoLib, { recursive: true });
+for (const name of ["brand", "tidy", "atoms", "extract", "redact", "pay-risk"]) {
+  fs.copyFileSync(path.join(root, "extension", "lib", `${name}.js`), path.join(promoLib, `${name}.js`));
 }
+// The playground stays hidden unless this attribute names the copied files (it is empty in hosted/static).
+const promoPage = path.join(out, "promo", "index.html");
+fs.writeFileSync(promoPage, fs.readFileSync(promoPage, "utf8").replace('data-rules-lib=""', 'data-rules-lib="lib/"'));
 execFileSync(process.execPath, [path.join(root, "scripts", "pack-extension.mjs")], { stdio: "inherit" });
 fs.copyFileSync(path.join(root, "dist", "paybrake-extension.zip"), path.join(out, "paybrake-extension.zip"));
 console.log("built " + path.relative(root, out));
