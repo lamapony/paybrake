@@ -97,6 +97,10 @@ const RULES = [
   { id: "upfront_deposit", re: "downpayments?", gate: "deposit-ask" },
   { id: "upfront_deposit", re: "booking\\s+fees?", gate: "deposit-ask" },
   { id: "upfront_deposit", re: "earnest\\s+money", gate: "deposit-ask" },
+  // A live pay word must be near: "battery is at 50% now" has none, and
+  // "I paid half up front for my flat" is history (paidHistory), not an ask.
+  { id: "upfront_deposit", re: "half\\s+up[ \\t-]*front", gate: "half-now" },
+  { id: "upfront_deposit", re: "50\\s*%\\s*now", gate: "half-now" },
 
   { id: "off_platform", re: "mobile\\s*pay", gate: "mobilepay" },
   { id: "off_platform", re: "IBAN", gate: "iban" },
@@ -950,6 +954,10 @@ function allow(rule, text, start, end) {
   if (rule.gate === "deposit-ask") {
     if (negatedBefore(text, start) || depositRejected(text, start, end)) return false;
     return payWordOutside(text, start, end, 80);
+  }
+  if (rule.gate === "half-now") {
+    if (negatedBefore(text, start) || depositRejected(text, start, end)) return false;
+    return payWordNearLive(text, start, end, 60);
   }
   if (rule.gate === "negation") return !negatedBefore(text, start);
   if (rule.gate === "ff-token") return ffTokenOk(text, start);
