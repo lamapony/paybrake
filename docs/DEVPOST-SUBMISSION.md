@@ -4,7 +4,7 @@ Copy-paste source for the Devpost form. Every claim below points at code on this
 
 Deadlines (Copenhagen time): main freezes **5 Nov 12:00**, Devpost early submission **5 Nov 21:00**, final **12 Nov 21:00** (SPEC.md: 12 Nov 12:00 PT).
 
-> **Repository visibility.** SPEC.md says the hackathon asks for a public repo with an OSS licence, and TESTING.md notes the issue form only works once it is public. On 4 Nov `lamapony/paybrake` was **private**. A search for `christopherwang0129SE/paybrake` found nothing: no public repo by that name, and this session can't see private ones. Before submitting, decide which repo goes in the Devpost "Try it out" links, make it public, and run the **Before going public** checklist in [SUBMISSION-GAPS.md](SUBMISSION-GAPS.md) first (`pilot/` and `PILOT-TASK.md` are still in the tree).
+> **Repository visibility.** `lamapony/paybrake` is public (checked 9 Nov 2026). Use https://github.com/lamapony/paybrake in the Devpost "Try it out" links. The **Before going public** checklist in [SUBMISSION-GAPS.md](SUBMISSION-GAPS.md) is still open: `pilot/` and `docs/archive/PILOT-TASK.md` are still in the tree.
 
 ---
 
@@ -35,7 +35,7 @@ Most marketplace scams end the same way. The "seller" (or a fake buyer) moves th
 - **Detector:** about 170 regex "atoms", each with a gate (pay word nearby, parsed amount, negation, handover, prohibition). One strong atom plus money or a pay word is medium. Two strong atoms, or one strong plus a weak one (urgency, "I ship tomorrow"), is high. Vetoes (checkout, agreed Goods & Services, pay at pickup) hide the card. Amount parsing handles `500 kr`, `DKK 1.800`, `1,800 kr`, `€45` and `$120` (`extension/lib/extract.js`).
 - **Backend:** Node 20 with no framework (`backend/src/server.js`). It uses an `OrdersPort` with `mock`, `rest` (PayPal Orders v2 sandbox with OAuth token cache, `PayPal-Request-Id`, `payer-action` link) and `toolkit` adapters. The toolkit adapter uses the PayPal Agent Toolkit tool names `create_order`, `get_order` and `pay_order`, executed through rest, because the published toolkit has no payee field and is USD-only. `/api/classify` supports Typesafe, OpenRouter or any OpenAI-compatible provider.
 - **Hosted demo:** one Cloudflare Worker (`hosted/`) serves the demo store, the extension zip, the order API (mock orders live in a Durable Object for 24 hours) and the AI check. The AI check is capped at 2000 characters, 20/min and 150/day per IP, and 2000/day globally, and has a kill switch (`AI_KILL_SWITCH`).
-- **Evaluation:** a 35-chat synthetic regression set (`npm run eval`, gate: precision ≥ 0.95, recall ≥ 0.80, zero false alarms). There is also a harness on four public Hugging Face scam and legit datasets (`eval/real/`). It commits only IDs, labels and predictions, not message text.
+- **Evaluation:** a 39-chat synthetic regression set (`npm run eval`, gate: precision ≥ 0.95, recall ≥ 0.80, zero false alarms). There is also a harness on four public Hugging Face scam and legit datasets (`eval/real/`). It commits only IDs, labels and predictions, not message text.
 - **Tests:** `npm test` runs the offline suite: detector, extraction, redaction, card rendering, copy rule, secrets grep, and backend adapters with mocked fetch. Playwright drives a browser flow and an extension smoke test (`npm run e2e`).
 
 ## Challenges we ran into
@@ -49,7 +49,7 @@ Most marketplace scams end the same way. The "seller" (or a fake buyer) moves th
 ## Accomplishments that we're proud of
 
 - An end-to-end path a judge can run in about two minutes with nothing installed but the unzipped extension: risky chat → explained card → PayPal order → approve → capture.
-- On the 35-case synthetic regression set: precision 1, recall 1, zero false alarms. That set is our own writing, so we treat it as a regression gate, not a field accuracy number.
+- On the 39-case synthetic regression set: precision 1, recall 1, zero false alarms. That set is our own writing, so we treat it as a regression gate, not a field accuracy number.
 - On public third-party data (rules v4, 3 Nov, test split of 1,573 messages): precision 0.976 and a false-alarm rate of 0.9%. Recall was 0.456 overall, because most SMS and Discord spam never asks for a payment. On ScamGuardBench's money-asking scams the rules caught 53 of 55. Details and caveats are in `eval/real/RESULTS.md`. These datasets are not marketplace chats.
 - A pre-freeze bug hunt (5 Nov) fixed 15 detection false positives and false negatives, each with a test. Four independent adversarial reviews then compared about 1,500 inputs against the previous build, and every regression they found is now a test. Examples: MobilePay at pickup no longer warns, and a buyer asking "Can I pay through checkout?" no longer hides the seller's F&F demand.
 
@@ -94,7 +94,7 @@ Rules from SPEC.md: under 3 minutes, our own fictional demo pages only (no real 
 | 5 | 1:25–1:45 | **Signe Kruse · camera** thread → **Pay anyway** | "You chose to pay anyway. Logged on this device." | "The user stays in control. Pay anyway is allowed and only logged locally." |
 | 6 | 1:45–2:05 | Scroll to the desk-lamp thread, then `demo/safe-chats.html` | No card | "Normal chats stay quiet: cash or MobilePay at pickup, the marketplace checkout, Goods & Services." |
 | 7 | 2:05–2:25 | Extension options page | "Ask the backend for an AI check", the masking paragraph, the override log | "Before anything goes to the AI, emails, phone numbers, IBANs and codes are masked. Rules-only mode sends nothing." |
-| 8 | 2:25–2:45 | Terminal: `npm test` and `npm run eval` passing | test count, "precision 1 recall 1 … false alarms 0" | "Every rule ships with quiet cases. 35 synthetic chats plus public scam datasets keep it honest." |
+| 8 | 2:25–2:45 | Terminal: `npm test` and `npm run eval` passing | test count, "precision 1 recall 1 … false alarms 0" | "Every rule ships with quiet cases. 39 synthetic chats plus public scam datasets keep it honest." |
 | 9 | 2:45–2:55 | Closing card | Hosted demo URL, team names | "PayBrake. Brakes before you pay. Try it at the link below." |
 
 Before recording, check:

@@ -2,13 +2,15 @@
 
 Early submission: 5 November, 21:00 CET. Final: 12 November. Re-checked after rebasing onto current main. The **Before going public** commands were not run.
 
+> **Update, 9 Nov 2026.** The repository is now public and `pilot/` is still in the tree, so the decision below is still open. The task file moved to `docs/archive/PILOT-TASK.md`; the commands below use the new path. The counts in the QA section are from that earlier pass.
+
 ## Before going public
 
 Dima decides. Nothing in this section was run on this branch. The pilot is still in the tree on purpose. A top-level notice with the same warning is in [pilot/README.md](../pilot/README.md).
 
 `pilot/extension/manifest.json` injects on Facebook and Messenger, and `pilot/INSTALL-RU.md` directs testers to real chats. That folder is not the judge path. The judge path is the local mock in the repository README.
 
-1. Read `pilot/README.md`, `pilot/INSTALL-RU.md`, `pilot/extension/manifest.json`, and `PILOT-TASK.md`.
+1. Read `pilot/README.md`, `pilot/INSTALL-RU.md`, `pilot/extension/manifest.json`, and `docs/archive/PILOT-TASK.md`.
 2. Check history for the pilot path. An empty result is not proof the blobs are gone from every clone; this is the check to run:
 
 ```sh
@@ -18,7 +20,7 @@ git log --all -- pilot
 Also check the task file and the pilot screenshots, which sit outside `pilot/`:
 
 ```sh
-git log --all -- PILOT-TASK.md
+git log --all --follow -- docs/archive/PILOT-TASK.md
 git log --all -- shots/pilot-1280.png shots/pilot-390.png shots/pilot-anyway-1280.png shots/pilot-order-1280.png shots/pilot-order-created-1280.png shots/pilot-safe-1280.png
 ```
 
@@ -31,7 +33,7 @@ git log --all --full-history -- pilot
 3. Decide one of: keep the pilot in a private remote only, move it to a reviewed private location, or drop it from the tree that will be published. To drop it from the next commit (this does not rewrite history):
 
 ```sh
-git rm -r pilot PILOT-TASK.md
+git rm -r pilot docs/archive/PILOT-TASK.md
 ```
 
 The six `shots/pilot-*.png` files are not inside `pilot/`. Include them only as part of the same decision:
@@ -64,4 +66,4 @@ Re-run after rebasing onto current main. One pass. Commands and results only. Fi
 - `npm run e2e`: exit 0. Printed `extension smoke passed`. Refreshed `shots/ext-live-1280.png` and `shots/ext-live-390.png`. Desktop card text: **High risk payment request**, signals Friends & Family, Upfront deposit, Pressure to hurry, Ships before you meet, buttons **Switch to a PayPal order** and **Pay anyway**, tag **AI check off (mock server)**. The phone card starts collapsed and stacks the buttons. The lamp thread stays silent.
 - `shots/demo.gif`: frames of `#thread-bike` on the local demo with the unpacked extension (no card, then the card above, then the mock order with **Open approval**). Encoded at 768×720, 4.76s, 8 fps. Embedded in the README. The order id in the last frame is from that run and will differ next time.
 - `npm run e2e:hosted` was not run. TODO (stale assets): `shots/tester/`, `shots/tester-v2/`, `shots/tester-v3/`, `shots/ai-live/`, and `shots/pilot-*.png` were not regenerated. Do not treat them as current.
-- The **Before going public** commands were not run. `pilot/` and `PILOT-TASK.md` are still in the tree.
+- The **Before going public** commands were not run. `pilot/` and `docs/archive/PILOT-TASK.md` are still in the tree.
