@@ -56,7 +56,7 @@ const WIRE_BANK_GAP = "(?:\\$?\\d+(?:[.,]\\d+)+|[^\\s.,;!?]+)";
 const RULES = [
   { id: "friends_family", re: "friends\\s+(?:and|&)\\s+family", gate: "ff-phrase" },
   { id: "friends_family", re: "venner\\s+(?:og|&)\\s+familie", gate: "ff-phrase" },
-  { id: "friends_family", re: "F&F", gate: "none" },
+  { id: "friends_family", re: "F&F", gate: "ff-token" },
   { id: "friends_family", re: "FnF", gate: "none" },
   { id: "friends_family", re: "family\\s+(?:and|&)\\s+friends", gate: "ff-phrase" },
   { id: "friends_family", re: "familie\\s+(?:og|&)\\s+venner", gate: "ff-phrase" },
@@ -141,6 +141,8 @@ const RULES = [
   // A console or the show has no "card", so it does not match.
   { id: "off_platform", re: "(?:playstation|xbox|nintendo|netflix)\\s+(?:gift\\s+)?cards?", gate: "pay-or-amount" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "chat-pay" },
+  // Same gate: "Price is 500 kr, message me on Messenger" is a contact line, not an ask.
+  { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:messenger|facebook\\s+pay|snapchat|viber)", gate: "chat-pay" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
   { id: "off_platform", re: "\\bwestern\\s+union\\b", gate: "named-rail" },
   { id: "off_platform", re: "\\bmoneygram\\b", gate: "named-rail" },
@@ -152,6 +154,9 @@ const RULES = [
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
   { id: "off_platform", re: "paysafecards?", gate: "deposit-word" },
   { id: "off_platform", re: "paysafe", gate: "deposit-word" },
+  // Same gate as WhatsApp/Telegram: the amount must be what is sent on the app.
+  // "It's 300 kr, text me on Signal" is a price and a contact line, not an ask.
+  { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:signal|discord|imessage)", gate: "chat-pay" },
   // Skrill and Interac. A bare name ("Skrill is a town") is not an ask.
   { id: "off_platform", re: "skrill", gate: "pay-or-amount" },
   { id: "off_platform", re: "interac", gate: "pay-or-amount" },
@@ -645,7 +650,8 @@ function depositRejected(text, start, end) {
 function paymentViaChat(text, start, end) {
   if (negatedBefore(text, start)) return false;
   const span = text.slice(start, end);
-  const prepAt = span.search(/\b(?:on|via|på)\s+(?:whatsapp|telegram)\s*$/iu);
+  // The rule regex already names the app; this finds where "on <app>" starts.
+  const prepAt = span.search(/\b(?:on|via|på)\s+\p{L}+(?:\s+pay)?\s*$/iu);
   if (prepAt < 0) return false;
   const gap = span.slice(0, prepAt);
   if (/^(?:pay|send|betal)\s+(?:me\s+)?$/iu.test(gap)) return true;
@@ -890,6 +896,16 @@ function linkAllowed(text, start, end) {
   return LURE.test(near);
 }
 
+// "I won't take PayPal F&F" refuses the rail. "Never send … via F&F" stays a
+// hit so the prohibition layer can quiet it; that sentence is not "take".
+// Only rail words may sit between "take" and F&F: "I don't take checkout so
+// pay F&F" refuses checkout, not F&F, and stays a hit.
+function ffTokenOk(text, start) {
+  if (negatedBefore(text, start)) return false;
+  const before = text.slice(Math.max(0, start - 48), start);
+  return !/(?<![\p{L}\p{N}])(?:won['’]?t|wont|will\s+not|don['’]?t|dont|do\s+not|never|not)\s+take(?:\s+(?:paypal|pp|payments?|payment\s+via|via|through|with|over|on|any|the))*?\s+$/iu.test(before);
+}
+
 // A parsed amount nearby, or a bare number on the token ("500 USDC").
 // "Send the USDC whitepaper" has neither.
 function usdcAsk(text, start, end) {
@@ -944,6 +960,7 @@ function allow(rule, text, start, end) {
     return payWordNearLive(text, start, end, 60);
   }
   if (rule.gate === "negation") return !negatedBefore(text, start);
+  if (rule.gate === "ff-token") return ffTokenOk(text, start);
   if (rule.gate === "remote-brand") return remoteBrandOk(text, start, end);
   if (rule.gate === "ff-phrase") return payWordNear(text, start, end, 60);
   if (rule.gate === "ff-dictated") return dictatedFamilyOnly(text, start, end);

@@ -1539,6 +1539,60 @@ test("verification-code advice says never share the code", async () => {
 });
 
 
+test("an amount next to Signal, Discord, or iMessage is off-platform", async () => {
+  for (const rail of ["Signal", "Discord", "iMessage"]) {
+    const medium = await detect(`Send 500 kr via ${rail} today please.`);
+    assert.equal(medium.kind, "risk", rail);
+    assert.equal(medium.level, "medium", rail);
+    assert.deepEqual(medium.signals, ["off_platform"], rail);
+
+    const high = await detect(`Send 500 kr via ${rail} today, I ship tomorrow.`);
+    assert.equal(high.kind, "risk", rail);
+    assert.equal(high.level, "high", rail);
+    assert.deepEqual(high.signals, ["off_platform", "ship_before_meet"], rail);
+  }
+
+  const payMe = await detect("Pay me on Signal, 500 kr, I ship tomorrow.");
+  assert.equal(payMe.kind, "risk");
+  assert.equal(payMe.level, "high");
+  assert.deepEqual(payMe.signals, ["off_platform", "ship_before_meet"]);
+
+  const telegram = await detect("Pay me on Telegram, 500 kr, I ship tomorrow.");
+  assert.equal(telegram.kind, "risk");
+  assert.equal(telegram.level, "high");
+  assert.deepEqual(telegram.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a price next to a Signal, Discord, or iMessage contact line stays silent", async () => {
+  const quiet = [
+    "It's 300 kr, text me on Signal for pics.",
+    "500 kr, I'm on Discord if you have questions.",
+    "Price is 400 kr, message me on iMessage.",
+    "Pris 400 kr, skriv på Signal."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+test("a Signal chat or a photo without an amount stays off the rail", async () => {
+  const chat = await detect("We can chat on Signal about the bike on Thursday.");
+  assert.equal(chat.kind, "silent");
+  assert.equal(chat.silentReason, "no_atom");
+  assert.deepEqual(chat.signals, []);
+
+  const photo = await detect("Send a photo on Signal of the bike, I ship tomorrow.");
+  assert.equal(photo.kind, "silent");
+  assert.equal(photo.silentReason, "weak_only");
+  assert.deepEqual(photo.signals, ["ship_before_meet"]);
+
+  const address = await detect("Send the address via WhatsApp when you pick it up.");
+  assert.equal(address.kind, "silent");
+  assert.equal(address.silentReason, "veto");
+});
+
 test("F and F and Friends n Family need a pay word", async () => {
   const high = [
     "Please send 500 kr via PayPal F and F now, I ship tomorrow.",
@@ -1696,6 +1750,110 @@ test("hold the bike for you needs a pay ask or an amount", async () => {
   assert.equal(door.kind, "silent");
   assert.equal(door.silentReason, "no_atom");
   assert.deepEqual(door.signals, []);
+});
+
+test("an amount next to Messenger, Facebook Pay, Snapchat, or Viber is off-platform", async () => {
+  const medium = [
+    "Send 500 kr via Messenger today, the bike is ready.",
+    "Send 500 kr via Facebook Pay today, the bike is ready.",
+    "Send 500 kr via Snapchat today, the bike is ready.",
+    "Send 500 kr via Viber today, the bike is ready."
+  ];
+  for (const text of medium) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "medium", text);
+    assert.deepEqual(verdict.signals, ["off_platform"], text);
+  }
+
+  const high = [
+    "Send 500 kr via Messenger today, I ship tomorrow.",
+    "Pay me on Messenger, 500 kr, I ship tomorrow.",
+    "Send 500 kr via Facebook Pay, I ship tomorrow.",
+    "Send 500 kr via Snapchat today, I ship tomorrow.",
+    "Send 500 kr via Viber today, I ship tomorrow."
+  ];
+  for (const text of high) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "risk", text);
+    assert.equal(verdict.level, "high", text);
+    assert.deepEqual(verdict.signals, ["off_platform", "ship_before_meet"], text);
+  }
+
+  const telegram = await detect("Pay me on Telegram, 500 kr, I ship tomorrow.");
+  assert.equal(telegram.kind, "risk");
+  assert.equal(telegram.level, "high");
+  assert.deepEqual(telegram.signals, ["off_platform", "ship_before_meet"]);
+});
+
+test("a price next to a Messenger contact line stays silent", async () => {
+  const quiet = [
+    "Price is 500 kr, message me on Messenger.",
+    "Pris 400 kr, skriv på Messenger.",
+    "It's 300 kr, add me on Snapchat for more pics.",
+    "450 kr, I'm on Viber too."
+  ];
+  for (const text of quiet) {
+    const verdict = await detect(text);
+    assert.equal(verdict.kind, "silent", text);
+    assert.deepEqual(verdict.signals, [], text);
+  }
+});
+
+test("a Messenger chat or a photo without an amount stays off the rail", async () => {
+  const chat = await detect("We can chat on Messenger about the bike on Thursday.");
+  assert.equal(chat.kind, "silent");
+  assert.equal(chat.silentReason, "no_atom");
+  assert.deepEqual(chat.signals, []);
+
+  const photo = await detect("Send a photo on Messenger of the bike, I ship tomorrow.");
+  assert.equal(photo.kind, "silent");
+  assert.equal(photo.silentReason, "weak_only");
+  assert.deepEqual(photo.signals, ["ship_before_meet"]);
+
+  const address = await detect("Send the address via Messenger when you pick it up.");
+  assert.equal(address.kind, "silent");
+  assert.equal(address.silentReason, "veto");
+});
+
+function threadVerdict(messages, context) {
+  const text = messages.map((message) => message.text).join("\n");
+  return detect(text, { ...context, messages });
+}
+
+// Fixed by #37 (ffTokenOk), merged into this branch. Depends on #37.
+test("a seller who refuses PayPal F&F and says to use checkout stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "Can I pay another way?" },
+    { from: "seller", text: "I won't take PayPal F&F, use checkout" }
+  ], { listingTitle: "Desk lamp", listingPrice: "250 kr" });
+  assert.equal(verdict.kind, "silent");
+});
+
+test("a price next to WhatsApp with no payment ask stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "What do you want for the lamp?" },
+    { from: "seller", text: "price is 200, text me on WhatsApp" }
+  ], { listingTitle: "Desk lamp", listingPrice: "250 kr" });
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "no_atom");
+});
+
+test("past tense paid about a flat deposit stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "Are you moving?" },
+    { from: "seller", text: "I already paid the deposit for my flat" }
+  ], { listingTitle: "Desk lamp", listingPrice: "250 kr" });
+  assert.equal(verdict.kind, "silent");
+});
+
+test("battery at 50 percent now stays silent", async () => {
+  const verdict = await threadVerdict([
+    { from: "buyer", text: "How is the battery on the speaker?" },
+    { from: "seller", text: "battery is at 50% now" }
+  ], { listingTitle: "Bluetooth speaker", listingPrice: "600 kr" });
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.silentReason, "no_atom");
 });
 
 test("half up front and 50% now are upfront deposits", async () => {
