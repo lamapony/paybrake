@@ -137,6 +137,8 @@ const RULES = [
   // A console or the show has no "card", so it does not match.
   { id: "off_platform", re: "(?:playstation|xbox|nintendo|netflix)\\s+(?:gift\\s+)?cards?", gate: "pay-or-amount" },
   { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:whatsapp|telegram)", gate: "chat-pay" },
+  // Same gate: "Price is 500 kr, message me on Messenger" is a contact line, not an ask.
+  { id: "off_platform", re: "(?:pay|send|betal)\\s+(?:me\\s+)?(?:\\S+\\s+){0,3}\\b(?:on|via|på)\\s+(?:messenger|facebook\\s+pay|snapchat|viber)", gate: "chat-pay" },
   { id: "off_platform", re: "paypal\\.me/\\S+", gate: "none" },
   { id: "off_platform", re: "\\bwestern\\s+union\\b", gate: "named-rail" },
   { id: "off_platform", re: "\\bmoneygram\\b", gate: "named-rail" },
