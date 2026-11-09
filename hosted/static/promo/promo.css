@@ -660,6 +660,8 @@ blockquote.msg p {
   font-variant-numeric: tabular-nums;
 }
 .count i { font: italic 400 1em/1 var(--serif); letter-spacing: 0; }
+/* Room under the count for the tail of the italic f, so it never reaches the label's ascenders. */
+.count span { padding-bottom: .16em; }
 
 /* The lead figure: the hardest set first, at the size of the ledger's amounts. */
 .set.lead { display: flex; flex-direction: column; margin-top: 36px; }
