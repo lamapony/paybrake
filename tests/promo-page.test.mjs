@@ -56,6 +56,9 @@ function engineMarks(text, verdictKind) {
 }
 
 const receipts = (verdict) => verdict.signals.map((id) => atoms.ATOMS.find((a) => a.id === id).receipt);
+// The card's footnotes follow the marked phrases in reading order: note n is the signal behind mark n.
+const footnotes = (verdict) => verdict.evidence.map((e) => atoms.ATOMS.find((a) => a.id === e.atom).receipt);
+const notesIn = (s) => [...s.match(/<ol class="pb-notes"[^>]*>([\s\S]*?)<\/ol>/)[1].matchAll(/<li><span class="n"[^>]*>(\d)<\/span>([\s\S]*?)<\/li>/g)].map((m) => [m[1], strip(m[2])]);
 
 test("promo: every local asset in the HTML and CSS exists", () => {
   const refs = [
@@ -99,7 +102,23 @@ test("promo: the hero message and card are what the rules return", async () => {
   assert.equal(verdict.level, "high");
   assert.deepEqual([...bubble.matchAll(/<mark[^>]*>([\s\S]*?)<\/mark>/g)].map((m) => strip(m[1])), verdict.evidence.map((e) => e.text));
   assert.equal(strip(html.match(/<p class="pb-explain">([\s\S]*?)<\/p>/)[1]), verdict.reason);
-  assert.deepEqual([...html.matchAll(/<li class="chip">([\s\S]*?)<\/li>/g)].map((m) => strip(m[1])), receipts(verdict));
+  assert.deepEqual(notesIn(html), footnotes(verdict).map((r, i) => [String(i + 1), r]));
+  assert.deepEqual([...footnotes(verdict)].sort(), [...receipts(verdict)].sort());
+  assert.deepEqual(footnotes(verdict), ["Upfront deposit", "Friends & Family", "Ships before you meet"]);
+  assert.match(html, /<p class="pb-title" id="pb-title">High risk payment request<\/p>/);
+  assert.match(html, /<p class="pb-explain">Friends &amp; Family \+ upfront deposit: if the item never arrives, you may have no way to get your money back\.<\/p>/);
+  // The bubble's marks carry the numerals 1, 2, 3 in the same order.
+  for (const [i, cls] of ["m1", "m2", "m3"].entries()) assert.match(css, new RegExp(`\\.bubble mark\\.${cls}::after \\{ content: "${i + 1}"`));
+});
+
+test("promo: the warning card has no badge, chips, capsules or footer chrome", () => {
+  for (const gone of ["risk-badge", 'class="chip"', "chips", "pb-foot", "pbtn ghost", "pb-dot", "signals-label", "Checked just now", "The card as the extension draws it"]) {
+    assert.ok(!html.includes(gone), `still in the HTML: ${gone}`);
+  }
+  for (const gone of [".risk-badge", ".chip", ".pb-foot", ".pbtn.ghost", "#f1c27d", "#fef3f2", "#fecdca", "#fff8eb", "#f3c46b", "#6b4200", "#d9480f", "#f5a524", "border-radius: 999px"]) {
+    assert.ok(!css.includes(gone), `still in the CSS: ${gone}`);
+  }
+  assert.match(html, /<p class="note"><span class="pb-meta">PayBrake · rules check · only you can see this<\/span>/);
 });
 
 test("promo: each listed message shows the verdict and marks the rules return", async () => {
@@ -161,9 +180,9 @@ test("promo: the chat thread uses the demo store's own lines and the rules' verd
     assert.ok(demo.includes(line), `not in the demo store: ${line}`);
   }
   const verdict = await payRisk.detect(hero, { from: "seller" }, {});
-  assert.deepEqual([...thread.matchAll(/<mark>([\s\S]*?)<\/mark>/g)].map((m) => strip(m[1])), verdict.evidence.map((e) => e.text));
+  assert.deepEqual([...thread.matchAll(/<mark[^>]*>([\s\S]*?)<\/mark>/g)].map((m) => strip(m[1])), verdict.evidence.map((e) => e.text));
   assert.equal(strip(thread.match(/<div class="pb-explain">([\s\S]*?)<\/div>/)[1]), verdict.reason);
-  assert.deepEqual([...thread.matchAll(/<span class="chip">([\s\S]*?)<\/span>/g)].map((m) => strip(m[1])), receipts(verdict));
+  assert.deepEqual(notesIn(thread), footnotes(verdict).map((r, i) => [String(i + 1), r]));
 });
 
 test("promo: the playground presets are real lines with the outcomes they demonstrate", async () => {
@@ -179,7 +198,7 @@ test("promo: the playground presets are real lines with the outcomes they demons
 
 test("promo: the card keeps working links without JS and quotes the extension's collapsed state", () => {
   assert.match(html, /<a class="pbtn primary" href="#order" data-brake>Switch to a PayPal order<\/a>/);
-  assert.match(html, /<a class="pbtn ghost" href="#anyway" data-anyway>Pay anyway<\/a>/);
+  assert.match(html, /<a class="pbtn quiet" href="#anyway" data-anyway>Pay anyway<\/a>/);
   const content = fs.readFileSync(path.join(root, "extension", "content.js"), "utf8");
   const said = strip(html.match(/<p id="pb-said-text">([\s\S]*?)<\/p>/)[1]);
   assert.ok(content.includes(`"${said}"`), said);

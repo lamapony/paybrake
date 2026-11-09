@@ -22,6 +22,7 @@
     fullCard.hidden = on;
     saidCard.hidden = !on;
     card.classList.toggle("is-collapsed", on);
+    card.classList.add("touched");   // the notes' entry fade belongs to the first read only
     if (!animate || !motion || !card.animate) return;
     card.animate({ height: [from + "px", card.offsetHeight + "px"] }, { duration: 220, easing: SWEEP });
     (on ? saidCard : fullCard).animate({ opacity: [0, 1] }, { duration: 160, easing: "ease-out" });
@@ -47,6 +48,7 @@
     again.hidden = false;
     again.addEventListener("click", function () {
       setCollapsed(false, false);
+      if (card) card.classList.remove("touched");
       root.classList.remove("read");
       void root.offsetWidth;
       root.classList.add("read");
