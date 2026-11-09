@@ -7,7 +7,8 @@
      ui       17 / 17    buttons, nav, labels, verdict reasons, matrix cells
      body     21 / 18    serif paragraphs, lede, intros
      sub      24 / 24    check names on phones, set names, the "cannot" row
-     quote    40 / 26    H1, messages, ledger values, check names, closing line
+     quote    40 / 26    H1, messages, ledger values, closing line
+     check    36 / 24    #how check names on desktop: min(quote, 2.5vw), 25px at 1000, 44px from 1760
      h2       64 / 34    chapter headings, second figure
      ask      76 / 36    the hero message
      amount  132 / 58    ledger amounts and the lead figure */
@@ -1132,7 +1133,9 @@ blockquote.msg p {
   .path .check:nth-child(5) { grid-column: 10 / 13; }
   .path .check h3 {
     position: static; width: auto;
-    font-size: var(--t-quote); line-height: 1.1; letter-spacing: -.032em;  /* "On-device model" clears the dashed edge */
+    /* One size for all three names: 2.5vw keeps "On-device model" 20px+ clear of the dashed edge
+       from 1000px up; var(--t-quote) takes over once it fits (about 1760px). */
+    font-size: min(var(--t-quote), 2.5vw); line-height: 1.1; letter-spacing: -.022em;
     padding: 16px 0 clamp(14px, 1.6vw, 24px);
     margin: 0;
   }
