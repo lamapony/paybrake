@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>PayBrake: brakes before you pay</title>
+<meta name="description" content="PayBrake is a Chrome extension that flags risky payment requests in marketplace chats and offers a PayPal Goods & Services checkout instead. Sandbox demo, no real money.">
+<meta name="theme-color" content="#131a24">
+<link rel="canonical" href="https://paybrake-demo.spbabinov.workers.dev/promo/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://paybrake-demo.spbabinov.workers.dev/promo/">
+<meta property="og:title" content="PayBrake: brakes before you pay">
+<meta property="og:description" content="A Chrome extension that flags risky payment requests in marketplace chats and offers a PayPal Goods & Services checkout instead.">
+<meta property="og:image" content="https://paybrake-demo.spbabinov.workers.dev/promo/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A PayBrake High risk card under a seller's request for a Friends & Family deposit.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="fonts/gloock-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/overpass-var.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  (function () {
+    var d = document.documentElement;
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    d.classList.add("motion");
+    if (window.CSS && CSS.supports && CSS.supports("animation-timeline: view()")) d.classList.add("sd");
+  })();
+</script>
+<link rel="stylesheet" href="promo.css?v=3">
+<script src="promo.js?v=3" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <a class="brand" href="#main"><img src="/logo.svg" width="28" height="28" alt="">PayBrake</a>
+  <nav aria-label="Main">
+    <a class="navlink" href="#brake">How it works</a>
+    <a class="navlink" href="https://github.com/lamapony/paybrake">GitHub</a>
+    <a class="btn btn-sm" href="https://paybrake-demo.spbabinov.workers.dev/"><span>Try the demo</span></a>
+  </nav>
+</header>
+
+<main id="main">
+
+  <section class="pin" id="scam" aria-labelledby="h1">
+    <div class="stage" id="stage">
+      <div class="plate">
+        <div class="shot">
+          <picture class="dim" aria-hidden="true">
+            <source media="(max-width: 760px)" srcset="img/hero-m.webp" width="1125" height="2550">
+            <img src="img/hero-d.webp" width="1568" height="1880" alt="" fetchpriority="high" decoding="async">
+          </picture>
+          <picture class="lit">
+            <source media="(max-width: 760px)" srcset="img/hero-m.webp" width="1125" height="2550">
+            <img src="img/hero-d.webp" width="1568" height="1880" fetchpriority="high" decoding="async"
+              alt="Screenshot of a marketplace chat. A seller writes: Send 500 kr deposit via PayPal Friends and Family to hold it, I ship tomorrow. Below the message, a PayBrake card reads High risk payment request, lists four signals, and offers two buttons: Switch to a PayPal order and Pay anyway.">
+          </picture>
+        </div>
+      </div>
+
+      <div class="copy">
+        <h1 id="h1"><span class="ln">Brakes</span> <span class="ln i1">before</span> <span class="ln i2">you pay.</span></h1>
+        <p class="lede">PayBrake is a Chrome extension that flags risky payment requests in marketplace chats and offers a PayPal Goods &amp; Services checkout instead.</p>
+        <div class="cta">
+          <a class="btn" href="https://paybrake-demo.spbabinov.workers.dev/"><span>Try the demo</span></a>
+          <a class="btn btn-line" href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip" download><span>Install the extension</span></a>
+          <a class="textlink" href="https://github.com/lamapony/paybrake">GitHub</a>
+        </div>
+        <p class="fine">Hackathon build. Fictional names, PayPal sandbox, no real money. Not affiliated with PayPal or any marketplace.</p>
+      </div>
+
+      <ol class="beats">
+        <li class="b1"><strong>The message that should stop you.</strong> A 500 kr deposit, on Friends &amp; Family, for a bike that ships before you have seen it.</li>
+        <li class="b2"><strong>PayBrake says why, in plain words.</strong> The card sits under the message and names four signals: Friends &amp; Family, an upfront deposit, pressure to hurry, shipping before you meet.</li>
+        <li class="b3"><strong>You decide how to pay.</strong> Switch to a PayPal order, or pay anyway. Pay anyway steps aside and only notes it on your device.</li>
+      </ol>
+    </div>
+    <i class="sent" data-s="0"></i><i class="sent" data-s="1"></i><i class="sent" data-s="2"></i><i class="sent" data-s="3"></i>
+  </section>
+
+  <section class="asks" aria-labelledby="h-asks">
+    <div class="asks-head">
+      <h2 id="h-asks">The scam is one sentence long.</h2>
+      <p>Everything before it is scenery: the good price, the three other buyers, the week in Aarhus. Then comes the request to pay the wrong way.</p>
+    </div>
+    <ol class="asklist">
+      <li class="ask">
+        <h3>Friends &amp; Family</h3>
+        <blockquote>Please pay with F&amp;F, it is 1,800 kr. Several people are asking so today only.</blockquote>
+        <p class="ver">High risk. Friends &amp; Family, pressure to hurry.</p>
+      </li>
+      <li class="ask a2">
+        <h3>Blind transfer</h3>
+        <blockquote>I&rsquo;m abroad so I can only ship. Bank transfer of 1,800 kr first and the tent is yours.</blockquote>
+        <p class="ver">High risk. Off-platform payment, pay before seeing the item, ships before you meet.</p>
+      </li>
+      <li class="ask">
+        <h3>Gift card</h3>
+        <blockquote>Buy a &euro;100 gift card and send me the code. That is the only way I can take payment.</blockquote>
+        <p class="ver">High risk. Off-platform payment, asks for card details, a code or a password.</p>
+      </li>
+    </ol>
+    <p class="asks-note">These lines are test cases in the repo. PayBrake flagged all three as high risk on 9 Nov 2026.</p>
+  </section>
+
+  <section class="brake" id="brake" aria-labelledby="h-brake">
+    <h2 id="h-brake">Two checks run on your device. One can run on a server.</h2>
+    <figure class="brake-fig">
+      <img src="img/model.webp" width="1408" height="1170" loading="lazy" decoding="async"
+        alt="Screenshot of a prize-claim text message. A PayBrake card reads Account safety risk and is tagged On-device model and AI checked, with the signals Reads like a scam chat and Prize claim or premium-rate number.">
+      <figcaption>No payment asked for yet, so the rules stay quiet. The on-device model adds a medium card.</figcaption>
+    </figure>
+    <div class="layers">
+      <div class="layer">
+        <h3>Rules</h3>
+        <p>English and Danish patterns look for the payment ask itself, in the other person&rsquo;s lines only. Every card quotes the words that set it off.</p>
+      </div>
+      <div class="layer">
+        <h3>On-device model</h3>
+        <p>A small classifier inside the extension, trained on synthetic chats. It sends nothing anywhere. It reads chats that have not asked for money yet and can add a medium card at most.</p>
+      </div>
+      <div class="layer">
+        <h3>Server AI check</h3>
+        <p>Gets a copy with emails, numbers, IBANs and codes masked. It can confirm, lower or clear a rules card, or add one where the rules found nothing. It can never raise a rules card&rsquo;s level. If the server is down, the two checks above carry on.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="quiet" aria-labelledby="h-quiet">
+    <h2 id="h-quiet">Most chats get nothing.</h2>
+    <figure class="quiet-fig">
+      <picture>
+        <source media="(max-width: 760px)" srcset="img/quiet-m.webp" width="900" height="806">
+        <img src="img/quiet.webp" width="1576" height="528" loading="lazy" decoding="async"
+          alt="Screenshot of an ordinary chat about a desk lamp. The seller says to pay through checkout or cash at pickup. A line below reads: PayBrake stayed silent, no risky payment request.">
+      </picture>
+    </figure>
+    <p class="quiet-why">A desk lamp, paid for at pickup. A wrong warning teaches people to ignore the next one, so PayBrake needs a quotable payment ask before it says anything.</p>
+    <div class="tally">
+      <p class="row"><b>18 of 18</b> <span>scam chats flagged, on the repo&rsquo;s own 39-chat test set.</span></p>
+      <p class="row"><b>0 of 21</b> <span>honest chats flagged, on that same set.</span></p>
+      <p class="row"><b>362 of 713</b> <span>scams caught by rules plus model, on 1,573 messages from four public datasets.</span></p>
+      <p class="row"><b>11 of 860</b> <span>honest messages flagged, on those same datasets.</span></p>
+    </div>
+    <p class="tally-note">Measured 9 Nov 2026 with <code>npm run eval</code> and <code>npm run eval:real:model</code>. We wrote the 39-chat set ourselves, so treat it as a regression check. None of this is real marketplace traffic yet.</p>
+  </section>
+
+  <section class="order" aria-labelledby="h-order">
+    <div class="order-text">
+      <h2 id="h-order">Same bike. Same price. A different way to pay.</h2>
+      <p>Switch to a PayPal order builds a Goods &amp; Services order for the item and the price in the chat, through PayPal Orders v2. You approve it, then capture it.</p>
+      <p>This build runs in the PayPal sandbox or on a mock, and live PayPal is refused in code. Buyer Protection may be eligible; PayPal&rsquo;s terms decide.</p>
+    </div>
+    <figure class="order-a">
+      <img src="img/order.webp" width="744" height="1156" loading="lazy" decoding="async"
+        alt="Screenshot of the PayPal order preview: Specialized Allez road bike, Goods and Services, no deposit, Buyer Protection may be eligible, 1,850 kr. Below, Seller asked for 500 kr upfront via Friends and Family, compared with This order: full price as Goods and Services.">
+    </figure>
+    <figure class="order-b">
+      <img src="img/paid.webp" width="1280" height="790" loading="lazy" decoding="async"
+        alt="Screenshot of the PayBrake card after checkout, with the line: Paid with PayPal Goods and Services, sandbox. Buyer Protection may be eligible, see PayPal terms.">
+    </figure>
+  </section>
+
+  <section class="close" aria-labelledby="h-close">
+    <h2 id="h-close">Try it on the bike scam.</h2>
+    <ol class="steps">
+      <li>Download the extension zip and unzip it.</li>
+      <li>In Chrome, open <code>chrome://extensions</code>, turn on Developer mode, click Load unpacked and pick the folder with <code>manifest.json</code>.</li>
+      <li>Open the demo store. The card appears under the seller&rsquo;s message.</li>
+    </ol>
+    <div class="cta cta-close">
+      <a class="btn btn-ink" href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip" download><span>Download the extension</span></a>
+      <a class="btn btn-ink-line" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1"><span>Open the demo store</span></a>
+      <a class="textlink textlink-ink" href="https://paybrake-demo.spbabinov.workers.dev/">Demo home</a>
+      <a class="textlink textlink-ink" href="https://github.com/lamapony/paybrake">GitHub</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <p class="mark" aria-hidden="true">PayBrake</p>
+  <div class="foot-row">
+    <p>Built for the PayPal AI Hackathon on Devpost by Dmitrii Babinov, Christopher Wang and David.</p>
+    <p>Fictional names only. Not affiliated with PayPal or any marketplace. No real money moves in this build.</p>
+    <p><a href="https://github.com/lamapony/paybrake/blob/main/LICENSE">MIT license</a></p>
+  </div>
+</footer>
+</body>
+</html>

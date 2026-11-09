@@ -22,9 +22,8 @@ for (const name of fs.readdirSync(path.join(root, "demo"))) {
   html = html.replace(/<head>/i, (m) => m + "\n" + head);
   fs.writeFileSync(path.join(out, "demo", name), html);
 }
-for (const name of fs.readdirSync(path.join(root, "hosted", "static"))) {
-  fs.copyFileSync(path.join(root, "hosted", "static", name), path.join(out, name));
-}
+// Recursive: hosted/static/promo/ (the promo page and its assets) has subfolders.
+fs.cpSync(path.join(root, "hosted", "static"), out, { recursive: true });
 execFileSync(process.execPath, [path.join(root, "scripts", "pack-extension.mjs")], { stdio: "inherit" });
 fs.copyFileSync(path.join(root, "dist", "paybrake-extension.zip"), path.join(out, "paybrake-extension.zip"));
 console.log("built " + path.relative(root, out));
