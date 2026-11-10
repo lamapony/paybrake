@@ -136,6 +136,9 @@ const RULES = [
   // Not the negation gate above: a bare "USDC" topic must not leave a signal.
   // A number on the token ("500 USDC") counts even though USDC is not a currency code.
   { id: "off_platform", re: "usdc", gate: "usdc" },
+  // "ETH" is not on the bitcoin line. Not that line's negation gate: a bare topic
+  // must not leave a signal. A number on the token ("500 ETH") counts.
+  { id: "off_platform", re: "eth", gate: "eth" },
   { id: "off_platform", re: "gift\\s*cards?|gavekort", gate: "giftcard" },
   // Store cards ("Steam card", "Google Play cards") are the same ask as "gift card".
   { id: "off_platform", re: "(?:steam|google\\s*play|itunes|apple|amazon|ebay)\\s+(?:gift\\s+)?cards?", gate: "giftcard" },
@@ -1051,8 +1054,8 @@ function ffTokenOk(text, start) {
   return !/(?<![\p{L}\p{N}])(?:won['’]?t|wont|will\s+not|don['’]?t|dont|do\s+not|never|not)\s+take(?:\s+(?:paypal|pp|payments?|payment\s+via|via|through|with|over|on|any|the))*?\s+$/iu.test(before);
 }
 
-// A parsed amount nearby, or a bare number on the token ("500 USDC").
-// "Send the USDC whitepaper" has neither.
+// A parsed amount nearby, or a bare number on the token ("500 USDC", "500 ETH").
+// "Send the USDC whitepaper" and "ETH is a token" have neither.
 function usdcAsk(text, start, end) {
   if (negatedBefore(text, start)) return false;
   if (amountNear(text, start, end, 32)) return true;
@@ -1183,7 +1186,7 @@ function allow(rule, text, start, end) {
     if (negatedBefore(text, start)) return false;
     return payWordNear(text, start, end, 80) || amountNear(text, start, end, 80);
   }
-  if (rule.gate === "usdc") return usdcAsk(text, start, end);
+  if (rule.gate === "usdc" || rule.gate === "eth") return usdcAsk(text, start, end);
   if (rule.gate === "wire-amount") return wireAmountOk(text, start, end);
   if (rule.gate === "acct") {
     // "Your account number: XXXX" on a bill or receipt is the reader's own account, not a payee.
