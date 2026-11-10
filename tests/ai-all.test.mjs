@@ -112,6 +112,28 @@ test("low-confidence AI disagreement keeps the rules card", async () => {
   assert.equal(verdict.llm, "disagreed_low_confidence");
 });
 
+test("downgradeConfidence default is 0.9", () => {
+  assert.equal(payRisk.DEFAULTS.downgradeConfidence, 0.9);
+});
+
+test("AI disagreement at 0.89 keeps the rules card (below the 0.9 threshold)", async () => {
+  const verdict = await run(ctxOf(them(FF)), async () => ({ risky: false, level: "none", confidence: 0.89, reason: "fine", evidence: [] }));
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.llm, "disagreed_low_confidence");
+});
+
+test("AI disagreement at 0.85 no longer silences a rules card", async () => {
+  const verdict = await run(ctxOf(them(FF)), async () => ({ risky: false, level: "none", confidence: 0.85, reason: "fine", evidence: [] }));
+  assert.equal(verdict.kind, "risk");
+  assert.equal(verdict.llm, "disagreed_low_confidence");
+});
+
+test("AI disagreement at exactly 0.9 silences a rules card", async () => {
+  const verdict = await run(ctxOf(them(FF)), async () => ({ risky: false, level: "none", confidence: 0.9, reason: "fine", evidence: [] }));
+  assert.equal(verdict.kind, "silent");
+  assert.equal(verdict.llm, "downgraded");
+});
+
 test("AI timeout falls back to rules with llm unavailable", async () => {
   const verdict = await run(ctxOf(them(FF)), () => new Promise(() => {}), { timeoutMs: 50 });
   assert.equal(verdict.kind, "risk");

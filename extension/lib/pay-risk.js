@@ -501,7 +501,7 @@ const AI_SIGNALS = ["friends_family", "upfront_deposit", "off_platform", "pay_be
 const TRANSCRIPT_LIMIT = 1900;
 const CODE_NOTICE = /(?:never|do\s+not|don['’]t|not)\s+(?:share|give|tell|send|disclose|forward)|(?:aldrig|ikke)\s+(?:del|dele|giv|oplys)/iu;
 const CODE_ASK = /(?:send|give|tell|read|share|forward|provide|reply\s+with|type|enter)\s+(?:it\s+|them\s+)?(?:to\s+)?(?:me|us|our\s+(?:agent|team|staff|representative))\b/iu;
-const DEFAULTS = { downgradeConfidence: 0.85, addConfidence: 0.8, vetoOverrideConfidence: 0.9, timeoutMs: 6000 };
+const DEFAULTS = { downgradeConfidence: 0.9, addConfidence: 0.8, vetoOverrideConfidence: 0.9, timeoutMs: 6000 };
 
 function redactText(value) {
   const api = globalThis.pbRedact;
