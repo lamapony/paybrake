@@ -663,6 +663,7 @@ blockquote.msg p {
 .where .v::after, .reads .v::after, .can .v::after, .cannot .v::after { content: "."; }
 
 .after-matrix { margin-top: 28px; max-width: 34em; }
+.after-matrix p { display: inline; }   /* below 1000px the two sentences read as one paragraph */
 
 /* The server's field: the third check stands on mist behind a dashed edge, the two device checks on white.
    Phone and tablet: the third group bleeds to both screen edges; its text and the flow line do not move. */
@@ -1219,6 +1220,16 @@ blockquote.msg p {
 
   /* The boundary the heading states: columns 10-12 and the right margin are the server's field,
      full section height, behind a dashed edge on the right edge of column 9. */
+  /* Under the matrix each sentence stands in its own field: the model under the device columns,
+     the fallback in the server's field, 40px under its last cell. */
+  .after-matrix {
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--g);
+    max-width: none; margin-top: 40px;
+  }
+  .after-matrix p { display: block; }
+  .after-matrix .am-device { grid-column: 1 / 10; max-width: 34em; }
+  .after-matrix .am-server { grid-column: 10 / 13; font: italic 400 var(--t-ui)/26px var(--serif); }
+
   #how { position: relative; isolation: isolate; }
   #how::before {
     content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; right: 0;
