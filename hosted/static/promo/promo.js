@@ -160,7 +160,28 @@
   if (dock && hero && tryChapter && foot && "IntersectionObserver" in window) {
     var past = false;
     var ending = false;
-    var update = function () { dock.classList.toggle("on", past && !ending); };
+    // On a desktop the dock must not sit on running text while someone reads: it shows while the page
+    // scrolls up and for 1.5 s after, and hides as soon as the page scrolls down. Phones keep it on.
+    var wide = window.matchMedia ? window.matchMedia("(min-width: 760px)") : { matches: false };
+    var upward = false;
+    var lastY = window.scrollY;
+    var idle = 0;
+    var update = function () { dock.classList.toggle("on", past && !ending && (!wide.matches || upward)); };
+    var settle = function () {
+      if (dock.matches(":hover, :focus-visible")) { idle = setTimeout(settle, 1500); return; }
+      upward = false;
+      update();
+    };
+    window.addEventListener("scroll", function () {
+      var y = window.scrollY;
+      var dy = y - lastY;
+      lastY = y;
+      if (Math.abs(dy) < 2) return;
+      clearTimeout(idle);
+      upward = dy < 0;
+      if (upward) idle = setTimeout(settle, 1500);
+      update();
+    }, { passive: true });
     new IntersectionObserver(function (entries) {
       var entry = entries[entries.length - 1];
       past = !entry.isIntersecting && entry.boundingClientRect.bottom < 0;
