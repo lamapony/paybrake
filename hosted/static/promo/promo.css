@@ -768,7 +768,7 @@ blockquote.msg p {
 .howto li::before {
   content: counter(h);
   position: absolute; left: 0; top: 0;
-  font: 600 var(--t-body)/1.5 var(--sans);
+  font: italic 400 var(--t-body)/1.5 var(--serif);   /* the page's annotating voice, as the order steps */
 }
 
 /* The product where it lives: the demo store's chat, built from the demo's own lines and colours. */
