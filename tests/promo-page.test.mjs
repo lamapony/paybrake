@@ -144,6 +144,12 @@ test("promo: each listed message shows the verdict and marks the rules return", 
   }
 });
 
+test("promo: the marks legend is read before the rows, in the chapter head", () => {
+  const head = html.match(/<section id="sentences"[\s\S]*?<div class="head">([\s\S]*?)<\/div>/)[1];
+  assert.match(head, /<p class="intro">[\s\S]*?<\/p>\s*<p class="small key-marks">/);
+  assert.equal(html.match(/class="small key-marks"/g).length, 1);
+});
+
 test("promo: every unit chart draws exactly the numbers in its label", () => {
   const charts = [...html.matchAll(/<svg class="units[^"]*"[^>]*aria-label="(\d+) of (\d+)[^"]*">([\s\S]*?)<\/svg>/g)];
   assert.equal(charts.length, 8);   // the public set is drawn twice: 96 columns wide, 40 on a phone
