@@ -88,6 +88,13 @@ test("promo: one h1 and the real links", () => {
   ]) assert.ok(html.includes(`"${url}"`), url);
 });
 
+test("promo: the footer nav carries four links, the demo among them", () => {
+  const nav = html.match(/<nav aria-label="Footer" class="foot-nav">([\s\S]*?)<\/nav>/)[1];
+  const links = [...nav.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
+  assert.equal(links.length, 4);
+  assert.deepEqual(links[3], ["https://paybrake-demo.spbabinov.workers.dev/", "Try the demo"]);
+});
+
 test("promo: reduced motion gets the static page, and nothing animates outside the read", () => {
   assert.match(html, /prefers-reduced-motion: reduce\)"\)\.matches\) return/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);

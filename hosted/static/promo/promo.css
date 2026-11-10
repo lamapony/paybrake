@@ -852,7 +852,8 @@ blockquote.msg p {
 .foot-brand em { font: italic 400 var(--t-ui)/1.2 var(--serif); letter-spacing: 0; color: rgba(255, 255, 255, .85); margin-left: 4px; }
 .foot-text { margin-top: 18px; }
 .foot-text p + p { margin-top: 6px; color: rgba(255, 255, 255, .85); }
-.foot-text .link { display: inline; font: inherit; color: #fff; }
+/* 44px+ hit area on the inline link without moving the line. */
+.foot-text .link { display: inline-block; padding: 13px 0; margin: -13px 0; font: inherit; color: #fff; }
 .foot-nav { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 26px; }
 .foot-nav a {
   display: inline-flex; align-items: center; min-height: 44px;
@@ -1090,9 +1091,12 @@ blockquote.msg p {
   /* Footer */
   .foot { padding: clamp(32px, 3.3vw, 48px) 0; }
   .foot-in { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--g); }
-  .foot-brand { grid-column: 1 / span 6; align-self: start; }
-  .foot-text { grid-column: 8 / -1; margin-top: 0; }
-  .foot-nav { display: none; }
+  .foot-in { grid-template-rows: auto 1fr; }
+  .foot-brand { grid-column: 1 / span 6; grid-row: 1; align-self: start; }
+  .foot-text { grid-column: 8 / -1; grid-row: 1 / span 2; margin-top: 0; }
+  .foot-text p:first-child { font: 400 var(--t-ui)/1.5 var(--sans); color: #fff; }
+  .foot-nav { grid-column: 1 / span 6; grid-row: 2; align-self: start; margin-top: 24px; gap: 8px 26px; }
+  .foot-nav a { color: #fff; }
 }
 
 /* Hero row: card and copy side by side, the button first so it stays above the fold on a laptop. */
