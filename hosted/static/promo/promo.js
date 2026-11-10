@@ -328,26 +328,49 @@
     });
   }
 
-  // A card is the hero's slip: title, reason, and the signals under the footnote rule (no numerals here,
-  // the marks in the message are not numbered).
+  // The phrase the rules quoted for each signal: the first one per signal, whitespace folded,
+  // long ones cut at 64 characters. Same as the extension's card (content.js quotedPhrases).
+  function quotedPhrases(verdict) {
+    var quoted = {};
+    (verdict.evidence || []).forEach(function (item) {
+      if (!item || typeof item.atom !== "string" || typeof item.text !== "string") return;
+      var phrase = item.text.replace(/\s+/g, " ").trim();
+      if (phrase && !(item.atom in quoted)) quoted[item.atom] = phrase.length > 64 ? phrase.slice(0, 61).trimEnd() + "…" : phrase;
+    });
+    return quoted;
+  }
+
+  // A card is the hero's slip with the product's notes: one per line, the signal, then the seller's own
+  // words in the annotating serif. A quote that only repeats the label is left out. No numerals here.
   function renderRisk(verdict, marks, text) {
     var label = !pbPayRisk.isPaymentRisk(verdict)
       ? "Account safety risk"
       : verdict.level === "medium" ? "Possible payment risk" : "High risk payment request";
     var names = signalNames(verdict);
+    var quoted = quotedPhrases(verdict);
     var slip = node("div", "pb try-slip");
     slip.appendChild(node("p", "pb-title", label));
     slip.appendChild(node("p", "pb-explain", verdict.reason));
+    var key = [];
     if (names.length) {
       var notes = node("ol", "pb-notes");
       notes.setAttribute("aria-label", "Detected signals");
-      names.forEach(function (name) { notes.appendChild(node("li", null, name)); });
+      (verdict.signals || []).forEach(function (id, i) {
+        var item = node("li", null, names[i]);
+        var phrase = quoted[id];
+        if (phrase && phrase.toLowerCase() !== names[i].toLowerCase()) {
+          item.appendChild(document.createTextNode("\u00a0"));
+          item.appendChild(node("span", "pb-quote", "\u201c" + phrase + "\u201d"));
+        } else phrase = "";
+        key.push(names[i] + "=" + (phrase || ""));
+        notes.appendChild(item);
+      });
       slip.appendChild(notes);
     }
     var parts = [slip];
     var quotes = marks.map(function (mark) { return text.slice(mark.start, mark.end); });
     if (quotes.length) parts.push(node("p", "sr", "PayBrake marked: " + quotes.join(", ") + "."));
-    setVerdict("risk|" + label + "|" + verdict.reason + "|" + names.join(), parts);
+    setVerdict("risk|" + label + "|" + verdict.reason + "|" + key.join("|"), parts);
   }
 
   var SILENT = {

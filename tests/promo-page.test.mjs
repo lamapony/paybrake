@@ -225,7 +225,13 @@ test("promo: the playground says what will land in the verdict column and render
   assert.ok(html.includes(`<div class="verdict" id="try-verdict" aria-live="polite"><p class="hint">${hint}</p></div>`));
   const js = fs.readFileSync(path.join(dir, "promo.js"), "utf8");
   assert.ok(js.includes(`"${hint}"`), "promo.js restores the same hint");
-  for (const cls of ['"pb try-slip"', '"pb-title"', '"pb-explain"', '"pb-notes"']) assert.ok(js.includes(cls), `promo.js renders ${cls}`);
+  for (const cls of ['"pb try-slip"', '"pb-title"', '"pb-explain"', '"pb-notes"', '"pb-quote"']) assert.ok(js.includes(cls), `promo.js renders ${cls}`);
+  // The notes follow the extension's card: first phrase per signal, cut at 64, skipped when it repeats the label.
+  const content = fs.readFileSync(path.join(root, "extension", "content.js"), "utf8");
+  assert.match(content, /text\.length > 64 \? text\.slice\(0, 61\)\.trimEnd\(\) \+ "…"/);
+  assert.match(js, /phrase\.length > 64 \? phrase\.slice\(0, 61\)\.trimEnd\(\) \+ "…"/);
+  assert.match(js, /phrase\.toLowerCase\(\) !== names\[i\]\.toLowerCase\(\)/);
+  assert.doesNotMatch(js, /innerHTML/);
   assert.ok(!html.includes("The verdict appears here."));
 });
 
