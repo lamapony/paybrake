@@ -649,6 +649,8 @@ blockquote.msg p {
 }
 .path .end { padding-bottom: 20px; font: 600 var(--t-ui)/1.3 var(--sans); }
 .path .end.last { padding-bottom: 0; }
+/* The path starts from Jonas's actual words, quoted in the annotating voice. */
+.path .end.start q { quotes: none; font: italic 400 var(--t-ui)/1.4 var(--serif); }
 .path .end.last::after, .rowlabels::before, .rowlabels::after { content: none !important; }
 .path .rowlabels { display: none; }
 
@@ -1164,7 +1166,7 @@ blockquote.msg p {
     column-gap: var(--g);
   }
   .path > li { padding: 0; }
-  .path .end { grid-row: 1; padding: 0 0 12px; }
+  .path .end { grid-row: 1; align-self: end; padding: 0 0 12px; text-wrap: balance; }   /* both labels stand on the line */
   .path .end.start { grid-column: 1 / 4; }
   .path .end.last { grid-column: 10 / 13; justify-self: end; text-align: right; padding: 0 0 12px; }
 

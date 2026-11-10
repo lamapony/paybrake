@@ -262,6 +262,9 @@ test("promo: the #how heading reads as one sentence pair and splits into device 
   assert.match(m[1], /<span class="h-dev">Two checks run on your device\.<\/span>/);
   assert.match(m[1], /<span class="h-srv">A third can run on a server\.<\/span>/);
   assert.match(css, /#how::before\s*\{/, "server field is drawn");
+  // The path starts from Jonas's words and ends on the reader's screen.
+  assert.match(html, /<li class="end start"><span class="sr">Message: <\/span><q>“Send 500&nbsp;kr deposit via PayPal Friends &amp; Family…”<\/q><\/li>/);
+  assert.match(html, /<li class="end last">Card on your screen, or nothing<\/li>/);
   // The fallback sentence stands in the server's field, said once.
   assert.equal(html.split("If the server is down, the two checks on your device carry on.").length, 2);
   assert.match(html, /<p class="am-server">If the server is down, the two checks on your device carry on\.<\/p>/);
