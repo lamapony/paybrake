@@ -105,6 +105,13 @@ test("promo: the footer says exactly how the page's card differs from the extens
   assert.equal(html.split('href="https://github.com/lamapony/paybrake/blob/main/LICENSE"').length, 2, "one MIT link on the page");
 });
 
+test("promo: the masthead signs with the footer's line, outside the brand link", () => {
+  const bar = html.match(/<header class="bar">[\s\S]*?<\/header>/)[0];
+  assert.match(bar, /<a class="brand" href="#main">[^]*?PayBrake<\/a>\s*<em class="tagline">Brakes before you pay\.<\/em>/);
+  assert.match(html.match(/<p class="foot-brand">[\s\S]*?<\/p>/)[0], /<em>Brakes before you pay\.<\/em>/);
+  assert.match(css, /@media \(min-width: 1100px\) \{ \.tagline \{ display: inline; \} \}/);
+});
+
 test("promo: the footer nav carries four links, the demo among them", () => {
   const nav = html.match(/<nav aria-label="Footer" class="foot-nav">([\s\S]*?)<\/nav>/)[1];
   const links = [...nav.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
