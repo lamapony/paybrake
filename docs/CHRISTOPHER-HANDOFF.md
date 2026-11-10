@@ -24,7 +24,7 @@ npm test
 npm run eval
 ```
 
-`npm test` passes 261 tests. All of them are offline. `npm run eval` is rules mode on 35 chats: precision 1, recall 1, false alarms 0. You do not need a PayPal app or an API key for either command.
+`npm test` is offline: 378 pass, 0 fail, 1 skipped on 9 Nov 2026 (the skipped one needs `CHROME_PATH`). `npm run eval` is rules mode on 39 chats: precision 1, recall 1, false alarms 0. You do not need a PayPal app or an API key for either command.
 
 ## What you still need to do
 

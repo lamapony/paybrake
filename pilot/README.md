@@ -4,7 +4,7 @@
 
 Dima decides whether this tree stays, moves to a private repo, or is removed before any public remote. The commands for that decision are in [docs/SUBMISSION-GAPS.md](../docs/SUBMISSION-GAPS.md) under **Before going public**. They were not run on this branch. Deleting the files from the next commit does not erase them from history. `.gitignore` does not untrack them either.
 
-Do not link this pilot, `PILOT-TASK.md`, or `shots/pilot-*.png` from the Devpost submission.
+Do not link this pilot, `docs/archive/PILOT-TASK.md`, or `shots/pilot-*.png` from the Devpost submission.
 
 ## What is in here
 

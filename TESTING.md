@@ -40,7 +40,7 @@ If you see a yellow box saying **PayBrake is not running in this browser**, the 
 
 ## 4. Report a bug
 
-The hackathon spec asks for a public repository. This checkout can still be private, and a private repo does not open the GitHub issue form for judges. Do not rely on https://github.com/lamapony/paybrake/issues/new?template=bug_report.md until the repo is public. Until then, send the bug to the person who gave you the demo link. A screenshot helps most. Also handy: the PayBrake version shown on `chrome://extensions`.
+Open a bug report at https://github.com/lamapony/paybrake/issues/new?template=bug_report.md, or send the bug to the person who gave you the demo link. A screenshot helps most. Also handy: the PayBrake version shown on `chrome://extensions`.
 
 ## Updating to a newer test build
 
