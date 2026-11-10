@@ -88,6 +88,15 @@ test("promo: one h1 and the real links", () => {
   ]) assert.ok(html.includes(`"${url}"`), url);
 });
 
+test("promo: the ledger's left column is headed by Jonas's own words", async () => {
+  const th = html.match(/<thead[\s\S]*?<\/thead>/)[0].match(/<th role="columnheader"[^>]*>[\s\S]*?<\/th>/g);
+  assert.match(th[0], /abbr="What Jonas asked for"/);
+  assert.match(th[0], /<span class="said">Jonas:<\/span> <q>“Send 500&nbsp;kr deposit via PayPal Friends &amp; Family”<\/q>/);
+  const hero = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow with GLS. The other 1,350 kr when it arrives.";
+  assert.ok(hero.startsWith(strip(th[0].match(/<q>“([\s\S]*?)”<\/q>/)[1])), "the quote is the start of the hero message");
+  assert.match(th[1], /The PayPal order/);
+});
+
 test("promo: the footer nav carries four links, the demo among them", () => {
   const nav = html.match(/<nav aria-label="Footer" class="foot-nav">([\s\S]*?)<\/nav>/)[1];
   const links = [...nav.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
