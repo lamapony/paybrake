@@ -4,61 +4,299 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Try PayBrake in 2 minutes · PayPal + AI scam brake</title>
+<title>PayBrake demo · see it stop a risky payment</title>
+<meta name="description" content="PayBrake marks risky payment requests in marketplace chats and offers a PayPal Goods &amp; Services order instead. Open the demo store: nothing to install, no real money.">
+<meta name="theme-color" content="#FFC629">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="preload" href="/promo/fonts/schibsted-grotesk-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/promo/fonts/source-serif-4-opsz-400.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-  body { margin: 0; font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; background: #eef1f5; color: #1c2530; }
-  main { max-width: 680px; margin: 40px auto; padding: 0 20px 40px; }
-  .panel { background: #fff; border: 1px solid #dde3ea; border-radius: 14px; padding: 26px 28px; margin-bottom: 16px; }
-  h1 { margin: 0; font-size: 28px; }
-  h2 { margin: 0 0 8px; font-size: 20px; }
-  .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
-  .lead { font-size: 17px; }
-  .btn { display: inline-block; background: #1f5fbf; color: #fff; text-decoration: none; font-weight: 700; padding: 13px 20px; border-radius: 10px; font-size: 16px; margin: 4px 8px 4px 0; }
-  .btn.alt { background: #fff; color: #1f5fbf; border: 2px solid #1f5fbf; padding: 11px 18px; }
-  .note { color: #4a5666; font-size: 14px; }
-  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
-  .tags li { background: #eef4ff; color: #1f3f7a; border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; }
-  ol { padding-left: 22px; margin: 8px 0; }
-  li { margin: 4px 0; }
-  code { background: #f2f4f7; padding: 1px 5px; border-radius: 4px; }
+  @font-face {
+    font-family: "Schibsted Grotesk";
+    src: url("/promo/fonts/schibsted-grotesk-var.woff2") format("woff2");
+    font-weight: 400 900; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Source Serif 4";
+    src: url("/promo/fonts/source-serif-4-opsz-400.woff2") format("woff2");
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Source Serif 4";
+    src: url("/promo/fonts/source-serif-4-italic-opsz-400.woff2") format("woff2");
+    font-weight: 400; font-style: italic; font-display: swap;
+  }
+  :root {
+    --ask: #ffc629;
+    --ink: #14161a;
+    --paper: #fff;
+    --mist: #eef1f4;
+    --line: #d5dbe2;
+    --muted: #556070;
+    --order: #0062a8;
+    --m: clamp(16px, 4vw, 56px);
+    --sans: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ask); }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 400 clamp(17px, 1.3vw, 19px)/1.5 var(--serif);
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, p, ol, ul, dl, dd, figure { margin: 0; }
+  ol, ul { padding: 0; list-style: none; }
+  a { color: inherit; }
+  img, svg { display: block; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .frame { max-width: 1240px; margin-inline: auto; padding-inline: var(--m); }
+  .sans { font-family: var(--sans); }
+  .small { font: 400 14px/1.45 var(--sans); }
+  code { font: 500 .9em/1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; background: rgba(20, 22, 26, .07); padding: 2px 5px; border-radius: 2px; }
+
+  .link { font-family: var(--sans); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22em; }
+  .link:hover { text-decoration-thickness: 2px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 48px; padding: 0 22px;
+    background: var(--ink); color: #fff; border: 1px solid var(--ink); border-radius: 2px;
+    font: 600 17px/1.1 var(--sans); text-decoration: none; text-align: center;
+  }
+  .btn:hover { background: #34373d; border-color: #34373d; }
+  .btn-lg { min-height: 56px; padding: 0 28px; font-size: 18px; }
+  .btn-ghost { background: transparent; color: var(--ink); }
+  .btn-ghost:hover { background: rgba(20, 22, 26, .08); border-color: var(--ink); }
+
+  /* ---------- Masthead ---------- */
+  .bar { background: var(--ask); }
+  .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font: 700 20px/1 var(--sans); letter-spacing: -.02em; text-decoration: none; }
+  .mast { display: flex; align-items: center; min-width: 0; }
+  .tagline { margin-left: 12px; font: italic 400 17px/1 var(--serif); color: rgba(20, 22, 26, .75); white-space: nowrap; }
+  .bar nav { display: flex; align-items: center; gap: 24px; font: 500 16px/1 var(--sans); }
+  .bar nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
+  .bar nav a:hover { text-decoration: underline; text-underline-offset: .22em; }
+
+  /* ---------- Hero: the one thing to do ---------- */
+  .hero { background: var(--ask); padding: 28px 0 56px; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 32px 56px; align-items: start; }
+  h1 { font: 400 clamp(36px, 4.6vw, 64px)/1.04 var(--serif); letter-spacing: -.022em; text-wrap: balance; }
+  .lede { margin-top: 20px; max-width: 32em; font-size: clamp(18px, 1.5vw, 21px); line-height: 1.45; text-wrap: pretty; }
+  .cta { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+  .cta-note { margin-top: 12px; color: rgba(20, 22, 26, .78); }
+
+  /* The chat and card a visitor will see, set small. Mirrors the bike chat in the demo store. */
+  .peek { display: block; text-decoration: none; color: #1c2530; background: #fff; border-radius: 16px; overflow: hidden; font-family: var(--sans); }
+  .peek:hover .p-btn { background: #004f88; }
+  .p-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #dde3ea; font-size: 14px; }
+  .p-av { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #b9c6d4; font: 700 13px/1 var(--sans); }
+  .p-name { font-weight: 700; }
+  .p-sub { font-size: 13px; color: #5d6a7c; }
+  .p-body { padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .p-msg { align-self: flex-start; max-width: 92%; padding: 8px 12px; border-radius: 16px 16px 16px 6px; background: #fff; border: 1.5px solid var(--ink); font-size: 15px; line-height: 1.45; }
+  .p-msg mark { color: inherit; background: linear-gradient(var(--ask), var(--ask)) no-repeat 0 62% / 100% 80%; padding: 0 .06em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .p-card { border: 1px solid var(--ink); border-radius: 2px; padding: 14px 16px 10px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ink); }
+  .p-title { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+  .p-explain { margin-top: 4px; font-size: 14px; line-height: 1.45; font-weight: 500; }
+  .p-notes { position: relative; margin-top: 10px; padding-top: 8px; display: grid; gap: 2px; font-size: 13px; font-weight: 600; }
+  .p-notes::before { content: ""; position: absolute; left: 0; top: 0; width: 72px; height: 1px; background: var(--ink); }
+  .p-q { font: italic 400 14px/1.4 Georgia, "Times New Roman", serif; }
+  .p-actions { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; }
+  .p-btn { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; background: var(--order); color: #fff; border-radius: 2px; font-size: 14px; font-weight: 650; }
+  .p-quiet { font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: .22em; }
+  .p-meta { margin-top: 8px; font-size: 12px; color: var(--muted); }
+
+  /* ---------- Sections ---------- */
+  section.block { padding: 56px 0; border-top: 1px solid var(--line); }
+  section.block.first { border-top: 0; }
+  h2 { font: 400 clamp(28px, 3vw, 42px)/1.08 var(--serif); letter-spacing: -.02em; text-wrap: balance; }
+  .two { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px 56px; align-items: start; }
+  .intro { margin-top: 12px; color: var(--muted); font-family: var(--sans); font-size: 16px; }
+
+  .steps { display: grid; gap: 20px; counter-reset: s; }
+  .steps > li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 0 8px; counter-increment: s; }
+  .steps > li::before { content: counter(s); font: italic 400 30px/1 var(--serif); }
+  .steps b { display: block; font: 700 18px/1.3 var(--sans); margin-bottom: 2px; }
+  .jump { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .jump a { font: 600 15px/1.3 var(--sans); }
+
+  .ext { background: var(--mist); }
+  .ext ol.install { display: grid; gap: 10px; counter-reset: i; }
+  .ext ol.install li { display: grid; grid-template-columns: 26px minmax(0, 1fr); counter-increment: i; }
+  .ext ol.install li::before { content: counter(i) "."; font: 600 16px/1.6 var(--sans); }
+  .ext-actions { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .ext .flow { margin-top: 20px; color: var(--muted); }
+  .ext .flow samp { font: 600 14px/1.45 var(--sans); color: var(--ink); }
+
+  dl.real { display: grid; gap: 22px; }
+  dl.real dt { font: 700 18px/1.3 var(--sans); }
+  dl.real dd { margin-top: 4px; }
+  .status { display: block; margin-top: 6px; font: 600 14px/1.45 var(--sans); }
+
+  .foot { background: var(--ink); color: #fff; padding: 36px 0 44px; }
+  .foot-in { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 40px; align-items: start; }
+  .foot p { font: 400 14px/1.55 var(--sans); color: rgba(255, 255, 255, .82); }
+  .foot p + p { margin-top: 6px; }
+  .foot nav { display: flex; flex-wrap: wrap; gap: 4px 22px; font: 600 15px/1 var(--sans); }
+  .foot nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: .22em; }
+  .foot :focus-visible { outline-color: #fff; }
+
+  @media (max-width: 960px) {
+    .hero-grid, .two { grid-template-columns: minmax(0, 1fr); }
+    .peek { max-width: 560px; }
+  }
+  @media (max-width: 760px) {
+    .tagline, .bar nav .wide { display: none; }
+    .hero { padding: 16px 0 40px; }
+    .cta .btn-lg { width: 100%; }
+    section.block { padding: 40px 0; }
+    .ext-actions .btn { width: 100%; }
+    .foot-in { grid-template-columns: minmax(0, 1fr); }
+  }
 </style>
 </head>
 <body>
+
+<header class="bar">
+  <div class="frame bar-in">
+    <div class="mast"><a class="brand" href="/"><img src="/logo.svg" width="26" height="26" alt="">PayBrake</a><em class="tagline">Brakes before you pay.</em></div>
+    <nav aria-label="Main">
+      <a class="wide" href="/promo/">How it decides</a>
+      <a href="https://github.com/lamapony/paybrake">GitHub</a>
+    </nav>
+  </div>
+</header>
+
 <main>
-  <section class="panel">
-    <div class="brand"><img src="/logo.svg" width="56" height="56" alt="PayBrake logo"><h1>Try PayBrake in 2 minutes</h1></div>
-    <p class="lead"><b>PayBrake</b> is a Chrome extension that brakes before you pay a scammer. It reads a marketplace chat with on-device rules plus an <b>AI check</b>. When a seller pushes a risky payment (PayPal Friends &amp; Family, a bank transfer, gift cards, codes), PayBrake quotes the line that worried it and offers a <b>PayPal</b> Goods &amp; Services order (<b>sandbox</b>) instead.</p>
-    <ul class="tags"><li>PayPal Orders v2 (sandbox / mock)</li><li>AI scam check (Typesafe)</li><li>Chrome extension, MV3</li></ul>
-    <p class="note">Two steps: load the extension, then open the demo store. Fictional marketplace and names, not affiliated with PayPal. Test orders only: no real money moves, and nothing runs on your machine except the extension.</p>
+  <section class="hero" aria-labelledby="h1">
+    <div class="frame hero-grid">
+      <div>
+        <h1 id="h1">Watch PayBrake stop a risky payment.</h1>
+        <p class="lede">A seller in a marketplace chat asks for a 500&nbsp;kr deposit via PayPal Friends &amp; Family. PayBrake puts a card under the message, quotes the words that worried it, and offers a PayPal Goods &amp; Services order instead.</p>
+        <div class="cta">
+          <a class="btn btn-lg" href="/demo/marketplace.html">See it work now</a>
+          <a class="link" href="#extension">Or try the real Chrome extension</a>
+        </div>
+        <p class="cta-note small">Opens the demo store in this tab. Nothing to install, about 2 minutes. Fictional names, no real money moves.</p>
+      </div>
+
+      <a class="peek" href="/demo/marketplace.html" aria-label="Open the demo store: the bike chat with the PayBrake card">
+        <div class="p-head" aria-hidden="true">
+          <span class="p-av">JH</span>
+          <div><div class="p-name">Jonas Holm</div><div class="p-sub">Specialized Allez road bike, 56&nbsp;cm · 1,850&nbsp;kr</div></div>
+        </div>
+        <div class="p-body" aria-hidden="true">
+          <p class="p-msg">Send 500&nbsp;kr <mark>deposit</mark> via PayPal <mark>Friends &amp; Family</mark> to hold it, <mark>I ship tomorrow</mark> with GLS. The other 1,350&nbsp;kr when it arrives.</p>
+          <div class="p-card">
+            <p class="p-title">High risk payment request</p>
+            <p class="p-explain">Friends &amp; Family + upfront deposit: if the item never arrives, you may have no way to get your money back.</p>
+            <ol class="p-notes">
+              <li>Friends &amp; Family</li>
+              <li>Upfront deposit <span class="p-q">“deposit”</span></li>
+              <li>Pressure to hurry <span class="p-q">“Several people are asking”</span></li>
+              <li>Ships before you meet <span class="p-q">“I ship tomorrow”</span></li>
+            </ol>
+            <div class="p-actions"><span class="p-btn">Switch to a PayPal order</span><span class="p-quiet">Pay anyway</span></div>
+            <p class="p-meta">PayBrake · rules check · only you can see this</p>
+          </div>
+        </div>
+      </a>
+    </div>
   </section>
 
-  <section class="panel">
-    <h2>1. Get the extension (one zip)</h2>
-    <p><a class="btn" id="zip" href="/paybrake-extension.zip" download>Download paybrake-extension.zip</a></p>
-    <ol>
-      <li>Unzip it. You get a folder <code>paybrake-extension</code> with <code>manifest.json</code> inside.</li>
-      <li>Open <code>chrome://extensions</code> (Chrome, Edge or Brave) and switch on <b>Developer mode</b> (top right).</li>
-      <li>Click <b>Load unpacked</b> and pick the <code>paybrake-extension</code> folder (the one with <code>manifest.json</code>).</li>
-    </ol>
-    <p class="note">A <b>Welcome to PayBrake</b> tab opens. If Chrome says "Manifest file is missing", go one folder deeper.</p>
+  <section class="block first" aria-labelledby="store-h">
+    <div class="frame two">
+      <div>
+        <h2 id="store-h">In the demo store</h2>
+        <p class="intro">Five chats, one fictional marketplace.</p>
+      </div>
+      <ol class="steps">
+        <li><div><b>Pick a chat</b>Four sellers push a risky payment: a Friends &amp; Family deposit, MobilePay, a move to WhatsApp, gift card codes. The fifth chat is ordinary, and PayBrake stays quiet.
+          <p class="jump"><a class="link" href="/demo/marketplace.html#camera">MobilePay chat</a><a class="link" href="/demo/marketplace.html#console">Gift card chat</a><a class="link" href="/demo/marketplace.html#lamp">The quiet chat</a></p></div></li>
+        <li><div><b>Read the card</b>The level in plain words, why it matters, and the seller’s own words that set it off, highlighted in the chat.</div></li>
+        <li><div><b>Switch to a PayPal order</b>The order preview shows the full price as Goods &amp; Services to the seller’s account, with no deposit. Approve and capture are mocked in the preview.</div></li>
+      </ol>
+    </div>
   </section>
 
-  <section class="panel">
-    <h2>2. Try the demo store</h2>
-    <p><a class="btn" href="/demo/marketplace.html?live=1">Open the demo store</a><a class="btn alt" href="/demo/safe-chats.html?live=1">Safe chats (stay quiet)</a></p>
-    <ol>
-      <li>In the <b>bike</b> chat a PayBrake card says <b>High risk</b> and lists what it noticed. The <b>AI checked</b> tag shows the AI verdict came back.</li>
-      <li>Click <b>Switch to a PayPal order</b>, then <b>Open approval</b> and <b>Approve (mock)</b>. If this server runs on PayPal sandbox, <b>Open approval</b> goes to PayPal's sandbox approval page instead.</li>
-      <li>Back in the chat click <b>I approved it, capture</b>: <b>Paid with PayPal Goods &amp; Services (sandbox)</b>.</li>
-      <li>The <b>desk lamp</b> chat is a normal chat and stays quiet. Bonus: open the <b>camera</b> chat and press <b>Pay anyway</b>. PayBrake steps aside and logs the override on this device only.</li>
-    </ol>
+  <section class="block ext" id="extension" aria-labelledby="ext-h">
+    <div class="frame two">
+      <div>
+        <h2 id="ext-h">Try the real extension</h2>
+        <p class="intro">Chrome, Edge or Brave on a desktop. The extension reads the chat itself and makes a test order on this server.</p>
+      </div>
+      <div>
+        <ol class="install">
+          <li><span>Download the zip and unzip it. You get a folder <code>paybrake-extension</code> with <code>manifest.json</code> inside.</span></li>
+          <li><span>Open <code>chrome://extensions</code> and switch on <b>Developer mode</b> (top right).</span></li>
+          <li><span>Click <b>Load unpacked</b> and pick that folder. A <b>Welcome to PayBrake</b> tab opens. If Chrome says “Manifest file is missing”, go one folder deeper.</span></li>
+        </ol>
+        <div class="ext-actions">
+          <a class="btn" id="zip" href="/paybrake-extension.zip" download>Download the extension (.zip)</a>
+          <a class="btn btn-ghost" href="/demo/marketplace.html?live=1">Open the store in extension mode</a>
+        </div>
+        <p class="flow small">In the card: <samp>Switch to a PayPal order</samp> → <samp>Open approval</samp> → <samp>Approve (mock)</samp> → <samp>I approved it, capture</samp>. On a sandbox server, <samp>Open approval</samp> goes to PayPal’s sandbox page instead. Then check that <a class="link" href="/demo/safe-chats.html?live=1">three ordinary chats</a> stay quiet.</p>
+      </div>
+    </div>
   </section>
 
-  <section class="panel note">
-    <b>About the AI check.</b> Chats are masked in the browser (emails, phones, card numbers, IBANs, codes) before the AI check sees them. The key stays on this server. The demo AI check has a per-visitor rate limit and a daily cap; when it is reached, PayBrake keeps working with its on-device rules. Server status, including whether orders run on PayPal sandbox or the mock: <a href="/health">/health</a>.
+  <section class="block" aria-labelledby="real-h">
+    <div class="frame two">
+      <div>
+        <h2 id="real-h">What is real</h2>
+        <p class="intro">No real money moves anywhere in this demo.</p>
+      </div>
+      <dl class="real">
+        <div>
+          <dt>Rules check, on your device</dt>
+          <dd>The extension’s rules read the open chat in the browser. The cards in the demo store are what those rules return for each chat, word for word.</dd>
+        </div>
+        <div>
+          <dt>AI check, on the server</dt>
+          <dd>A second opinion from this server’s AI on the chat, masked in the browser first (emails, phones, card numbers, IBANs, codes). The key stays on the server. It has a per-visitor rate limit and a daily cap; when it is off or busy, PayBrake keeps working with its rules.
+            <span class="status" id="ai-status">AI check: on when the server key is set.</span></dd>
+        </div>
+        <div>
+          <dt>PayPal order</dt>
+          <dd>PayPal Orders v2 for Goods &amp; Services: PayPal sandbox when the server has sandbox keys, otherwise a mock that follows the same steps.
+            <span class="status" id="pp-status">This server: sandbox when configured, otherwise mock.</span></dd>
+        </div>
+      </dl>
+    </div>
   </section>
 </main>
+
+<footer class="foot">
+  <div class="frame foot-in">
+    <div>
+      <p>Built for the PayPal AI Hackathon. Fictional names and marketplace. Not affiliated with PayPal or any marketplace. No real money moves.</p>
+      <p>Server status: <a class="link" href="/health">/health</a></p>
+    </div>
+    <nav aria-label="Footer">
+      <a href="/demo/marketplace.html">Demo store</a>
+      <a href="/promo/">How it decides</a>
+      <a href="https://github.com/lamapony/paybrake">GitHub</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+  // Say what this server runs right now. If /health cannot be read, the default lines stay.
+  fetch("/health", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (h) {
+    if (!h) return;
+    if (h.paypal) {
+      document.getElementById("pp-status").textContent = h.paypal === "sandbox"
+        ? "This server right now: PayPal sandbox."
+        : "This server right now: mock (no PayPal sandbox keys set).";
+    }
+    if (h.llm) {
+      document.getElementById("ai-status").textContent = h.llm === "configured" && !h.aiKillSwitch
+        ? "This server right now: AI check on."
+        : "This server right now: AI check off, rules only.";
+    }
+  }).catch(function () {});
+</script>
 </body>
 </html>

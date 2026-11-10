@@ -27,6 +27,8 @@ Marketplace scams usually end the same way: the "seller" pushes the buyer off th
 
 **Start here: https://paybrake-demo.spbabinov.workers.dev/** (demo link, not indexed by search engines)
 
+**No install, 30 seconds:** https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html is the built-in preview: five fictional chats (four risky, one ordinary) with the card already in place, as the rules return it for each chat, and a mock PayPal order flow. The steps below use the real extension.
+
 1. Download **[paybrake-extension.zip](https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip)** from that page and unzip it.
 2. In Chrome (or Edge / Brave) open `chrome://extensions`, switch on **Developer mode**, click **Load unpacked**, and pick the `paybrake-extension` folder (the one with `manifest.json`). A **Welcome to PayBrake** tab opens.
 3. Click **Try the demo store** (or open https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1). In the bike chat a **High risk** card appears, tagged **AI checked** once the AI verdict is back.
