@@ -78,6 +78,8 @@ test("promo: fonts and scripts are self-hosted", () => {
 
 test("promo: one h1 and the real links", () => {
   assert.equal(html.match(/<h1[\s>]/g).length, 1);
+  // The first sentence stands on its own line at every width.
+  assert.match(html, /<h1 id="h1">The scam is one sentence long\.<br> PayBrake reads it before/);
   for (const url of [
     "https://paybrake-demo.spbabinov.workers.dev/",
     "https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1",
