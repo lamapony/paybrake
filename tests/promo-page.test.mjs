@@ -97,6 +97,14 @@ test("promo: the ledger's left column is headed by Jonas's own words", async () 
   assert.match(th[1], /The PayPal order/);
 });
 
+test("promo: the footer says exactly how the page's card differs from the extension's, and carries a colophon", () => {
+  const foot = html.match(/<footer class="foot">[\s\S]*?<\/footer>/)[0];
+  assert.ok(foot.includes("<p>The card at the top is typeset for this page and numbers the phrases; the extension’s own card uses the same wording and quotes each phrase it marked instead. Its wording and signals are what the rules returned for Jonas’s message on 9&nbsp;Nov&nbsp;2026.</p>"));
+  assert.ok(!html.includes("the footnote numbers are ours"));
+  assert.ok(foot.includes('<p class="colophon">Set in Schibsted Grotesk and Source Serif 4. Source on <a class="link" href="https://github.com/lamapony/paybrake">GitHub</a>, <a class="link" href="https://github.com/lamapony/paybrake/blob/main/LICENSE">MIT license</a>.</p>'));
+  assert.equal(html.split('href="https://github.com/lamapony/paybrake/blob/main/LICENSE"').length, 2, "one MIT link on the page");
+});
+
 test("promo: the footer nav carries four links, the demo among them", () => {
   const nav = html.match(/<nav aria-label="Footer" class="foot-nav">([\s\S]*?)<\/nav>/)[1];
   const links = [...nav.matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
