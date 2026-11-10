@@ -189,8 +189,8 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
   .out .bubble { background: var(--bubble-out); color: #fff; border-bottom-right-radius: 6px; }
   .bubble.flagged {
     background: #fff;
-    border: 2px solid var(--amber);
-    box-shadow: 0 0 0 4px rgba(245,165,36,.15);
+    border: 1.5px solid #14161a;
+    box-shadow: none;
   }
   .bubble mark {
     background: linear-gradient(#ffc629, #ffc629) no-repeat 0 62% / 100% 80%;
@@ -199,6 +199,13 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     padding: 0 .06em;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    [data-pb-focus] .bubble mark { background-size: 100% .09em; background-position: 0 93%; transition: background-size 120ms ease, background-position 120ms ease; }
+    [data-pb-focus] .bubble mark.pb-on { background-size: 100% 80%; background-position: 0 62%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-pb-focus] .bubble mark { transition: none; }
   }
   .time { font-size: 11px; color: var(--ink-3); padding: 0 4px; flex: none; }
 
@@ -215,7 +222,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     overflow: hidden;
   }
   .pb :focus-visible { outline: 3px solid #14161a; outline-offset: 2px; border-radius: 2px; }
-  .pb-body { padding: 16px 20px 14px; }
+  .pb-body { padding: 16px 20px 12px; }
   .pb-top { display: flex; align-items: flex-start; gap: 4px 12px; min-width: 0; }
   .pb-title {
     flex: 1 1 auto; min-width: 0; margin: 0;
@@ -229,12 +236,12 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
   .pb-explain { margin: 6px 0 0; font-size: 15px; line-height: 1.45; font-weight: 500; color: #14161a; }
   .pb-notes {
     position: relative; list-style: none; margin: 12px 0 0; padding: 9px 0 0;
-    display: flex; flex-wrap: wrap; gap: 4px 18px;
+    display: grid; gap: 3px 0;
     font-size: 14px; line-height: 1.4; font-weight: 600; color: #14161a;
   }
   .pb-notes::before { content: ""; position: absolute; left: 0; top: 0; width: 72px; height: 1px; background: #14161a; }
   .pb-notes li { min-width: 0; overflow-wrap: anywhere; }
-  .pb-quote { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-weight: 400; color: #556070; }
+  .pb-quote { font-family: Georgia, "Times New Roman", serif; font-size: 15px; font-style: italic; font-weight: 400; color: #14161a; }
   .pb .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-top: 14px; min-width: 0; }
   .pb .btn {
     display: inline-flex; align-items: center; justify-content: center;
@@ -259,10 +266,11 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
   .pb .actions > .btn-ghost:first-child { margin-left: -6px; }
   .pb-foot {
     display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0;
-    padding: 10px 20px 12px;
+    padding: 2px 20px 12px;
     font-size: 12.5px; line-height: 1.4; color: #556070;
     overflow-wrap: anywhere;
   }
+  .pb-seg { white-space: nowrap; }
   .pb-foot.is-status { color: #0b3b66; font-weight: 600; }
   .pb-foot.is-error { color: #8a1c12; font-weight: 600; }
   .pb-foot code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 12px; }
@@ -290,7 +298,8 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     .pb .actions { flex-direction: column; align-items: flex-start; }
     .pb .actions .btn-primary { width: 100%; }
     .pb .actions .btn-ghost { margin-left: -6px; }
-    .pb-foot { padding: 10px 16px 12px; }
+    .pb .actions > .btn-ghost:last-child { margin-bottom: -10px; }
+    .pb-foot { padding: 2px 16px 12px; }
     .pb-collapsed { padding: 12px 16px; }
   }
   /* ---------- /PayBrake risk card ---------- */
@@ -487,7 +496,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
 
         <div class="msg in">
           <span class="avatar" aria-hidden="true">JH</span>
-          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Hi! Yes, still for sale. <mark>Several people are asking</mark> though, I've had three messages since this morning 🙂</div>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Hi! Yes, still for sale. <mark data-pb-atom="urgency_pressure">Several people are asking</mark> though, I've had three messages since this morning 🙂</div>
           <span class="time">19:47</span>
         </div>
 
@@ -499,7 +508,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
 
         <div class="msg in">
           <span class="avatar" aria-hidden="true">JH</span>
-          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Send 500 kr <mark>deposit</mark> via PayPal <mark>Friends &amp; Family</mark> to hold it, <mark>I ship tomorrow</mark> with GLS. The other 1,350 kr when it arrives.</div>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Send 500 kr <mark data-pb-atom="upfront_deposit">deposit</mark> via PayPal <mark data-pb-atom="friends_family">Friends &amp; Family</mark> to hold it, <mark data-pb-atom="ship_before_meet">I ship tomorrow</mark> with GLS. The other 1,350 kr when it arrives.</div>
           <span class="time">19:48</span>
         </div>
 
@@ -510,14 +519,13 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
               <p class="pb-title" id="pb-title">High risk payment request</p>
               <button type="button" class="pb-toggle" aria-expanded="false" aria-controls="pb-details">Details</button>
             </div>
-            <p class="pb-tags"><span class="pb-tag">Checked just now</span></p>
             <p class="pb-explain">Friends &amp; Family + upfront deposit: if the item never arrives, you may have no way to get your money back.</p>
             <div class="pb-details" id="pb-details">
               <ol class="pb-notes" aria-label="Detected signals">
-                <li>Friends &amp; Family</li>
-                <li>Upfront deposit <span class="pb-quote">“deposit”</span></li>
-                <li>Pressure to hurry <span class="pb-quote">“Several people are asking”</span></li>
-                <li>Ships before you meet <span class="pb-quote">“I ship tomorrow”</span></li>
+                <li data-pb-atom="friends_family">Friends &amp; Family</li>
+                <li data-pb-atom="upfront_deposit">Upfront deposit&nbsp;<span class="pb-quote">“deposit”</span></li>
+                <li data-pb-atom="urgency_pressure">Pressure to hurry&nbsp;<span class="pb-quote">“Several people are asking”</span></li>
+                <li data-pb-atom="ship_before_meet">Ships before you meet&nbsp;<span class="pb-quote">“I ship tomorrow”</span></li>
               </ol>
             </div>
             <div class="actions">
@@ -526,7 +534,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
             </div>
           </div>
           <div class="pb-foot" id="pb-foot" aria-live="polite">
-            <span class="pb-brand">PayBrake · rules check · only you can see this</span>
+            <span class="pb-brand"><span class="pb-seg">PayBrake</span> · <span class="pb-seg">rules check</span> · <span class="pb-seg">checked just now</span> · <span class="pb-seg">only you can see this</span></span>
           </div>
         </aside>
       </div>
@@ -690,6 +698,24 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     var anyway = document.getElementById("pb-anyway");
     if (!card || !protect || !anyway) return;
 
+    function clearFocus() {
+      delete bike.dataset.pbFocus;
+      bike.querySelectorAll("mark.pb-on").forEach(function (mark) { mark.classList.remove("pb-on"); });
+    }
+    card.querySelectorAll(".pb-notes li[data-pb-atom]").forEach(function (item) {
+      function on() {
+        clearFocus();
+        bike.dataset.pbFocus = item.dataset.pbAtom;
+        bike.querySelectorAll("mark[data-pb-atom]").forEach(function (mark) {
+          if (mark.dataset.pbAtom.split(" ").indexOf(item.dataset.pbAtom) >= 0) mark.classList.add("pb-on");
+        });
+      }
+      item.addEventListener("mouseenter", on);
+      item.addEventListener("focusin", on);
+      item.addEventListener("mouseleave", clearFocus);
+      item.addEventListener("focusout", clearFocus);
+    });
+
     var toggle = card.querySelector(".pb-toggle");
     if (toggle) {
       toggle.addEventListener("click", function () {
@@ -707,6 +733,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     });
 
     anyway.addEventListener("click", function () {
+      clearFocus();
       card.classList.add("is-collapsed");
       card.innerHTML =
         '<p class="pb-collapsed" id="pb-title" tabindex="-1" role="status" style="margin:0">You chose to pay anyway. Logged on this device.</p>';

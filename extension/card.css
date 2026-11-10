@@ -40,7 +40,7 @@
   overflow: hidden;
 }
 
-.pb-body { padding: 16px 20px 14px; }
+.pb-body { padding: 16px 20px 12px; }
 
 /* Title row: the headline, and on a phone the Details toggle at its right end. */
 .pb-top {
@@ -66,7 +66,7 @@
 .pb-toggle { display: none; }
 .pb-details { display: block; }
 
-/* Meta: one plain line under the title ("Checked just now · AI checked"). */
+/* State line under the title ("mock mode · AI checked"); absent when there is nothing to say. */
 .pb-tags {
   margin: 3px 0 0;
   font-size: 13px;
@@ -85,15 +85,14 @@
   overflow-wrap: anywhere;
 }
 
-/* Signals as footnotes: a short rule, then the receipts inline, each with the quoted phrase. */
+/* Signals as footnotes: a short rule, then one note per line, each with the quoted phrase. */
 .pb-notes {
   position: relative;
   list-style: none;
   margin: 12px 0 0;
   padding: 9px 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 18px;
+  display: grid;
+  gap: 3px 0;
   font-size: 14px;
   line-height: 1.4;
   font-weight: 600;
@@ -109,11 +108,13 @@
   background: #14161a;
 }
 .pb-notes li { min-width: 0; overflow-wrap: anywhere; }
+/* The seller's own words carry the evidence: ink, not grey, in the annotating serif. */
 .pb-quote {
   font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
   font-style: italic;
   font-weight: 400;
-  color: #556070;
+  color: #14161a;
 }
 
 .pb-email {
@@ -192,13 +193,14 @@
   align-items: baseline;
   gap: 2px 8px;
   min-width: 0;
-  padding: 10px 20px 12px;
+  padding: 2px 20px 12px;
   font-size: 12.5px;
   line-height: 1.4;
   color: #556070;
   overflow-wrap: anywhere;
 }
 .pb-foot > span { min-width: 0; overflow-wrap: anywhere; }
+.pb-seg { white-space: nowrap; }
 .pb-foot.is-status { color: #0b3b66; font-weight: 600; }
 .pb-foot.is-error { color: #8a1c12; font-weight: 600; }
 .pb-foot code {
@@ -221,7 +223,9 @@
   .actions { flex-direction: column; align-items: flex-start; }
   .actions .btn-primary { width: 100%; }
   .actions .btn-ghost { margin-left: -6px; }
-  .pb-foot { padding: 10px 16px 12px; }
+  /* The 44px tap box of the quiet link sits under the caption gap, not on top of it. */
+  .actions > .btn-ghost:last-child { margin-bottom: -10px; }
+  .pb-foot { padding: 2px 16px 12px; }
   .pb-collapsed { padding: 12px 16px; }
 }
 
@@ -262,7 +266,9 @@
   .actions { flex-direction: column; align-items: flex-start; }
   .actions .btn-primary { width: 100%; }
   .actions .btn-ghost { margin-left: -6px; }
-  .pb-foot { padding: 10px 16px 12px; }
+  /* The 44px tap box of the quiet link sits under the caption gap, not on top of it. */
+  .actions > .btn-ghost:last-child { margin-bottom: -10px; }
+  .pb-foot { padding: 2px 16px 12px; }
   .pb-collapsed { padding: 12px 16px; }
 }
 

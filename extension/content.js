@@ -300,7 +300,9 @@
   }
 
   function footerText(verdict, session) {
-    return "PayBrake · " + aiNote(verdict, session) + " · only you can see this";
+    // "checked just now" lives in the caption, except on a mock card (it says "mock mode").
+    const checked = session && session.mode === "mock" ? "" : " · checked just now";
+    return "PayBrake · " + aiNote(verdict, session) + checked + " · only you can see this";
   }
 
   function safeHttp(url) {
@@ -383,10 +385,17 @@
   }
 
   function highlight(thread, evidence) {
-    const quotes = [...new Set((evidence || []).map((item) => item && item.text).filter(Boolean))];
-    for (const quote of quotes) {
+    // quote -> the signal ids that quoted it, so a note can light up its own phrase.
+    const quotes = new Map();
+    for (const item of evidence || []) {
+      if (!item || !item.text) continue;
+      const atoms = quotes.get(item.text) || [];
+      if (typeof item.atom === "string" && !atoms.includes(item.atom)) atoms.push(item.atom);
+      quotes.set(item.text, atoms);
+    }
+    for (const [quote, atoms] of quotes) {
       const bubbles = thread.querySelectorAll("[data-pb-msg]");
-      for (const bubble of bubbles) wrapQuote(bubble, quote);
+      for (const bubble of bubbles) wrapQuote(bubble, quote, atoms);
     }
   }
 
@@ -397,7 +406,7 @@
     return false;
   }
 
-  function wrapQuote(root, quote) {
+  function wrapQuote(root, quote, atoms) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode(node) {
         if (!node.nodeValue || !node.nodeValue.includes(quote)) return NodeFilter.FILTER_REJECT;
@@ -414,6 +423,7 @@
     range.setEnd(node, index + quote.length);
     const mark = document.createElement("mark");
     mark.className = "pb-ev";
+    if (atoms && atoms.length) mark.dataset.pbAtom = atoms.join(" ");
     try {
       range.surroundContents(mark);
     } catch {
@@ -426,13 +436,21 @@
     const style = document.createElement("style");
     style.id = "pb-ev-style";
     // Same marker as the promo slip: an amber band under the words, no rounded pill.
-    style.textContent = "mark.pb-ev{background:linear-gradient(#ffc629,#ffc629) no-repeat 0 62%/100% 80%;color:inherit;border-radius:0;padding:0 .06em;box-decoration-break:clone;-webkit-box-decoration-break:clone;}";
+    // Hovering a note in the card leaves only its phrase filled (desktop pointer only).
+    style.textContent = "mark.pb-ev{background:linear-gradient(#ffc629,#ffc629) no-repeat 0 62%/100% 80%;color:inherit;border-radius:0;padding:0 .06em;box-decoration-break:clone;-webkit-box-decoration-break:clone;}" +
+      "@media (hover:hover) and (pointer:fine){[data-pb-focus] mark.pb-ev{background-size:100% .09em;background-position:0 93%;transition:background-size 120ms ease,background-position 120ms ease}[data-pb-focus] mark.pb-ev.pb-on{background-size:100% 80%;background-position:0 62%}}" +
+      "@media (prefers-reduced-motion:reduce){[data-pb-focus] mark.pb-ev{transition:none}}";
     document.documentElement.append(style);
   }
 
-  // The foot caption: plain text, no brand dot.
+  // The foot caption: plain text, no brand dot. Each " · " phrase stays whole when it wraps.
   function brand(text) {
-    return el("span", "pb-brand", text);
+    const span = el("span", "pb-brand");
+    String(text).split(" · ").forEach((part, index) => {
+      if (index) span.append(document.createTextNode(" · "));
+      span.append(el("span", "pb-seg", part));
+    });
+    return span;
   }
 
   function setFoot(foot, text, kind) {
@@ -460,14 +478,43 @@
       const label = chipLabel(id);
       const item = el("li", null, label);
       const phrase = quoted.get(id);
+      if (phrase) item.dataset.pbAtom = id;
       // A quote that only repeats the label ("Friends & Family") adds nothing; skip it.
       if (phrase && phrase.toLowerCase() !== label.toLowerCase()) {
-        item.append(document.createTextNode(" "));
+        item.append(document.createTextNode("\u00a0"));
         item.append(el("span", "pb-quote", "“" + phrase + "”"));
       }
       notes.append(item);
     }
     return notes;
+  }
+
+  // Note <-> mark: while a note is hovered, only the marks its signal produced stay filled.
+  // Scoped to this card's own thread; cleared on leave, on re-render and in unhighlight.
+  function clearFocus(thread) {
+    if (!thread) return;
+    delete thread.dataset.pbFocus;
+    for (const mark of thread.querySelectorAll("mark.pb-ev.pb-on")) mark.classList.remove("pb-on");
+  }
+
+  function focusAtom(thread, atom) {
+    clearFocus(thread);
+    if (!thread || !atom) return;
+    thread.dataset.pbFocus = atom;
+    for (const mark of thread.querySelectorAll("mark.pb-ev[data-pb-atom]")) {
+      if (mark.dataset.pbAtom.split(" ").includes(atom)) mark.classList.add("pb-on");
+    }
+  }
+
+  function linkNotes(notes, thread) {
+    for (const item of notes.querySelectorAll("li[data-pb-atom]")) {
+      const on = () => focusAtom(thread, item.dataset.pbAtom);
+      const off = () => clearFocus(thread);
+      item.addEventListener("mouseenter", on);
+      item.addEventListener("focusin", on);
+      item.addEventListener("mouseleave", off);
+      item.addEventListener("focusout", off);
+    }
   }
 
   function orderLine(orderId) {
@@ -544,6 +591,7 @@
       host.dataset.pbHash = session.hash;
       const shadow = host.shadowRoot || host.attachShadow({ mode: "open" });
       shadow.replaceChildren();
+      clearFocus(session.thread);
       const style = document.createElement("style");
       style.textContent = cssText;
       shadow.append(style);
@@ -584,16 +632,16 @@
     title.id = "pb-title";
     top.append(title);
 
-    // One plain meta line under the title, joined with " · ".
+    // One plain line under the title for the states that matter ("mock mode · AI checked"),
+    // joined with " · ". "checked just now" sits in the foot caption instead.
     const tags = [];
     if (session.mode === "mock") tags.push(el("span", "pb-tag mock", "mock mode"));
-    else tags.push(el("span", "pb-tag", "Checked just now"));
     // Visible AI state, so a rules-only card is never mistaken for an AI-checked one.
     if (verdict.llm === "unavailable") tags.push(el("span", "pb-tag ai-off", "AI check unavailable"));
     else if (verdict.llm === "off_server") tags.push(el("span", "pb-tag ai-off", "AI check off (mock server)"));
     else if (verdict.llm === "added" || verdict.llm === "confirmed") tags.push(el("span", "pb-tag ai", "AI checked"));
     if (verdict.source === "model") tags.push(el("span", "pb-tag ai", "On-device model"));
-    const tagLine = el("p", "pb-tags");
+    const tagLine = tags.length ? el("p", "pb-tags") : null;
     tags.forEach((tag, index) => {
       if (index) tagLine.append(document.createTextNode(" · "));
       tagLine.append(tag);
@@ -613,6 +661,7 @@
     const details = el("div", "pb-details");
     details.id = detailsId;
     const notes = signalNotes(verdict);
+    linkNotes(notes, session.thread);
 
     const deal = verdict.deal || {};
     let emailInput = null;
@@ -694,7 +743,9 @@
       toggle.replaceChildren(document.createTextNode(open ? "Hide" : "Details"));
     });
 
-    body.append(top, tagLine, explain, details);
+    body.append(top);
+    if (tagLine) body.append(tagLine);
+    body.append(explain, details);
     if (session.state !== "paid") body.append(actions);
     card.append(body, foot);
     return card;
@@ -819,6 +870,7 @@
   }
 
   function unhighlight(thread) {
+    clearFocus(thread);
     for (const mark of [...thread.querySelectorAll("mark.pb-ev")]) {
       mark.replaceWith(...mark.childNodes);
     }
@@ -971,7 +1023,7 @@
   }
 
   function fallbackCss() {
-    return ":host{all:initial;display:block;max-width:min(560px,100%);margin:4px 0 8px 36px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.45;color:#14161a;container-type:inline-size;min-width:0}*{box-sizing:border-box}:where(button,input,a){font:inherit}:focus-visible{outline:3px solid #14161a;outline-offset:2px;border-radius:2px}.pb{margin:0;background:#fff;border:1px solid #14161a;border-radius:2px;overflow:hidden}.pb-body{padding:16px 20px 14px}.pb-top{display:flex;align-items:flex-start;gap:4px 12px;min-width:0}.pb-title{flex:1 1 auto;min-width:0;margin:0;font-size:19px;line-height:1.2;font-weight:700;letter-spacing:-.01em;overflow-wrap:anywhere}.pb-toggle{display:none}.pb-details{display:block}.pb-tags{margin:3px 0 0;font-size:13px;line-height:1.4;color:#556070}.pb-tag.mock{color:#14161a;font-weight:600}.pb-explain{margin:6px 0 0;font-weight:500;overflow-wrap:anywhere}.pb-notes{position:relative;list-style:none;margin:12px 0 0;padding:9px 0 0;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14px;line-height:1.4;font-weight:600}.pb-notes::before{content:'';position:absolute;left:0;top:0;width:72px;height:1px;background:#14161a}.pb-quote{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:400;color:#556070}.pb-email{display:flex;flex-direction:column;gap:6px;margin:14px 0 0;font-size:13px;font-weight:600;color:#556070}.pb-email input{min-height:44px;width:100%;border:1px solid #8a94a3;border-radius:2px;padding:8px 12px;background:#fff;color:#14161a}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;margin-top:14px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:2px;font-size:15px;font-weight:650;text-decoration:none;cursor:pointer;transition:background-color .15s ease}.btn-primary{padding:0 20px;background:#0062a8;color:#fff;border:1px solid #0062a8}.btn-primary:hover{background:#004f88;border-color:#004f88}.btn-primary[disabled],.btn-primary[aria-disabled=true]{background:#4d7fb0;border-color:#4d7fb0;cursor:default}.btn-ghost{padding:0 6px;background:transparent;border:0;color:#14161a;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em}.btn-ghost:hover{text-decoration-thickness:2px}.actions>.btn-ghost:first-child{margin-left:-6px}.pb-foot{display:flex;flex-wrap:wrap;gap:2px 8px;padding:10px 20px 12px;font-size:12.5px;line-height:1.4;color:#556070;overflow-wrap:anywhere}.pb-foot.is-status{color:#0b3b66;font-weight:600}.pb-foot.is-error{color:#8a1c12;font-weight:600}.pb-foot code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}.pb.is-collapsed{border-color:#d5dbe2}.pb-collapsed{margin:0;padding:12px 20px;font-size:14px;color:#556070}@container (max-width:520px){.pb-body{padding:14px 16px 12px}.actions{flex-direction:column;align-items:flex-start}.actions .btn-primary{width:100%}.actions .btn-ghost{margin-left:-6px}.pb-foot{padding:10px 16px 12px}.pb-collapsed{padding:12px 16px}}@media (max-width:520px){:host{margin-left:0;margin-right:0}.pb-body{padding:14px 16px 12px}.pb-toggle{display:inline-flex;align-items:center;flex:none;min-height:44px;margin:-11px -6px -11px 0;padding:0 6px;font-size:14px;font-weight:600;color:#14161a;background:transparent;border:0;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em;cursor:pointer}.pb-explain{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}.pb-details{display:none}.pb-open .pb-explain{display:block;-webkit-line-clamp:unset;overflow:visible}.pb-open .pb-details{display:block}.actions{flex-direction:column;align-items:flex-start}.actions .btn-primary{width:100%}.actions .btn-ghost{margin-left:-6px}.pb-foot{padding:10px 16px 12px}.pb-collapsed{padding:12px 16px}}@media (prefers-reduced-motion:reduce){.btn{transition:none}}";
+    return ":host{all:initial;display:block;max-width:min(560px,100%);margin:4px 0 8px 36px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.45;color:#14161a;container-type:inline-size;min-width:0}*{box-sizing:border-box}:where(button,input,a){font:inherit}:focus-visible{outline:3px solid #14161a;outline-offset:2px;border-radius:2px}.pb{margin:0;background:#fff;border:1px solid #14161a;border-radius:2px;overflow:hidden}.pb-body{padding:16px 20px 12px}.pb-top{display:flex;align-items:flex-start;gap:4px 12px;min-width:0}.pb-title{flex:1 1 auto;min-width:0;margin:0;font-size:19px;line-height:1.2;font-weight:700;letter-spacing:-.01em;overflow-wrap:anywhere}.pb-toggle{display:none}.pb-details{display:block}.pb-tags{margin:3px 0 0;font-size:13px;line-height:1.4;color:#556070}.pb-tag.mock{color:#14161a;font-weight:600}.pb-explain{margin:6px 0 0;font-weight:500;overflow-wrap:anywhere}.pb-notes{position:relative;list-style:none;margin:12px 0 0;padding:9px 0 0;display:grid;gap:3px 0;font-size:14px;line-height:1.4;font-weight:600}.pb-notes::before{content:'';position:absolute;left:0;top:0;width:72px;height:1px;background:#14161a}.pb-quote{font-family:Georgia,'Times New Roman',serif;font-size:15px;font-style:italic;font-weight:400;color:#14161a}.pb-email{display:flex;flex-direction:column;gap:6px;margin:14px 0 0;font-size:13px;font-weight:600;color:#556070}.pb-email input{min-height:44px;width:100%;border:1px solid #8a94a3;border-radius:2px;padding:8px 12px;background:#fff;color:#14161a}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;margin-top:14px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:2px;font-size:15px;font-weight:650;text-decoration:none;cursor:pointer;transition:background-color .15s ease}.btn-primary{padding:0 20px;background:#0062a8;color:#fff;border:1px solid #0062a8}.btn-primary:hover{background:#004f88;border-color:#004f88}.btn-primary[disabled],.btn-primary[aria-disabled=true]{background:#4d7fb0;border-color:#4d7fb0;cursor:default}.btn-ghost{padding:0 6px;background:transparent;border:0;color:#14161a;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em}.btn-ghost:hover{text-decoration-thickness:2px}.actions>.btn-ghost:first-child{margin-left:-6px}.pb-foot{display:flex;flex-wrap:wrap;gap:2px 8px;padding:2px 20px 12px;font-size:12.5px;line-height:1.4;color:#556070;overflow-wrap:anywhere}.pb-seg{white-space:nowrap}.pb-foot.is-status{color:#0b3b66;font-weight:600}.pb-foot.is-error{color:#8a1c12;font-weight:600}.pb-foot code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}.pb.is-collapsed{border-color:#d5dbe2}.pb-collapsed{margin:0;padding:12px 20px;font-size:14px;color:#556070}@container (max-width:520px){.pb-body{padding:14px 16px 12px}.actions{flex-direction:column;align-items:flex-start}.actions .btn-primary{width:100%}.actions .btn-ghost{margin-left:-6px}.actions>.btn-ghost:last-child{margin-bottom:-10px}.pb-foot{padding:2px 16px 12px}.pb-collapsed{padding:12px 16px}}@media (max-width:520px){:host{margin-left:0;margin-right:0}.pb-body{padding:14px 16px 12px}.pb-toggle{display:inline-flex;align-items:center;flex:none;min-height:44px;margin:-11px -6px -11px 0;padding:0 6px;font-size:14px;font-weight:600;color:#14161a;background:transparent;border:0;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em;cursor:pointer}.pb-explain{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}.pb-details{display:none}.pb-open .pb-explain{display:block;-webkit-line-clamp:unset;overflow:visible}.pb-open .pb-details{display:block}.actions{flex-direction:column;align-items:flex-start}.actions .btn-primary{width:100%}.actions .btn-ghost{margin-left:-6px}.actions>.btn-ghost:last-child{margin-bottom:-10px}.pb-foot{padding:2px 16px 12px}.pb-collapsed{padding:12px 16px}}@media (prefers-reduced-motion:reduce){.btn{transition:none}}";
   }
 
   document.addEventListener("click", (event) => {

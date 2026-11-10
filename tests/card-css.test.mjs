@@ -56,6 +56,13 @@ test("card.css: the footnote slip (ink hairline, footnote rule, serif quotes, qu
   assert.equal(/\.pb::before/.test(css), false, "no coloured stripe");
   assert.match(css, /\.pb-notes::before\s*\{[^}]*width:\s*72px[^}]*height:\s*1px/);
   assert.match(css, /\.pb-quote\s*\{[^}]*Georgia[^}]*font-style:\s*italic/);
+  // One note per line, and the quote is the evidence: ink, not grey.
+  assert.match(css, /\.pb-notes\s*\{[^}]*display:\s*grid/);
+  assert.equal(/\.pb-notes\s*\{[^}]*flex-wrap/.test(css), false);
+  assert.match(css, /\.pb-quote\s*\{[^}]*color:\s*#14161a/);
+  // 14px between the actions and the caption.
+  assert.match(css, /\.pb-body\s*\{\s*padding:\s*16px 20px 12px/);
+  assert.match(css, /\.pb-foot\s*\{[^}]*padding:\s*2px 20px 12px/);
   assert.match(css, /\.btn-ghost\s*\{[^}]*text-decoration:\s*underline/);
   assert.match(css, /\.btn\s*\{[^}]*border-radius:\s*2px/);
 });
@@ -88,6 +95,20 @@ test("no pills, chips, dots or pastel alert colours in any copy of the card", as
   for (const bad of ['"risk-badge"', '"chips"', '"chip"', '"pb-dot"', '"signals-label"', '"pb-level"']) {
     assert.equal(js.includes(bad), false, `content.js still renders ${bad}`);
   }
+});
+
+test("the marketplace copy mirrors the card: notes per line, ink quotes, ink flagged bubble", async () => {
+  const css = await marketplaceCardCss();
+  assert.match(css, /\.pb-notes\s*\{[^}]*display:\s*grid/);
+  assert.match(css, /\.pb-quote\s*\{[^}]*color:\s*#14161a/);
+  const html = await readFile(path.join(root, "demo", "marketplace.html"), "utf8");
+  const flagged = html.slice(html.indexOf(".bubble.flagged {"), html.indexOf("}", html.indexOf(".bubble.flagged {")));
+  assert.match(flagged, /border:\s*1\.5px solid #14161a/);
+  assert.match(flagged, /box-shadow:\s*none/);
+  assert.equal(/amber|rgba\(245/.test(flagged), false, "no amber ring or glow on the flagged bubble");
+  // "Checked just now" lives in the caption, as on the live card.
+  assert.equal(html.includes(">Checked just now<"), false);
+  assert.ok(html.includes(">checked just now</span> · <span class=\"pb-seg\">only you can see this<"));
 });
 
 test("the in-page highlight is the amber band, not a rounded pastel pill", async () => {

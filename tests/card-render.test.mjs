@@ -44,7 +44,12 @@ test("the title is a plain headline with the level in the words; Details toggle 
   for (const words of ["High risk payment request", "Possible payment risk", "Account safety risk"]) {
     assert.ok(body.includes(`"${words}"`), `missing the headline "${words}"`);
   }
-  assert.ok(body.includes('"pb-tags"'), "missing the meta line");
+  assert.ok(body.includes('"pb-tags"'), "missing the state line");
+  // The state line is only drawn when there is a state to show.
+  assert.match(body, /const tagLine = tags\.length \? el\("p", "pb-tags"\) : null;/);
+  assert.match(body, /if \(tagLine\) body\.append\(tagLine\);/);
+  // "Checked just now" moved into the foot caption.
+  assert.equal(body.includes('"Checked just now"'), false, "Checked just now belongs in the foot caption now");
   assert.ok(body.includes('"pb-toggle"'), "missing the Details toggle");
   assert.ok(body.includes('"pb-details"'), "missing the collapsible details");
   assert.match(body, /card\.classList\.toggle\("pb-open"\)/);
@@ -62,6 +67,7 @@ function fakeDocument() {
       tagName: tag.toUpperCase(),
       className: "",
       attrs: {},
+      dataset: {},
       childNodes: [],
       set textContent(value) { node.childNodes = [text(value)]; },
       get textContent() { return node.childNodes.map((child) => child.textContent).join(""); },
@@ -105,8 +111,9 @@ test("signal notes quote the seller's phrase the engine found, and show the labe
   assert.equal(notes.className, "pb-notes");
   assert.equal(notes.attrs["aria-label"], "Detected signals");
   const items = notes.childNodes.map((li) => li.textContent);
-  assert.ok(items.includes("Ships before you meet “I ship tomorrow”"), items.join(" | "));
-  assert.ok(items.includes("Upfront deposit “deposit”"), items.join(" | "));
+  // A non-breaking space keeps the quote with its label.
+  assert.ok(items.includes("Ships before you meet\u00a0“I ship tomorrow”"), items.join(" | "));
+  assert.ok(items.includes("Upfront deposit\u00a0“deposit”"), items.join(" | "));
   const ship = notes.childNodes.find((li) => li.textContent.startsWith("Ships before you meet"));
   const quote = ship.childNodes.find((child) => child.nodeType === 1);
   assert.equal(quote.className, "pb-quote");
@@ -130,6 +137,51 @@ test("signal notes use the first quoted phrase per signal and never invent one",
       { text: "AI evidence without an atom" }
     ]
   });
-  assert.deepEqual(notes.childNodes.map((li) => li.textContent), ["Upfront deposit “a deposit”", "Off-platform payment"]);
+  assert.deepEqual(notes.childNodes.map((li) => li.textContent), ["Upfront deposit\u00a0“a deposit”", "Off-platform payment"]);
+});
+
+test("each quoted note carries data-pb-atom equal to its signal id; notes without evidence carry none", async () => {
+  const { signalNotes } = await noteBuilders();
+  const verdict = await payRisk.detect(bikeChat.map((m) => m.text).join("\n"), { messages: bikeChat });
+  const notes = signalNotes({ ...verdict, signals: [...verdict.signals, "model_flag"] });
+  const signals = [...verdict.signals, "model_flag"];
+  notes.childNodes.forEach((li, index) => {
+    const quoted = li.childNodes.some((child) => child.className === "pb-quote");
+    if (quoted) assert.equal(li.dataset.pbAtom, signals[index], li.textContent);
+  });
+  const quotedCount = notes.childNodes.filter((li) => li.childNodes.some((child) => child.className === "pb-quote")).length;
+  assert.ok(quotedCount >= 3, "the bike chat quotes at least three phrases");
+  const flag = notes.childNodes.find((li) => li.textContent === "Reads like a scam chat");
+  assert.equal(flag.dataset.pbAtom, undefined);
+});
+
+test("the foot caption says checked just now, except on a mock card", async () => {
+  const js = await readFile(path.join(root, "extension", "content.js"), "utf8");
+  const start = js.indexOf("  function footerText(");
+  const source = js.slice(start, js.indexOf("\n  }\n", start) + 4);
+  const footerText = new Function("aiNote", `${source}\nreturn footerText;`)(() => "rules check");
+  assert.equal(footerText({}, { mode: "sandbox" }), "PayBrake · rules check · checked just now · only you can see this");
+  assert.equal(footerText({}, { mode: null }), "PayBrake · rules check · checked just now · only you can see this");
+  assert.equal(footerText({}, { mode: "mock" }), "PayBrake · rules check · only you can see this");
+});
+
+test("hovering a note links it to its marks in the page, scoped to the card's thread and cleaned up", async () => {
+  const js = await readFile(path.join(root, "extension", "content.js"), "utf8");
+  const slice = (name) => {
+    const start = js.indexOf(`  function ${name}(`);
+    assert.ok(start > 0, `${name} not found`);
+    return js.slice(start, js.indexOf("\n  }\n", start) + 4);
+  };
+  assert.match(slice("wrapQuote"), /mark\.dataset\.pbAtom = atoms\.join\(" "\)/);
+  const link = slice("linkNotes");
+  for (const event of ["mouseenter", "focusin", "mouseleave", "focusout"]) assert.ok(link.includes(`"${event}"`), event);
+  assert.match(slice("focusAtom"), /thread\.dataset\.pbFocus = atom/);
+  assert.match(slice("clearFocus"), /delete thread\.dataset\.pbFocus/);
+  assert.match(slice("unhighlight"), /clearFocus\(thread\)/);
+  assert.match(slice("render"), /clearFocus\(session\.thread\)/);
+  const style = slice("ensureMarkStyle");
+  assert.match(style, /@media \(hover:hover\) and \(pointer:fine\)\{\[data-pb-focus\] mark\.pb-ev\{background-size:100% \.09em;background-position:0 93%/);
+  assert.match(style, /\[data-pb-focus\] mark\.pb-ev\.pb-on\{background-size:100% 80%;background-position:0 62%\}/);
+  assert.match(style, /prefers-reduced-motion:reduce\)\{\[data-pb-focus\] mark\.pb-ev\{transition:none\}/);
 });
 
