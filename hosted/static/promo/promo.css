@@ -817,22 +817,17 @@ blockquote.msg p {
   padding: 0 .1em; margin: 0 -.1em;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
-/* In the narrow chat bubble the numeral takes its own few pixels right after the phrase (no break before it),
-   raised with line-height 0 so the lines keep their height. */
-.t-b .fn { font-style: normal; }
-.t-b .fn::after {
-  position: relative; top: -.62em; margin-left: .12em;
-  font: italic 400 max(11px, .62em)/0 var(--serif);
-  color: var(--ink);
-}
-.t-b .f1::after { content: "1"; content: "1" / ""; }
-.t-b .f2::after { content: "2"; content: "2" / ""; }
-.t-b .f3::after { content: "3"; content: "3" / ""; }
+/* The flagged message as the demo store draws it with the extension on: white, with an ink edge. */
+.in .t-b.flagged { background: #fff; border: 1.5px solid var(--ink); padding: 7.5px 11.5px; }
 .t-card { margin: 0; padding: 14px 16px; border: 1px solid var(--ink); }
 .t-card .pb-title { margin-bottom: 4px; font-size: var(--t-ui); letter-spacing: -.01em; }
 .t-card .pb-explain { font: 400 var(--t-small)/1.45 var(--sans); }
-.t-card .pb-notes { margin-top: 10px; padding-top: 8px; gap: 2px 16px; font: 600 var(--t-small)/1.45 var(--sans); }
-.t-card .pb-notes::before { width: 56px; }
+/* The extension's card at chat scale: one note per line, the seller's own words quoted in the serif. */
+.t-card .pb-notes { margin-top: 10px; padding-top: 8px; flex-direction: column; gap: 2px; font: 600 var(--t-small)/1.45 var(--sans); }
+.t-card .pb-notes::before { width: 72px; }
+.t-card .pb-notes li { white-space: normal; }
+.t-card .pb-quote { font: italic 400 var(--t-small)/1.45 var(--serif); color: var(--ink); }
+.t-meta { margin-top: 10px; font: 400 var(--t-small)/1.45 var(--sans); color: var(--muted); }
 .t-card .actions { margin-top: 12px; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 14px; }
 .t-card .pbtn { font-size: var(--t-small); }
 .t-card .pbtn.primary { min-height: 40px; padding: 0 14px; }

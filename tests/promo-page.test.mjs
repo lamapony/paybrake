@@ -190,23 +190,35 @@ test("promo: the copy avoids claims the product cannot make", () => {
   assert.match(copy, /Buyer Protection may be eligible/);
 });
 
-test("promo: the chat thread uses the demo store's own lines and the rules' verdict", async () => {
+test("promo: the chat thread uses the demo store's own lines and the card the extension draws for them", async () => {
   const demo = decode(fs.readFileSync(path.join(root, "demo", "marketplace.html"), "utf8"));
   const thread = html.match(/<a class="thread"[\s\S]*?<\/a>/)[0];
   const hero = "Send 500 kr deposit via PayPal Friends & Family to hold it, I ship tomorrow with GLS. The other 1,350 kr when it arrives.";
-  assert.equal(strip(thread.match(/<div class="t-b" data-thread-msg>([\s\S]*?)<\/div>/)[1]), hero);
-  for (const line of [
-    "Hi Jonas, is the Allez still for sale? Could I come and see it on Thursday after work? I live in Frederiksberg.",
-    "About: Specialized Allez road bike, 56 cm · 1,850 kr",
-    "Jonas Holm"
-  ]) {
+  assert.equal(strip(thread.match(/<div class="t-b flagged" data-thread-msg>([\s\S]*?)<\/div>/)[1]), hero);
+  const seller = [...thread.matchAll(/<div class="t-b(?: flagged)?"[^>]*>([\s\S]*?)<\/div>/g)].map((m) => strip(m[1]));
+  for (const line of [...seller, "About: Specialized Allez road bike, 56 cm · 1,850 kr", "Jonas Holm"]) {
     assert.ok(strip(thread).includes(line), `not in the thread: ${line}`);
-    assert.ok(demo.includes(line), `not in the demo store: ${line}`);
+    assert.ok(strip(demo).includes(line), `not in the demo store: ${line}`);
   }
-  const verdict = await payRisk.detect(hero, { from: "seller" }, {});
-  assert.deepEqual([...thread.matchAll(/<mark[^>]*>([\s\S]*?)<\/mark>/g)].map((m) => strip(m[1])), verdict.evidence.map((e) => e.text));
+  // No footnote numerals in the product's thread.
+  assert.doesNotMatch(thread, /class="fn|class="n"/);
+  assert.doesNotMatch(css, /\.t-b \.fn/);
+  // The card is what the rules return for Jonas's lines, with the extension's notes: label, then the quoted phrase.
+  const verdict = await payRisk.detect(seller.join("\n"), { from: "seller" }, {});
+  assert.equal(verdict.level, "high");
+  assert.deepEqual([...thread.matchAll(/<mark>([\s\S]*?)<\/mark>/g)].map((m) => strip(m[1])), verdict.evidence.map((e) => e.text));
   assert.equal(strip(thread.match(/<div class="pb-explain">([\s\S]*?)<\/div>/)[1]), verdict.reason);
-  assert.deepEqual(notesIn(thread), footnotes(verdict).map((r, i) => [String(i + 1), r]));
+  const quoted = new Map();
+  for (const e of verdict.evidence) if (!quoted.has(e.atom)) quoted.set(e.atom, e.text);
+  const expected = verdict.signals.map((id) => {
+    const label = atoms.ATOMS.find((a) => a.id === id).receipt;
+    const phrase = quoted.get(id);
+    return phrase && phrase.toLowerCase() !== label.toLowerCase() ? `${label} “${phrase}”` : label;
+  });
+  const notes = [...thread.match(/<ol class="pb-notes">([\s\S]*?)<\/ol>/)[1].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m) => strip(m[1]));
+  assert.deepEqual(notes, expected);
+  assert.deepEqual(notes, ["Friends & Family", "Upfront deposit “deposit”", "Pressure to hurry “Several people are asking”", "Ships before you meet “I ship tomorrow”"]);
+  assert.match(thread, /<div class="t-meta">PayBrake · rules check · checked just now · only you can see this<\/div>/);
 });
 
 test("promo: the playground presets are real lines with the outcomes they demonstrate", async () => {
