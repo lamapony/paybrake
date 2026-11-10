@@ -312,9 +312,14 @@ mark.safe, .msg mark.safe {
 .pb-notes li { white-space: nowrap; }
 @media (max-width: 759px) {
   #scam .pb-explain { line-height: 1.35; }
-  #scam .pb-notes { margin-top: 12px; padding-top: 8px; row-gap: 2px; line-height: 1.35; }
+  /* One note per line, so the list reads 1, 2, 3 down the slip instead of wrapping two and one. */
+  #scam .pb-notes { margin-top: 12px; padding-top: 8px; flex-direction: column; gap: 2px; line-height: 1.35; }
 }
 .pb-notes .n { font: italic 400 1em/1 var(--serif); margin-right: .4em; }
+/* The slip's numerals answer the bubble's: the same serif italic at about the size they have on the highlights.
+   Line-height 0 keeps the note lines at the label's height; the label stays sans 600. */
+#scam .pb-notes .n { font-size: 1.45em; line-height: 0; vertical-align: -.02em; margin-right: .3em; }
+@media (min-width: 760px) { #scam .pb-notes { column-gap: 14px; } }  /* the numerals separate the notes; three still fit one line at 1366 */
 .actions { margin-top: 14px; display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
 .pbtn {
   display: inline-flex; align-items: center;
