@@ -5,139 +5,142 @@
 document.write("<" + "me" + "ta charset=\"utf-8\">");
 document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
 </script>
-<title>PayBrake demo · fictional Marketplace</title>
+<title>PayBrake demo store · fictional marketplace</title>
 <style>
+  /* Promo type: the page chrome speaks in Schibsted Grotesk, PayBrake's notes to the reader in Source Serif 4.
+     The files ship with /promo; if they fail to load, the system stacks below take over. */
+  @font-face {
+    font-family: "Schibsted Grotesk";
+    src: url("../promo/fonts/schibsted-grotesk-var.woff2") format("woff2");
+    font-weight: 400 900; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Source Serif 4";
+    src: url("../promo/fonts/source-serif-4-opsz-400.woff2") format("woff2");
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Source Serif 4";
+    src: url("../promo/fonts/source-serif-4-italic-opsz-400.woff2") format("woff2");
+    font-weight: 400; font-style: italic; font-display: swap;
+  }
   :root {
-    --bg: #eef1f5;
+    --ask: #ffc629;
+    --ink: #14161a;
+    --paper: #ffffff;
+    --mist: #eef1f4;
+    --line: #d5dbe2;
+    --muted: #556070;
+    --order: #0062a8;
+    /* The fictional marketplace keeps its own slate look, as in the promo's closing thread. */
+    --bg: #eef1f4;
     --surface: #ffffff;
     --surface-2: #f6f8fb;
-    --line: #dde3ea;
-    --ink: #1c2530;
-    --ink-2: #4a5666;
+    --mline: #dde3ea;
+    --mink: #1c2530;
     --ink-3: #5d6a7c;
     --brand: #4a6582;
     --bubble-in: #e9edf2;
     --bubble-out: #4a6582;
-    --risk: #b42318;
-    --risk-bg: #fef3f2;
-    --amber: #f5a524;
-    --amber-bg: #fff8eb;
-    --amber-line: #f3c46b;
     --pp-blue: #0062a8;
     --pp-blue-hover: #004f88;
-    --ok: #067647;
-    --ok-bg: #ecfdf3;
-    --radius: 14px;
-    --shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.06);
+    --sans: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html, body { margin: 0; }
   body {
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--sans);
     background: var(--bg);
-    color: var(--ink);
+    color: var(--mink);
     font-size: 15px;
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
     overflow-wrap: break-word;
   }
   button { font: inherit; }
-  :focus-visible { outline: 3px solid #2e90fa; outline-offset: 2px; border-radius: 6px; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 
-  /* ---------- Demo banner ---------- */
-  .concept {
-    background: #1c2530;
-    color: #fff;
-    text-align: center;
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: .02em;
-    border-bottom: 3px solid var(--amber);
+  /* ---------- PayBrake demo bar ---------- */
+  .pbbar { background: var(--ask); color: var(--ink); }
+  .pbbar-in {
+    max-width: 1280px; margin: 0 auto; padding: 0 24px;
+    min-height: 56px; display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap;
   }
-  .concept strong { color: #ffd27a; letter-spacing: .06em; }
+  .brand {
+    display: inline-flex; align-items: center; gap: 9px; min-height: 44px;
+    font-weight: 700; font-size: 19px; letter-spacing: -.02em; text-decoration: none;
+  }
+  .brand img { display: block; }
+  .bar-tag { font: italic 400 16px/1 var(--serif); color: rgba(20, 22, 26, .78); white-space: nowrap; }
+  .bar-right { margin-left: auto; display: flex; align-items: center; gap: 4px 18px; flex-wrap: wrap; justify-content: flex-end; }
+  .mode { font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .bar-link {
+    display: inline-flex; align-items: center; min-height: 44px;
+    font-size: 15px; font-weight: 600; white-space: nowrap;
+    text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22em;
+  }
+  .bar-link:hover { text-decoration-thickness: 2px; }
 
-  /* ---------- App header ---------- */
-  .topbar { background: var(--surface); border-bottom: 1px solid var(--line); }
+  /* ---------- Fictional marketplace header ---------- */
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--mline); }
   .topbar-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
+    max-width: 1280px; margin: 0 auto; padding: 10px 24px;
+    display: flex; align-items: center; gap: 16px;
   }
-  .site-mark {
-    display: flex; align-items: center; gap: 10px;
-    font-weight: 700; font-size: 18px; color: var(--brand);
-  }
+  .site-mark { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--brand); }
   .site-mark .glyph {
-    width: 32px; height: 32px; border-radius: 9px;
-    background: var(--brand);
+    width: 30px; height: 30px; border-radius: 8px; background: var(--brand);
     display: grid; place-items: center; flex: none;
   }
   .search {
-    flex: 1;
-    max-width: 420px;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 8px 14px;
-    color: var(--ink-3);
-    font-size: 14px;
+    flex: 1; max-width: 420px;
+    background: var(--surface-2); border: 1px solid var(--mline); border-radius: 8px;
+    padding: 7px 14px; color: var(--ink-3); font-size: 14px;
   }
-  .ext-pill {
-    margin-left: auto;
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 13px; font-weight: 600;
-    color: #7a4b00;
-    background: var(--amber-bg);
-    border: 1px solid var(--amber-line);
-    padding: 6px 12px;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-  .ext-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 3px rgba(245,165,36,.25); }
+  .site-note { margin-left: auto; font-size: 13px; color: var(--ink-3); text-align: right; }
+
+  /* ---------- Guide ---------- */
+  .guide { max-width: 1280px; margin: 0 auto; padding: 22px 24px 4px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 32px; align-items: end; }
+  .guide-lede { margin: 0; max-width: 40em; font: 400 19px/1.42 var(--serif); color: var(--ink); text-wrap: pretty; }
+  .guide-steps { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 15px; font-weight: 600; color: var(--ink); }
+  .guide-steps li { display: inline-flex; align-items: baseline; gap: 7px; white-space: nowrap; }
+  .guide-steps i { font: italic 400 19px/1 var(--serif); }
+  .guide-steps li.done { color: var(--muted); }
+  .guide-steps li.done i { font-size: 0; }
+  .guide-steps li.done i::before { content: "\2713"; font: 700 15px/1 var(--sans); color: var(--ink); }
+  .fiction { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--muted); }
 
   /* ---------- Layout ---------- */
   .layout {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 24px;
-    align-items: start;
+    max-width: 1280px; margin: 0 auto; padding: 16px 24px 40px;
+    display: grid; grid-template-columns: 236px minmax(0, 1fr) 344px; gap: 20px; align-items: start;
   }
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-  }
+  .card { background: var(--surface); border: 1px solid var(--mline); border-radius: 12px; }
 
-  /* ---------- Listing ---------- */
-  .listing {
-    display: grid;
-    grid-template-columns: 180px minmax(0, 1fr);
-    gap: 18px;
-    padding: 16px;
+  /* ---------- Chat picker (the marketplace inbox) ---------- */
+  .inbox { min-width: 0; }
+  .inbox-label { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .switcher { display: flex; flex-direction: column; gap: 6px; margin: 0; }
+  .switcher button {
+    display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 2px 10px; align-items: start;
+    width: 100%; min-height: 44px; padding: 10px 12px; text-align: left;
+    border: 1px solid var(--mline); border-radius: 10px; background: var(--surface); color: var(--mink);
+    cursor: pointer;
   }
-  .listing-img {
-    aspect-ratio: 4 / 3;
-    border-radius: 10px;
-    background: linear-gradient(160deg, #dfe6ee 0%, #c9d4e0 100%);
-    display: grid; place-items: center;
-    overflow: hidden;
-  }
-  .listing-img svg { width: 82%; height: auto; }
-  .listing h1 { font-size: 20px; margin: 2px 0 4px; line-height: 1.25; }
-  .price { font-size: 22px; font-weight: 750; margin: 0 0 8px; }
-  .listed { color: var(--ink-3); font-size: 13px; margin: 0 0 12px; }
-  .seller {
-    display: flex; align-items: center; gap: 10px;
-    padding-top: 12px; border-top: 1px solid var(--line);
-  }
+  .switcher button:hover { border-color: #b8c3cf; }
+  .switcher button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .switcher .avatar { grid-row: span 3; width: 32px; height: 32px; font-size: 12px; }
+  .pick-name { font-weight: 650; font-size: 14px; line-height: 1.3; display: flex; justify-content: space-between; gap: 8px; }
+  .pick-verdict { font-size: 12px; font-weight: 650; color: var(--ink); white-space: nowrap; }
+  .pick-verdict.quiet { color: var(--muted); font-weight: 500; }
+  .pick-item { font-size: 13px; color: var(--ink-3); line-height: 1.3; }
+  .pick-kind { font-size: 13px; color: var(--mink); line-height: 1.3; }
+  .switcher .sep { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
+
+  /* ---------- Chat ---------- */
   .avatar {
     width: 36px; height: 36px; border-radius: 50%;
     background: #b9c6d4; color: #233142;
@@ -145,47 +148,34 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     font-weight: 700; font-size: 13px; flex: none;
   }
   .avatar.ml { background: #d4cbb9; color: #3a3020; }
-  .seller-name { font-weight: 600; font-size: 14px; }
-  .seller-sub { color: var(--ink-3); font-size: 12px; }
-
-  /* ---------- Chat ---------- */
-  .switcher {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 20px;
-  }
-  .switcher button {
-    min-height: 44px;
-    padding: 8px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    color: var(--ink-2);
-    font-weight: 650;
-    cursor: pointer;
-  }
-  .switcher button[aria-pressed="true"] {
-    background: var(--brand);
-    border-color: var(--brand);
-    color: #fff;
-  }
-  .chat { margin-top: 12px; overflow: hidden; }
+  .avatar.sk { background: #c9d2bf; color: #26301c; }
+  .avatar.lb { background: #d9c4c4; color: #3b2323; }
+  .avatar.kv { background: #c4cde0; color: #1f2a44; }
+  .chat { overflow: hidden; min-width: 0; }
   .chat-head {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px 12px; flex-wrap: wrap;
+    padding: 12px 16px; border-bottom: 1px solid var(--mline);
   }
-  .chat-head .title { font-weight: 600; font-size: 15px; }
-  .chat-head .sub { color: var(--ink-3); font-size: 12px; }
+  .chat-head .who { flex: 1 1 160px; min-width: 0; }
+  .chat-head .title { font-weight: 650; font-size: 15px; }
+  .chat-head .sub { color: var(--ink-3); font-size: 12.5px; }
+  .item { display: flex; align-items: center; gap: 10px; min-width: 0; max-width: 100%; }
+  .thumb {
+    width: 52px; height: 40px; border-radius: 6px; flex: none;
+    background: linear-gradient(160deg, #dfe6ee 0%, #c9d4e0 100%);
+    display: grid; place-items: center;
+  }
+  .thumb svg { width: 40px; height: auto; }
+  .item-name { font-size: 13px; font-weight: 600; line-height: 1.3; }
+  .item-price { font-size: 13px; color: var(--ink-3); }
   .thread { padding: 18px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
   .day { align-self: center; font-size: 12px; color: var(--ink-3); margin-bottom: 4px; }
-  .msg { display: flex; gap: 8px; align-items: flex-end; max-width: 78%; }
+  .msg { display: flex; gap: 8px; align-items: flex-end; max-width: 80%; }
   .msg.in { align-self: flex-start; }
   .msg.out { align-self: flex-end; flex-direction: row-reverse; }
   .msg .avatar { width: 28px; height: 28px; font-size: 11px; }
   .bubble { padding: 9px 13px; border-radius: 18px; font-size: 15px; min-width: 0; }
-  .in .bubble { background: var(--bubble-in); color: var(--ink); border-bottom-left-radius: 6px; }
+  .in .bubble { background: var(--bubble-in); color: var(--mink); border-bottom-left-radius: 6px; }
   .out .bubble { background: var(--bubble-out); color: #fff; border-bottom-right-radius: 6px; }
   .bubble.flagged {
     background: #fff;
@@ -210,7 +200,8 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
   .time { font-size: 11px; color: var(--ink-3); padding: 0 4px; flex: none; }
 
   /* ---------- PayBrake risk card ---------- */
-  /* Static copy of extension/card.css for visitors without the extension: a footnote slip. */
+  /* Static copy of extension/card.css for visitors without the extension: a footnote slip.
+     The extension card sets system-ui in its shadow root, so the copy does too. */
   .pb {
     margin: 4px 0 8px 36px;
     max-width: 560px;
@@ -220,6 +211,9 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     border: 1px solid #14161a;
     border-radius: 2px;
     overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
   }
   .pb :focus-visible { outline: 3px solid #14161a; outline-offset: 2px; border-radius: 2px; }
   .pb-body { padding: 16px 20px 12px; }
@@ -274,6 +268,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
   .pb-foot.is-status { color: #0b3b66; font-weight: 600; }
   .pb-foot.is-error { color: #8a1c12; font-weight: 600; }
   .pb-foot code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 12px; }
+  .pb-foot a { color: inherit; text-decoration: underline; text-underline-offset: .2em; }
 
   /* Collapsed after "Pay anyway" */
   .pb.is-collapsed { border-color: #d5dbe2; }
@@ -307,86 +302,85 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
   /* ---------- Composer (static shape) ---------- */
   .composer {
     display: flex; align-items: center; gap: 10px;
-    padding: 12px 16px; border-top: 1px solid var(--line);
+    padding: 12px 16px; border-top: 1px solid var(--mline);
   }
   .composer .fake-input {
-    flex: 1; background: var(--surface-2); border: 1px solid var(--line);
-    border-radius: 999px; padding: 9px 14px; color: var(--ink-3); font-size: 14px;
+    flex: 1; background: var(--surface-2); border: 1px solid var(--mline);
+    border-radius: 18px; padding: 9px 14px; color: var(--ink-3); font-size: 14px;
   }
   .composer .send {
     width: 36px; height: 36px; border-radius: 50%; background: var(--brand);
     display: grid; place-items: center; flex: none;
   }
+  .quiet-note {
+    display: flex; align-items: baseline; gap: 8px;
+    margin: 6px 16px 14px; padding: 10px 0 0;
+    border-top: 1px solid var(--mline);
+    font-size: 14px; color: var(--mink);
+  }
+  .quiet-note svg { flex: none; align-self: center; }
 
-  /* ---------- Safe chat example ---------- */
-  .safe { margin-top: 20px; overflow: hidden; }
-  .safe-label {
-    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-    color: var(--ink-3); margin: 28px 4px 0;
+  /* ---------- Side: PayBrake's panels, in the promo's voice ---------- */
+  .side { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .panel { background: var(--paper); color: var(--ink); border: 1px solid var(--ink); border-radius: 2px; }
+  .panel-head {
+    padding: 14px 18px 12px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: baseline; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap;
   }
-  .safe .chat-head { padding: 10px 16px; }
-  .safe .chat-head .avatar { width: 30px; height: 30px; font-size: 11px; }
-  .safe .thread { padding: 14px 16px 6px; gap: 8px; }
-  .safe .bubble { font-size: 14px; }
-  .quiet {
-    display: flex; align-items: center; gap: 8px;
-    margin: 6px 16px 14px;
-    padding: 8px 12px;
-    border-radius: 10px;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    font-size: 13px; color: var(--ink-2);
-  }
-  .quiet svg { flex: none; }
-
-  /* ---------- Side panel ---------- */
-  .side { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
-  .preview-head {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
-  }
-  .preview-head h2 { font-size: 15px; margin: 0; }
-  .sandbox {
-    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-    background: #eef4ff; color: #1d4ed8; border: 1px solid #c7d7fe;
-    padding: 3px 8px; border-radius: 6px; white-space: nowrap;
-  }
-  .method { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .panel-head h2 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+  .sandbox { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .panel-body { padding: 14px 18px 16px; }
+  .method { margin: 0 0 12px; font-size: 14px; color: var(--muted); }
   .method b { color: var(--ink); }
-  .preview-body { padding: 16px 18px 18px; }
-  .order-item {
-    display: flex; gap: 12px; align-items: center;
-    padding: 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line);
-    margin: 12px 0 14px;
+  dl.rows { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); row-gap: 8px; font-size: 14px; }
+  dl.rows dt { white-space: nowrap; }
+  dl.rows dt { padding-right: 12px; color: var(--muted); }
+  dl.rows dd { margin: 0; text-align: right; font-weight: 600; min-width: 0; overflow-wrap: break-word; }
+  dl.rows .total { padding-top: 10px; border-top: 1px solid var(--line); font-size: 16px; font-weight: 700; color: var(--ink); }
+  .compare { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; font-size: 13px; line-height: 1.4; border-top: 1px solid var(--line); }
+  .compare div { padding: 10px 12px 0 0; }
+  .compare div + div { padding: 10px 0 0 12px; border-left: 1px solid var(--line); }
+  .compare b { display: block; font-size: 13px; margin-bottom: 2px; }
+  .compare .asked { color: var(--muted); }
+  .flow { margin: 16px 0 0; padding: 12px 0 0; list-style: none; border-top: 1px solid var(--line); display: grid; gap: 8px; counter-reset: step; font-size: 14px; }
+  .flow li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px 4px; align-items: baseline; counter-increment: step; }
+  .flow li::before { content: counter(step); font: italic 400 18px/1 var(--serif); }
+  .flow li.done { color: var(--muted); }
+  .flow li.done::before { content: "\2713"; font: 700 14px/1 var(--sans); color: var(--ink); }
+  .flow .hint { color: var(--muted); font-weight: 400; }
+  .flow .step-btn {
+    grid-column: 2; justify-self: start;
+    min-height: 44px; padding: 0 18px; margin-top: 2px;
+    background: var(--ink); color: #fff; border: 1px solid var(--ink); border-radius: 2px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
   }
-  .order-thumb {
-    width: 52px; height: 52px; border-radius: 8px; flex: none;
-    background: linear-gradient(160deg, #dfe6ee, #c9d4e0);
-    display: grid; place-items: center;
-  }
-  .order-item .name { font-weight: 600; font-size: 14px; }
-  .order-item .by { font-size: 12px; color: var(--ink-3); }
-  dl.rows { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); row-gap: 10px; column-gap: 0; font-size: 14px; }
-  dl.rows dt { padding-right: 12px; }
-  dl.rows dt { color: var(--ink-2); }
-  dl.rows dd { margin: 0; text-align: right; font-weight: 600; min-width: 0; }
-  dl.rows .total { padding-top: 10px; border-top: 1px dashed var(--line); font-size: 16px; font-weight: 750; color: var(--ink); }
-  .maybe {
-    display: inline-flex; align-items: center;
-    color: var(--ok); background: var(--ok-bg); border: 1px solid #abefc6;
-    padding: 2px 9px; border-radius: 999px; font-size: 13px; white-space: nowrap;
-  }
-  .compare { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; }
-  .compare div { border-radius: 10px; padding: 10px; border: 1px solid var(--line); }
-  .compare .bad { background: var(--risk-bg); border-color: #fecdca; color: #7a271a; }
-  .compare .good { background: #f1f6fd; border-color: #c7d7fe; color: #1e3a8a; }
-  .compare b { display: block; font-size: 12px; margin-bottom: 2px; }
-  .fineprint { font-size: 12px; color: var(--ink-3); margin: 14px 0 0; }
+  .flow .step-btn:hover { background: #34373d; }
+  .order-status { margin: 12px 0 0; font-size: 14px; font-weight: 600; color: #0b3b66; }
+  .order-status:empty { display: none; }
+  .fineprint { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
+  .order-quiet { margin: 0; font: 400 16px/1.45 var(--serif); }
 
-  .howto { padding: 16px 18px; font-size: 13px; color: var(--ink-2); }
-  .howto h3 { margin: 0 0 8px; font-size: 13px; color: var(--ink); }
-  .howto ol { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+  .facts h2 { margin: 0; padding: 14px 18px 0; font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+  .facts dl { margin: 0; padding: 8px 18px 16px; display: grid; gap: 10px; }
+  .facts dt { font-size: 14px; font-weight: 700; }
+  .facts dd { margin: 2px 0 0; font: 400 15px/1.45 var(--serif); }
+  .facts .srv { display: block; margin-top: 4px; font: 600 13px/1.4 var(--sans); color: var(--ink); }
+
+  /* Shown in extension mode when no extension answers. */
+  .missing {
+    position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 9999;
+    width: calc(100% - 32px); max-width: 620px;
+    background: var(--ink); color: #fff; border-radius: 2px;
+    padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+    font-size: 15px; line-height: 1.45;
+  }
+  .missing p { margin: 0; flex: 1 1 260px; }
+  .missing a.go {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
+    background: var(--ask); color: var(--ink); border-radius: 2px; font-weight: 650; text-decoration: none; white-space: nowrap;
+  }
+  .missing button { min-height: 44px; padding: 0 8px; background: transparent; color: #fff; border: 0; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; }
+  .missing :focus-visible { outline-color: #fff; }
 
   .sr-only {
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -394,29 +388,41 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
   }
 
   /* ---------- Responsive ---------- */
-  @media (max-width: 900px) {
-    .layout { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 16px; }
+  @media (max-width: 1099px) {
+    .layout { grid-template-columns: minmax(0, 1fr) 320px; }
+    .inbox { grid-column: 1 / -1; }
+    .switcher { flex-direction: row; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 4px; }
+    .switcher button { flex: 0 0 236px; scroll-snap-align: start; }
+    .switcher .sep { display: none; }
+  }
+  @media (max-width: 799px) {
+    .layout { grid-template-columns: minmax(0, 1fr); padding: 12px 16px 32px; gap: 14px; }
     .side { position: static; }
-    .search { display: none; }
+    .search, .site-note { display: none; }
+    .guide { grid-template-columns: minmax(0, 1fr); padding: 16px 16px 0; }
   }
   @media (max-width: 520px) {
     body { font-size: 14px; }
-    .concept { font-size: 12px; padding: 8px 12px; }
-    .topbar-inner { padding: 10px 14px; gap: 10px; }
-    .site-mark { font-size: 16px; }
-    .ext-pill { font-size: 12px; padding: 5px 10px; }
-    .layout { padding: 12px; }
-    .listing { grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 12px; }
-    .listing h1 { font-size: 16px; }
-    .price { font-size: 18px; margin-bottom: 4px; }
-    .listed { margin-bottom: 8px; }
-    .seller { grid-column: 1 / -1; }
+    .pbbar-in { padding: 4px 12px; gap: 0 12px; }
+    .bar-tag { display: none; }
+    .bar-right { gap: 0 12px; }
+    .mode { display: none; }
+    .topbar-inner { padding: 8px 12px; }
+    .site-mark { font-size: 15px; }
+    .site-mark .glyph { width: 26px; height: 26px; }
+    .guide { padding: 14px 12px 0; gap: 8px; }
+    .guide-lede { font-size: 17px; }
+    .guide-steps { font-size: 14px; gap: 2px 16px; }
+    .layout { padding: 10px 12px 28px; }
+    .switcher button { flex-basis: 214px; padding: 9px 10px; }
+    .chat-head { padding: 10px 12px; }
     .thread { padding: 14px 10px 6px; }
     .msg { max-width: 92%; }
-    .switcher button { flex: 1 1 100%; }
     .composer { padding: 10px; }
-    .safe .thread { padding: 12px 10px 6px; }
-    .quiet { margin: 6px 10px 12px; }
+    .quiet-note { margin: 6px 12px 12px; }
+    .panel-head, .panel-body { padding-left: 14px; padding-right: 14px; }
+    .facts h2 { padding: 14px 14px 0; }
+    .facts dl { padding: 8px 14px 16px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -426,63 +432,89 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
 </head>
 <body>
 
-<div class="concept" role="note">
-  <strong>DEMO</strong> — fictional marketplace and names. Not affiliated with PayPal or any marketplace. No real money moves.
-</div>
+<header class="pbbar">
+  <div class="pbbar-in">
+    <a class="brand" href="/"><img src="/logo.svg" width="26" height="26" alt="">PayBrake</a>
+    <span class="bar-tag">Demo store</span>
+    <div class="bar-right">
+      <span class="mode" id="pb-mode">Built-in preview · nothing to install</span>
+      <a class="bar-link" id="pb-mode-link" href="marketplace.html?live=1">Use the real extension</a>
+    </div>
+  </div>
+</header>
 
-<header class="topbar">
+<div class="topbar">
   <div class="topbar-inner">
     <div class="site-mark">
       <span class="glyph" aria-hidden="true">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 13v7h14v-7"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M5 13v7h14v-7"/></svg>
       </span>
       Marketplace
     </div>
     <div class="search" aria-hidden="true">Search listings</div>
-    <span class="ext-pill" title="Browser extension active"><span class="dot" aria-hidden="true"></span>PayBrake active</span>
+    <span class="site-note">A fictional marketplace</span>
   </div>
-</header>
+</div>
+
+<section class="guide" aria-label="How to use this demo">
+  <p class="guide-lede">A seller asks you to pay outside PayPal checkout. PayBrake puts a card under the message, quotes the words that worried it, and offers a PayPal Goods &amp; Services order instead.</p>
+  <ol class="guide-steps" id="guide-steps">
+    <li data-step="pick"><i>1</i>Pick a chat</li>
+    <li data-step="read"><i>2</i>Read the card</li>
+    <li data-step="order"><i>3</i>Switch to a PayPal order</li>
+  </ol>
+  <p class="fiction" role="note">Demo: fictional marketplace and names. Not affiliated with PayPal or any marketplace. No real money moves.</p>
+</section>
 
 <main class="layout">
-  <section aria-label="Listing and conversations">
-    <article class="card listing" aria-label="Listing">
-      <div class="listing-img" role="img" aria-label="Illustration of a road bike">
-        <svg viewBox="0 0 200 120" fill="none" stroke="#3d5168" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="48" cy="80" r="30"/>
-          <circle cx="152" cy="80" r="30"/>
-          <path d="M48 80 L82 40 L134 40 L152 80"/>
-          <path d="M82 40 L100 80 L48 80"/>
-          <path d="M100 80 L134 40"/>
-          <path d="M76 28 L92 28"/>
-          <path d="M82 40 L80 28"/>
-          <path d="M134 40 L130 24 Q142 20 146 30"/>
-        </svg>
-      </div>
-      <div>
-        <h1>Specialized Allez road bike, 56 cm</h1>
-        <p class="price">1,850 kr</p>
-        <p class="listed">Listed 2 days ago · Nørrebro, Copenhagen · Aluminium frame, Shimano Claris 2x8, new tyres in May · Shipping available</p>
-        <div class="seller">
-          <span class="avatar" aria-hidden="true">JH</span>
-          <div>
-            <div class="seller-name">Jonas Holm</div>
-            <div class="seller-sub">Joined 3 weeks ago · 0 ratings · usually replies within minutes</div>
-          </div>
-        </div>
-      </div>
-    </article>
-
-    <div class="switcher" role="group" aria-label="Conversations">
-      <button type="button" id="pb-show-thread-1" aria-pressed="true">Jonas Holm · bike</button>
-      <button type="button" id="pb-show-thread-2" aria-pressed="false">Signe Kruse · camera</button>
+  <nav class="inbox" aria-labelledby="inbox-label">
+    <p class="inbox-label" id="inbox-label">Chats</p>
+    <div class="switcher" role="group" aria-labelledby="inbox-label">
+      <button type="button" id="pb-show-thread-1" data-thread="thread-bike" aria-controls="thread-bike" aria-pressed="true">
+        <span class="avatar" aria-hidden="true">JH</span>
+        <span class="pick-name">Jonas Holm <span class="pick-verdict">High risk</span></span>
+        <span class="pick-item">Road bike · 1,850 kr</span>
+        <span class="pick-kind">Friends &amp; Family deposit</span>
+      </button>
+      <button type="button" id="pb-show-thread-2" data-thread="thread-camera" aria-controls="thread-camera" aria-pressed="false">
+        <span class="avatar sk" aria-hidden="true">SK</span>
+        <span class="pick-name">Signe Kruse <span class="pick-verdict">High risk</span></span>
+        <span class="pick-item">Camera · 4,150 kr</span>
+        <span class="pick-kind">MobilePay or bank transfer</span>
+      </button>
+      <button type="button" id="pb-show-thread-3" data-thread="thread-chair" aria-controls="thread-chair" aria-pressed="false">
+        <span class="avatar lb" aria-hidden="true">LB</span>
+        <span class="pick-name">Laura Berg <span class="pick-verdict">High risk</span></span>
+        <span class="pick-item">Armchair · 450 kr</span>
+        <span class="pick-kind">Move to WhatsApp, pay to reserve</span>
+      </button>
+      <button type="button" id="pb-show-thread-4" data-thread="thread-console" aria-controls="thread-console" aria-pressed="false">
+        <span class="avatar kv" aria-hidden="true">KV</span>
+        <span class="pick-name">Kasper Vind <span class="pick-verdict">High risk</span></span>
+        <span class="pick-item">Game console · 2,400 kr</span>
+        <span class="pick-kind">Gift card codes</span>
+      </button>
+      <p class="sep">An ordinary chat, for comparison</p>
+      <button type="button" id="pb-show-thread-5" data-thread="thread-lamp" aria-controls="thread-lamp" aria-pressed="false">
+        <span class="avatar ml" aria-hidden="true">ML</span>
+        <span class="pick-name">Mette Lund <span class="pick-verdict quiet">No card</span></span>
+        <span class="pick-item">Desk lamp · 275 kr</span>
+        <span class="pick-kind">Checkout or cash on pickup</span>
+      </button>
     </div>
+  </nav>
 
-    <section class="card chat" id="thread-bike" data-pb-thread data-pb-listing-title="Specialized Allez road bike, 56 cm" data-pb-listing-price="1,850 kr" data-pb-seller-email="jonas.holm@example.com" data-pb-seller-name="Jonas Holm" aria-label="Conversation with Jonas Holm">
+  <div class="chats">
+    <section class="card chat" id="thread-bike" data-pb-thread data-pb-listing-title="Specialized Allez road bike, 56 cm" data-pb-listing-price="1,850 kr" data-pb-seller-email="jonas.holm@example.com" data-pb-seller-name="Jonas Holm" data-demo-asked="500 kr upfront via Friends &amp; Family" data-demo-deposit="None (asked: 500 kr)" aria-label="Conversation with Jonas Holm">
       <div class="chat-head">
         <span class="avatar" aria-hidden="true">JH</span>
-        <div>
+        <div class="who">
           <div class="title">Jonas Holm</div>
-          <div class="sub">About: Specialized Allez road bike, 56 cm · 1,850 kr</div>
+          <div class="sub">Joined 3 weeks ago · 0 ratings</div>
+        </div>
+        <div class="item">
+          <span class="thumb" aria-hidden="true"><svg viewBox="0 0 200 120" fill="none" stroke="#3d5168" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><circle cx="48" cy="80" r="30"/><circle cx="152" cy="80" r="30"/><path d="M48 80 L82 40 L134 40 L152 80 M82 40 L100 80 L48 80 M100 80 L134 40"/></svg></span>
+          <div><div class="item-name">About: Specialized Allez road bike, 56 cm · 1,850 kr</div><div class="item-price">Nørrebro, Copenhagen</div></div>
         </div>
       </div>
 
@@ -513,7 +545,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
         </div>
 
         <!-- PayBrake injected risk card (static copy of the extension card) -->
-        <aside class="pb" id="pb-card" data-pb-risk="high" role="region" aria-labelledby="pb-title">
+        <aside class="pb" id="pb-card" data-pb-static data-pb-risk="high" role="region" aria-labelledby="pb-title">
           <div class="pb-body">
             <div class="pb-top">
               <p class="pb-title" id="pb-title">High risk payment request</p>
@@ -529,8 +561,8 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
               </ol>
             </div>
             <div class="actions">
-              <button type="button" class="btn btn-primary" id="pb-protect">Switch to a PayPal order</button>
-              <button type="button" class="btn btn-ghost" id="pb-anyway">Pay anyway</button>
+              <button type="button" class="btn btn-primary js-protect" id="pb-protect">Switch to a PayPal order</button>
+              <button type="button" class="btn btn-ghost js-anyway" id="pb-anyway">Pay anyway</button>
             </div>
           </div>
           <div class="pb-foot" id="pb-foot" aria-live="polite">
@@ -541,18 +573,20 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
 
       <div class="composer" aria-hidden="true">
         <div class="fake-input">Aa</div>
-        <span class="send">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-7z"/></svg>
-        </span>
+        <span class="send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-7z"/></svg></span>
       </div>
     </section>
 
-    <section class="card chat" id="thread-camera" data-pb-thread data-pb-listing-title="Sony a6400 with 16-50 mm kit lens" data-pb-listing-price="4,150 kr" data-pb-seller-email="signe.kruse@example.com" data-pb-seller-name="Signe Kruse" aria-label="Conversation with Signe Kruse" hidden>
+    <section class="card chat" id="thread-camera" data-pb-thread data-pb-listing-title="Sony a6400 with 16-50 mm kit lens" data-pb-listing-price="4,150 kr" data-pb-seller-email="signe.kruse@example.com" data-pb-seller-name="Signe Kruse" data-demo-asked="4,150 kr on MobilePay or by bank transfer" data-demo-deposit="None" aria-label="Conversation with Signe Kruse" hidden>
       <div class="chat-head">
-        <span class="avatar" aria-hidden="true">SK</span>
-        <div>
+        <span class="avatar sk" aria-hidden="true">SK</span>
+        <div class="who">
           <div class="title">Signe Kruse</div>
-          <div class="sub">About: Sony a6400 with 16-50 mm kit lens · 4,150 kr</div>
+          <div class="sub">Joined last month · 1 rating</div>
+        </div>
+        <div class="item">
+          <span class="thumb" aria-hidden="true"><svg viewBox="0 0 200 120" fill="none" stroke="#3d5168" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><rect x="30" y="34" width="140" height="72" rx="10"/><circle cx="100" cy="70" r="24"/><path d="M72 34 L82 18 H118 L128 34"/></svg></span>
+          <div><div class="item-name">About: Sony a6400 with 16-50 mm kit lens · 4,150 kr</div><div class="item-price">Valby</div></div>
         </div>
       </div>
       <div class="thread">
@@ -562,34 +596,177 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
           <span class="time">16:18</span>
         </div>
         <div class="msg in">
-          <span class="avatar" aria-hidden="true">SK</span>
-          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Yes, but today only. I'm in Hamburg for work until the 14th, so I can only ship.</div>
+          <span class="avatar sk" aria-hidden="true">SK</span>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Yes, but <mark data-pb-atom="urgency_pressure">today only</mark>. I'm in Hamburg for work until the 14th, so I <mark data-pb-atom="ship_before_meet">can only ship</mark>.</div>
           <span class="time">16:23</span>
         </div>
         <div class="msg in">
-          <span class="avatar" aria-hidden="true">SK</span>
-          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Send 4,150 kr on MobilePay to the number on my profile and I'll post it tonight. Bank transfer works too.</div>
+          <span class="avatar sk" aria-hidden="true">SK</span>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Signe Kruse: </span>Send 4,150 kr on <mark data-pb-atom="off_platform">MobilePay</mark> to the number on my profile and I'll post it tonight. Bank transfer works too.</div>
           <span class="time">16:24</span>
         </div>
+
+        <aside class="pb" id="pb-card-camera" data-pb-static data-pb-risk="high" role="region" aria-labelledby="pb-title-camera">
+          <div class="pb-body">
+            <div class="pb-top">
+              <p class="pb-title" id="pb-title-camera">High risk payment request</p>
+              <button type="button" class="pb-toggle" aria-expanded="false" aria-controls="pb-details-camera">Details</button>
+            </div>
+            <p class="pb-explain">Off-platform payment: a transfer outside PayPal checkout is hard to reverse if the item never arrives.</p>
+            <div class="pb-details" id="pb-details-camera">
+              <ol class="pb-notes" aria-label="Detected signals">
+                <li data-pb-atom="off_platform">Off-platform payment&nbsp;<span class="pb-quote">“MobilePay”</span></li>
+                <li data-pb-atom="urgency_pressure">Pressure to hurry&nbsp;<span class="pb-quote">“today only”</span></li>
+                <li data-pb-atom="ship_before_meet">Ships before you meet&nbsp;<span class="pb-quote">“can only ship”</span></li>
+              </ol>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn btn-primary js-protect" id="pb-protect-camera">Switch to a PayPal order</button>
+              <button type="button" class="btn btn-ghost js-anyway" id="pb-anyway-camera">Pay anyway</button>
+            </div>
+          </div>
+          <div class="pb-foot" id="pb-foot-camera" aria-live="polite">
+            <span class="pb-brand"><span class="pb-seg">PayBrake</span> · <span class="pb-seg">rules check</span> · <span class="pb-seg">checked just now</span> · <span class="pb-seg">only you can see this</span></span>
+          </div>
+        </aside>
       </div>
       <div class="composer" aria-hidden="true">
         <div class="fake-input">Aa</div>
-        <span class="send">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-7z"/></svg>
-        </span>
+        <span class="send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-7z"/></svg></span>
       </div>
     </section>
 
-    <p class="safe-label" id="safe-label">Another chat · no false alarm</p>
-    <section class="card safe" id="thread-lamp" data-pb-thread data-pb-listing-title="Desk lamp" data-pb-listing-price="275 kr" data-pb-seller-email="mette.lund@example.com" data-pb-seller-name="Mette Lund" aria-labelledby="safe-label">
+    <section class="card chat" id="thread-chair" data-pb-thread data-pb-listing-title="Oak armchair, wool seat" data-pb-listing-price="450 kr" data-pb-seller-email="laura.berg@example.com" data-pb-seller-name="Laura Berg" data-demo-asked="450 kr over WhatsApp, to reserve it" data-demo-deposit="None (asked: 450 kr)" aria-label="Conversation with Laura Berg" hidden>
       <div class="chat-head">
-        <span class="avatar ml" aria-hidden="true">ML</span>
-        <div>
-          <div class="title">Mette Lund</div>
-          <div class="sub">About: Desk lamp · 275 kr</div>
+        <span class="avatar lb" aria-hidden="true">LB</span>
+        <div class="who">
+          <div class="title">Laura Berg</div>
+          <div class="sub">Joined 5 days ago · 0 ratings</div>
+        </div>
+        <div class="item">
+          <span class="thumb" aria-hidden="true"><svg viewBox="0 0 200 120" fill="none" stroke="#3d5168" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M56 62 V30 a10 10 0 0 1 10 -10 h68 a10 10 0 0 1 10 10 V62"/><path d="M38 62 h124 v28 H38z"/><path d="M50 90 v16 M150 90 v16"/></svg></span>
+          <div><div class="item-name">About: Oak armchair, wool seat · 450 kr</div><div class="item-price">Aarhus C</div></div>
         </div>
       </div>
       <div class="thread">
+        <div class="day">Today</div>
+        <div class="msg out">
+          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi Laura, is the armchair still available? Could I pick it up in Aarhus C on Sunday?</div>
+          <span class="time">10:02</span>
+        </div>
+        <div class="msg in">
+          <span class="avatar lb" aria-hidden="true">LB</span>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Laura Berg: </span>Hi! Yes. I rarely check this app, let's continue on WhatsApp.</div>
+          <span class="time">10:09</span>
+        </div>
+        <div class="msg in">
+          <span class="avatar lb" aria-hidden="true">LB</span>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Laura Berg: </span><mark data-pb-atom="off_platform">Send me 450 kr via WhatsApp</mark> now <mark data-pb-atom="upfront_deposit">to reserve it</mark>, <mark data-pb-atom="urgency_pressure">a lot of people</mark> want it.</div>
+          <span class="time">10:10</span>
+        </div>
+
+        <aside class="pb" id="pb-card-chair" data-pb-static data-pb-risk="high" role="region" aria-labelledby="pb-title-chair">
+          <div class="pb-body">
+            <div class="pb-top">
+              <p class="pb-title" id="pb-title-chair">High risk payment request</p>
+              <button type="button" class="pb-toggle" aria-expanded="false" aria-controls="pb-details-chair">Details</button>
+            </div>
+            <p class="pb-explain">Upfront deposit off-platform: a direct transfer is very hard to get back if the item never arrives.</p>
+            <div class="pb-details" id="pb-details-chair">
+              <ol class="pb-notes" aria-label="Detected signals">
+                <li data-pb-atom="upfront_deposit">Upfront deposit&nbsp;<span class="pb-quote">“to reserve it”</span></li>
+                <li data-pb-atom="off_platform">Off-platform payment&nbsp;<span class="pb-quote">“Send me 450 kr via WhatsApp”</span></li>
+                <li data-pb-atom="urgency_pressure">Pressure to hurry&nbsp;<span class="pb-quote">“a lot of people”</span></li>
+              </ol>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn btn-primary js-protect" id="pb-protect-chair">Switch to a PayPal order</button>
+              <button type="button" class="btn btn-ghost js-anyway" id="pb-anyway-chair">Pay anyway</button>
+            </div>
+          </div>
+          <div class="pb-foot" id="pb-foot-chair" aria-live="polite">
+            <span class="pb-brand"><span class="pb-seg">PayBrake</span> · <span class="pb-seg">rules check</span> · <span class="pb-seg">checked just now</span> · <span class="pb-seg">only you can see this</span></span>
+          </div>
+        </aside>
+      </div>
+      <div class="composer" aria-hidden="true">
+        <div class="fake-input">Aa</div>
+        <span class="send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-7z"/></svg></span>
+      </div>
+    </section>
+
+    <section class="card chat" id="thread-console" data-pb-thread data-pb-listing-title="PlayStation 5, disc edition" data-pb-listing-price="2,400 kr" data-pb-seller-email="kasper.vind@example.com" data-pb-seller-name="Kasper Vind" data-demo-asked="Two 1,200 kr gift cards, codes sent in the chat" data-demo-deposit="None" aria-label="Conversation with Kasper Vind" hidden>
+      <div class="chat-head">
+        <span class="avatar kv" aria-hidden="true">KV</span>
+        <div class="who">
+          <div class="title">Kasper Vind</div>
+          <div class="sub">Joined yesterday · 0 ratings</div>
+        </div>
+        <div class="item">
+          <span class="thumb" aria-hidden="true"><svg viewBox="0 0 200 120" fill="none" stroke="#3d5168" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M62 30 H138 a32 32 0 0 1 30 42 l-8 22 a12 12 0 0 1 -20 4 L124 82 H76 L60 98 a12 12 0 0 1 -20 -4 l-8 -22 a32 32 0 0 1 30 -42z"/><path d="M70 50 v20 M60 60 h20"/></svg></span>
+          <div><div class="item-name">About: PlayStation 5, disc edition · 2,400 kr</div><div class="item-price">Odense</div></div>
+        </div>
+      </div>
+      <div class="thread">
+        <div class="day">Today</div>
+        <div class="msg out">
+          <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi Kasper, is the PS5 still available? I can pick it up in Odense on Saturday.</div>
+          <span class="time">21:14</span>
+        </div>
+        <div class="msg in">
+          <span class="avatar kv" aria-hidden="true">KV</span>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Kasper Vind: </span>Yes! My bank card is blocked this week, so I can only take <mark data-pb-atom="off_platform">gift cards</mark>.</div>
+          <span class="time">21:20</span>
+        </div>
+        <div class="msg in">
+          <span class="avatar kv" aria-hidden="true">KV</span>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Kasper Vind: </span>Buy two 1,200 kr Steam gift cards and <mark data-pb-atom="credential_request">send me the codes</mark> here. Then it's yours, I'll post it Monday.</div>
+          <span class="time">21:21</span>
+        </div>
+
+        <aside class="pb" id="pb-card-console" data-pb-static data-pb-risk="high" role="region" aria-labelledby="pb-title-console">
+          <div class="pb-body">
+            <div class="pb-top">
+              <p class="pb-title" id="pb-title-console">High risk payment request</p>
+              <button type="button" class="pb-toggle" aria-expanded="false" aria-controls="pb-details-console">Details</button>
+            </div>
+            <p class="pb-explain">Never share the code or card details with anyone: your bank, PayPal or a real buyer never asks.</p>
+            <div class="pb-details" id="pb-details-console">
+              <ol class="pb-notes" aria-label="Detected signals">
+                <li data-pb-atom="off_platform">Off-platform payment&nbsp;<span class="pb-quote">“gift cards”</span></li>
+                <li data-pb-atom="credential_request">Asks for card details, a code or a password&nbsp;<span class="pb-quote">“send me the codes”</span></li>
+              </ol>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn btn-primary js-protect" id="pb-protect-console">Switch to a PayPal order</button>
+              <button type="button" class="btn btn-ghost js-anyway" id="pb-anyway-console">Pay anyway</button>
+            </div>
+          </div>
+          <div class="pb-foot" id="pb-foot-console" aria-live="polite">
+            <span class="pb-brand"><span class="pb-seg">PayBrake</span> · <span class="pb-seg">rules check</span> · <span class="pb-seg">checked just now</span> · <span class="pb-seg">only you can see this</span></span>
+          </div>
+        </aside>
+      </div>
+      <div class="composer" aria-hidden="true">
+        <div class="fake-input">Aa</div>
+        <span class="send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-7z"/></svg></span>
+      </div>
+    </section>
+
+    <section class="card chat" id="thread-lamp" data-pb-thread data-pb-listing-title="Desk lamp" data-pb-listing-price="275 kr" data-pb-seller-email="mette.lund@example.com" data-pb-seller-name="Mette Lund" data-demo-safe aria-label="Conversation with Mette Lund" hidden>
+      <div class="chat-head">
+        <span class="avatar ml" aria-hidden="true">ML</span>
+        <div class="who">
+          <div class="title">Mette Lund</div>
+          <div class="sub">Joined 2019 · 31 ratings</div>
+        </div>
+        <div class="item">
+          <span class="thumb" aria-hidden="true"><svg viewBox="0 0 200 120" fill="none" stroke="#3d5168" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M66 104 h68"/><path d="M100 104 V62 L128 34"/><path d="M114 22 l34 20 -16 16 z"/></svg></span>
+          <div><div class="item-name">About: Desk lamp · 275 kr</div><div class="item-price">Østerbro</div></div>
+        </div>
+      </div>
+      <div class="thread">
+        <div class="day">Today</div>
         <div class="msg out">
           <div class="bubble" data-pb-msg data-from="buyer"><span class="sr-only">You: </span>Hi, is the lamp still available? How do I pay?</div>
           <span class="time">15:06</span>
@@ -600,57 +777,69 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
           <span class="time">15:13</span>
         </div>
       </div>
-      <p class="quiet">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#067647" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-        PayBrake stayed silent: no risky payment request
+      <p class="quiet-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#14161a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        <span>PayBrake stayed silent: no risky payment request.</span>
       </p>
+      <div class="composer" aria-hidden="true">
+        <div class="fake-input">Aa</div>
+        <span class="send"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l16-8-6 16-2-7z"/></svg></span>
+      </div>
     </section>
-  </section>
+  </div>
 
-  <aside class="side" aria-label="PayPal order preview">
-    <section class="card">
-      <div class="preview-head">
-        <h2>PayPal order preview</h2>
+  <aside class="side" aria-label="PayPal order preview and what is real">
+    <section class="panel" id="order" aria-labelledby="order-h" tabindex="-1">
+      <div class="panel-head">
+        <h2 id="order-h">PayPal order preview</h2>
         <span class="sandbox">Sandbox demo</span>
       </div>
-      <div class="preview-body">
+      <div class="panel-body" id="order-deal">
         <p class="method">Pay with <b>PayPal</b> · Goods &amp; Services</p>
-
-        <div class="order-item">
-          <div class="order-thumb" aria-hidden="true">
-            <svg width="38" height="24" viewBox="0 0 200 120" fill="none" stroke="#3d5168" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><circle cx="48" cy="80" r="30"/><circle cx="152" cy="80" r="30"/><path d="M48 80 L82 40 L134 40 L152 80 M82 40 L100 80 L48 80 M100 80 L134 40"/></svg>
-          </div>
-          <div>
-            <div class="name">Specialized Allez road bike, 56 cm</div>
-            <div class="by">Seller: Jonas Holm</div>
-          </div>
-        </div>
-
         <dl class="rows">
-          <dt>Item</dt><dd>Specialized Allez, 56 cm</dd>
-          <dt>Payee</dt><dd>jonas.holm@example.com</dd>
+          <dt>Item</dt><dd id="o-item">Specialized Allez road bike, 56 cm</dd>
+          <dt>Payee</dt><dd id="o-payee">jonas.holm<wbr>@example.com</dd>
           <dt>Payment type</dt><dd>Goods &amp; Services</dd>
-          <dt>Deposit</dt><dd>None</dd>
-          <dt>Buyer Protection</dt><dd><span class="maybe">may be eligible*</span></dd>
-          <dt class="total">Amount</dt><dd class="total">1,850 kr</dd>
+          <dt>Deposit</dt><dd id="o-deposit">None (asked: 500 kr)</dd>
+          <dt>Buyer Protection</dt><dd>may be eligible*</dd>
+          <dt class="total">Amount</dt><dd class="total" id="o-amount">1,850 kr</dd>
         </dl>
-
         <div class="compare">
-          <div class="bad"><b>Seller asked for</b>500 kr upfront via Friends &amp; Family</div>
-          <div class="good"><b>This order</b>Full price as Goods &amp; Services, paid to the seller's account</div>
+          <div class="asked"><b>Seller asked for</b><span id="o-asked">500 kr upfront via Friends &amp; Family</span></div>
+          <div><b>This order</b>Full price as Goods &amp; Services, paid to the seller's PayPal account</div>
         </div>
-
+        <ol class="flow" id="o-flow">
+          <li data-step="create"><span>Switch to a PayPal order <span class="hint">· in the card</span></span></li>
+          <li data-step="approve"><span>Approve the order <span class="hint">· PayPal's page in sandbox, a mock page otherwise</span></span>
+            <button type="button" class="step-btn" id="demo-approve" hidden>Approve (mock)</button></li>
+          <li data-step="capture"><span>Capture the payment</span>
+            <button type="button" class="step-btn" id="demo-capture" hidden>Capture (mock)</button></li>
+        </ol>
+        <p class="order-status" id="o-status" aria-live="polite"></p>
         <p class="fineprint">*Eligibility depends on PayPal terms and the transaction. Sandbox demo, no real payment is made.</p>
+      </div>
+      <div class="panel-body" id="order-quiet" hidden>
+        <p class="order-quiet">No order needed. Mette offers the marketplace checkout or cash on pickup, so PayBrake stays out of the way.</p>
       </div>
     </section>
 
-    <section class="card howto">
-      <h3>How PayBrake works</h3>
-      <ol>
-        <li>Reads payment requests in the open chat, on your device.</li>
-        <li>Flags patterns linked to non-delivery scams.</li>
-        <li>Suggests a Goods &amp; Services order instead of a blind transfer.</li>
-      </ol>
+    <section class="panel facts" aria-labelledby="facts-h">
+      <h2 id="facts-h">What is real here</h2>
+      <dl>
+        <div>
+          <dt>Rules check</dt>
+          <dd>Runs on your device inside the extension. Each card on this page is what the rules return for that chat, word for word.</dd>
+        </div>
+        <div>
+          <dt>AI check</dt>
+          <dd>In the extension, a second opinion from the demo server’s AI on masked text. It is rate-limited; without it the rules still work. This preview does not call it.</dd>
+        </div>
+        <div>
+          <dt>PayPal</dt>
+          <dd>Orders v2: PayPal sandbox when the server has sandbox keys, otherwise a mock. No real money moves.
+            <span class="srv" id="srv-status" aria-live="polite">This preview makes no orders; the extension does.</span></dd>
+        </div>
+      </dl>
     </section>
   </aside>
 </main>
@@ -658,86 +847,182 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
 <script>
   (function () {
     var live = new URLSearchParams(location.search).get("live") === "1";
+    var threads = Array.prototype.slice.call(document.querySelectorAll("[data-pb-thread]"));
+    var picks = Array.prototype.slice.call(document.querySelectorAll(".switcher button[data-thread]"));
+    var steps = document.getElementById("guide-steps");
+    var SAMPLE_ID = "5O190127TN364715T";
+    var state = {};
+    var current = "thread-bike";
+
+    function step(name, done) {
+      var li = steps && steps.querySelector('[data-step="' + name + '"]');
+      if (li) li.classList.toggle("done", !!done);
+    }
+
+    // ---------- Mode: built-in preview vs the real extension ----------
+    var mode = document.getElementById("pb-mode");
+    var modeLink = document.getElementById("pb-mode-link");
     if (live) {
-      document.querySelectorAll("mark").forEach(function (mark) {
+      // The extension draws its own card and marks: strip the static ones so it can inject.
+      document.querySelectorAll("[data-pb-thread] mark").forEach(function (mark) {
         mark.replaceWith(document.createTextNode(mark.textContent));
       });
-      var staticCard = document.getElementById("pb-card");
-      if (staticCard) staticCard.remove();
+      document.querySelectorAll("[data-pb-thread] .bubble.flagged").forEach(function (b) { b.classList.remove("flagged"); });
+      document.querySelectorAll(".pb[data-pb-static]").forEach(function (card) { card.remove(); });
       document.documentElement.dataset.pbLive = "1";
-      // Friendly hint when the extension is not installed (live mode needs it).
+      mode.textContent = "Extension mode";
+      modeLink.textContent = "Built-in preview";
+      modeLink.href = "marketplace.html" + location.hash;
+      document.getElementById("srv-status").textContent = "In extension mode the card makes a test order on this server.";
       setTimeout(function () {
-        if (document.documentElement.dataset.paybrake === "on") return;
+        if (document.documentElement.dataset.paybrake === "on") {
+          mode.textContent = "Extension mode · PayBrake is running";
+          return;
+        }
         var note = document.createElement("div");
         note.id = "pb-missing";
+        note.className = "missing";
         note.setAttribute("role", "status");
-        note.style.cssText = "position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:560px;width:calc(100% - 32px);background:#fff8e1;border:1px solid #f0c36d;color:#1c2530;border-radius:12px;padding:14px 18px;font:15px/1.5 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999";
-        note.innerHTML = "<b>PayBrake is not running in this browser.</b> Install the extension first (chrome://extensions, Developer mode, Load unpacked), then reload this page. " +
-          "Just looking? <a href=\"marketplace.html\">See the built-in preview</a>.";
+        note.innerHTML = "<p><b>PayBrake is not running in this browser.</b> Load the extension and reload, or see the same chats with the card built in.</p>" +
+          "<a class=\"go\" href=\"marketplace.html" + location.hash + "\">Open the built-in preview</a>" +
+          "<button type=\"button\">Dismiss</button>";
+        note.querySelector("button").addEventListener("click", function () { note.remove(); });
         document.body.appendChild(note);
       }, 2500);
     }
 
-    var bike = document.getElementById("thread-bike");
-    var camera = document.getElementById("thread-camera");
-    var showBike = document.getElementById("pb-show-thread-1");
-    var showCamera = document.getElementById("pb-show-thread-2");
-    function showThread(which) {
-      var bikeOn = which === 1;
-      bike.hidden = !bikeOn;
-      camera.hidden = bikeOn;
-      showBike.setAttribute("aria-pressed", bikeOn ? "true" : "false");
-      showCamera.setAttribute("aria-pressed", bikeOn ? "false" : "true");
+    // ---------- Order preview, per chat ----------
+    var el = function (id) { return document.getElementById(id); };
+    var approveBtn = el("demo-approve");
+    var captureBtn = el("demo-capture");
+    function renderOrder() {
+      var thread = el(current);
+      var s = state[current] || {};
+      var safe = thread.hasAttribute("data-demo-safe");
+      el("order-deal").hidden = safe;
+      el("order-quiet").hidden = !safe;
+      if (safe) return;
+      el("o-item").textContent = thread.dataset.pbListingTitle;
+      // Let a long address wrap at the @, not mid-word.
+      var payee = el("o-payee"), parts = thread.dataset.pbSellerEmail.split("@");
+      payee.textContent = parts[0];
+      if (parts.length > 1) { payee.appendChild(document.createElement("wbr")); payee.appendChild(document.createTextNode("@" + parts.slice(1).join("@"))); }
+      el("o-amount").textContent = thread.dataset.pbListingPrice;
+      el("o-deposit").textContent = thread.dataset.demoDeposit || "None";
+      el("o-asked").textContent = thread.dataset.demoAsked || "";
+      var flow = el("o-flow");
+      flow.querySelector('[data-step="create"]').classList.toggle("done", !!s.created);
+      flow.querySelector('[data-step="approve"]').classList.toggle("done", !!s.approved);
+      flow.querySelector('[data-step="capture"]').classList.toggle("done", !!s.captured);
+      approveBtn.hidden = live || !s.created || !!s.approved;
+      captureBtn.hidden = live || !s.approved || !!s.captured;
+      var status = "";
+      if (s.anyway) status = "You chose to pay anyway. No order was made.";
+      else if (s.captured) status = "Captured (mock). The card would now read “Paid with PayPal Goods & Services (sandbox)”. Nothing was sent to PayPal.";
+      else if (s.approved) status = "Approved (mock). Last step: capture.";
+      else if (s.created) status = "Order created (preview, sample ID " + SAMPLE_ID + "). Awaiting approval.";
+      el("o-status").textContent = status;
+      step("order", !!s.created);
     }
-    showBike.addEventListener("click", function () { showThread(1); });
-    showCamera.addEventListener("click", function () { showThread(2); });
 
-    var card = document.getElementById("pb-card");
-    var foot = document.getElementById("pb-foot");
-    var protect = document.getElementById("pb-protect");
-    var anyway = document.getElementById("pb-anyway");
-    if (!card || !protect || !anyway) return;
-
-    function clearFocus() {
-      delete bike.dataset.pbFocus;
-      bike.querySelectorAll("mark.pb-on").forEach(function (mark) { mark.classList.remove("pb-on"); });
+    // ---------- Chat picker ----------
+    function showThread(id) {
+      if (!el(id)) return;
+      current = id;
+      threads.forEach(function (t) { t.hidden = t.id !== id; });
+      picks.forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.thread === id ? "true" : "false"); });
+      renderOrder();
     }
-    card.querySelectorAll(".pb-notes li[data-pb-atom]").forEach(function (item) {
-      function on() {
-        clearFocus();
-        bike.dataset.pbFocus = item.dataset.pbAtom;
-        bike.querySelectorAll("mark[data-pb-atom]").forEach(function (mark) {
-          if (mark.dataset.pbAtom.split(" ").indexOf(item.dataset.pbAtom) >= 0) mark.classList.add("pb-on");
+    picks.forEach(function (b) {
+      b.addEventListener("click", function () { showThread(b.dataset.thread); step("pick", true); });
+    });
+    // Deep links such as #camera or #lamp open that chat; clicks do not rewrite the URL.
+    var fromHash = location.hash && "thread-" + location.hash.slice(1);
+    if (fromHash && el(fromHash)) showThread(fromHash);
+    else renderOrder();
+
+    approveBtn.addEventListener("click", function () {
+      (state[current] = state[current] || {}).approved = true;
+      renderOrder();
+      captureBtn.focus();
+    });
+    captureBtn.addEventListener("click", function () {
+      (state[current] = state[current] || {}).captured = true;
+      renderOrder();
+    });
+
+    // ---------- What this server runs (only over http; the file:// preview makes no requests) ----------
+    if (!live && /^https?:$/.test(location.protocol)) {
+      fetch("/health", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (h) {
+        if (!h || !h.paypal) return;
+        var pp = h.paypal === "sandbox" ? "PayPal sandbox" : "PayPal mock (no sandbox keys set)";
+        var ai = h.llm === "configured" && !h.aiKillSwitch ? "AI check on" : "AI check off";
+        el("srv-status").textContent = "This server right now: " + pp + " · " + ai + ".";
+      }).catch(function () {});
+    }
+
+    // ---------- Static cards (built-in preview only) ----------
+    document.querySelectorAll(".pb[data-pb-static]").forEach(function (card) {
+      var thread = card.closest("[data-pb-thread]");
+      var foot = card.querySelector(".pb-foot");
+      var protect = card.querySelector(".js-protect");
+      var anyway = card.querySelector(".js-anyway");
+      var titleId = card.getAttribute("aria-labelledby");
+
+      function clearFocus() {
+        delete thread.dataset.pbFocus;
+        thread.querySelectorAll("mark.pb-on").forEach(function (mark) { mark.classList.remove("pb-on"); });
+      }
+      card.querySelectorAll(".pb-notes li[data-pb-atom]").forEach(function (item) {
+        function on() {
+          clearFocus();
+          thread.dataset.pbFocus = item.dataset.pbAtom;
+          thread.querySelectorAll("mark[data-pb-atom]").forEach(function (mark) {
+            if (mark.dataset.pbAtom.split(" ").indexOf(item.dataset.pbAtom) >= 0) mark.classList.add("pb-on");
+          });
+        }
+        item.addEventListener("mouseenter", on);
+        item.addEventListener("focusin", on);
+        item.addEventListener("mouseleave", clearFocus);
+        item.addEventListener("focusout", clearFocus);
+      });
+
+      var toggle = card.querySelector(".pb-toggle");
+      if (toggle) {
+        toggle.addEventListener("click", function () {
+          var open = card.classList.toggle("pb-open");
+          toggle.setAttribute("aria-expanded", open ? "true" : "false");
+          toggle.textContent = open ? "Hide" : "Details";
         });
       }
-      item.addEventListener("mouseenter", on);
-      item.addEventListener("focusin", on);
-      item.addEventListener("mouseleave", clearFocus);
-      item.addEventListener("focusout", clearFocus);
-    });
 
-    var toggle = card.querySelector(".pb-toggle");
-    if (toggle) {
-      toggle.addEventListener("click", function () {
-        var open = card.classList.toggle("pb-open");
-        toggle.setAttribute("aria-expanded", open ? "true" : "false");
-        toggle.textContent = open ? "Hide" : "Details";
+      protect.addEventListener("click", function () {
+        foot.classList.add("is-status");
+        foot.innerHTML = '<span>Sandbox order created (preview) · sample ID <code>' + SAMPLE_ID + '</code> · awaiting approval</span>' +
+          '<a href="#order">See the order</a>';
+        foot.querySelector('a[href="#order"]').addEventListener("click", function (e) {
+          e.preventDefault();
+          var panel = el("order");
+          panel.scrollIntoView({ behavior: "smooth", block: "start" });
+          panel.focus({ preventScroll: true });
+        });
+        protect.disabled = true;
+        protect.setAttribute("aria-disabled", "true");
+        (state[thread.id] = state[thread.id] || {}).created = true;
+        step("read", true);
+        renderOrder();
       });
-    }
 
-    protect.addEventListener("click", function () {
-      foot.classList.add("is-status");
-      foot.innerHTML = '<span>Sandbox order created · ID <code>5O190127TN364715T</code> · awaiting approval</span>';
-      protect.disabled = true;
-      protect.setAttribute("aria-disabled", "true");
-    });
-
-    anyway.addEventListener("click", function () {
-      clearFocus();
-      card.classList.add("is-collapsed");
-      card.innerHTML =
-        '<p class="pb-collapsed" id="pb-title" tabindex="-1" role="status" style="margin:0">You chose to pay anyway. Logged on this device.</p>';
-      card.querySelector(".pb-collapsed").focus();
+      anyway.addEventListener("click", function () {
+        clearFocus();
+        card.classList.add("is-collapsed");
+        card.innerHTML =
+          '<p class="pb-collapsed" id="' + titleId + '" tabindex="-1" role="status" style="margin:0">You chose to pay anyway. Logged on this device.</p>';
+        card.querySelector(".pb-collapsed").focus();
+        (state[thread.id] = state[thread.id] || {}).anyway = true;
+        step("read", true);
+        renderOrder();
+      });
     });
   })();
 </script>
