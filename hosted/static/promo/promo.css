@@ -547,10 +547,9 @@ blockquote.msg p {
 .presets {
   margin-top: 10px;
   display: flex; flex-wrap: wrap; align-items: center;
-  gap: 0 18px;
+  gap: 0 20px;   /* label and presets share one wrapped row; each preset keeps its 44px tap height */
   font: 400 var(--t-ui)/1.3 var(--serif);
 }
-.presets > span { flex-basis: 100%; }
 .preset {
   min-height: 44px; padding: 0;
   background: none; border: 0; color: inherit;
@@ -603,7 +602,25 @@ blockquote.msg p {
 
 .bench .verdict { margin-top: 16px; min-height: 124px; }
 .bench .verdict:has(.hint) { min-height: 0; }
-.bench .sig, .hint, .bench .small { color: rgba(20, 22, 26, .75); }
+.bench .sig, .bench .small { color: rgba(20, 22, 26, .75); }
+/* Before the first check the column says what will land in it, under the slip's footnote rule. */
+.bench .hint {
+  position: relative;
+  padding-top: 12px;
+  max-width: 22em;
+  font: 400 var(--t-body)/1.45 var(--serif);
+  color: rgba(20, 22, 26, .75);
+}
+.bench .hint::before {
+  content: ""; position: absolute; left: 0; top: 0;
+  width: 88px; height: 1px; background: var(--ink);
+}
+/* The verdict as the hero's slip: white on amber, title, reason, the signals under the rule. */
+.try-slip { padding: 16px 18px 18px; }
+.try-slip .pb-notes { flex-direction: column; gap: 2px; }
+.try-slip .pb-notes li { white-space: normal; }
+.bench .state.none { display: block; font: italic 400 var(--t-body)/1.3 var(--serif); }
+.bench .state.none::before { content: none; }
 .try-foot { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
 .try-foot .btn { min-height: 52px; }
 .try-foot .small { max-width: 40em; }
@@ -1005,7 +1022,6 @@ blockquote.msg p {
   .bench-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--g); }
   .bench-label { grid-column: 1 / span 9; }
   .presets { grid-column: 1 / span 7; margin-top: 12px; }
-  .presets > span { flex-basis: auto; }
   .ta {
     grid-column: 1 / span 7; margin-top: 12px;
     border-radius: clamp(26px, 3vw, 44px);
@@ -1018,7 +1034,7 @@ blockquote.msg p {
   .echo, .ta textarea { padding: clamp(20px, 2vw, 30px) clamp(22px, 2.4vw, 36px) clamp(22px, 2.2vw, 32px); line-height: 1.12; }
   .bench .verdict { grid-column: 9 / -1; grid-row: 3 / span 2; margin-top: 12px; padding-top: 12px; min-height: 0; }
   .try-foot { grid-column: 1 / span 7; flex-direction: row; align-items: flex-start; gap: 20px; margin-top: 18px; }
-  .try-foot .btn { flex: none; min-height: 48px; }
+  .try-foot .btn { flex: none; min-height: 52px; padding: 0 28px; }
 
   /* Path: tablet keeps it vertical, with the name beside its details. */
   #how h2 { max-width: 22em; }

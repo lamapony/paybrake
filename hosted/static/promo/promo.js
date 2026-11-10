@@ -307,13 +307,23 @@
     });
   }
 
+  // A card is the hero's slip: title, reason, and the signals under the footnote rule (no numerals here,
+  // the marks in the message are not numbered).
   function renderRisk(verdict, marks, text) {
     var label = !pbPayRisk.isPaymentRisk(verdict)
       ? "Account safety risk"
       : verdict.level === "medium" ? "Possible payment risk" : "High risk payment request";
     var names = signalNames(verdict);
-    var parts = [node("p", "state card", label), node("p", "reason", verdict.reason)];
-    if (names.length) parts.push(node("p", "sig", names.join(" · ")));
+    var slip = node("div", "pb try-slip");
+    slip.appendChild(node("p", "pb-title", label));
+    slip.appendChild(node("p", "pb-explain", verdict.reason));
+    if (names.length) {
+      var notes = node("ol", "pb-notes");
+      notes.setAttribute("aria-label", "Detected signals");
+      names.forEach(function (name) { notes.appendChild(node("li", null, name)); });
+      slip.appendChild(notes);
+    }
+    var parts = [slip];
     var quotes = marks.map(function (mark) { return text.slice(mark.start, mark.end); });
     if (quotes.length) parts.push(node("p", "sr", "PayBrake marked: " + quotes.join(", ") + "."));
     setVerdict("risk|" + label + "|" + verdict.reason + "|" + names.join(), parts);
@@ -334,7 +344,7 @@
   }
 
   function showHint() {
-    setVerdict("hint", [node("p", "small hint", "The verdict appears here.")]);
+    setVerdict("hint", [node("p", "hint", "Load one of the three messages or paste your own. The verdict lands here: a card that quotes the words that set it off, or no card at all.")]);
   }
 
   async function check(asked) {

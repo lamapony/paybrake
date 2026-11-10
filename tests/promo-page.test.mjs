@@ -204,6 +204,15 @@ test("promo: the playground presets are real lines with the outcomes they demons
   }
 });
 
+test("promo: the playground says what will land in the verdict column and renders a card as the hero's slip", () => {
+  const hint = "Load one of the three messages or paste your own. The verdict lands here: a card that quotes the words that set it off, or no card at all.";
+  assert.ok(html.includes(`<div class="verdict" id="try-verdict" aria-live="polite"><p class="hint">${hint}</p></div>`));
+  const js = fs.readFileSync(path.join(dir, "promo.js"), "utf8");
+  assert.ok(js.includes(`"${hint}"`), "promo.js restores the same hint");
+  for (const cls of ['"pb try-slip"', '"pb-title"', '"pb-explain"', '"pb-notes"']) assert.ok(js.includes(cls), `promo.js renders ${cls}`);
+  assert.ok(!html.includes("The verdict appears here."));
+});
+
 test("promo: the card keeps working links without JS and quotes the extension's collapsed state", () => {
   assert.match(html, /<a class="pbtn primary" href="#order" data-brake>Switch to a PayPal order<\/a>/);
   assert.match(html, /<a class="pbtn quiet" href="#anyway" data-anyway>Pay anyway<\/a>/);
