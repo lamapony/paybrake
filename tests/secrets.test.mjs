@@ -15,7 +15,7 @@ const pattern = [
   "(^|[^A-Za-z0-9])" + "sk-" + "[A-Za-z0-9_-]{10,}",
   "EA" + "AG",
   "A21" + "AA",
-  "client_secret\\s*[:=]\\s*['\\\"][^'\\\"]+"
+  "client_secret[[:space:]]*[:=][[:space:]]*['\\\"][^'\\\"]+"
 ].join("|");
 
 function grep(args, cwd) {
