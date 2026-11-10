@@ -1,4 +1,6 @@
-/* Risk card. Loaded into the shadow root. Matches demo/marketplace.html. */
+/* Risk card. Loaded into the shadow root. Matches demo/marketplace.html.
+   A footnote slip: one ink hairline, a plain headline, the signals typeset as notes with the
+   seller's own words quoted in the annotating serif. No pills, no chips, no pastel alerts. */
 :host {
   all: initial;
   display: block;
@@ -8,7 +10,7 @@
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 15px;
   line-height: 1.45;
-  color: #1c2530;
+  color: #14161a;
   color-scheme: light;
   container-type: inline-size;
   min-width: 0;
@@ -19,151 +21,126 @@
 :host *::before,
 :host *::after { box-sizing: border-box; }
 
-:host button,
-:host input,
-:host a { font: inherit; }
+/* Zero-specificity reset, so .btn and .pb-toggle keep their own size and weight. */
+:where(button, input, a) { font: inherit; }
 
 :host :focus-visible {
-  outline: 3px solid #2e90fa;
+  outline: 3px solid #14161a;
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 2px;
 }
 
 .pb {
   margin: 0;
   max-width: 100%;
   min-width: 0;
-  border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid #f1c27d;
-  box-shadow: 0 2px 4px rgba(180, 35, 24, .06), 0 10px 28px rgba(180, 35, 24, .10);
+  background: #fff;
+  border: 1px solid #14161a;
+  border-radius: 2px;
   overflow: hidden;
-  position: relative;
 }
 
-.pb::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 5px;
-  background: linear-gradient(180deg, #f5a524, #b42318);
-}
+.pb-body { padding: 16px 20px 14px; }
 
-.pb-body { padding: 16px 18px 14px 22px; }
+/* Title row: the headline, and on a phone the Details toggle at its right end. */
 .pb-top {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
+  align-items: flex-start;
+  gap: 4px 12px;
+  min-width: 0;
 }
 
-.risk-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: #fef3f2;
-  color: #b42318;
-  border: 1px solid #fecdca;
+.pb-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.2;
   font-weight: 700;
-  font-size: 13px;
-  padding: 5px 11px 5px 8px;
-  border-radius: 999px;
-}
-.risk-badge svg { flex: none; }
-
-.pb-tag {
-  font-size: 12px;
-  color: #5d6a7c;
-  margin-left: auto;
+  letter-spacing: -.01em;
+  color: #14161a;
+  overflow-wrap: anywhere;
 }
 
 /* Compact-mode parts. Hidden on desktop; the narrow-viewport block below turns them on. */
-.pb-headline-short,
-.pb-level,
 .pb-toggle { display: none; }
 .pb-details { display: block; }
-.pb-tag.mock {
-  font-weight: 700;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: #1d4ed8;
-  background: #eef4ff;
-  border: 1px solid #c7d7fe;
-  border-radius: 6px;
-  padding: 3px 8px;
+
+/* Meta: one plain line under the title ("Checked just now · AI checked"). */
+.pb-tags {
+  margin: 3px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #556070;
+  overflow-wrap: anywhere;
 }
+.pb-tag.mock { color: #14161a; font-weight: 600; }
 
 .pb-explain {
-  margin: 0 0 12px;
+  margin: 6px 0 0;
   font-size: 15px;
-  font-weight: 550;
+  line-height: 1.45;
+  font-weight: 500;
+  color: #14161a;
   overflow-wrap: anywhere;
 }
 
-.signals-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: #5d6a7c;
-  margin: 0 0 6px;
-}
-
-.chips {
+/* Signals as footnotes: a short rule, then the receipts inline, each with the quoted phrase. */
+.pb-notes {
+  position: relative;
   list-style: none;
-  margin: 0 0 16px;
-  padding: 0;
+  margin: 12px 0 0;
+  padding: 9px 0 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #fff8eb;
-  border: 1px solid #f3c46b;
-  color: #6b4200;
-  font-size: 13px;
+  gap: 4px 18px;
+  font-size: 14px;
+  line-height: 1.4;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 8px;
-  overflow-wrap: anywhere;
+  color: #14161a;
 }
-.chip::before {
+.pb-notes::before {
   content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #d9480f;
-  flex: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 72px;
+  height: 1px;
+  background: #14161a;
+}
+.pb-notes li { min-width: 0; overflow-wrap: anywhere; }
+.pb-quote {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+  color: #556070;
 }
 
 .pb-email {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin: 0 0 12px;
+  margin: 14px 0 0;
   font-size: 13px;
   font-weight: 600;
-  color: #4a5666;
+  color: #556070;
 }
 .pb-email input {
   min-height: 44px;
   width: 100%;
-  border: 1px solid #c3ccd7;
-  border-radius: 10px;
+  border: 1px solid #8a94a3;
+  border-radius: 2px;
   padding: 8px 12px;
-  color: #1c2530;
+  color: #14161a;
   background: #fff;
 }
 
 .actions {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  margin-top: 14px;
   min-width: 0;
 }
 
@@ -171,151 +148,122 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   min-height: 44px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  font-weight: 650;
+  border-radius: 2px;
   font-size: 15px;
+  font-weight: 650;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
   transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
 }
-.btn:active { transform: scale(.98); }
-.btn-primary { background: #0062a8; color: #fff; border: 1px solid #0062a8; }
+.btn-primary {
+  padding: 0 20px;
+  background: #0062a8;
+  color: #fff;
+  border: 1px solid #0062a8;
+}
 .btn-primary:hover { background: #004f88; border-color: #004f88; }
+.btn-primary:active { transform: scale(.98); }
 .btn-primary[disabled],
 .btn-primary[aria-disabled="true"] {
   background: #4d7fb0;
   border-color: #4d7fb0;
   cursor: default;
 }
-.btn-ghost { background: transparent; color: #4a5666; border: 1px solid #c3ccd7; }
-.btn-ghost:hover { background: #f6f8fb; border-color: #9aa7b6; }
+/* The quiet action: underlined text, not a second button shape. */
+.btn-ghost {
+  padding: 0 6px;
+  background: transparent;
+  border: 0;
+  color: #14161a;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .22em;
+}
+.btn-ghost:hover { text-decoration-thickness: 2px; }
+.actions > .btn-ghost:first-child { margin-left: -6px; }
 
+/* Foot: the slip's caption, inside the card bottom. */
 .pb-foot {
   display: flex;
-  align-items: center;
-  gap: 8px;
   flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
   min-width: 0;
-  padding: 9px 18px 9px 22px;
-  background: #f6f8fb;
-  border-top: 1px solid #dde3ea;
-  font-size: 12px;
-  color: #5d6a7c;
+  padding: 10px 20px 12px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: #556070;
   overflow-wrap: anywhere;
 }
 .pb-foot > span { min-width: 0; overflow-wrap: anywhere; }
-.pb-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  color: #4a5666;
-}
-.pb-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 3px solid #4a5666;
-  flex: none;
-}
-.pb-foot.is-status {
-  background: #eef4ff;
-  color: #1e3a8a;
-  font-weight: 600;
-}
-.pb-foot.is-error {
-  background: #fef3f2;
-  color: #7a271a;
-  font-weight: 600;
-}
+.pb-foot.is-status { color: #0b3b66; font-weight: 600; }
+.pb-foot.is-error { color: #8a1c12; font-weight: 600; }
 .pb-foot code {
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-size: 12px;
   overflow-wrap: anywhere;
 }
 
-.pb.is-collapsed { border-color: #dde3ea; box-shadow: none; }
-.pb.is-collapsed::before { background: #9aa7b6; }
+.pb.is-collapsed { border-color: #d5dbe2; }
 .pb-collapsed {
   margin: 0;
-  padding: 11px 18px 11px 22px;
-  font-size: 13px;
-  color: #4a5666;
+  padding: 12px 20px;
+  font-size: 14px;
+  color: #556070;
   overflow-wrap: anywhere;
 }
 
 @container (max-width: 520px) {
-  .pb-body { padding: 14px 14px 12px 18px; }
-  .pb-tag { margin-left: 0; }
-  .actions { flex-direction: column; }
-  .actions .btn { width: 100%; }
-  .pb-foot { padding: 9px 14px 9px 18px; }
-  .pb-collapsed { padding: 11px 14px 11px 18px; }
+  .pb-body { padding: 14px 16px 12px; }
+  .actions { flex-direction: column; align-items: flex-start; }
+  .actions .btn-primary { width: 100%; }
+  .actions .btn-ghost { margin-left: -6px; }
+  .pb-foot { padding: 10px 16px 12px; }
+  .pb-collapsed { padding: 12px 16px; }
 }
 
 @media (max-width: 520px) {
   :host { margin-left: 0; margin-right: 0; }
-  /* Compact card: a short headline, a level pill, one line of advice and the actions.
-     The chips and the seller-email field move behind a Details toggle so the card stays
-     small (well under 40% of a phone viewport) instead of covering the chat. */
-  .pb-body { padding: 12px 14px 12px 18px; }
-  .pb-top { gap: 8px; margin-bottom: 8px; align-items: center; }
-  .risk-badge { font-size: 12px; padding: 4px 10px 4px 8px; }
-  .pb-headline-long { display: none; }
-  .pb-headline-short { display: inline; }
-  .pb-level {
-    display: inline-flex;
-    align-items: center;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: #7a271a;
-    background: #fef3f2;
-    border: 1px solid #fecdca;
-    border-radius: 999px;
-    padding: 3px 9px;
-  }
-  .pb-tag { margin-left: 0; }
-  /* The generic "Checked just now" tag is redundant with the footer; drop it in compact mode
-     to keep the top row to one line (the mock-mode and AI-state tags stay). */
-  .pb-tag:not(.mock):not(.ai):not(.ai-off) { display: none; }
+  /* Compact card: the headline, one line of advice and the actions. The notes and the
+     seller-email field move behind a Details toggle so the card stays small (well under
+     40% of a phone viewport) instead of covering the chat. */
+  .pb-body { padding: 14px 16px 12px; }
   .pb-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    margin-left: auto;
-    padding: 6px 10px;
-    min-height: 32px;
-    font-size: 12px;
-    font-weight: 650;
-    color: #4a5666;
-    background: #f6f8fb;
-    border: 1px solid #c3ccd7;
-    border-radius: 999px;
+    flex: none;
+    min-height: 44px;
+    margin: -11px -6px -11px 0;
+    padding: 0 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #14161a;
+    background: transparent;
+    border: 0;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .22em;
     cursor: pointer;
   }
-  .pb-toggle::after { content: "▾"; font-size: 10px; line-height: 1; }
-  .pb-open .pb-toggle::after { content: "▴"; }
+  .pb-toggle:hover { text-decoration-thickness: 2px; }
   /* One line of advice; the full reason comes back when the card is expanded. */
   .pb-explain {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
-    margin-bottom: 8px;
   }
   .pb-details { display: none; }
   .pb-open .pb-explain { display: block; -webkit-line-clamp: unset; overflow: visible; }
   .pb-open .pb-details { display: block; }
-  .actions { flex-direction: column; }
-  .actions .btn { width: 100%; }
-  .pb-foot { padding: 8px 14px 8px 18px; font-size: 11px; }
-  .pb-collapsed { padding: 11px 14px 11px 18px; }
+  .actions { flex-direction: column; align-items: flex-start; }
+  .actions .btn-primary { width: 100%; }
+  .actions .btn-ghost { margin-left: -6px; }
+  .pb-foot { padding: 10px 16px 12px; }
+  .pb-collapsed { padding: 12px 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -325,15 +273,5 @@
     transition: none !important;
     animation: none !important;
   }
-  .btn:active { transform: none; }
+  .btn-primary:active { transform: none; }
 }
-
-.pb-tag.ai-off,
-.pb-tag.ai {
-  margin-left: 0;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-weight: 650;
-}
-.pb-tag.ai-off { color: #7a4b00; background: #fff8eb; border: 1px solid #f3c46b; }
-.pb-tag.ai { color: #1e3a8a; background: #eef4ff; border: 1px solid #c7d7fe; }

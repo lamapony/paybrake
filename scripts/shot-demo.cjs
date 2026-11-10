@@ -104,7 +104,9 @@ async function staticPass(browser) {
         const box = await page.locator(id).boundingBox();
         const card = await page.locator("#pb-card .actions").boundingBox();
         check(box && box.height >= 44, `${label}: ${id} is at least 44px tall (${box && box.height})`);
-        check(box && card && Math.abs(box.width - card.width) < 1, `${label}: ${id} is full width`);
+        // The primary action fills the row; "Pay anyway" stays a left-aligned text link.
+        if (id === "#pb-protect") check(box && card && Math.abs(box.width - card.width) < 1, `${label}: ${id} is full width`);
+        else check(box && card && box.width < card.width / 2, `${label}: ${id} is a quiet text link, not a full-width button`);
       }
     }
 
@@ -196,9 +198,8 @@ async function livePass(browser) {
 
   const phone = await openLive(390, 844, 2);
   const phoneText = await phone.locator("#pb-card").innerText();
-  // Compact mobile card: a short headline plus the level, not the long desktop headline.
-  // The level pill is "High" in the DOM and uppercase via text-transform, so innerText is "HIGH".
-  check(/payment risk/i.test(phoneText) && /\bhigh\b/i.test(phoneText), "live 390: card shows the compact headline and level");
+  // Compact mobile card: the same headline as desktop, the level in its words.
+  check(/high risk payment request/i.test(phoneText), "live 390: card shows the headline with its level");
   for (const id of ["#pb-protect", "#pb-anyway"]) {
     const box = await phone.locator(id).boundingBox();
     check(box && box.height >= 44, `live 390: ${id} is at least 44px tall (${box && box.height})`);

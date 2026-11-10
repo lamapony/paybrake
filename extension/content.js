@@ -425,33 +425,49 @@
     if (document.getElementById("pb-ev-style")) return;
     const style = document.createElement("style");
     style.id = "pb-ev-style";
-    style.textContent = "mark.pb-ev{background:#ffe7b3;color:inherit;border-radius:4px;padding:0 3px;box-decoration-break:clone;-webkit-box-decoration-break:clone;}";
+    // Same marker as the promo slip: an amber band under the words, no rounded pill.
+    style.textContent = "mark.pb-ev{background:linear-gradient(#ffc629,#ffc629) no-repeat 0 62%/100% 80%;color:inherit;border-radius:0;padding:0 .06em;box-decoration-break:clone;-webkit-box-decoration-break:clone;}";
     document.documentElement.append(style);
   }
 
-  function badgeSvg() {
-    const wrap = document.createElement("span");
-    wrap.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 L22 20 H2 Z" fill="#f5a524" stroke="#b42318" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9.5v4.5" stroke="#1c2530" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.2" fill="#1c2530"/></svg>';
-    return wrap.firstChild;
-  }
-
-  function brand() {
-    const span = el("span", "pb-brand");
-    span.append(el("span", "pb-dot"), document.createTextNode(""));
-    return span;
+  // The foot caption: plain text, no brand dot.
+  function brand(text) {
+    return el("span", "pb-brand", text);
   }
 
   function setFoot(foot, text, kind) {
     foot.className = "pb-foot" + (kind === "status" ? " is-status" : kind === "error" ? " is-error" : "");
-    foot.replaceChildren();
-    if (kind === "status" || kind === "error") {
-      const span = el("span", null, text);
-      foot.append(span);
-      return;
+    foot.replaceChildren(kind === "status" || kind === "error" ? el("span", null, text) : brand(text));
+  }
+
+  // The first phrase the engine quoted for each signal (evidence[i].atom === signal id).
+  function quotedPhrases(verdict) {
+    const quoted = new Map();
+    for (const item of (verdict && verdict.evidence) || []) {
+      if (!item || typeof item.atom !== "string" || typeof item.text !== "string") continue;
+      const text = item.text.replace(/\s+/g, " ").trim();
+      if (text && !quoted.has(item.atom)) quoted.set(item.atom, text.length > 64 ? text.slice(0, 61).trimEnd() + "…" : text);
     }
-    const span = brand();
-    span.append(document.createTextNode(text));
-    foot.append(span);
+    return quoted;
+  }
+
+  // Signals as footnotes: the receipt label, then the seller's own words in curly quotes.
+  function signalNotes(verdict) {
+    const notes = el("ol", "pb-notes");
+    notes.setAttribute("aria-label", "Detected signals");
+    const quoted = quotedPhrases(verdict);
+    for (const id of (verdict && verdict.signals) || []) {
+      const label = chipLabel(id);
+      const item = el("li", null, label);
+      const phrase = quoted.get(id);
+      // A quote that only repeats the label ("Friends & Family") adds nothing; skip it.
+      if (phrase && phrase.toLowerCase() !== label.toLowerCase()) {
+        item.append(document.createTextNode(" "));
+        item.append(el("span", "pb-quote", "“" + phrase + "”"));
+      }
+      notes.append(item);
+    }
+    return notes;
   }
 
   function orderLine(orderId) {
@@ -561,27 +577,30 @@
 
     const body = el("div", "pb-body");
     const top = el("div", "pb-top");
-    const badge = el("span", "risk-badge");
-    badge.id = "pb-title";
-    badge.append(badgeSvg());
-    const long = el("span", "pb-headline-long", isPayment
+    // The level is in the words; the same headline on every viewport.
+    const title = el("p", "pb-title", isPayment
       ? (verdict.level === "medium" ? "Possible payment risk" : "High risk payment request")
       : "Account safety risk");
-    const short = el("span", "pb-headline-short", isPayment ? "Payment risk" : "Account safety");
-    badge.append(long, short);
-    top.append(badge);
-    // Narrow viewports: the level is shown as its own pill next to a short headline.
-    top.append(el("span", "pb-level", verdict.level === "medium" ? "Medium" : "High"));
-    if (session.mode === "mock") top.append(el("span", "pb-tag mock", "mock mode"));
-    else top.append(el("span", "pb-tag", "Checked just now"));
-    // Visible AI state, so a rules-only card is never mistaken for an AI-checked one.
-    if (verdict.llm === "unavailable") top.append(el("span", "pb-tag ai-off", "AI check unavailable"));
-    else if (verdict.llm === "off_server") top.append(el("span", "pb-tag ai-off", "AI check off (mock server)"));
-    else if (verdict.llm === "added" || verdict.llm === "confirmed") top.append(el("span", "pb-tag ai", "AI checked"));
-    if (verdict.source === "model") top.append(el("span", "pb-tag ai", "On-device model"));
+    title.id = "pb-title";
+    top.append(title);
 
-    // Collapsible details (chips, the seller-email field). Collapsed by default on a narrow
-    // viewport so the card stays small; always shown on desktop.
+    // One plain meta line under the title, joined with " · ".
+    const tags = [];
+    if (session.mode === "mock") tags.push(el("span", "pb-tag mock", "mock mode"));
+    else tags.push(el("span", "pb-tag", "Checked just now"));
+    // Visible AI state, so a rules-only card is never mistaken for an AI-checked one.
+    if (verdict.llm === "unavailable") tags.push(el("span", "pb-tag ai-off", "AI check unavailable"));
+    else if (verdict.llm === "off_server") tags.push(el("span", "pb-tag ai-off", "AI check off (mock server)"));
+    else if (verdict.llm === "added" || verdict.llm === "confirmed") tags.push(el("span", "pb-tag ai", "AI checked"));
+    if (verdict.source === "model") tags.push(el("span", "pb-tag ai", "On-device model"));
+    const tagLine = el("p", "pb-tags");
+    tags.forEach((tag, index) => {
+      if (index) tagLine.append(document.createTextNode(" · "));
+      tagLine.append(tag);
+    });
+
+    // Collapsible details (the signal notes, the seller-email field). Collapsed by default on
+    // a narrow viewport so the card stays small; always shown on desktop.
     const detailsId = "pb-details";
     const toggle = el("button", "pb-toggle");
     toggle.type = "button";
@@ -593,11 +612,7 @@
     const explain = el("p", "pb-explain", verdict.reason || "");
     const details = el("div", "pb-details");
     details.id = detailsId;
-    const label = el("p", "signals-label", "Detected signals");
-    label.id = "signals-label";
-    const chips = el("ul", "chips");
-    chips.setAttribute("aria-labelledby", "signals-label");
-    for (const id of verdict.signals || []) chips.append(el("li", "chip", chipLabel(id)));
+    const notes = signalNotes(verdict);
 
     const deal = verdict.deal || {};
     let emailInput = null;
@@ -650,9 +665,7 @@
       protect.addEventListener("click", () => protectDeal(session, emailInput, foot, protect));
       anyway.addEventListener("click", () => payAnyway(session));
       actions.append(protect, anyway);
-      const brandSpan = brand();
-      brandSpan.append(document.createTextNode(footerText(verdict, session)));
-      foot.append(brandSpan);
+      foot.append(brand(footerText(verdict, session)));
       if (session.error) {
         foot.classList.add("is-error");
         foot.replaceChildren(el("span", null, session.error));
@@ -665,16 +678,14 @@
       dismiss.id = "pb-dismiss";
       dismiss.addEventListener("click", () => dismissCard(session));
       actions.append(dismiss);
-      const brandSpan = brand();
-      brandSpan.append(document.createTextNode(footerText(verdict, session)));
-      foot.append(brandSpan);
+      foot.append(brand(footerText(verdict, session)));
       if (session.error) {
         foot.classList.add("is-error");
         foot.replaceChildren(el("span", null, session.error));
       }
     }
 
-    details.append(label, chips);
+    if (notes.childElementCount) details.append(notes);
     if (emailInput) details.append(emailInput.parentElement);
 
     toggle.addEventListener("click", () => {
@@ -683,7 +694,7 @@
       toggle.replaceChildren(document.createTextNode(open ? "Hide" : "Details"));
     });
 
-    body.append(top, explain, details);
+    body.append(top, tagLine, explain, details);
     if (session.state !== "paid") body.append(actions);
     card.append(body, foot);
     return card;
@@ -960,7 +971,7 @@
   }
 
   function fallbackCss() {
-    return ":host{all:initial;display:block;max-width:min(560px,100%);margin:4px 0 8px 36px;font-family:system-ui,sans-serif;font-size:15px;line-height:1.45;color:#1c2530;container-type:inline-size}*{box-sizing:border-box}button,input,a{font:inherit}:focus-visible{outline:3px solid #2e90fa;outline-offset:2px}.pb{border-radius:16px;background:#fff;border:1px solid #f1c27d;box-shadow:0 8px 24px rgba(180,35,24,.12);position:relative;overflow:hidden}.pb::before{content:'';position:absolute;inset:0 auto 0 0;width:5px;background:linear-gradient(180deg,#f5a524,#b42318)}.pb-body{padding:14px 14px 12px 18px}.pb-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}.risk-badge{display:inline-flex;align-items:center;gap:6px;background:#fef3f2;color:#b42318;border:1px solid #fecdca;font-weight:700;font-size:13px;padding:5px 10px;border-radius:999px}.pb-explain{margin:0 0 10px;overflow-wrap:anywhere}.chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0 0 12px;padding:0}.chip{background:#fff8eb;border:1px solid #f3c46b;border-radius:8px;padding:4px 8px;font-size:13px;font-weight:600}.actions{display:flex;flex-wrap:wrap;gap:8px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border-radius:999px;font-weight:650;text-decoration:none;cursor:pointer}.btn-primary{background:#0062a8;color:#fff;border:1px solid #0062a8}.btn-ghost{background:transparent;color:#4a5666;border:1px solid #c3ccd7}.pb-foot{padding:8px 14px 8px 18px;background:#f6f8fb;border-top:1px solid #dde3ea;font-size:12px;overflow-wrap:anywhere}.pb-foot.is-status{background:#eef4ff;color:#1e3a8a;font-weight:600}.pb-foot.is-error{background:#fef3f2;color:#7a271a}.pb.is-collapsed{border-color:#dde3ea;box-shadow:none}.pb-collapsed{margin:0;padding:11px 14px 11px 18px}.pb-email{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}.pb-email input{min-height:44px;width:100%;border:1px solid #c3ccd7;border-radius:10px;padding:8px 12px}.pb-headline-short,.pb-level,.pb-toggle{display:none}.pb-details{display:block}@container (max-width:520px){.actions{flex-direction:column}.actions .btn{width:100%}}@media (max-width:520px){:host{margin-left:0}.pb-headline-long{display:none}.pb-headline-short{display:inline}.pb-level{display:inline-flex;font-size:11px;font-weight:700;text-transform:uppercase;color:#7a271a;background:#fef3f2;border:1px solid #fecdca;border-radius:999px;padding:3px 9px}.pb-tag:not(.mock):not(.ai):not(.ai-off){display:none}.pb-toggle{display:inline-flex;margin-left:auto;padding:6px 10px;font-size:12px;font-weight:650;color:#4a5666;background:#f6f8fb;border:1px solid #c3ccd7;border-radius:999px;cursor:pointer}.pb-explain{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}.pb-details{display:none}.pb-open .pb-explain{display:block;-webkit-line-clamp:unset;overflow:visible}.pb-open .pb-details{display:block}.actions{flex-direction:column}.actions .btn{width:100%}}@media (prefers-reduced-motion:reduce){.btn{transition:none}}";
+    return ":host{all:initial;display:block;max-width:min(560px,100%);margin:4px 0 8px 36px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;line-height:1.45;color:#14161a;container-type:inline-size;min-width:0}*{box-sizing:border-box}:where(button,input,a){font:inherit}:focus-visible{outline:3px solid #14161a;outline-offset:2px;border-radius:2px}.pb{margin:0;background:#fff;border:1px solid #14161a;border-radius:2px;overflow:hidden}.pb-body{padding:16px 20px 14px}.pb-top{display:flex;align-items:flex-start;gap:4px 12px;min-width:0}.pb-title{flex:1 1 auto;min-width:0;margin:0;font-size:19px;line-height:1.2;font-weight:700;letter-spacing:-.01em;overflow-wrap:anywhere}.pb-toggle{display:none}.pb-details{display:block}.pb-tags{margin:3px 0 0;font-size:13px;line-height:1.4;color:#556070}.pb-tag.mock{color:#14161a;font-weight:600}.pb-explain{margin:6px 0 0;font-weight:500;overflow-wrap:anywhere}.pb-notes{position:relative;list-style:none;margin:12px 0 0;padding:9px 0 0;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14px;line-height:1.4;font-weight:600}.pb-notes::before{content:'';position:absolute;left:0;top:0;width:72px;height:1px;background:#14161a}.pb-quote{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:400;color:#556070}.pb-email{display:flex;flex-direction:column;gap:6px;margin:14px 0 0;font-size:13px;font-weight:600;color:#556070}.pb-email input{min-height:44px;width:100%;border:1px solid #8a94a3;border-radius:2px;padding:8px 12px;background:#fff;color:#14161a}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;margin-top:14px}.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:2px;font-size:15px;font-weight:650;text-decoration:none;cursor:pointer;transition:background-color .15s ease}.btn-primary{padding:0 20px;background:#0062a8;color:#fff;border:1px solid #0062a8}.btn-primary:hover{background:#004f88;border-color:#004f88}.btn-primary[disabled],.btn-primary[aria-disabled=true]{background:#4d7fb0;border-color:#4d7fb0;cursor:default}.btn-ghost{padding:0 6px;background:transparent;border:0;color:#14161a;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em}.btn-ghost:hover{text-decoration-thickness:2px}.actions>.btn-ghost:first-child{margin-left:-6px}.pb-foot{display:flex;flex-wrap:wrap;gap:2px 8px;padding:10px 20px 12px;font-size:12.5px;line-height:1.4;color:#556070;overflow-wrap:anywhere}.pb-foot.is-status{color:#0b3b66;font-weight:600}.pb-foot.is-error{color:#8a1c12;font-weight:600}.pb-foot code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}.pb.is-collapsed{border-color:#d5dbe2}.pb-collapsed{margin:0;padding:12px 20px;font-size:14px;color:#556070}@container (max-width:520px){.pb-body{padding:14px 16px 12px}.actions{flex-direction:column;align-items:flex-start}.actions .btn-primary{width:100%}.actions .btn-ghost{margin-left:-6px}.pb-foot{padding:10px 16px 12px}.pb-collapsed{padding:12px 16px}}@media (max-width:520px){:host{margin-left:0;margin-right:0}.pb-body{padding:14px 16px 12px}.pb-toggle{display:inline-flex;align-items:center;flex:none;min-height:44px;margin:-11px -6px -11px 0;padding:0 6px;font-size:14px;font-weight:600;color:#14161a;background:transparent;border:0;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em;cursor:pointer}.pb-explain{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}.pb-details{display:none}.pb-open .pb-explain{display:block;-webkit-line-clamp:unset;overflow:visible}.pb-open .pb-details{display:block}.actions{flex-direction:column;align-items:flex-start}.actions .btn-primary{width:100%}.actions .btn-ghost{margin-left:-6px}.pb-foot{padding:10px 16px 12px}.pb-collapsed{padding:12px 16px}}@media (prefers-reduced-motion:reduce){.btn{transition:none}}";
   }
 
   document.addEventListener("click", (event) => {

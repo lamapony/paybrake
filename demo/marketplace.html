@@ -193,98 +193,107 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     box-shadow: 0 0 0 4px rgba(245,165,36,.15);
   }
   .bubble mark {
-    background: #ffe7b3;
+    background: linear-gradient(#ffc629, #ffc629) no-repeat 0 62% / 100% 80%;
     color: inherit;
-    border-radius: 4px;
-    padding: 0 3px;
+    border-radius: 0;
+    padding: 0 .06em;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
   }
   .time { font-size: 11px; color: var(--ink-3); padding: 0 4px; flex: none; }
 
   /* ---------- PayBrake risk card ---------- */
+  /* Static copy of extension/card.css for visitors without the extension: a footnote slip. */
   .pb {
     margin: 4px 0 8px 36px;
     max-width: 560px;
-    border-radius: 16px;
-    background: var(--surface);
-    border: 1px solid #f1c27d;
-    box-shadow: 0 2px 4px rgba(180,35,24,.06), 0 10px 28px rgba(180,35,24,.10);
+    min-width: 0;
+    background: #fff;
+    color: #14161a;
+    border: 1px solid #14161a;
+    border-radius: 2px;
     overflow: hidden;
-    position: relative;
   }
-  .pb::before {
-    content: "";
-    position: absolute; inset: 0 auto 0 0;
-    width: 5px;
-    background: linear-gradient(180deg, var(--amber), var(--risk));
+  .pb :focus-visible { outline: 3px solid #14161a; outline-offset: 2px; border-radius: 2px; }
+  .pb-body { padding: 16px 20px 14px; }
+  .pb-top { display: flex; align-items: flex-start; gap: 4px 12px; min-width: 0; }
+  .pb-title {
+    flex: 1 1 auto; min-width: 0; margin: 0;
+    font-size: 19px; line-height: 1.2; font-weight: 700; letter-spacing: -.01em;
+    color: #14161a; overflow-wrap: anywhere;
   }
-  .pb-body { padding: 16px 18px 14px 22px; }
-  .pb-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-  .risk-badge {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: var(--risk-bg);
-    color: var(--risk);
-    border: 1px solid #fecdca;
-    font-weight: 700;
-    font-size: 13px;
-    padding: 5px 11px 5px 8px;
-    border-radius: 999px;
+  .pb-toggle { display: none; }
+  .pb-details { display: block; }
+  .pb-tags { margin: 3px 0 0; font-size: 13px; line-height: 1.4; color: #556070; }
+  .pb-tag.mock { color: #14161a; font-weight: 600; }
+  .pb-explain { margin: 6px 0 0; font-size: 15px; line-height: 1.45; font-weight: 500; color: #14161a; }
+  .pb-notes {
+    position: relative; list-style: none; margin: 12px 0 0; padding: 9px 0 0;
+    display: flex; flex-wrap: wrap; gap: 4px 18px;
+    font-size: 14px; line-height: 1.4; font-weight: 600; color: #14161a;
   }
-  .risk-badge svg { flex: none; }
-  .pb-tag { font-size: 12px; color: var(--ink-3); margin-left: auto; }
-  .pb-explain { margin: 0 0 12px; font-size: 15px; font-weight: 550; }
-  .signals-label {
-    font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-    color: var(--ink-3); margin: 0 0 6px;
-  }
-  .chips { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--amber-bg);
-    border: 1px solid var(--amber-line);
-    color: #6b4200;
-    font-size: 13px; font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 8px;
-  }
-  .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #d9480f; flex: none; }
-  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  .pb-notes::before { content: ""; position: absolute; left: 0; top: 0; width: 72px; height: 1px; background: #14161a; }
+  .pb-notes li { min-width: 0; overflow-wrap: anywhere; }
+  .pb-quote { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-weight: 400; color: #556070; }
+  .pb .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-top: 14px; min-width: 0; }
+  .pb .btn {
+    display: inline-flex; align-items: center; justify-content: center;
     min-height: 44px;
-    padding: 10px 18px;
-    border-radius: 999px;
-    font-weight: 650;
+    border-radius: 2px;
     font-size: 15px;
+    font-weight: 650;
     text-align: center;
+    text-decoration: none;
     cursor: pointer;
     transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
   }
-  .btn:active { transform: scale(.98); }
-  .btn-primary { background: var(--pp-blue); color: #fff; border: 1px solid var(--pp-blue); }
-  .btn-primary:hover { background: var(--pp-blue-hover); border-color: var(--pp-blue-hover); }
-  .btn-primary[disabled] { background: #4d7fb0; border-color: #4d7fb0; cursor: default; }
-  .btn-ghost { background: transparent; color: var(--ink-2); border: 1px solid #c3ccd7; }
-  .btn-ghost:hover { background: var(--surface-2); border-color: #9aa7b6; }
-  .pb-foot {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    padding: 9px 18px 9px 22px;
-    background: var(--surface-2);
-    border-top: 1px solid var(--line);
-    font-size: 12px; color: var(--ink-3);
+  .pb .btn-primary { padding: 0 20px; background: var(--pp-blue); color: #fff; border: 1px solid var(--pp-blue); }
+  .pb .btn-primary:hover { background: var(--pp-blue-hover); border-color: var(--pp-blue-hover); }
+  .pb .btn-primary:active { transform: scale(.98); }
+  .pb .btn-primary[disabled] { background: #4d7fb0; border-color: #4d7fb0; cursor: default; }
+  .pb .btn-ghost {
+    padding: 0 6px; background: transparent; border: 0; color: #14161a; font-weight: 600;
+    text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22em;
   }
-  .pb-brand { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--ink-2); }
-  .pb-dot { width: 14px; height: 14px; border-radius: 50%; border: 3px solid var(--ink-2); flex: none; }
-  .pb-foot.is-status { background: #eef4ff; color: #1e3a8a; font-weight: 600; }
-  .pb-foot.is-status .ok-ico { flex: none; }
+  .pb .btn-ghost:hover { text-decoration-thickness: 2px; }
+  .pb .actions > .btn-ghost:first-child { margin-left: -6px; }
+  .pb-foot {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0;
+    padding: 10px 20px 12px;
+    font-size: 12.5px; line-height: 1.4; color: #556070;
+    overflow-wrap: anywhere;
+  }
+  .pb-foot.is-status { color: #0b3b66; font-weight: 600; }
+  .pb-foot.is-error { color: #8a1c12; font-weight: 600; }
   .pb-foot code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 12px; }
 
   /* Collapsed after "Pay anyway" */
-  .pb.is-collapsed { border-color: var(--line); box-shadow: none; }
-  .pb.is-collapsed::before { background: #9aa7b6; }
-  .pb-collapsed { padding: 11px 18px 11px 22px; font-size: 13px; color: var(--ink-2); }
+  .pb.is-collapsed { border-color: #d5dbe2; }
+  .pb-collapsed { margin: 0; padding: 12px 20px; font-size: 14px; color: #556070; }
   .pb-collapsed:focus-visible { outline-offset: -3px; }
+
+  @media (max-width: 520px) {
+    .pb { margin-left: 0; }
+    .pb-body { padding: 14px 16px 12px; }
+    .pb-toggle {
+      display: inline-flex; align-items: center; flex: none;
+      min-height: 44px; margin: -11px -6px -11px 0; padding: 0 6px;
+      font-size: 14px; font-weight: 600; color: #14161a;
+      background: transparent; border: 0; cursor: pointer;
+      text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22em;
+    }
+    .pb-toggle:hover { text-decoration-thickness: 2px; }
+    .pb-explain { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; }
+    .pb-details { display: none; }
+    .pb-open .pb-explain { display: block; -webkit-line-clamp: unset; overflow: visible; }
+    .pb-open .pb-details { display: block; }
+    .pb .actions { flex-direction: column; align-items: flex-start; }
+    .pb .actions .btn-primary { width: 100%; }
+    .pb .actions .btn-ghost { margin-left: -6px; }
+    .pb-foot { padding: 10px 16px 12px; }
+    .pb-collapsed { padding: 12px 16px; }
+  }
+  /* ---------- /PayBrake risk card ---------- */
 
   /* ---------- Composer (static shape) ---------- */
   .composer {
@@ -395,13 +404,6 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     .seller { grid-column: 1 / -1; }
     .thread { padding: 14px 10px 6px; }
     .msg { max-width: 92%; }
-    .pb { margin-left: 0; }
-    .pb-body { padding: 14px 14px 12px 18px; }
-    .pb-tag { margin-left: 0; width: 100%; }
-    .actions { flex-direction: column; }
-    .actions .btn { width: 100%; }
-    .pb-foot { padding: 9px 14px 9px 18px; }
-    .pb-collapsed { padding: 11px 14px 11px 18px; }
     .switcher button { flex: 1 1 100%; }
     .composer { padding: 10px; }
     .safe .thread { padding: 12px 10px 6px; }
@@ -409,7 +411,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
-    .btn:active { transform: none; }
+    .pb .btn-primary:active { transform: none; }
   }
 </style>
 </head>
@@ -485,7 +487,7 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
 
         <div class="msg in">
           <span class="avatar" aria-hidden="true">JH</span>
-          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Hi! Yes, still for sale. Several people are asking though, I've had three messages since this morning 🙂</div>
+          <div class="bubble" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Hi! Yes, still for sale. <mark>Several people are asking</mark> though, I've had three messages since this morning 🙂</div>
           <span class="time">19:47</span>
         </div>
 
@@ -497,41 +499,34 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
 
         <div class="msg in">
           <span class="avatar" aria-hidden="true">JH</span>
-          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Send <mark>500 kr deposit</mark> via PayPal <mark>Friends &amp; Family</mark> to hold it, <mark>I ship tomorrow</mark> with GLS. The other 1,350 kr when it arrives.</div>
+          <div class="bubble flagged" data-pb-msg data-from="seller"><span class="sr-only">Jonas Holm: </span>Send 500 kr <mark>deposit</mark> via PayPal <mark>Friends &amp; Family</mark> to hold it, <mark>I ship tomorrow</mark> with GLS. The other 1,350 kr when it arrives.</div>
           <span class="time">19:48</span>
         </div>
 
-        <!-- PayBrake injected risk card (static mock) -->
+        <!-- PayBrake injected risk card (static copy of the extension card) -->
         <aside class="pb" id="pb-card" data-pb-risk="high" role="region" aria-labelledby="pb-title">
           <div class="pb-body">
             <div class="pb-top">
-              <span class="risk-badge" id="pb-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 3 L22 20 H2 Z" fill="#f5a524" stroke="#b42318" stroke-width="1.6" stroke-linejoin="round"/>
-                  <path d="M12 9.5v4.5" stroke="#1c2530" stroke-width="2" stroke-linecap="round"/>
-                  <circle cx="12" cy="17" r="1.2" fill="#1c2530"/>
-                </svg>
-                High risk payment request
-              </span>
-              <span class="pb-tag">Checked just now</span>
+              <p class="pb-title" id="pb-title">High risk payment request</p>
+              <button type="button" class="pb-toggle" aria-expanded="false" aria-controls="pb-details">Details</button>
             </div>
-
-            <p class="pb-explain">Friends &amp; Family + upfront deposit: if the bike never arrives, you may have no way to get your money back.</p>
-
-            <p class="signals-label" id="signals-label">Detected signals</p>
-            <ul class="chips" aria-labelledby="signals-label">
-              <li class="chip">Friends &amp; Family</li>
-              <li class="chip">Upfront deposit</li>
-              <li class="chip">Ships before meeting</li>
-            </ul>
-
+            <p class="pb-tags"><span class="pb-tag">Checked just now</span></p>
+            <p class="pb-explain">Friends &amp; Family + upfront deposit: if the item never arrives, you may have no way to get your money back.</p>
+            <div class="pb-details" id="pb-details">
+              <ol class="pb-notes" aria-label="Detected signals">
+                <li>Friends &amp; Family</li>
+                <li>Upfront deposit <span class="pb-quote">“deposit”</span></li>
+                <li>Pressure to hurry <span class="pb-quote">“Several people are asking”</span></li>
+                <li>Ships before you meet <span class="pb-quote">“I ship tomorrow”</span></li>
+              </ol>
+            </div>
             <div class="actions">
               <button type="button" class="btn btn-primary" id="pb-protect">Switch to a PayPal order</button>
               <button type="button" class="btn btn-ghost" id="pb-anyway">Pay anyway</button>
             </div>
           </div>
           <div class="pb-foot" id="pb-foot" aria-live="polite">
-            <span class="pb-brand"><span class="pb-dot" aria-hidden="true"></span>PayBrake · AI check · only you can see this</span>
+            <span class="pb-brand">PayBrake · rules check · only you can see this</span>
           </div>
         </aside>
       </div>
@@ -695,11 +690,18 @@ document.write("<" + "me" + "ta name=\"viewport\" content=\"width=device-width, 
     var anyway = document.getElementById("pb-anyway");
     if (!card || !protect || !anyway) return;
 
+    var toggle = card.querySelector(".pb-toggle");
+    if (toggle) {
+      toggle.addEventListener("click", function () {
+        var open = card.classList.toggle("pb-open");
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        toggle.textContent = open ? "Hide" : "Details";
+      });
+    }
+
     protect.addEventListener("click", function () {
       foot.classList.add("is-status");
-      foot.innerHTML =
-        '<svg class="ok-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' +
-        '<span>Sandbox order created · ID <code>5O190127TN364715T</code> · awaiting approval</span>';
+      foot.innerHTML = '<span>Sandbox order created · ID <code>5O190127TN364715T</code> · awaiting approval</span>';
       protect.disabled = true;
       protect.setAttribute("aria-disabled", "true");
     });
