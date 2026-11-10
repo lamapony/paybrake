@@ -310,8 +310,8 @@
 
     <figure class="set lead">
       <figcaption>
-        <b>Public test split, 1,573 messages</b>
-        <span>Four public datasets: real SMS, real Discord chat, synthetic phone dialogues and ScamGuardBench. About half the scams get through. Most SMS and Discord spam never asks for a payment, and a payment request is what the rules look for. <code>npm run eval:real:model</code></span>
+        <b>Public test split, 1,573&nbsp;messages</b>
+        <span>Four public datasets: real SMS, real Discord chat, synthetic phone dialogues and ScamGuardBench. <b class="key-line">About half the scams get through.</b> Most SMS and Discord spam never asks for a payment, and a payment request is what the rules look for. <code>npm run eval:real:model</code></span>
       </figcaption>
       <div class="block scam">
         <p class="count big"><span>362 <i>of</i> 713</span> scam messages flagged</p>
@@ -327,7 +327,7 @@
 
     <figure class="set">
       <figcaption>
-        <b>Held-out set, 100 chats</b>
+        <b>Held-out set, 100&nbsp;chats</b>
         <span>Synthetic chats from a separate model run, never read while tuning. One chat moves recall by 2.5 points. <code>node research/chat-scams/train-model.mjs <span class="nb">--no-write</span></code></span>
       </figcaption>
       <div class="block scam">
@@ -342,7 +342,7 @@
 
     <figure class="set">
       <figcaption>
-        <b>Our own 39 chats</b>
+        <b>Our own 39&nbsp;chats</b>
         <span>We wrote this set ourselves, so it is a regression check. <code>npm run eval</code></span>
       </figcaption>
       <div class="block scam">

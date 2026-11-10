@@ -700,6 +700,7 @@ blockquote.msg p {
 .set figcaption { display: block; }
 .set figcaption b { display: block; font: 600 var(--t-sub)/1.2 var(--sans); letter-spacing: -.012em; }
 .set figcaption span { display: block; margin-top: 8px; font-size: var(--t-ui); line-height: 24px; color: rgba(255, 255, 255, .78); }
+.set figcaption span .key-line { display: inline; font: 600 var(--t-ui)/24px var(--sans); letter-spacing: 0; color: #fff; }
 .set figcaption code { display: block; margin-top: 6px; font-size: var(--t-small); line-height: 1.4; font-weight: 600; color: #fff; overflow-wrap: anywhere; }
 .set figcaption .nb { display: inline; margin: 0; font: inherit; color: inherit; white-space: nowrap; }
 
