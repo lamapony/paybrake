@@ -1,5 +1,7 @@
 # Christopher handoff
 
+> **Update, 2026-11-07 and 2026-11-10:** steps (a) to (c) are done. A live sandbox create, approve, and capture ran from the local backend, then again through the extension in the browser. Results and findings are in [LIVE-SANDBOX.md](LIVE-SANDBOX.md). Statements below that no live call was made describe the state when this handoff was written.
+
 Branch `backend-rest`. The sandbox rest adapter, the toolkit stub, and OpenRouter classify are in the tree and covered by offline tests. No call to PayPal or to a model has been made from this repo.
 
 ## What is done
@@ -103,7 +105,7 @@ The return page has to be a hosted page. Set `PAYPAL_RETURN_URL` and `PAYPAL_CAN
 ## Known risks / open questions
 
 - Mock orders are a `Map` inside one Node process. They disappear on restart, and a second process cannot see them. Rest orders live at PayPal. This process does not keep an order list. The OAuth token cache is also in memory. A restart just fetches a new token.
-- The payee must be a sandbox account, the Business one you created. `jonas.holm@example.com` is fictional and PayPal will reject it. The issue name on that reject has not been seen live.
+- The payee must be a sandbox account, the Business one you created. `jonas.holm@example.com` is fictional. Live check, 2026-11-07: PayPal does *not* reject it at create and returns an order. That order was never approved, so where it fails was not tested.
 - A protect call that omits `referenceId` still gets a new id from `protectDeal`, so that retry creates another order. The extension sends a reference built from the chat hash, the item, the amount, the currency, and the payee email, joined with a unit separator. That string is only the seed for `PayPal-Request-Id`. PayPal's `reference_id` is the sha256 hex of it, so a long item or the separator cannot make create reject, and the item and email are not copied into that field. A repeat of the same Protect click still reuses the PayPal key.
 - Rest currency is DKK, EUR, or USD. Any other 3-letter code is 400 `currency must be DKK, EUR, or USD` and fetch is not called. Mock still accepts any 3-letter code.
-- No live call was ever made. Real PayPal responses are unverified: status names, link `rel`s, and error `details[].issue` values. The same is true of OpenRouter. Treat the tests as a contract with a mocked fetch, and adjust the adapter when the first live response disagrees.
+- PayPal sandbox was checked live on 2026-11-07 (see [LIVE-SANDBOX.md](LIVE-SANDBOX.md)). The one difference was the create status `PAYER_ACTION_REQUIRED`, and the fixture now matches it. OpenRouter has still not been called live. Treat the tests as a contract with a mocked fetch, and adjust the adapter when the first live response disagrees.

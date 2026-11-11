@@ -52,7 +52,7 @@ The table above is the earlier mock-only session. This branch adds the sandbox a
 | Toolkit stub (`backend/src/paypal-toolkit.js`, executes through rest) | DONE |
 | OpenRouter classify (`resolveLlm` in `backend/src/classify.js`, `llmProvider` on `/health`) | DONE |
 | Offline tests | DONE in that session (102 passing then). Current `npm test` and `npm run eval` counts are in the README Checks section. |
-| Live sandbox `create_order` | The rest adapter is in the repo. The hosted Worker uses PayPal sandbox when its secrets are set, and mock orders otherwise. A live sandbox call still needs those secrets; they are not in the repo. |
+| Live sandbox `create_order` | DONE on 2026-11-07 from the local backend: create, buyer approve, capture. On 2026-11-10 the same flow ran in the browser through the extension. Evidence is in `docs/LIVE-SANDBOX.md`. The hosted Worker still uses mock orders unless its sandbox secrets are set; they are not in the repo. |
 | Live LLM eval | A fresh live model run was not repeated in this rebase. The hosted demo calls Typesafe when `TYPESAFE_API_KEY` is set. |
 | Hosting | The demo Worker lives in `hosted/` and the README documents https://paybrake-demo.spbabinov.workers.dev/ . `server.js` is the local backend and still binds `127.0.0.1` and `::1` only. |
 
