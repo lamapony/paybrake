@@ -38,9 +38,22 @@ The Business account balance on sandbox.paypal.com showed the +2,463.94 SEK cred
 3. **Everything else matched the mocked tests:** the `payer-action` approve link, capture idempotency, the `not_approved` mapping, and the 404.
 4. **Cross-currency works.** A DKK payment to a SEK seller is converted by PayPal, with the fee taken in DKK.
 
+## Browser flow through the extension (10 November 2026)
+
+This used the unpacked extension, with **Backend URL** set to `http://localhost:8787`, on the local demo page. The bike thread's `data-pb-seller-email` was set to the sandbox Business account, as a local change only.
+
+1. The bike chat showed **High risk payment request** with four signals: Friends & Family, Upfront deposit, Pressure to hurry, and Ships before you meet.
+2. **Switch to a PayPal order** created order `78U52197R8397532N` for 1,850.00 DKK.
+3. **Open approval** led to the PayPal sandbox, where the Personal buyer approved, paying with a PayPal sandbox test card.
+4. **I approved it, capture** gave `COMPLETED`, capture `1SS265485P268973H`. The card then read **Paid with PayPal Goods & Services (sandbox)**.
+5. PayPal credited the seller with 2,532.49 SEK after the fee. This showed in both the buyer's and the seller's sandbox Activity.
+
+Two practical notes for anyone repeating it:
+- If the browser is still logged in to sandbox.paypal.com as the Business account, the approval page refuses with "you are trying to log in to the seller's account". Log out first, or check balances in a private window.
+- Choose **Log in** on the approval page, not the guest card form. If PayPal asks for a card, use one from PayPal's [test card generator](https://developer.paypal.com/credit-card-number-generator), never a real card.
+
 ## Not covered
 
-- The extension's browser flow (card, then **Switch to a PayPal order**, then capture) against the live backend.
 - The hosted Worker. Its `/health` still reports `"paypal":"mock"`, and setting sandbox secrets there is a separate decision.
 - Live PayPal. The code refuses anything other than sandbox.
 

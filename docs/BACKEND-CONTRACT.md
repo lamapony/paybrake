@@ -343,7 +343,7 @@ Offline, no credentials, no network (`node --test backend/test/` and `npm test`)
 - [x] Support DKK, EUR, and USD
 - [x] Map PayPal errors onto the status codes above. Never put a token or stack in the JSON
 
-Live sandbox responses are still unverified. That is Christopher's step in `docs/CHRISTOPHER-HANDOFF.md`.
+Live sandbox responses were checked on 2026-11-07. After create, PayPal returns `PAYER_ACTION_REQUIRED`, not `CREATED`. The approve link, capture idempotency, `not_approved`, and 404 matched this contract. Details are in `docs/LIVE-SANDBOX.md`.
 
 ## TODO for classify on a real provider
 
