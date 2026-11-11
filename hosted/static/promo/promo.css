@@ -420,8 +420,8 @@ mark.safe, .msg mark.safe {
 }
 
 /* The PayPal column wins at a glance: what Jonas asked steps back, the strike keeps its full amber. */
-.ledger tr > :nth-child(2) { color: rgba(255, 255, 255, .72); }
-.ledger thead th:nth-child(2) { color: rgba(255, 255, 255, .78); }  /* 17px header: .78 keeps 4.5:1 on the blue */
+.ledger tr > :nth-child(2) { color: rgba(255, 255, 255, .79); }
+.ledger thead th:nth-child(2) { color: rgba(255, 255, 255, .79); }  /* 14px and 17px header: .79 clears 4.5:1 on the blue */
 .ledger thead th:nth-child(3) { font-weight: 600; color: #fff; }
 /* The left column is headed by what Jonas wrote, quoted in the page's annotating voice. */
 .ledger thead tr { align-items: end; }   /* the quote may take two lines; both headers stand on the rule */
