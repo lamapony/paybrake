@@ -364,6 +364,18 @@ function useRailAsk(text, start) {
   return amountNear(text, start, start, 80);
 }
 
+// "Swish 500 kr," / "Swisha 500 kr," / "Vipps 500 kr," is the imperative.
+// The amount ends that clause on a comma. "via Swish", "The Swish lamp",
+// "Swish 500 kr at pickup" and "Swisha 500 kr nu så håller" keep other words
+// in the clause, so they stay quiet.
+function railVerbAmount(text, start, end) {
+  const before = text.slice(0, start);
+  if (before.length && !/(?:^|[.!?\n])\s*$/u.test(before)) return false;
+  const after = text.slice(end);
+  if (!/^(?:\s+(?:me|meg|mig))?\s+\d+(?:[.,]\d+)?\s*(?:kr\.?|kroner|dkk|sek|nok)\s*,/iu.test(after)) return false;
+  return amountNear(text, start, end, 80);
+}
+
 function dictatedFamilyOnly(text, start, end) {
   const from = breakEndBefore(text, start);
   const rest = text.slice(end);
@@ -1251,6 +1263,7 @@ function allow(rule, text, start, end) {
     if (handoverQuietsRail(text)) return false;
     if (pay && money) return true;
     if (useRailAsk(text, start)) return true;
+    if (railVerbAmount(text, start, end)) return true;
     return scam && money;
   }
   // "PayPal me" includes the pay word. A nearby amount is required.
