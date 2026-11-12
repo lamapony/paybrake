@@ -119,6 +119,9 @@ const RULES = [
   { id: "off_platform", re: `(?:wire|transfer)(?:[ \\t]+(?!to\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+to[ \\t]+(?:our[ \\t]+bank|the[ \\t]+bank[ \\t]+account|your[ \\t]+account)`, gate: "wire-amount" },
   { id: "off_platform", re: `(?:overfør(?:er)?|overfoer(?:er)?|överför(?:er)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!(?:til|till)\\b)${WIRE_BANK_GAP}){0,6}[ \\t]+til(?:l)?[ \\t]+mi(?:n|tt)[ \\t]+konto`, gate: "wire-amount" },
   { id: "off_platform", re: "bankoverførsel", gate: "negation" },
+  // Instant Danish bank transfer. Not the negation gate: a bare textbook
+  // mention must not leave a signal. A nearby amount is required.
+  { id: "off_platform", re: "straksoverførsel", gate: "amount-near" },
   { id: "off_platform", re: "reg\\.?\\s*nr", gate: "negation" },
   { id: "off_platform", re: "registreringsnummer", gate: "negation" },
   { id: "off_platform", re: "konto\\s*nr\\.?", gate: "negation" },
