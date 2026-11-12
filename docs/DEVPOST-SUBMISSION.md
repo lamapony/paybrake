@@ -4,7 +4,7 @@ Copy-paste source for the Devpost form. Every claim below points at code on this
 
 Deadlines (Copenhagen time): main freezes **5 Nov 12:00**, Devpost early submission **5 Nov 21:00**, final **12 Nov 21:00** (SPEC.md: 12 Nov 12:00 PT).
 
-> **Repository visibility.** SPEC.md says the hackathon asks for a public repo with an OSS licence, and TESTING.md notes the issue form only works once it is public. On 4 Nov `lamapony/paybrake` was **private**. A search for `christopherwang0129SE/paybrake` found nothing: no public repo by that name, and this session can't see private ones. Before submitting, decide which repo goes in the Devpost "Try it out" links, make it public, and run the **Before going public** checklist in [SUBMISSION-GAPS.md](SUBMISSION-GAPS.md) first (`pilot/` and `PILOT-TASK.md` are still in the tree).
+> **Repository visibility.** `lamapony/paybrake` is public with an MIT licence. It is the repo for the Devpost "Try it out" links. The Facebook and Messenger pilot (`pilot/`, `PILOT-TASK.md`, `shots/pilot-*.png`) was removed from the tree on 12 Nov. It is still in git history; see [SUBMISSION-GAPS.md](SUBMISSION-GAPS.md).
 
 ---
 

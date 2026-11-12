@@ -1,8 +1,0 @@
-const own=document.getElementById('checkOwn'),debug=document.getElementById('debug'),list=document.getElementById('log'),status=document.getElementById('status');
-let entries=[];
-async function refresh(){try{const r=await chrome.storage.local.get(['pb_opts','pb_log']);own.checked=!!r.pb_opts?.checkOwn;debug.checked=!!r.pb_opts?.debug;entries=Array.isArray(r.pb_log)?r.pb_log:[];list.replaceChildren();for(const e of entries.slice(-50).reverse()){const li=document.createElement('li');li.textContent=`${new Date(e.ts).toLocaleString()} · ${e.action} · ${(e.signals||[]).join(', ')} · ${e.head||''}`;li.style.overflowWrap='anywhere';list.append(li);}if(!entries.length)list.append(document.createTextNode('No activity logged on this device.'));}catch{status.textContent='Could not read local settings.';}}
-async function save(){try{await chrome.storage.local.set({pb_opts:{checkOwn:own.checked,debug:debug.checked}});status.textContent='Settings saved.';}catch{status.textContent='Could not save settings.';}}
-own.addEventListener('change',save);debug.addEventListener('change',save);
-document.getElementById('clear').addEventListener('click',async()=>{try{await chrome.storage.local.set({pb_log:[]});await refresh();status.textContent='Log cleared.';}catch{status.textContent='Could not clear the log.';}});
-document.getElementById('download').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(entries,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='paybrake-log.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-chrome.storage.onChanged.addListener((c,area)=>{if(area==='local'&&(c.pb_log||c.pb_opts))refresh();});refresh();

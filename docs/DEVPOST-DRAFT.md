@@ -30,4 +30,4 @@ We connected an evidence-based intervention to a mock order and approval flow, w
 
 ## What's next
 
-Record and caption the demo video ([TODO video link]) from [the video script](DEMO-VIDEO-SCRIPT.md). Validate detection on independently sourced data before quoting it. Review privacy and the pilot's site permissions before any real-world use. The hosted demo is linked above; confirm it still matches this commit before submission day.
+Record and caption the demo video ([TODO video link]) from [the video script](DEMO-VIDEO-SCRIPT.md). Validate detection on independently sourced data before quoting it. Review privacy before any real-world use. The hosted demo is linked above; confirm it still matches this commit before submission day.

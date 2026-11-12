@@ -220,7 +220,7 @@ Rules eval on the synthetic set in `eval/cases/` (35 chats): precision 1, recall
 
 `npm run shots` and `npm run e2e` refreshed `shots/demo-1280.png`, `shots/demo-390.png`, `shots/demo-1280-protect.png`, `shots/live-1280.png`, `shots/live-1280-order.png`, `shots/live-390.png`, `shots/ext-live-1280.png`, `shots/ext-live-390.png`, and `shots/demo.gif` on this branch. `shots/safe-1280.png` was rewritten by the same shots run and matched the file already on main.
 
-TODO (stale assets): `shots/tester/`, `shots/tester-v2/`, `shots/tester-v3/`, `shots/ai-live/`, and `shots/pilot-*.png` were not regenerated here. Do not treat those as current. `npm run e2e:hosted` was not run.
+TODO (stale assets): `shots/tester/`, `shots/tester-v2/`, `shots/tester-v3/`, and `shots/ai-live/` were not regenerated here. Do not treat those as current. `npm run e2e:hosted` was not run.
 
 Screenshots: `npm run shots`. Extension smoke: `npm run e2e` (Chromium with the unpacked extension). If the browser cannot load an extension in this environment, that script prints `SKIP` and exits 0.
 
