@@ -170,6 +170,10 @@ const RULES = [
   // "MobilePay me". The mobilepay rule still looks for "to me" / "til mig", and
   // "pay" inside MobilePay is not a pay word. A nearby amount is required.
   { id: "off_platform", re: "mobile\\s*pay\\s+me", gate: "amount-near" },
+  // "MobilePay-anmodning". sender and anmodning are not pay words, so the
+  // mobilepay line stays quiet. A nearby amount is required. anmodning alone
+  // does not match. The mobilepay line and "MobilePay me" stay as they are.
+  { id: "off_platform", re: "mobile\\s*pay[\\s-]*anmodning", gate: "amount-near" },
   // Apple Pay and Google Pay. pay-or-amount would fire "I paid with Apple Pay" with no sum.
   { id: "off_platform", re: "apple\\s+pay", gate: "amount-near" },
   { id: "off_platform", re: "google\\s+pay", gate: "amount-near" },
