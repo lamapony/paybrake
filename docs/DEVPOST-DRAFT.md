@@ -26,7 +26,7 @@ Payment language is contextual: an ordinary mention of a payment method is not a
 
 ## Accomplishments that we're proud of
 
-We connected an evidence-based intervention to a mock order and approval flow, with a PayPal sandbox adapter when keys are set. The offline evaluation is 35 synthetic cases in [eval/cases/pay-risk.json](../eval/cases/pay-risk.json): fictional chats written for this prototype. Run `npm run eval` to reproduce it. That run is a regression check on those 35 cases. It is not a measure of real-world accuracy, and this draft does not quote its scores as field performance.
+We connected an evidence-based intervention to a mock order and approval flow, with a PayPal sandbox adapter when keys are set. The offline evaluation is 39 synthetic cases in [eval/cases/pay-risk.json](../eval/cases/pay-risk.json): fictional chats written for this prototype. Run `npm run eval` to reproduce it. That run is a regression check on those 35 cases. It is not a measure of real-world accuracy, and this draft does not quote its scores as field performance.
 
 ## What's next
 

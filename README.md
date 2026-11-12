@@ -216,7 +216,7 @@ npm run eval
 
 `npm test` passes 261 tests. All of them are offline. The script lists `tests/*.mjs` and `backend/test/*.mjs` in Node (`scripts/run-tests.mjs`). It does not need the shell to expand globs, so the same command works on Node 20 and on Windows `cmd`.
 
-Rules eval on the synthetic set in `eval/cases/` (35 chats): precision 1, recall 1, false alarms 0 (tp 18, fp 0, fn 0, tn 17). The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
+Rules eval on the synthetic set in `eval/cases/` (39 chats): precision 1, recall 1, false alarms 0 (tp 18, fp 0, fn 0, tn 21). The run exits 1 if precision is under 0.95, recall is under 0.80, or any safe case fires. Live eval exits 0 with a skip message unless `/health` reports the model configured.
 
 `npm run shots` and `npm run e2e` refreshed `shots/demo-1280.png`, `shots/demo-390.png`, `shots/demo-1280-protect.png`, `shots/live-1280.png`, `shots/live-1280-order.png`, `shots/live-390.png`, `shots/ext-live-1280.png`, `shots/ext-live-390.png`, and `shots/demo.gif` on this branch. `shots/safe-1280.png` was rewritten by the same shots run and matched the file already on main.
 
