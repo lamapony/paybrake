@@ -6,6 +6,8 @@ When a "seller" asks for a blind transfer, a PayPal Friends & Family payment, a 
 
 **Try it in about 2 minutes, nothing to run locally:** https://paybrake-demo.spbabinov.workers.dev/ ([steps below](#try-it-hosted-nothing-to-run-locally))
 
+**Devpost submission:** https://devpost.com/software/paybrake
+
 - **PayPal (sandbox):** one click turns the risky ask into a PayPal Orders v2 order for the item and price in the chat: create, approve, capture. Live PayPal is refused in code.
 - **AI:** a server-side AI check (Typesafe `jev-1.14.0`) confirms or lowers the rules verdict. It can never raise it, and if the AI is down, the rules still work.
 - **Explains itself:** the card names the risky payment request with a quote from the message.
@@ -239,7 +241,7 @@ Screenshots: `npm run shots`. Extension smoke: `npm run e2e` (Chromium with the 
 - Christopher Wang ([@christopherwang0129SE](https://github.com/christopherwang0129SE)): PayPal backend
 - David ([@David-Dashboard](https://github.com/David-Dashboard)): AI model
 
-Built for the PayPal AI Hackathon on Devpost.
+Built for the PayPal AI Hackathon. See the [Devpost submission](https://devpost.com/software/paybrake).
 
 ## License
 
