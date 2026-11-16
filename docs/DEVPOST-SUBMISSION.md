@@ -14,44 +14,55 @@ PayBrake
 
 ## Tagline (max 200 chars)
 
-Brakes before you pay: a Chrome extension that spots scam payment asks in marketplace chats and offers a PayPal Goods & Services order instead.
+Brakes before you pay: a Chrome extension that detects scam payment requests in marketplace chats and offers a safe PayPal Goods & Services order.
 
 ## Inspiration
 
-Most marketplace scams end the same way. The "seller" (or a fake buyer) moves the payment off the protected path: PayPal Friends & Family, a bank transfer, MobilePay to a phone number, a gift card, crypto, or a deposit "to hold it" for an item nobody has seen. The scam isn't in the listing. It's one sentence in the chat, and that sentence is the last moment anyone can step in. In Denmark, where we started, secondhand selling runs on chat plus MobilePay or PayPal, so we built for English and Danish wording from day one.
+Most marketplace scams end the same way. The "seller" (or a fake buyer) moves the payment off the protected path: PayPal Friends & Family, a bank transfer, MobilePay to a phone number, a gift card, crypto, or a deposit "to hold it" for an item nobody has seen. 
+
+The scam isn't in the listing. It's one sentence in the chat, and that sentence is the last moment anyone can step in. In Denmark, where we started, secondhand selling runs on chat plus MobilePay or PayPal, so we built for English and Danish wording from day one.
 
 ## What it does
 
-- **Reads the chat on the device.** On our demo marketplace, the extension reads the other person's messages and runs English and Danish rules locally (`extension/lib/atoms.js`, `extension/lib/pay-risk.js`). It flags concrete payment-risk signals: Friends & Family (including "send it as a gift", "PayPal FF", "F&F only"), upfront deposits and "hold it for you" fees, off-platform rails (bank transfer and IBAN, MobilePay, Revolut, Wise, Western Union, Venmo, Zelle, Cash App, Swish, Vipps, Twint, Apple Pay, Klarna, Skrill, gift and store cards, crypto), pay-before-you-see, card or code requests, remote-access apps, fee-to-release links, and the overpay-and-refund trick.
-- **Explains itself.** The card says **High risk payment request** or **Possible payment risk**. It lists the signals and quotes the exact risky line from the message. A card can't open without a matched span (ADR 0001, "silent unless evidenced").
+- **Reads the chat on the device.** 
+On our demo marketplace, the extension reads the other person's messages and runs English and Danish rules locally (`extension/lib/atoms.js`, `extension/lib/pay-risk.js`). It flags concrete payment-risk signals: Friends & Family (including "send it as a gift", "PayPal FF", "F&F only"), upfront deposits and "hold it for you" fees, off-platform rails (bank transfer and IBAN, MobilePay, Revolut, Wise, Western Union, Venmo, Zelle, Cash App, Swish, Vipps, Twint, Apple Pay, Klarna, Skrill, gift and store cards, crypto), pay-before-you-see, card or code requests, remote-access apps, fee-to-release links, and the overpay-and-refund trick.
+
+- **Explains itself.** 
+The card says **High risk payment request** or **Possible payment risk**. It lists the signals and quotes the exact risky line from the message. A card can't open without a matched span (see [ADR 0001](adr/0001-silent-unless-evidenced.md), "silent unless evidenced"—our rule that cards only appear when there is direct evidence in the chat).
+
 - **Stays quiet on normal chats.** Cash or MobilePay at pickup, the marketplace checkout, Goods & Services the seller offered, advice like "never send a deposit via F&F", and a buyer's own lines don't raise a card.
-- **AI check (on by default in the demo build).** The chat is masked first (`extension/lib/redact.js`: emails, phones, card numbers, IBANs, ID numbers and codes) and sent to `/api/classify`. On the hosted demo that runs Typesafe model `jev-1.14.0`, with the key held server-side. The AI can confirm a rules card or lower its level, or add a card when the rules are silent and it quotes the other person verbatim. It can never raise a rules level, and a quote not found in the chat is ignored (`clampLevel`, `combineAll` in `pay-risk.js`). If the AI is down or rate-limited, the rules verdict stands.
+- **AI check (on by default in the demo build).** The chat is masked first (`extension/lib/redact.js`: emails, phones, card numbers, IBANs, ID numbers and codes) and sent to `/api/classify`. On the hosted demo, this runs the Typesafe (an AI provider) model `jev-1.14.0`, with the key held server-side.
+  - The AI can confirm a rules card or lower its level.
+  - If the rules are silent, the AI can add a card, but only if it quotes the other person verbatim.
+  - The AI can never raise a rules level.
+  - If the AI's quote is not found in the chat, it is ignored (`clampLevel`, `combineAll` in `pay-risk.js`).
+  - If the AI is down or rate-limited, the rules verdict stands.
 - **Offers the safe path.** **Switch to a PayPal order** creates a PayPal Orders v2 order (`intent: CAPTURE`) for the item and price in the chat. The flow is **Open approval** → approve → **I approved it, capture** → **Paid with PayPal Goods & Services (sandbox)**. It runs on the PayPal sandbox when keys are set and a `MOCK-` order otherwise. Live PayPal is refused in code (`PAYPAL_ENV` must be `sandbox`).
 - **The user still decides.** **Pay anyway** writes a local log only ("You chose to pay anyway. Logged on this device."). Buyer Protection copy says *may be eligible* and points at PayPal's terms.
 
 ## How we built it
 
-- **Extension:** Chrome Manifest V3 with plain classic scripts and no bundler. A content script reads `data-pb-*` threads on our own demo pages and draws the card in a shadow root. `background.js` caches verdicts per chat hash and rules version, keeps the override log (max 200 entries), and talks to the backend. Permissions are `storage` plus our demo and localhost hosts only.
-- **Detector:** about 180 regex "atoms", each with a gate (pay word nearby, parsed amount, negation, handover, prohibition). One strong atom plus money or a pay word is medium. Two strong atoms, or one strong plus a weak one (urgency, "I ship tomorrow"), is high. Vetoes (checkout, agreed Goods & Services, pay at pickup) hide the card. Amount parsing handles `500 kr`, `DKK 1.800`, `1,800 kr`, `€45` and `$120` (`extension/lib/extract.js`).
+- **Extension:** Chrome Manifest V3 with plain classic scripts and no bundler (so reviewers can easily read and audit the source code without build steps or minification). A content script reads `data-pb-*` threads on our own demo pages and draws the card in a shadow root. `background.js` caches verdicts per chat hash and rules version, keeps the override log (max 200 entries), and talks to the backend. Permissions are `storage` plus our demo and localhost hosts only.
+- **Detector:** about 180 regex "atoms"—small, reusable pattern components that match specific scam signals—each with a gate (pay word nearby, parsed amount, negation, handover, prohibition). One strong atom plus money or a pay word is medium. Two strong atoms, or one strong plus a weak one (urgency, "I ship tomorrow"), is high. Vetoes (checkout, agreed Goods & Services, pay at pickup) hide the card. Amount parsing handles `500 kr`, `DKK 1.800`, `1,800 kr`, `€45` and `$120` (`extension/lib/extract.js`).
 - **Backend:** Node 20 with no framework (`backend/src/server.js`). It uses an `OrdersPort` with `mock`, `rest` (PayPal Orders v2 sandbox with OAuth token cache, `PayPal-Request-Id`, `payer-action` link) and `toolkit` adapters. The toolkit adapter uses the PayPal Agent Toolkit tool names `create_order`, `get_order` and `pay_order`, executed through rest, because the published toolkit has no payee field and is USD-only. `/api/classify` supports Typesafe, OpenRouter or any OpenAI-compatible provider.
-- **Hosted demo:** one Cloudflare Worker (`hosted/`) serves the demo store, the extension zip, the order API (mock orders live in a Durable Object for 24 hours) and the AI check. The AI check is capped at 2000 characters, 20/min and 150/day per IP, and 2000/day globally, and has a kill switch (`AI_KILL_SWITCH`).
-- **Evaluation:** a 39-chat synthetic regression set (`npm run eval`, gate: precision ≥ 0.95, recall ≥ 0.80, zero false alarms). There is also a harness on four public Hugging Face scam and legit datasets (`eval/real/`). It commits only IDs, labels and predictions, not message text.
-- **Tests:** `npm test` runs the offline suite: detector, extraction, redaction, card rendering, copy rule, secrets grep, and backend adapters with mocked fetch. Playwright drives a browser flow and an extension smoke test (`npm run e2e`).
+- **Hosted demo:** one Cloudflare Worker (`hosted/`) serves the demo store, the extension zip, the order API (mock orders live in a Durable Object for 24 hours) and the AI check. The AI check is capped at 2000 characters, 20/min and 150/day per IP, and 2000/day globally, and has a kill switch (`AI_KILL_SWITCH`). When the cap is hit, the AI check is disabled and rules-only mode applies.
+- **Evaluation:** a 39-chat synthetic regression set written by the team to cover realistic scam and safe marketplace scenarios (`eval/cases/pay-risk.json`, `npm run eval`, gate: precision ≥ 0.95, recall ≥ 0.80, zero false alarms). There is also a harness on four public Hugging Face scam and legit datasets (`eval/real/`). It commits only IDs, labels and predictions, not message text.
+- **Tests:** `npm test` (using the `node:test` runner) runs the automated unit test suite covering detector, extraction, redaction, card rendering, copy rule, secrets grep, and backend adapters with mocked fetch. Playwright drives a browser flow and an extension smoke test (`npm run e2e`).
 
 ## Challenges we ran into
 
-- **The same words are both the scam and the advice.** "Never send a deposit via Friends & Family" contains every word of the scam. We built a prohibition layer that covers the object of "never send / send ikke / lad være med at" up to the next clause break, and another layer for refusals answered in a question ("Payment first? No, …").
-- **Normal Danish payments look like scam rails.** "Betal med MobilePay ved afhentning" is how half of Denmark pays for a used bike. We tie the payment to the handover so it stays quiet, unless the same clause says now, first, or deposit.
+- **The same words are both the scam and the advice.** "Never send a deposit via Friends & Family" contains every word of the scam. To avoid false alarms, we added a rule (a "prohibition layer") that recognizes when someone is warning against a risky payment, not suggesting it—so phrases like "never send" or "don't pay" are not flagged as scams. We also handle cases where a risky suggestion is clearly refused in the chat (for example, if someone asks "Payment first?" and the reply is "No, I won't do that"), so the system doesn't raise a warning in those situations.
+- **Normal Danish payments look like scam rails (payment methods or channels).** "Betal med MobilePay ved afhentning" is how half of Denmark pays for a used bike. We tie the payment to the handover so it stays quiet, unless the same clause says now, first, or deposit.
 - **Scammers name the safe path to dodge it.** "G&S fees are too high, send it F&F" mentions Goods & Services. We only treat G&S as agreed when the seller isn't steering away from it.
-- **Letting an AI help without letting it hallucinate a warning.** The AI must quote the other person verbatim, can only lower a rules level, and can add a card only above a confidence bar. A timeout falls back to rules.
-- **Privacy.** Nothing leaves the browser for rules-only. For the AI check, numbers, emails, IBANs and codes are masked first.
+- **Letting an AI help without letting it hallucinate a warning.** The AI must quote the other person verbatim and can only lower a rules level. It can add a card only if it is sufficiently confident—there is a set "confidence bar" that must be met before a warning is shown. If the AI times out, the rules verdict is used instead.
+- **Privacy.** Nothing leaves the browser for rules-only. For the AI check, numbers, emails, IBANs, and codes are masked client-side before any data is sent to the AI.
 
 ## Accomplishments that we're proud of
 
-- An end-to-end path a judge can run in about two minutes with nothing installed but the unzipped extension: risky chat → explained card → PayPal order → approve → capture.
-- On the 39-case synthetic regression set: precision 1, recall 1, zero false alarms. That set is our own writing, so we treat it as a regression gate, not a field accuracy number.
-- On public third-party data (rules v4, 3 Nov, test split of 1,573 messages): precision 0.976 and a false-alarm rate of 0.9%. Recall was 0.456 overall, because most SMS and Discord spam never asks for a payment. On ScamGuardBench's money-asking scams the rules caught 53 of 55. Details and caveats are in `eval/real/RESULTS.md`. These datasets are not marketplace chats.
-- A pre-freeze bug hunt (5 Nov) fixed 15 detection false positives and false negatives, each with a test. Four independent adversarial reviews then compared about 1,500 inputs against the previous build, and every regression they found is now a test. Examples: MobilePay at pickup no longer warns, and a buyer asking "Can I pay through checkout?" no longer hides the seller's F&F demand.
+- An end-to-end path a Devpost judge can run in about two minutes with nothing installed but the unzipped extension: risky chat → explained card → PayPal order → approve → capture.
+- On the 39-case synthetic regression set (not field data): precision 1, recall 1, zero false alarms. That set is our own writing, so we treat it as a regression gate, not a field accuracy number.
+- On public third-party data (rules v4, 3 Nov, test split of 1,573 messages): precision 0.976 and a false-alarm rate of 0.9%. Recall was 0.456 overall, because most SMS and Discord spam never asks for a payment. The rules are specifically optimized for marketplace chats, not for general scam or spam detection, so recall is lower on datasets that include many non-marketplace messages. On ScamGuardBench's money-asking scams the rules caught 53 of 55. Details and caveats are in `eval/real/RESULTS.md`. These datasets are not marketplace chats.
+- A pre-freeze bug hunt (5 Nov) fixed 15 detection false positives and false negatives, each with a test. Four independent adversarial reviews then compared about 1,500 inputs against the previous build, and every regression they found is now a test. For example, tests now check that MobilePay at pickup no longer warns, and that a buyer asking "Can I pay through checkout?" no longer hides the seller's F&F demand.
 
 ## What we learned
 
@@ -62,11 +73,11 @@ Most marketplace scams end the same way. The "seller" (or a fake buyer) moves th
 
 ## What's next
 
-- Adapters for real marketplace chat UIs. Today there is one adapter for our own demo pages. Real sites need per-site selectors and a privacy review before shipping.
-- More languages: Swedish and Norwegian wording beyond rail names and NOK/SEK amounts, then German.
-- Re-measure rules v5 on `eval/real` and publish the per-row predictions. Collect a consented, labelled set of real marketplace chats.
-- An opt-in learned scorer (TF-IDF + logistic regression) next to the rules, behind a flag, evaluated with grouped cross-validation.
-- A seller mode for fake-buyer scams ("I paid you, now pay the courier fee").
+- Adapters for real marketplace chat UIs. Today there is one adapter for our own demo pages. Supporting real sites will require handling different DOM structures, dynamic content loading, and ensuring a privacy review before shipping.
+- More languages: Expand detection rules (and UI where needed) to support Swedish and Norwegian wording beyond rail names and NOK/SEK amounts, then German, targeting initial rule coverage in the next release cycle.
+- Re-measure rules v5 on `eval/real` and publish the per-row predictions in `eval/real/RESULTS.md` on the GitHub repository, making them accessible to all users. Collect a consented, labelled set of real marketplace chats.
+- Retrain the on-device model on real chats. It already ships in the extension, on by default: hashed word and character n-grams feed a logistic regression, and it adds a medium card only where the rules found no payment ask. Today it is trained on synthetic chats; next is a consented, labelled set of real marketplace chats, evaluated with grouped cross-validation.
+- A seller mode for fake-buyer scams ("I paid you, now pay the courier fee"): for example, when a scammer posing as a buyer claims to have paid and asks the seller to cover a fake courier or processing fee.
 
 ## Built with
 
