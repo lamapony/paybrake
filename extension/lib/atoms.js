@@ -160,6 +160,8 @@ const RULES = [
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
   { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
+  // "Vippse" is the Norwegian imperative. wordBound on vipps stops before the e.
+  { id: "off_platform", re: "\\bvippse\\b", gate: "local-rail" },
   { id: "off_platform", re: "paysafecards?", gate: "deposit-word" },
   { id: "off_platform", re: "paysafe", gate: "deposit-word" },
   // Same gate as WhatsApp/Telegram: the amount must be what is sent on the app.
@@ -375,7 +377,7 @@ function useRailAsk(text, start) {
   return amountNear(text, start, start, 80);
 }
 
-// "Swish 500 kr," / "Swisha 500 kr," / "Vipps 500 kr," is the imperative.
+// "Swish 500 kr," / "Swisha 500 kr," / "Vipps 500 kr," / "Vippse 500 kr," is the imperative.
 // The amount ends that clause on a comma. "via Swish", "The Swish lamp",
 // "Swish 500 kr at pickup" and "Swisha 500 kr nu så håller" keep other words
 // in the clause, so they stay quiet.
