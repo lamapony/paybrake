@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>PayBrake: spots payment scams in marketplace chats</title>
+<meta name="description" content="PayBrake is a browser extension that spots payment-scam messages in marketplace chats and offers to switch to a PayPal Goods &amp; Services order instead. A PayPal AI Hackathon project.">
+<meta name="theme-color" content="#fbfbfa">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://preview.paybrake-preview.pages.dev/">
+<meta property="og:title" content="PayBrake: spots payment scams in marketplace chats">
+<meta property="og:description" content="A browser extension that spots payment-scam messages in marketplace chats and offers a PayPal Goods &amp; Services order instead.">
+<meta property="og:image" content="https://preview.paybrake-preview.pages.dev/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="PayBrake card under a seller message asking for a 500 kr deposit via PayPal Friends &amp; Family.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{
+  --bg:#fbfbfa;
+  --ink:#1c1c1a;
+  --ink-2:#5f5e5a;
+  --line:#e6e5e1;
+  --tint:#f1f0ec;
+  --accent:#fd9a1c;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",Ubuntu,Cantarell,"Helvetica Neue",Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.6 var(--font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.wrap{max-width:41rem;margin:0 auto;padding:0 1.25rem}
+::selection{background:#fde3bd}
+
+a{color:inherit;text-decoration-line:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:.2em;transition:text-decoration-color .15s ease-out}
+@media (hover:hover) and (pointer:fine){a:hover{text-decoration-color:var(--ink)}}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
+
+header{display:flex;align-items:center;justify-content:space-between;padding-top:1.25rem;padding-bottom:1.25rem}
+.brand{display:flex;align-items:center;gap:.625rem;min-height:44px;font-weight:600;font-size:1.0625rem;text-decoration:none}
+.brand img{display:block}
+header nav a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink-2);text-decoration-color:transparent}
+@media (hover:hover) and (pointer:fine){header nav a:hover{color:var(--ink);text-decoration-color:var(--accent)}}
+
+h1,h2{margin:0;font-weight:600;text-wrap:balance}
+h1{font-size:clamp(1.5rem,1.05rem + 2vw,2.125rem);line-height:1.2;letter-spacing:-.018em;max-width:20em}
+h2{font-size:1.25rem;line-height:1.3;letter-spacing:-.01em;margin-bottom:.75rem}
+p{margin:0 0 1rem;text-wrap:pretty}
+.muted{color:var(--ink-2)}
+code{font-family:inherit;font-size:.9375em;background:var(--tint);border-radius:4px;padding:.05em .3em;white-space:nowrap}
+
+.intro{padding-top:2.5rem}
+.shot{margin:2.5rem 0 0}
+.shot img{display:block;width:100%;max-width:439px;height:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+.shot figcaption{margin-top:.625rem;font-size:.875rem;color:var(--ink-2)}
+
+section{margin-top:4.5rem}
+
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 1.5rem;margin:1.25rem 0 2rem}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:.625rem 1.125rem;border-radius:6px;background:var(--accent);color:var(--ink);font-weight:600;text-decoration:none;transition:transform .16s ease-out,background-color .15s ease-out}
+.btn:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){.btn:hover{background:#f08d0e}}
+.actions a:not(.btn){display:inline-flex;align-items:center;min-height:44px}
+
+ol.steps{margin:0 0 1rem;padding:0;list-style:none;counter-reset:s}
+ol.steps li{counter-increment:s;position:relative;padding-left:2.25rem;margin-bottom:.875rem}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:.05em;width:1.5rem;height:1.5rem;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:.8125rem;font-weight:600;color:var(--ink-2);background:#fff}
+.note{font-size:.875rem;color:var(--ink-2)}
+
+ul.nums{list-style:none;margin:0 0 1.25rem;padding:0;border-top:1px solid var(--line)}
+ul.nums li{display:grid;grid-template-columns:6.5rem 1fr;gap:1rem;align-items:baseline;padding:.875rem 0;border-bottom:1px solid var(--line)}
+ul.nums .v{font-size:1.5rem;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.tab{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+details{margin-top:4.5rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+summary{display:flex;align-items:center;justify-content:space-between;min-height:3.25rem;font-weight:600;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-weight:400;font-size:1.375rem;line-height:1;color:var(--ink-2)}
+details[open] summary::after{content:"\2212"}
+details .body{padding:.25rem 0 1.25rem}
+details h3{font-size:1rem;margin:1rem 0 .25rem}
+details ul{margin:0 0 .5rem;padding-left:1.125rem}
+details li{margin-bottom:.25rem}
+
+footer{margin-top:3rem;padding:1.5rem 0 3rem;font-size:.875rem;color:var(--ink-2)}
+footer p{margin:0}
+
+@media (min-width:48rem){
+  body{font-size:1.0625rem}
+  header{padding-top:2rem}
+  .intro{padding-top:4rem}
+  section,details{margin-top:5.5rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="brand" href="./" aria-label="PayBrake home"><img src="img/logo.svg" width="32" height="32" alt=""><span>PayBrake</span></a>
+  <nav aria-label="Project"><a href="https://paybrake-demo.spbabinov.workers.dev/">Demo</a></nav>
+</header>
+
+<main>
+  <div class="intro">
+    <h1>A browser extension that spots payment scams in marketplace chats and offers a PayPal order instead.</h1>
+    <figure class="shot">
+      <img src="img/chat-card.webp" width="439" height="642" fetchpriority="high" decoding="async"
+        alt="Demo marketplace chat. The seller writes: Send 500 kr deposit via PayPal Friends &amp; Family to hold it, I ship tomorrow. Below it PayBrake shows a High risk payment request card: Friends &amp; Family plus an upfront deposit means you may have no way to get your money back if the item never arrives. Signals: Friends &amp; Family, Upfront deposit, Pressure to hurry, Ships before you meet. Buttons: Switch to a PayPal order, and Pay anyway.">
+      <figcaption>The test build on our demo marketplace page. Names are fictional.</figcaption>
+    </figure>
+  </div>
+
+  <section aria-labelledby="try-h">
+    <h2 id="try-h">Try PayBrake in 2 minutes</h2>
+    <p>No install needed to look: the demo page shows a built-in preview of the card.</p>
+    <div class="actions">
+      <a class="btn" href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html">Open the demo</a>
+      <a href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip">Download the test build</a>
+    </div>
+    <p>To run the real extension in Chrome:</p>
+    <ol class="steps">
+      <li>Download <code>paybrake-extension.zip</code> from the <a href="https://paybrake-demo.spbabinov.workers.dev/paybrake-extension.zip">public demo</a> (no GitHub account) and unzip it.</li>
+      <li>Open <code>chrome://extensions</code>, turn on Developer mode, click Load unpacked and pick the unzipped <code>paybrake-extension</code> folder.</li>
+      <li>Open the <a href="https://paybrake-demo.spbabinov.workers.dev/demo/marketplace.html?live=1">live demo</a>. PayBrake shows a card under the risky message in the bike chat.</li>
+    </ol>
+    <p class="note">The test build runs on the hosted demo page, and on localhost or a local file. It does not run on real marketplace sites. The zip on that link is the file the demo server is serving: rules version 3. The language notes and the accuracy numbers below are rules version 4 in this source tree, not a measurement of that zip. This page does not link to the source code; see the project's submission for where the source is available.</p>
+  </section>
+
+  <section aria-labelledby="acc-h">
+    <h2 id="acc-h">How accurate the rules are</h2>
+    <ul class="nums">
+      <li><span class="v">45.6%</span><span>of scam messages got a card <span class="tab">(325 / 713)</span></span></li>
+      <li><span class="v">0.9%</span><span>of normal messages got a card by mistake <span class="tab">(8 / 860)</span></span></li>
+    </ul>
+    <p class="muted">Rules only, rules v4, on the held-out test split of 1,573 messages from public datasets. Remeasured 3 Nov 2026 in <code>eval/real/RESULTS.md</code> (precision 0.976). Not marketplace chats. An older rules-plus-AI run (26 Oct, rules v3, Typesafe <code>jev-1.14.0</code>) was not repeated after the later detectors, so those figures are not listed here.</p>
+  </section>
+
+  <section aria-labelledby="priv-h">
+    <h2 id="priv-h">Privacy</h2>
+    <p>The rules run in your browser. AI check on all chats is on by default in this build. Turn it off in the extension's Settings and no chat text leaves the browser.</p>
+    <p>With it on, PayBrake masks emails, phone numbers, card numbers, IBANs (all but the last 4 characters), ID numbers and one-time codes before anything is sent. Names, addresses and other free text are not masked. Only the other person's messages can raise a card, and your newest message is included for context. The masked chat goes to the server in Settings (the free test server by default). That server masks it again and passes it to Typesafe <code>jev-1.14.0</code>. Its code does not store the chat text. It does store a per-IP daily request counter for rate limiting, and, if you press Switch to a PayPal order, the mock order (item, amount, currency, payee email) for about a day. What the hosting platform and Typesafe log on their side is outside this code. It does not send the chat to a second provider. On your own server, <code>LLM_FALLBACK=openrouter</code> does: a Typesafe failure other than a rejected request (a bad key or any other 4xx) sends the same masked chat to OpenRouter. On a server with no AI provider, nothing is sent and the card says AI check off (mock server).</p>
+    <p>PayBrake never types or clicks in the chat. If the AI does not answer within 6 seconds, the card says AI check unavailable and the rules result stands.</p>
+  </section>
+
+  <details>
+    <summary>Details</summary>
+    <div class="body">
+      <h3>How it works</h3>
+      <ul>
+        <li>The rules are mostly English and Danish, with some Swedish phrases (på Wise, Swish, a few handover and ship lines) and the Norwegian rail name Vipps. They check the open chat for risky payment requests. The AI check, on by default, also reads every chat and can add a card the rules missed. It cannot raise the rules level.</li>
+        <li>Switch to a PayPal order creates a PayPal Orders v2 order (sandbox) for the item in the chat. With no sandbox keys, the same steps use a mock order, as in the screenshot. Live PayPal is refused.</li>
+        <li>Pay anyway hides the card and saves your choice on your device.</li>
+      </ul>
+      <h3>Limits</h3>
+      <ul>
+        <li>Not a full Swedish or Norwegian ruleset. Coverage is English and Danish, plus those phrases. The test build runs on the hosted demo page, and on localhost or a local file. It does not run on real marketplace sites.</li>
+        <li>The numbers above are the rules-only remeasure on public datasets, so real marketplace accuracy is unknown. The 26 Oct rules-plus-AI run was not repeated after later detectors.</li>
+      </ul>
+      <p style="margin:.75rem 0 0">Install steps and server status are on the <a href="https://paybrake-demo.spbabinov.workers.dev/">public demo</a>.</p>
+    </div>
+  </details>
+</main>
+
+<footer>
+  <p>PayBrake is a PayPal AI Hackathon project. This is a test build: test orders only, no real money moves. Not affiliated with PayPal.</p>
+</footer>
+</div>
+</body>
+</html>
