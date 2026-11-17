@@ -195,6 +195,8 @@ const RULES = [
   { id: "off_platform", re: "twint", gate: "amount-near" },
   // Trustly. Same gate: paid and via are already pay words. trust does not match.
   { id: "off_platform", re: "trustly", gate: "amount-near" },
+  // N26. Same gate: paid and via are already pay words. 26 and n2 do not match.
+  { id: "off_platform", re: "\\bn26\\b", gate: "amount-near" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "pay-first" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "pay-first" },
