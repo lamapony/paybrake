@@ -193,6 +193,8 @@ const RULES = [
   { id: "off_platform", re: "lunar", gate: "amount-near" },
   // Twint. Same gate: paid and via are already pay words. twin and twist do not match.
   { id: "off_platform", re: "twint", gate: "amount-near" },
+  // Trustly. Same gate: paid and via are already pay words. trust does not match.
+  { id: "off_platform", re: "trustly", gate: "amount-near" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "pay-first" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "pay-first" },
