@@ -52,9 +52,9 @@ test("Payoneer with an amount is off-platform, and a mention without a sum is no
   assert.equal(klarna.deal.amount, 500);
 
   const alipay = await detect("Please send 500 kr via Alipay today, I ship tomorrow.");
-  assert.equal(alipay.kind, "silent");
-  assert.equal(alipay.silentReason, "weak_only");
-  assert.deepEqual(alipay.signals, ["ship_before_meet"]);
+  assert.equal(alipay.kind, "risk");
+  assert.equal(alipay.level, "high");
+  assert.deepEqual(alipay.signals, ["off_platform", "ship_before_meet"]);
 
   const wechat = await detect("Please send 500 kr via WeChat Pay today, I ship tomorrow.");
   assert.equal(wechat.kind, "silent");
