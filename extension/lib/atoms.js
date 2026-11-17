@@ -189,6 +189,8 @@ const RULES = [
   { id: "off_platform", re: "afterpay", gate: "amount-near" },
   // Payoneer. Same gate: paid and via are already pay words. paytm, alipay and wechat do not match.
   { id: "off_platform", re: "payoneer", gate: "amount-near" },
+  // Alipay. Same gate: paid and via are already pay words. ali does not match.
+  { id: "off_platform", re: "alipay", gate: "amount-near" },
   // Lunar. Same gate: paid and via are already pay words. luna does not match.
   { id: "off_platform", re: "lunar", gate: "amount-near" },
   // Twint. Same gate: paid and via are already pay words. twin and twist do not match.
