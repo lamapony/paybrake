@@ -201,6 +201,34 @@ const RULES = [
   { id: "off_platform", re: "trustly", gate: "amount-near" },
   // N26. Same gate: paid and via are already pay words. 26 and n2 do not match.
   { id: "off_platform", re: "\\bn26\\b", gate: "amount-near" },
+  // WeChat. Same gate: paid and via are already pay words. we does not match.
+  { id: "off_platform", re: "wechat", gate: "amount-near" },
+  // Paytm. Same gate. pay does not match.
+  { id: "off_platform", re: "paytm", gate: "amount-near" },
+  // Bancontact. Same gate.
+  { id: "off_platform", re: "bancontact", gate: "amount-near" },
+  // SEPA. Word boundaries, so separate does not match.
+  { id: "off_platform", re: "\\bsepa\\b", gate: "amount-near" },
+  // WorldRemit. Same gate.
+  { id: "off_platform", re: "worldremit", gate: "amount-near" },
+  // Remitly. Same gate.
+  { id: "off_platform", re: "remitly", gate: "amount-near" },
+  // Ria. Word boundaries, so Maria does not match.
+  { id: "off_platform", re: "\\bria\\b", gate: "amount-near" },
+  // Paysend. Same gate.
+  { id: "off_platform", re: "paysend", gate: "amount-near" },
+  // Solana. sol alone does not match.
+  { id: "off_platform", re: "solana", gate: "amount-near" },
+  // XRP. Word boundaries.
+  { id: "off_platform", re: "\\bxrp\\b", gate: "amount-near" },
+  // Litecoin, and LTC as a whole word.
+  { id: "off_platform", re: "litecoin|\\bltc\\b", gate: "amount-near" },
+  // Neteller. Same gate.
+  { id: "off_platform", re: "neteller", gate: "amount-near" },
+  // BLIK only after via, på, med, on, or with. "i et blik" does not match.
+  { id: "off_platform", re: "(?:via|på|med|on|with)\\s+blik", gate: "amount-near" },
+  // iDEAL only after via, på, on, or with. med is not a prefix. "an ideal price" does not match.
+  { id: "off_platform", re: "(?:via|på|on|with)\\s+ideal", gate: "amount-near" },
 
   { id: "pay_before_see", re: "pay(?:ment)?\\s+first", gate: "pay-first" },
   { id: "pay_before_see", re: "betal\\s+først", gate: "pay-first" },
