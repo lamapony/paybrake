@@ -50,8 +50,11 @@ test("Klarna with an amount is off-platform, and a mention without a sum is not"
   assert.equal(afterpay.level, "high");
   assert.deepEqual(afterpay.signals, ["off_platform", "ship_before_meet"]);
 
-  const wechat = await detect("Please send 500 kr via WeChat today, I ship tomorrow.");
-  assert.equal(wechat.kind, "silent");
-  assert.equal(wechat.silentReason, "weak_only");
-  assert.deepEqual(wechat.signals, ["ship_before_meet"]);
+  const wechatText = "Please send 500 kr via WeChat today, I ship tomorrow.";
+  const wechat = await detect(wechatText);
+  assert.equal(wechat.kind, "risk");
+  assert.equal(wechat.level, "high");
+  assert.deepEqual(wechat.signals, ["off_platform", "ship_before_meet"]);
+  assert.ok(findAtoms(wechatText).some((hit) => hit.atom === "off_platform" && hit.text === "WeChat"));
+  assert.equal(findAtoms(wechatText).some((hit) => hit.text === "Klarna"), false);
 });

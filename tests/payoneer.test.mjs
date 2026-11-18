@@ -56,13 +56,19 @@ test("Payoneer with an amount is off-platform, and a mention without a sum is no
   assert.equal(alipay.level, "high");
   assert.deepEqual(alipay.signals, ["off_platform", "ship_before_meet"]);
 
-  const wechat = await detect("Please send 500 kr via WeChat Pay today, I ship tomorrow.");
-  assert.equal(wechat.kind, "silent");
-  assert.equal(wechat.silentReason, "weak_only");
-  assert.deepEqual(wechat.signals, ["ship_before_meet"]);
+  const wechatText = "Please send 500 kr via WeChat Pay today, I ship tomorrow.";
+  const wechat = await detect(wechatText);
+  assert.equal(wechat.kind, "risk");
+  assert.equal(wechat.level, "high");
+  assert.deepEqual(wechat.signals, ["off_platform", "ship_before_meet"]);
+  assert.ok(findAtoms(wechatText).some((hit) => hit.atom === "off_platform" && hit.text === "WeChat" && hit.gate === "amount-near"));
+  assert.equal(findAtoms(wechatText).some((hit) => hit.text === "Payoneer"), false);
 
-  const paytm = await detect("Please send 500 kr via Paytm today, I ship tomorrow.");
-  assert.equal(paytm.kind, "silent");
-  assert.equal(paytm.silentReason, "weak_only");
-  assert.deepEqual(paytm.signals, ["ship_before_meet"]);
+  const paytmText = "Please send 500 kr via Paytm today, I ship tomorrow.";
+  const paytm = await detect(paytmText);
+  assert.equal(paytm.kind, "risk");
+  assert.equal(paytm.level, "high");
+  assert.deepEqual(paytm.signals, ["off_platform", "ship_before_meet"]);
+  assert.ok(findAtoms(paytmText).some((hit) => hit.atom === "off_platform" && hit.text === "Paytm" && hit.gate === "amount-near"));
+  assert.equal(findAtoms(paytmText).some((hit) => hit.text === "Payoneer"), false);
 });
