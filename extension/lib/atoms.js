@@ -78,6 +78,9 @@ const RULES = [
   // Amount between the verb and "som gave". "overfør billederne som gave" has
   // no amount, and "overførte" does not match the verb.
   { id: "friends_family", re: `(?:overfør(?:er)?|overfoer(?:er)?|mobile\\s*pay)(?![\\p{L}\\p{N}])[ \\t]+\\d+(?:[.,]\\d+)?[ \\t]+(?:kr\\.?|kroner)[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
+  // Same amount shape for "som familieoverførsel". overføre, overfører, and
+  // overført match. overførte does not, and a gap with no amount does not.
+  { id: "friends_family", re: `(?:overfør(?:e(?:r)?|t)?|overfoer(?:e(?:r)?|t)?)(?![\\p{L}\\p{N}])[ \\t]+\\d+(?:[.,]\\d+)?[ \\t]+(?:kr\\.?|kroner)[ \\t]+som[ \\t]+familieoverførsel(?![\\p{L}\\p{N}])`, gate: "gift-ask" },
   { id: "friends_family", re: "personal\\s+(?:paypal\\s+)?payment", gate: "none" },
   // "I only accept Friends and Family", "we take only PayPal F&F". No pay word needed.
   { id: "friends_family", re: "(?:only\\s+(?:accept|take|do|use)|(?:accept|take)s?\\s+only)\\s+(?:paypal\\s+)?(?:friends\\s+(?:and|&)\\s+family|F&F|FnF)", gate: "ff-only" },
