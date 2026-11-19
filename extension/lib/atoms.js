@@ -163,7 +163,8 @@ const RULES = [
   { id: "off_platform", re: "\\bzelle\\b", gate: "named-rail" },
   { id: "off_platform", re: "\\bcash\\s*app\\b", gate: "named-rail" },
   { id: "off_platform", re: "\\$[a-z][a-z0-9_]{1,19}", gate: "cashtag" },
-  { id: "off_platform", re: "\\bswisha?\\b", gate: "local-rail" },
+  // Danish infinitive "swishe" and present "swisher". Swedish "swisha" still matches.
+  { id: "off_platform", re: "\\bswish(?:a|e|er)?\\b", gate: "local-rail" },
   { id: "off_platform", re: "\\bvipps\\b", gate: "local-rail" },
   // "Vippse" is the Norwegian imperative. wordBound on vipps stops before the e.
   { id: "off_platform", re: "\\bvippse\\b", gate: "local-rail" },
@@ -416,7 +417,7 @@ function useRailAsk(text, start) {
   return amountNear(text, start, start, 80);
 }
 
-// "Swish 500 kr," / "Swisha 500 kr," / "Vipps 500 kr," / "Vippse 500 kr," is the imperative.
+// "Swish 500 kr," / "Swisha 500 kr," / "Swishe 500 kr," / "Swisher 500 kr," / "Vipps 500 kr," / "Vippse 500 kr," is the imperative.
 // The amount ends that clause on a comma. "via Swish", "The Swish lamp",
 // "Swish 500 kr at pickup" and "Swisha 500 kr nu så håller" keep other words
 // in the clause, so they stay quiet.
@@ -843,7 +844,7 @@ function handoverPay(text) {
 const CLAUSE_BREAK = /[.!?;\n]|(?<!\d),(?!\d)|\s(?:and|but|so|then)\s/giu;
 const SENTENCE_BREAK = /[.!?\n]/gu;
 const TIMING_WORD = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?)(?![\p{L}\p{N}])/giu;
-const RAIL_WORD = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swisha?|vipps|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
+const RAIL_WORD = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swish(?:a|e|er)?|vipps|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
 
 function sliceAround(text, at, length, breaks) {
   const re = new RegExp(breaks.source, breaks.flags);
@@ -910,7 +911,7 @@ const TIED_HANDOVER_V5 = new RegExp(TIED_HANDOVER.source + "|når\\s+vi\\s+møde
 const CLAUSE_BREAK_V5 = /[.!?;\n]|(?<!\d),(?!\d)|\s(?:and|but|so|then|og|men|så)\s/giu;
 // Danish nu (now), først (first), depositum, forskud (advance), i aften, inden, i dag.
 const TIMING_WORD_V5 = /(?<![\p{L}\p{N}])(?:now|today|first|reserve|hold|deposits?|nu|først|depositum|forskud|tonight|aften|inden|i\s+dag|this\s+(?:morning|evening|afternoon))(?![\p{L}\p{N}])/giu;
-const RAIL_WORD_V5 = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swisha?|vipps|mobile\s*pay|bank\s*transfers?|bankoverførsel|revolut|(?:via|on|with|by|using|through|på)\s+wise|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
+const RAIL_WORD_V5 = /(?<![\p{L}\p{N}])(?:western\s+union|moneygram|venmo|zelle|cash\s*app|swish(?:a|e|er)?|vipps|mobile\s*pay|bank\s*transfers?|bankoverførsel|revolut|(?:via|on|with|by|using|through|på)\s+wise|\$[a-z][a-z0-9_]{1,19})(?![\p{L}\p{N}])/iu;
 // A split payment ("the rest when you pick it up", "the balance", "resten") or a payment
 // to reserve the item ("to secure it", "keep it aside", "i forvejen for at holde den").
 const SPLIT_PAY = /(?<![\p{L}\p{N}])(?:the\s+rest|resten|remaining|remainder|the\s+balance|the\s+difference|the\s+other\s+\$?\d|rest(?=\s+(?:when|on|at|in|ved|når|på)(?![\p{L}\p{N}])))(?![\p{L}\p{N}])/iu;
@@ -973,7 +974,7 @@ function payFirstLanguage(text) {
   const source = String(text ?? "");
   // "no payment before we meet" cancels the ask. "and I ship/post" counts like "then I ship".
   // "så skickar jag" is the Swedish ship line.
-  const re = /pay(?:ment)?\s+first|betal\s+først|pay(?:ment)?\s+before|(?:swisha?|vipps)\s+first|first,?\s+then\s+i\s+(?:ship|send|post)|then\s+i\s+(?:ship|send|post)|and\s+i(?:['\u2019]ll|\s+will)?\s+(?:ship|post)(?![\p{L}\p{N}])|først,?\s+så\s+send|så\s+sender\s+jeg|så\s+skickar\s+jag|innan\s+jag\s+skickar/giu;
+  const re = /pay(?:ment)?\s+first|betal\s+først|pay(?:ment)?\s+before|(?:swish(?:a|e|er)?|vipps)\s+first|first,?\s+then\s+i\s+(?:ship|send|post)|then\s+i\s+(?:ship|send|post)|and\s+i(?:['\u2019]ll|\s+will)?\s+(?:ship|post)(?![\p{L}\p{N}])|først,?\s+så\s+send|så\s+sender\s+jeg|så\s+skickar\s+jag|innan\s+jag\s+skickar/giu;
   for (const match of source.matchAll(re)) {
     if (!negatedBefore(source, match.index ?? 0)) return true;
   }
@@ -999,7 +1000,7 @@ function sentenceEndFrom(text, index) {
 // delivery. "overfør" and "MobilePay" as the verb are not covered here.
 const GIFT_TIGHT = /^(?:send\s+as\s+(?:a\s+)?gift|(?:send|betal(?:e|ing)?)\s+som\s+gave)$/iu;
 const GIFT_DELIVERY = /(?<![\p{L}\p{N}])(?:address|adresse)(?![\p{L}\p{N}])/iu;
-const GIFT_PAY = /(?<![\p{L}\p{N}])(?:paypal|pay(?:ment|ing)?|paid|betal(?:e|ing)?|overf(?:ør|oer)(?:er)?|mobile\s*pay|venmo|zelle|cash\s*app|revolut|western\s+union|moneygram|swisha?|vipps|bitcoin|btc|usdt|crypto|iban)(?![\p{L}\p{N}])/iu;
+const GIFT_PAY = /(?<![\p{L}\p{N}])(?:paypal|pay(?:ment|ing)?|paid|betal(?:e|ing)?|overf(?:ør|oer)(?:er)?|mobile\s*pay|venmo|zelle|cash\s*app|revolut|western\s+union|moneygram|swish(?:a|e|er)?|vipps|bitcoin|btc|usdt|crypto|iban)(?![\p{L}\p{N}])/iu;
 
 function giftPayInSentence(text, from, to, verbAt) {
   const sentence = text.slice(from, to);
