@@ -71,13 +71,14 @@ const RULES = [
   // Whole words only (sender/sende are listed; resend and gifted are not).
   // The gap cannot cross . ! ? or a newline, and it cannot swallow as/som.
   // "gift card" / "gavekort" stay off-platform.
+  // Danish "en" is optional, the same way English "a" is ("som en gave").
   { id: "friends_family", re: `send(?:er|e)?(?![\\p{L}\\p{N}])(?:[ \\t]+(?!as(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+as[ \\t]+(?:a[ \\t]+)?gift(?![\\p{L}\\p{N}])(?![ \\t]*cards?(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
-  { id: "friends_family", re: `(?:send(?:er|e)?|betal(?:e|ing)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!som(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
+  { id: "friends_family", re: `(?:send(?:er|e)?|betal(?:e|ing)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!som(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+som[ \\t]+(?:en[ \\t]+)?gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   { id: "friends_family", re: `(?:send(?:er|e)?|betal(?:e|ing)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!som(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+som[ \\t]+vennetjeneste(?![\\p{L}\\p{N}])`, gate: "gift-ask" },
   { id: "friends_family", re: `(?:send(?:er|e)?|betal(?:e|ing)?)(?![\\p{L}\\p{N}])(?:[ \\t]+(?!som(?![\\p{L}\\p{N}]))(?:${GAP_TOKEN})){0,6}[ \\t]+som[ \\t]+familieoverførsel(?![\\p{L}\\p{N}])`, gate: "gift-ask" },
-  // Amount between the verb and "som gave". "overfør billederne som gave" has
+  // Amount between the verb and "som gave" (optional "en"). "overfør billederne som gave" has
   // no amount, and "overførte" does not match the verb.
-  { id: "friends_family", re: `(?:overfør(?:er)?|overfoer(?:er)?|mobile\\s*pay)(?![\\p{L}\\p{N}])[ \\t]+\\d+(?:[.,]\\d+)?[ \\t]+(?:kr\\.?|kroner)[ \\t]+som[ \\t]+gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
+  { id: "friends_family", re: `(?:overfør(?:er)?|overfoer(?:er)?|mobile\\s*pay)(?![\\p{L}\\p{N}])[ \\t]+\\d+(?:[.,]\\d+)?[ \\t]+(?:kr\\.?|kroner)[ \\t]+som[ \\t]+(?:en[ \\t]+)?gave(?![\\p{L}\\p{N}])(?![ \\t]*kort(?![\\p{L}\\p{N}]))`, gate: "gift-ask" },
   // Same amount shape for "som familieoverførsel". overføre, overfører, and
   // overført match. overførte does not, and a gap with no amount does not.
   { id: "friends_family", re: `(?:overfør(?:e(?:r)?|t)?|overfoer(?:e(?:r)?|t)?)(?![\\p{L}\\p{N}])[ \\t]+\\d+(?:[.,]\\d+)?[ \\t]+(?:kr\\.?|kroner)[ \\t]+som[ \\t]+familieoverførsel(?![\\p{L}\\p{N}])`, gate: "gift-ask" },
